@@ -204,6 +204,7 @@ count maintenance and repairs as kinds of cost each.
 - TyreSet 'Golf winter' is of TyreModel 'Continental WinterContact TS 870'.
 - TyreSet 'Golf winter' is of Size '205/55 R16'.
 - TyreSet 'Golf winter' was bought for Money 480 EUR.
+- TyreSet 'Golf winter' was bought on Date 2025-10-20.
 - TyreChange 4 fitted TyreSet 'Golf summer' on Vehicle 'Blue Golf'.
 - TyreChange 4 removed TyreSet 'Golf winter'.
 - TyreChange 4 was at Moment 2026-04-05 10:00.
@@ -323,6 +324,10 @@ A checklist can be planned work too:
 - Schedule 'Monthly' is for Checklist 'Basic vehicle inspection'.
 
 and an inspection through it does that work.
+
+The questions and their answers are kept simple here, yes or no and any
+of a list. Richer forms (text, numbers, conditions between questions) are
+for later, described by XForms rather than by fact types.
 
 ### Money
 
@@ -682,6 +687,7 @@ TyreSet is for Season                           ts1 | 'Winter'
 TyreSet is of TyreModel                         ts1 | 'Continental WinterContact TS 870'
 TyreSet is of TyreSize                          ts1 | '205/55 R16'
 TyreSet was bought for Money                    ts1 | 480 EUR
+TyreSet was bought on Date                      ts1 | 2025-10-20
 TyreChange is of Vehicle                        c4 | v1
 TyreChange was at Moment                        c4 | 2026-04-05 10:00
 TyreChange was at Distance                      c4 | 146900 km
@@ -1025,7 +1031,7 @@ unique. Each vehicle, record or user has at most one of each of these:
 - **Service:** vehicle, moment, distance, title, garage, kind, currency,
   driver, discount, payment method, instalments.
 - **ServiceItem:** service, task, cost, what it was charged, note.
-- **TyreSet:** vehicle, name, season, model, size, price.
+- **TyreSet:** vehicle, name, season, model, size, price, date bought.
 - **TyreChange:** vehicle, moment, distance, the set fitted, the set
   removed, tread, driver.
 - **Document:** vehicle, kind, issuer, number, valid from, expires,
@@ -1126,7 +1132,7 @@ honestly be missing, and each such case is listed with why.
 | FillUp | vehicle, moment, distance, volume, fuel, cost, station, driver | |
 | Service | vehicle, moment, distance, garage, kind, currency, driver | items (a service may have no tasks listed); title (its kind and tasks say what it was); discount (none given); payment method (not everyone keeps it); instalments (paid at once, when missing) |
 | ServiceItem | service, task, cost | note; what it was charged in another currency (only when it was) |
-| TyreSet | vehicle, name, season, model, size | price (a set that came with the car) |
+| TyreSet | vehicle, name, season, model, size | price and the date bought, both or neither (a set that came with the car) |
 | TyreChange | vehicle, moment, distance, the set fitted, tread, driver | the set removed (the first set fitted, on a car with none recorded) |
 | Document | vehicle, kind, issuer, number, valid from | expiry (a registration certificate doesn't expire); cost (some are free) |
 | Expense | vehicle, moment, kind, cost, driver | what it was charged in another currency |
@@ -1195,14 +1201,158 @@ Facts worked out from others by rules, not arithmetic:
    of their vehicles' records. That's a permission, from the facts of who
    owns and who entered, enforced by the service (see Permissions).
 
+## Step 6: value, set-comparison and subtype constraints
+
+### Value constraints
+
+A value constraint lists or bounds what a value may be.
+
+**Fixed lists,** part of the model:
+
+| Value type | Values |
+| --- | --- |
+| DistanceUnit | 'km', 'mi' |
+| VolumeUnit | 'L', 'gal (US)', 'gal (imp)' |
+| ServiceKind | 'Maintenance', 'Repair' |
+| Season | 'Summer', 'Winter', 'All-season' |
+| AnswerKind | 'Yes or no', 'Any of' |
+| YesNo | 'Yes', 'No' |
+
+**Lists the users keep:** Task, ExpenseKind, IncomeKind, DocumentKind,
+Purpose, PaymentMethod, Fuel. A new logbook starts with a few of each
+(Drivvo's are a fair start), and users add their own. These have no value
+constraint; the starting ones are data.
+
+**Ranges:**
+
+| Value | Range | Why |
+| --- | --- | --- |
+| Amount, of every money | > 0 | a cost of nothing isn't recorded; a free document has no cost |
+| Quantity of a distance, as a reading (acquired at, shows, at, started, ended, due at, done at) | ≥ 0 | a new car's meter reads 0 |
+| Quantity of a distance, as a length (recurs every, driven more) | > 0 | |
+| Quantity of a volume | > 0 | |
+| Factor of an exchange rate | > 0 | |
+| Duration (kept for, recurs every) | ≥ 1 month | |
+| Year built | 1886 and on | |
+| Tread | 0 to 20 mm | |
+| Instalments, Position | ≥ 1 | |
+| Currency | three capital letters, ISO 4217 | |
+| VIN | 17 letters and digits, not I, O or Q | |
+
+A distance is one type (step 3), so its ranges are on the roles, not the
+type: a reading may be 0, an interval may not.
+
+### Subtypes
+
+**Record** is every kind of thing users enter, with an id: MeterReading,
+Trip, FillUp, Service, TyreChange, Expense, Income, Inspection, TyreSet,
+Document, Schedule, Reminder. What step 2 repeated for each is said once,
+of Record:
+- Record is of Vehicle;
+- Record was entered by User;
+- Record has Note;
+- Attachment is of Record.
+
+**Event** is a record of something that happened: MeterReading, Trip,
+FillUp, Service, TyreChange, Expense, Income, Inspection. Once, of Event:
+- Event was at Moment (a trip's is when it started; it also ended at a
+  moment);
+- Event had driver User.
+
+**MeteredEvent** is an event that was at a distance: *each MeteredEvent is
+an Event that was at some Distance*, a subtype defined by a role. Every
+meter reading, trip (where it started), fill-up, service, tyre change and
+inspection is one; an income is one when it says its distance; an expense
+never is. So "was at Distance" is said once, of MeteredEvent, and is a
+must there. This answers step 1's question: each of these gives a reading
+of the meter, and a MeterReading is the event that does nothing else. A
+vehicle's reading at a moment (derivation 6) is over MeteredEvents.
+
+**Cost** is a record that cost money: *each Cost is a Record that cost
+some Money*. Every fill-up, service and expense is one; a tyre set or a
+document is one when it has a price. Once, of Cost:
+- Cost cost Money (a service's is derived: its items less its discount);
+- Cost was charged Money (in another currency, when the receipt says;
+  a fill-up abroad, too);
+- Cost is of CostKind (derived, step 5).
+
+A cost counts in reports on its date: an event's moment, a tyre set's
+date bought, a document's valid-from date. Doing this showed that a tyre
+set's price had no date, so "TyreSet was bought on Date" is added, with
+an equality constraint: a price if and only if a date.
+
+**CostKind** has two subtypes, its values split between them:
+- **ServiceKind:** 'Maintenance', 'Repair';
+- **ExpenseKind:** each CostKind that is not 'Fuel', 'Maintenance',
+  'Repair', 'Tyres' or 'Documents'. Those five are the kinds fixed by what
+  a record is; the users' own kinds are all expense kinds.
+
+So "Schedule is for ExpenseKind" can only name a kind an expense can be
+of, by its type, with no constraint of its own.
+
+**CarSale** is an income of kind 'Car sale': *each CarSale is an Income
+that is of IncomeKind 'Car sale'*. "CarSale is of Vehicle" is unique on
+the vehicle's side: a vehicle is sold at most once. The vehicle's sale
+(step 5, derivation 7) is read from it.
+
+**Not made subtypes:**
+- **What a reminder is for** (a task, a kind of expense, a checklist).
+  Three fact types with an exclusive-or, not a supertype "Work": they are
+  identified differently (by name, by name, by id), and share nothing
+  else.
+- **What did a reminder's work** is one fact type now, *Reminder was done
+  by Event*, instead of three: services, expenses and inspections are all
+  events. Which event may do it is the derivation's (step 5).
+
+### Set-comparison constraints
+
+**Equality** (one if and only if the other):
+- a reminder's done moment and its done distance;
+- a tyre set's price and its date bought.
+
+**Subset** (the one only with the other):
+- *Reminder was done by Event* only for a reminder with a done moment;
+- *Income was for Trip* only where the income and the trip are of the
+  same vehicle; the same for *Reminder was done by Event*, *Reminder comes
+  from Schedule*, *TyreChange fitted TyreSet* and *TyreChange removed
+  TyreSet* (join subsets, through each one's vehicle);
+- *Event had driver User* and *Record was entered by User* only for a
+  user who drives the record's vehicle (a join subset through *User
+  drives Vehicle*);
+- *Inspection went through Checklist* only for a checklist kept by the
+  vehicle's owner;
+- an inspection's answers only to questions of its checklist, and an
+  answer's chosen options only of its question (join subsets);
+- *Answer says YesNo* only for a question answered 'Yes or no', and
+  *Answer chose Option* only for one answered 'Any of'; *Option is in
+  Question* only for 'Any of' questions.
+
+**Exclusion** (not both):
+- a tyre change doesn't fit and remove the same set;
+- a reminder comes from a schedule, or is for a task, a kind of expense
+  or a checklist of its own: exactly one (step 5's exclusive-or; a
+  schedule's the same, over its three);
+- *User drives Vehicle* as shared and *Vehicle is owned by User*: the
+  owner isn't shared with (step 5, derivation 3).
+
+### For ORMKit
+
+- **Subtypes defined by a rule** (MeteredEvent, Cost, CarSale, the kinds):
+  ORMKit reads NORMA's subtype derivation rules but doesn't run them yet
+  ([DERIVATION.md](../../NativeORM2/docs/DERIVATION.md), for later). The
+  same query kind as a fact type's derivation would do.
+- **Patterns** (a currency code, a VIN) are not value constraints NORMA
+  has; they're a data type's facet. They can be checked by code generated
+  from a constraint written as a rule.
+- **Value ranges per role** on a shared value type, and **join subsets**,
+  NORMA has, and ORMKit with it.
+
 ## Next
 
-Step 6: value constraints (the lists, positive amounts and distances,
-instalments of at least 1), set-comparison constraints (a removed tyre
-set was fitted before; a reminder for a kind of expense names one an
-expense may be of; at most one 'Car sale' per vehicle; an inspection's
-answers are to questions of the checklist it went through, and choose
-options of their question; a yes-or-no question's answers say yes or no
-and choose nothing, an any-of question's choose and say neither), and subtyping (the
-records' common supertype, which records are costs and which incomes, and
-the work a reminder is for and what does it).
+Step 7: the other constraints and the final checks. Ring constraints (an
+exchange rate is between two different currencies), value comparisons (a
+trip ends no earlier and no nearer than it started; a document expires
+after it's valid; a removed tyre set was fitted before), frequency
+constraints, and then the checks Halpin ends with: that every fact type
+can be populated, that nothing derivable is stored without a reason, and
+the whole schema against the examples.
