@@ -271,39 +271,56 @@ went.
 
 ### Checklists and inspections
 
-> Anna's checklist "Before a long trip": tyre pressure, lights, oil level,
-> wipers and washer fluid, spare wheel. On 2026-10-10 at 08:00, at
-> 153,200 km, she went through it on the Golf: all fine but the washer
-> fluid, which was low.
+> Anna's checklist "Basic vehicle inspection" asks: Is the registration
+> certificate in the car? Are the tyres in good condition? Has the oil
+> level been checked? Which of these are not working: low beams, high
+> beams, indicators, brake lights, horn? On 2026-08-28 at 12:00, at
+> 153,200 km, she went through it on the Golf: yes, yes, yes; the low and
+> high beams aren't working. She took a photo.
 
-- Checklist 'Before a long trip' is kept by User 'anna@example.org'.
-- ChecklistItem 'Tyre pressure' is in Checklist 'Before a long trip' at
+- Checklist 'Basic vehicle inspection' is kept by User 'anna@example.org'.
+- Question 'Is the registration certificate in the car?' is in Checklist
+  'Basic vehicle inspection' at Position 1.
+- Question 'Is the registration certificate in the car?' is answered by
+  AnswerKind 'Yes or no'.
+- Question 'Which of these are not working?' is at Position 4.
+- Question 'Which of these are not working?' is answered by AnswerKind
+  'Any of'.
+- Option 'Low beams' is in Question 'Which of these are not working?' at
   Position 1.
-- ChecklistItem 'Washer fluid' is in Checklist 'Before a long trip' at
-  Position 4.
 - Inspection 50 is of Vehicle 'Blue Golf'.
-- Inspection 50 went through Checklist 'Before a long trip'.
-- Inspection 50 was at Moment 2026-10-10 08:00.
+- Inspection 50 went through Checklist 'Basic vehicle inspection'.
+- Inspection 50 was at Moment 2026-08-28 12:00.
 - Inspection 50 was at Distance 153200.
 - Inspection 50 had driver User 'anna@example.org'.
-- In Inspection 50, ChecklistItem 'Tyre pressure' was found Result 'OK'.
-- In Inspection 50, ChecklistItem 'Washer fluid' was found Result 'Not OK'.
-- In Inspection 50, ChecklistItem 'Washer fluid' has Note 'Low, topped
-  up'.
+- In Inspection 50, Question 'Is the registration certificate in the car?'
+  was answered 'Yes'.
+- In Inspection 50, Question 'Which of these are not working?' was
+  answered with Option 'Low beams'.
+- In Inspection 50, Question 'Which of these are not working?' was
+  answered with Option 'High beams'.
+- Attachment 'lights.jpg' is of Inspection 50.
 
-A **checklist** is a list of things to check, in order, that a user
-writes once and uses on any of their vehicles: before a long trip, when
-handing the car to another driver, a monthly look round. Drivers use the
-checklists of the vehicle's owner. An **inspection** is one going
-through it, on one vehicle, at a moment: an event like the others. Each
-item is found 'OK' or 'Not OK', and may have a note (and the inspection
-photos, as attachments). An item left unchecked has no result.
+A **checklist** is a form, in Drivvo's words: questions in order, that a
+user writes once and uses on any of their vehicles (a daily inspection, a
+look round before a long trip, handing the car to another driver).
+Drivers use the checklists of the vehicle's owner. A question is answered
+in one of two ways:
+- **yes or no;**
+- **any of** its options, in order: none, some or all of them may be
+  chosen. Choosing none is an answer too ("nothing isn't working").
+
+An **inspection** is one going through a checklist, on one vehicle, at a
+moment: an event like the others, with its driver, note and files. A
+question may be left unanswered. Whether an answer is good news depends on
+the question ("Which are *not* working?"), so the app only shows what was
+answered; it doesn't judge it.
 
 A checklist can be planned work too:
 
-> Go through "Monthly look round" every month.
+> Go through "Basic vehicle inspection" every month.
 
-- Schedule 'Monthly' is for Checklist 'Monthly look round'.
+- Schedule 'Monthly' is for Checklist 'Basic vehicle inspection'.
 
 and an inspection through it does that work.
 
@@ -422,8 +439,8 @@ over a period:
     (5% lower than June).
 12. **Each fill-up in the history:** its consumption since the full
     fill-up before.
-13. **Each inspection in the history:** how many of its items were found
-    'Not OK', and which.
+13. **Each inspection in the history:** its answers, in the checklist's
+    order, and the questions left unanswered.
 
 There are the same reports per kind of event (fill-ups, services,
 expenses, incomes, trips, meter readings, inspections), as tabs.
@@ -469,7 +486,7 @@ things Logbook records are identified by an id the app makes (a UUID,
 written `v1`, `t3` here):
 - Vehicle, Trip, FillUp, Service, ServiceItem, MeterReading, TyreSet,
   TyreChange, Document, Expense, Income, Schedule, Reminder, Attachment,
-  Checklist, ChecklistItem, Inspection, Check.
+  Checklist, Question, Option, Inspection, Answer.
 
 The rest are identified by what they are:
 
@@ -478,8 +495,9 @@ The rest are identified by what they are:
 | User | email |
 | Make, CarModel, Fuel, Garage, Station, Place, TyreModel | name |
 | ServiceKind, ExpenseKind, IncomeKind, DocumentKind, Purpose, Season, Task, PaymentMethod | name, from a list |
-| Title, Note, ChecklistName, ItemText | text |
-| Result | name, from a fixed list: 'OK', 'Not OK' |
+| Title, Note, ChecklistName, QuestionText, OptionText | text |
+| AnswerKind | name, from a fixed list: 'Yes or no', 'Any of' |
+| YesNo | from a fixed list: 'Yes', 'No' |
 | Position | a count, 1 or more |
 | Instalments | a count, 1 or more |
 | Currency | ISO code ('EUR', 'USD') |
@@ -774,35 +792,44 @@ date included.
 
 ```
 Checklist is kept by User                       cl1 | anna@example.org
-Checklist has ChecklistName                     cl1 | 'Before a long trip'
-ChecklistItem is in Checklist                   ci1 | cl1
-                                                ci4 | cl1
-ChecklistItem says ItemText                     ci1 | 'Tyre pressure'
-                                                ci4 | 'Washer fluid'
-ChecklistItem is at Position                    ci1 | 1
-                                                ci4 | 4
+Checklist has ChecklistName                     cl1 | 'Basic vehicle inspection'
+Question is in Checklist                        q1 | cl1
+                                                q4 | cl1
+Question says QuestionText                      q1 | 'Is the registration certificate in the car?'
+                                                q4 | 'Which of these are not working?'
+Question is at Position                         q1 | 1
+                                                q4 | 4
+Question is answered by AnswerKind              q1 | 'Yes or no'
+                                                q4 | 'Any of'
+Option is in Question                           o1 | q4
+                                                o2 | q4
+Option says OptionText                          o1 | 'Low beams'
+                                                o2 | 'High beams'
+Option is at Position                           o1 | 1
+                                                o2 | 2
 Inspection is of Vehicle                        in50 | v1
 Inspection went through Checklist               in50 | cl1
-Inspection was at Moment                        in50 | 2026-10-10 08:00
+Inspection was at Moment                        in50 | 2026-08-28 12:00
 Inspection was at Distance                      in50 | 153200 km
 Inspection had driver User                      in50 | anna@example.org
-Check is of Inspection                          k1 | in50
-                                                k4 | in50
-Check is of ChecklistItem                       k1 | ci1
-                                                k4 | ci4
-Check found Result                              k1 | 'OK'
-                                                k4 | 'Not OK'
-Check has Note                                  k4 | 'Low, topped up'
-Schedule is for Checklist                       sc3 | cl2
+Answer is of Inspection                         an1 | in50
+                                                an4 | in50
+Answer is to Question                           an1 | q1
+                                                an4 | q4
+Answer says YesNo                               an1 | 'Yes'
+Answer chose Option                             an4 | o1
+                                                an4 | o2
+Answer has Note                                 an4 | 'Both fuses?'
+Schedule is for Checklist                       sc3 | cl1
 Reminder was done by Inspection                 m8 | in51
 ```
 
-Items are records with ids, not just their text: an item's text may be
-reworded later, and the inspections that checked it still point at it.
-Step 1's "In Inspection, ChecklistItem was found Result", with a note on
-it, is a fact about a fact, as a service's item was. So each check is an
-object of its own, the Check (objectification), with the result and the
-note as its facts.
+Questions and options are records with ids, not just their text: one may
+be reworded later, and the inspections that answered it still point at
+it. Step 1's "In Inspection, Question was answered ...", with a note on
+it, is a fact about a fact, as a service's item was. So each answer is an
+object of its own, the Answer (objectification). A yes-or-no answer says
+which; an any-of answer chooses its options, as many as apply.
 
 ### Who entered what
 
@@ -872,7 +899,7 @@ What stays apart:
 - **Task:** what a service does, not a kind of cost: a service's kind is
   'Maintenance' or 'Repair', and its items are tasks.
 - **DocumentKind, Purpose and PaymentMethod:** lists of their own.
-- **Result:** a check's, not a kind of anything else.
+- **AnswerKind and YesNo:** fixed lists of their own.
 
 ### What is worked out, not stored
 
@@ -1007,9 +1034,12 @@ unique. Each vehicle, record or user has at most one of each of these:
 - **Income:** vehicle, moment, distance, kind, money, driver,
   instalments, the trip it was for.
 - **Checklist:** who keeps it, name.
-- **ChecklistItem:** checklist, text, position.
+- **Question:** checklist, text, position, kind of answer.
+- **Option:** question, text, position.
 - **Inspection:** vehicle, checklist, moment, distance, driver.
-- **Check:** inspection, item, result, note.
+- **Answer:** inspection, question, yes or no, note. *Answer chose
+  Option* is many to many: an answer chooses many options, and an option
+  is chosen in many inspections. The uniqueness spans both roles.
 - **Schedule:** vehicle, task, kind of expense or checklist, note,
   distance interval, time interval.
 - **Reminder:** vehicle, schedule, task, kind of expense or checklist,
@@ -1024,12 +1054,12 @@ over the years, a record has many attachments.
 
 **Also unique the other way:**
 - **Income was for Trip:** a trip is paid by at most one income.
-- **A check's inspection and item:** an inspection checks each item at
-  most once. An external uniqueness over the two, so the inspection and
-  the item together identify the check, as a service item's could not
-  (two items of a service may name the same task).
-- **A checklist item's checklist and position:** one item at each place
-  in a list.
+- **An answer's inspection and question:** an inspection answers each
+  question at most once. An external uniqueness over the two, so the
+  inspection and the question together identify the answer, as a service
+  item's could not (two items of a service may name the same task).
+- **A question's checklist and position, an option's question and
+  position:** one at each place in a list.
 - **Money, Distance, Volume:** each has one amount and one currency (or
   quantity and unit), and the two together identify it: (74.10, 'EUR') is
   one money. That is the reference scheme from step 2, an external
@@ -1102,10 +1132,11 @@ honestly be missing, and each such case is listed with why.
 | Expense | vehicle, moment, kind, cost, driver | what it was charged in another currency |
 | Income | vehicle, moment, kind, money, driver | distance (a refund comes away from the car); the trip (only a ride logged as a trip has one); instalments (paid at once, when missing) |
 | Attachment | the record it is of, file name | |
-| Checklist | who keeps it, name | items (a new list, still being written) |
-| ChecklistItem | checklist, text, position | |
-| Inspection | vehicle, checklist, moment, distance, driver | checks (an inspection may be saved before every item is gone through) |
-| Check | inspection, item, result | note |
+| Checklist | who keeps it, name | questions (a new checklist, still being written) |
+| Question | checklist, text, position, kind of answer | options (a yes-or-no question has none) |
+| Option | question, text, position | |
+| Inspection | vehicle, checklist, moment, distance, driver | answers (a question may be left unanswered) |
+| Answer | inspection, question | yes or no (an any-of answer has none); options chosen (none may apply); note |
 | Schedule | vehicle; its work: a task, a kind of expense or a checklist, exactly one (exclusive-or); at least one interval | the other interval: it may recur by distance only, by time only, or both (inclusive-or); note |
 | Reminder | vehicle; a due distance or a due date or both (inclusive-or); its schedule or work of its own, a task, a kind of expense or a checklist, exactly one of the four (exclusive-or) | note; the done moment, done distance and the record that did it, until it is done; then the moment and distance are a must, the record optional (done by hand); that record is a service, an expense or an inspection, exactly one (exclusive-or) |
 | Every record | who entered it | note; attachments (any number, none included) |
@@ -1157,9 +1188,8 @@ Facts worked out from others by rules, not arithmetic:
    one Y is worth 1 ÷ F X. *Derived and stored*: worked out when a rate is
    entered, and kept, so that reports read rates both ways alike. A rate
    entered by hand both ways keeps the one entered.
-9. **Whether an inspection found anything:** some check of it found 'Not
-   OK'. And which checklist items of its were never checked: those with
-   no check.
+9. **Which questions an inspection left unanswered:** its checklist's
+   questions with no answer of it.
 10. **Which checklists a driver may use:** the vehicle owner's.
 11. **Which records a driver may change:** none. The owner may change any
    of their vehicles' records. That's a permission, from the facts of who
@@ -1171,6 +1201,8 @@ Step 6: value constraints (the lists, positive amounts and distances,
 instalments of at least 1), set-comparison constraints (a removed tyre
 set was fitted before; a reminder for a kind of expense names one an
 expense may be of; at most one 'Car sale' per vehicle; an inspection's
-checks are of items of the checklist it went through), and subtyping (the
+answers are to questions of the checklist it went through, and choose
+options of their question; a yes-or-no question's answers say yes or no
+and choose nothing, an any-of question's choose and say neither), and subtyping (the
 records' common supertype, which records are costs and which incomes, and
 the work a reminder is for and what does it).
