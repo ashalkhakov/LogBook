@@ -19,8 +19,10 @@ constraints.
   - tyre sets;
   - documents;
   - other costs: parking, tolls, washes;
-  - revenues: what paid trips earn;
+  - incomes: paid rides, freight, refunds, the car's sale;
   - schedules of work the users plan, and the reminders they mark done.
+- **Every record of an event** says when it happened, to the minute, and
+  who was driving. It may carry a note and attached files.
 - **Reports** per vehicle, and per kind of event.
 - **Units** (distance, volume) are set for the app. Amounts may be entered
   in any currency and are reported in the preferred one.
@@ -61,6 +63,9 @@ All of these are optional. They're what the balance's views need (see
 Reports): the expectations for depreciation by time or by distance, the
 valuations for what it's worth now, and the sale for every view.
 
+The sale is recorded as an income of kind 'Car sale' (see Incomes); that
+the vehicle was sold, when and for how much, is worked out from it.
+
 ### Owner and drivers
 
 > Anna owns the Golf and signs in as anna@example.org. Ben drives it too,
@@ -82,15 +87,30 @@ The owner may stop sharing.
 
 ### A meter reading
 
-> On 2026-10-01 the Golf's odometer showed 153,120 km.
+> On 2026-10-01 at 07:45 Anna read the Golf's odometer: 153,120 km.
 
 - MeterReading 21 is of Vehicle 'Blue Golf'.
-- MeterReading 21 was on Date 2026-10-01.
+- MeterReading 21 was at Moment 2026-10-01 07:45.
 - MeterReading 21 shows Distance 153120.
+- MeterReading 21 had driver User 'anna@example.org'.
 
-Every event below that happens at a distance (fill-up, service, trip) also
-gives a reading of the meter. Whether that makes them meter readings too, or
-just events with a distance, is for step 6 (subtypes).
+Every event below that happens at a distance (fill-up, service, trip,
+income) also gives a reading of the meter. Whether that makes them meter
+readings too, or just events with a distance, is for step 6 (subtypes).
+
+### What every event has
+
+Each event (meter reading, trip, fill-up, service, tyre change, expense,
+income) happened at a moment, a date and a time of day: two fill-ups on one
+day must come in order, or the consumption between them is wrong. Each
+says who was driving, and may carry a note and any number of attached
+files (a receipt, a photo):
+
+- FillUp 1 has Note 'Price was up 10 cents'.
+- Attachment 'receipt-0914.jpg' is of FillUp 1.
+
+The driver is who drove the car then: not always who entered the record,
+nor who paid.
 
 ### A trip
 
@@ -106,7 +126,7 @@ just events with a distance, is for step 6 (subtypes).
 - Trip 3 went from Place 'Berlin'.
 - Trip 3 went to Place 'Hamburg'.
 - Trip 3 has Purpose 'Business'.
-- Trip 3 was driven by User 'anna@example.org'.
+- Trip 3 had driver User 'anna@example.org'.
 
 How far and how long it took are derived: 290 km, 3 h 15 min.
 
@@ -117,39 +137,53 @@ not a fact (see below).
 
 ### A fill-up
 
-> On 2026-09-14, at 152,300 km, 42.5 L of petrol for 74.10 EUR, at Shell on
-> Main St. Filled to the brim. Ben paid.
+> On 2026-09-14 at 17:20, at 152,300 km, 42.5 L of petrol for 74.10 EUR, at
+> Shell on Main St. Filled to the brim. Ben was driving.
 
 - FillUp 1 is of Vehicle 'Blue Golf'.
-- FillUp 1 was on Date 2026-09-14.
+- FillUp 1 was at Moment 2026-09-14 17:20.
 - FillUp 1 was at Distance 152300.
 - FillUp 1 was of Volume 42.5.
 - FillUp 1 was of Fuel 'Petrol 95'.
 - FillUp 1 cost Money 74.10 EUR.
 - FillUp 1 was at Station 'Shell, Main St'.
 - FillUp 1 filled the tank. *(unary)*
-- FillUp 1 was paid by User 'ben@example.org'.
+- FillUp 1 had driver User 'ben@example.org'.
+
+The price per litre (1.744 EUR/L) is worked out from the cost and the
+volume. The form takes any two of price, cost and volume and fills in the
+third, as a pump shows them; what's kept is the cost and the volume, as on
+the receipt.
 
 ### A service
 
-> On 2026-06-01, at 148,000 km, the Golf had its annual service at Garage
-> Müller: oil and filter changed (95 EUR), brake fluid replaced (60 EUR),
-> labour 165 EUR. The filter was a Mann W 712/95.
+> On 2026-06-01 at 09:30, at 148,000 km, Anna took the Golf for its annual
+> service at Garage Müller: oil and filter changed (95 EUR), brake fluid
+> replaced (60 EUR), labour 165 EUR. The filter was a Mann W 712/95. The
+> garage took 20 EUR off, and she paid by card, in 2 instalments.
 
 - Service 7 is of Vehicle 'Blue Golf'.
-- Service 7 was on Date 2026-06-01.
+- Service 7 was at Moment 2026-06-01 09:30.
 - Service 7 was at Distance 148000.
+- Service 7 has Title 'Annual service'.
 - Service 7 was done by Garage 'Garage Müller'.
+- Service 7 had driver User 'anna@example.org'.
 - Service 7 included Task 'Oil change' for Money 95 EUR.
 - Service 7 included Task 'Brake fluid change' for Money 60 EUR.
 - Service 7 included Task 'Labour' for Money 165 EUR.
 - In Service 7, Task 'Oil change' has Note 'Filter: Mann W 712/95'.
 - Service 7 is of ServiceKind 'Maintenance'.
+- Service 7 had a discount of Money 20 EUR.
+- Service 7 was paid by PaymentMethod 'Card'.
+- Service 7 was paid in Instalments 2.
 
-Each task in a service has its own cost. The service's cost is their sum,
-so it's derived, not stored. "Service included Task for Money" is a ternary;
-step 4 checks that it is elementary. Parts are only noted on tasks, not
-kept as a catalogue.
+Each task in a service has its own cost. The service's cost is their sum
+less the discount (300 EUR), so it's derived, not stored. "Service
+included Task for Money" is a ternary; step 4 checks that it is
+elementary. Parts are only noted on tasks, not kept as a catalogue. The
+tasks are a list the users keep (battery, air filter, tyre balancing,
+labour, ...), and so are the payment methods. A service paid at once is
+paid in one instalment.
 
 A repair is a service too, with tasks, of ServiceKind 'Repair'. Reports
 count maintenance and repairs as kinds of cost each.
@@ -171,8 +205,9 @@ count maintenance and repairs as kinds of cost each.
 - TyreSet 'Golf winter' was bought for Money 480 EUR.
 - TyreChange 4 fitted TyreSet 'Golf summer' on Vehicle 'Blue Golf'.
 - TyreChange 4 removed TyreSet 'Golf winter'.
-- TyreChange 4 was on Date 2026-04-05.
+- TyreChange 4 was at Moment 2026-04-05 10:00.
 - TyreChange 4 was at Distance 146900.
+- TyreChange 4 had driver User 'anna@example.org'.
 - TyreSet 'Golf winter' had Tread 8 mm at TyreChange 3. *(when fitted)*
 
 From the tyre changes, the app works out which set is on the car, and how
@@ -193,29 +228,43 @@ far each set has been driven.
 
 ### Other costs
 
-> Parking at the airport, 2026-08-03, 36 EUR. Toll on the A2, 12.50 EUR. A
-> car wash, 9 EUR.
+> Anna parked at the airport, 2026-08-03 06:15, 36 EUR. Toll on the A2,
+> 12.50 EUR. A car wash, 9 EUR.
 
 - Expense 12 is of Vehicle 'Blue Golf'.
-- Expense 12 was on Date 2026-08-03.
+- Expense 12 was at Moment 2026-08-03 06:15.
 - Expense 12 is of ExpenseKind 'Parking'.
 - Expense 12 cost Money 36 EUR.
+- Expense 12 had driver User 'anna@example.org'.
 - Expense 12 has Note 'Airport'.
 
-### Revenues: paid trips
+### Incomes
 
-> As a taxi driver would: at the end of a ride, 2026-10-02, 18:40 to 19:05,
-> 14 km, paid 23.50 EUR.
+> As a taxi driver would: at the end of a ride, 2026-10-02 19:05, at
+> 153,314 km, Ben was paid 23.50 EUR through a ride-hailing app.
 
-- Trip 9 is of Vehicle 'Blue Golf'.
-- Trip 9 was on Date 2026-10-02.
-- Trip 9 started at Time 18:40.
-- Trip 9 ended at Time 19:05.
-- Trip 9 started at Distance 153300.
-- Trip 9 ended at Distance 153314.
-- Trip 9 was paid Money 23.50 EUR.
+- Income 30 is of Vehicle 'Blue Golf'.
+- Income 30 was at Moment 2026-10-02 19:05.
+- Income 30 was at Distance 153314.
+- Income 30 is of IncomeKind 'Transport app'.
+- Income 30 earned Money 23.50 EUR.
+- Income 30 had driver User 'ben@example.org'.
 
-Revenue is what paid trips earn. A trip need not be paid. A paid trip
+> The ride itself, 18:40 to 19:05, 153,300 km to 153,314 km, was logged as
+> a trip.
+
+- Income 30 was for Trip 9.
+
+> The Golf was sold on 2027-08-30 at 171,020 km for 3,000 EUR, paid in 3
+> instalments.
+
+- Income 41 is of IncomeKind 'Car sale'.
+- Income 41 earned Money 3000 EUR.
+- Income 41 was paid in Instalments 3.
+
+An income is a record of its own, of a kind from a list the users keep:
+'Transport app', 'Trip', 'Freight', 'Refund', 'Car sale', and their own.
+It may name the trip it was for; a trip needn't be paid. A paid trip
 needn't name its places, but it does say how long it took and how far it
 went.
 
@@ -250,31 +299,44 @@ unit they're stored in is for later.
 > counting from the last change (148,000 km, 2026-06-01). And once: put the
 > winter tyres on by 2026-11-15.
 
+> Change the oil every 15,000 km or every 12 months, whichever comes first,
+> counting from the last change. Renew the parking permit every year. And
+> once: have the air conditioning checked by 2027-05-01.
+
 - Schedule 'Oil' is of Vehicle 'Blue Golf'.
-- Schedule 'Oil' says Text 'Change the oil'.
+- Schedule 'Oil' is for Task 'Oil change'.
 - Schedule 'Oil' recurs every Distance 15000 km.
 - Schedule 'Oil' recurs every Duration 12 months.
+- Schedule 'Permit' is for ExpenseKind 'Parking'.
+- Schedule 'Permit' has Note 'Residents' permit, zone 4'.
+- Schedule 'Permit' recurs every Duration 12 months.
 - Reminder 5 comes from Schedule 'Oil'.
 - Reminder 5 is due at Distance 163000 km.
 - Reminder 5 is due on Date 2027-06-01.
 - Reminder 6 is of Vehicle 'Blue Golf'.
-- Reminder 6 says Text 'Put the winter tyres on'.
-- Reminder 6 is due on Date 2026-11-15.
+- Reminder 6 is for Task 'Air conditioning'.
+- Reminder 6 has Note 'It smells musty'.
+- Reminder 6 is due on Date 2027-05-01.
 
 > The oil was changed at Garage Müller on 2027-05-20 at 162,400 km.
 
-- Reminder 5 was done on Date 2027-05-20.
+- Reminder 5 was done at Moment 2027-05-20 11:00.
 - Reminder 5 was done at Distance 162400 km.
 - Reminder 5 was done by Service 12.
 
-A **schedule** is planned work: what to do, and how often, by distance,
-by time, or both, whichever comes first. It is never done itself.
+A **schedule** is planned work: which work, and how often, by distance,
+by time, or both, whichever comes first. The work is a task (what a
+service does) or a kind of expense (what an expense pays for). It is never
+done itself.
 
-A **reminder** is one time the work is due. It is marked done, with when
-and at what distance, and may be linked to the work that did it. A
-schedule's reminders come one after another: when one is done, the next is
-due its intervals after when and where it was done. A reminder may also
-stand on its own, set once by hand, with no schedule. Users write their
+A **reminder** is one time the work is due. The work it's for is its
+schedule's, or, set once by hand with no schedule, its own. It is done by
+the first record of that work after it was set: a service that includes
+the task, or an expense of that kind. Saving such a record marks the
+reminder done, with the record's moment and distance, and links it to the
+record; the owner may also mark one done by hand, with no record. A
+schedule's reminders come one after another: when one is done, the next
+is due its intervals after when and where it was done. Users write their
 own schedules and reminders, per vehicle; there's no manufacturer's
 catalogue for now.
 
@@ -283,7 +345,7 @@ catalogue for now.
 Reports are information outputs too: each says derived facts. Per vehicle,
 over a period:
 
-1. **Balance:** revenues minus costs; per day; in the preferred currency
+1. **Balance:** incomes minus costs; per day; in the preferred currency
    per distance unit. Every view is offered, for the user to choose:
    - **cash:** the purchase and the sale counted on the days they were
      paid;
@@ -299,16 +361,30 @@ over a period:
    A view whose inputs are missing isn't offered.
 2. **Distance driven:** total, and average per day.
 3. **Costs:** total, average per day, per distance unit.
-4. **Revenues:** total, average per day, per distance unit.
-5. **Costs and revenues over time:** bar chart by date.
+4. **Incomes:** total, average per day, per distance unit; by kind of
+   income.
+5. **Costs and incomes over time:** a bar chart by month, each bar split by
+   kind of record (fill-ups, services, expenses, ...).
 6. **Costs by kind:** pie chart (fill-ups, services, tyres, documents,
    parking, tolls, washes, ...).
 7. **Costs by month:** bar chart.
 8. **Fuel consumption:** per full tank over time (a chart), and the
    average over the period, in L/100 km, km/L or mpg; fuel cost per
-   distance.
+   distance. For each, the latest, the lowest and the highest beside the
+   average. All fuels together, or one fuel. The volume and the cost of
+   fuel over the period.
+9. **Mileage:** the meter's reading over time, a chart with a point for
+   each record, marked by its kind.
+10. **Service costs by task:** pie chart (new tyres, labour, battery,
+    diagnostics, ...).
+11. **Each month in the history:** its costs, distance driven and fuel
+    consumption, and how its consumption compares with the month before's
+    (5% lower than June).
+12. **Each fill-up in the history:** its consumption since the full
+    fill-up before.
 
-There are the same reports per kind of event (fill-ups, services, ...).
+There are the same reports per kind of event (fill-ups, services,
+expenses, incomes, trips, meter readings), as tabs.
 
 As facts, for example:
 - Vehicle 'Blue Golf' cost Money 1234 USD in Period 2026-09.
@@ -339,7 +415,8 @@ So every record says who entered it:
 - FillUp 1 was entered by User 'ben@example.org'.
 
 "Their own records" are those they entered. That is a fact about each
-record, not about the people in it: Ben may enter a fill-up Anna paid.
+record, not about the people in it: Ben may enter a fill-up Anna drove
+to.
 
 ## Step 2: the fact types, checked against the examples
 
@@ -349,7 +426,7 @@ Records made on a device and synced need ids that don't clash. So the
 things Logbook records are identified by an id the app makes (a UUID,
 written `v1`, `t3` here):
 - Vehicle, Trip, FillUp, Service, ServiceItem, MeterReading, TyreSet,
-  TyreChange, Document, Expense, Reminder.
+  TyreChange, Document, Expense, Income, Schedule, Reminder, Attachment.
 
 The rest are identified by what they are:
 
@@ -357,7 +434,9 @@ The rest are identified by what they are:
 | --- | --- |
 | User | email |
 | Make, CarModel, Fuel, Garage, Station, Place, TyreModel | name |
-| ServiceKind, ExpenseKind, DocumentKind, Purpose, Season | name, from a list |
+| ServiceKind, ExpenseKind, IncomeKind, DocumentKind, Purpose, Season, Task, PaymentMethod | name, from a list |
+| Title, Note | text |
+| Instalments | a count, 1 or more |
 | Currency | ISO code ('EUR', 'USD') |
 | DistanceUnit | code, from a list: 'km', 'mi' |
 | VolumeUnit | code, from a list: 'L', 'gal (US)', 'gal (imp)' |
@@ -382,7 +461,9 @@ it goes:
 So a US car's odometer can be read in miles, and its fill-ups in gallons,
 while the user sees km and L, or the other way round.
 
-Moments (a date with a time) and dates are values.
+Moments (a date with a time of day, to the minute) and dates are values.
+Events happen at moments; what is only ever a day (when a document is
+valid, when a reminder is due, a valuation) is a date.
 
 ### People and vehicles
 
@@ -412,9 +493,11 @@ Vehicle is expected to be driven Distance more  v1 | 120000 km
 Vehicle is expected to sell for Money           v1 | 2500 EUR
 Vehicle was valued on Date at Money             v1 | 2026-10-01 | 4000 EUR
                                                 v1 | 2027-03-01 | 3600 EUR
-Vehicle was sold on Date                        v1 | 2027-08-30
-Vehicle was sold for Money                      v1 | 3000 EUR
+Vehicle was sold on Date *                      v1 | 2027-08-30
+Vehicle was sold for Money *                    v1 | 3000 EUR
 ```
+
+\* Derived, from the vehicle's income of kind 'Car sale' (step 5).
 
 ### Money and preferences
 
@@ -447,9 +530,10 @@ shown; what was entered keeps its own unit.
 ```
 MeterReading is of Vehicle                      r21 | v1
                                                 r22 | v2
-MeterReading was on Date                        r21 | 2026-10-01
+MeterReading was at Moment                      r21 | 2026-10-01 07:45
 MeterReading shows Distance                     r21 | 153120 km
                                                 r22 | 94640 mi
+MeterReading had driver User                    r21 | anna@example.org
 Trip is of Vehicle                              t3 | v1
                                                 t9 | v1
 Trip started at Moment                          t3 | 2026-09-20 08:10
@@ -460,8 +544,8 @@ Trip ended at Distance                          t3 | 152700 km
 Trip went from Place                            t3 | 'Berlin'
 Trip went to Place                              t3 | 'Hamburg'
 Trip has Purpose                                t3 | 'Business'
-Trip was driven by User                         t3 | anna@example.org
-Trip was paid Money                             t9 | 23.50 EUR
+Trip had driver User                            t3 | anna@example.org
+                                                t9 | ben@example.org
 ```
 
 A trip's date is its start's. "Started on Date" and "started at Time" from
@@ -472,7 +556,7 @@ step 1 become one moment: a trip may run past midnight.
 ```
 FillUp is of Vehicle                            f1 | v1
                                                 f2 | v2
-FillUp was on Date                              f1 | 2026-09-14
+FillUp was at Moment                            f1 | 2026-09-14 17:20
 FillUp was at Distance                          f1 | 152300 km
 FillUp was of Volume                            f1 | 42.5 L
                                                 f2 | 11.2 gal (US)
@@ -480,7 +564,7 @@ FillUp was of Fuel                              f1 | 'Petrol 95'
 FillUp cost Money                               f1 | 74.10 EUR
 FillUp was at Station                           f1 | 'Shell, Main St'
 FillUp filled the tank                          f1
-FillUp was paid by User                         f1 | ben@example.org
+FillUp had driver User                          f1 | ben@example.org
 ```
 
 ### Services
@@ -488,13 +572,18 @@ FillUp was paid by User                         f1 | ben@example.org
 ```
 Service is of Vehicle                           s7 | v1
                                                 s8 | v1
-Service was on Date                             s7 | 2026-06-01
+Service was at Moment                           s7 | 2026-06-01 09:30
 Service was at Distance                         s7 | 148000 km
+Service has Title                               s7 | 'Annual service'
+Service had driver User                         s7 | anna@example.org
 Service was done by Garage                      s7 | 'Garage Müller'
                                                 s8 | 'Carglass'
 Service is of ServiceKind                       s7 | 'Maintenance'
                                                 s8 | 'Repair'
 Service is paid in Currency                     s7 | 'EUR'
+Service had a discount of Money                 s7 | 20 EUR
+Service was paid by PaymentMethod               s7 | 'Card'
+Service was paid in Instalments                 s7 | 2
 ServiceItem is part of Service                  i1 | s7
                                                 i2 | s7
                                                 i3 | s7
@@ -509,7 +598,8 @@ ServiceItem was charged Money                   i4 | 41.60 EUR
 A service is paid in one currency, and its items' costs are entered in it.
 An item may be entered in another (a part bought abroad), and then
 converted into the service's: by what it was charged in that currency, if
-the receipt says, or by the rates.
+the receipt says, or by the rates. The discount is in the service's
+currency.
 ```
 
 Step 1's "Service included Task for Money", with a note on that inclusion,
@@ -530,8 +620,9 @@ TyreSet is of TyreModel                         ts1 | 'Continental WinterContact
 TyreSet is of TyreSize                          ts1 | '205/55 R16'
 TyreSet was bought for Money                    ts1 | 480 EUR
 TyreChange is of Vehicle                        c4 | v1
-TyreChange was on Date                          c4 | 2026-04-05
+TyreChange was at Moment                        c4 | 2026-04-05 10:00
 TyreChange was at Distance                      c4 | 146900 km
+TyreChange had driver User                      c4 | anna@example.org
 TyreChange fitted TyreSet                       c3 | ts1
                                                 c4 | ts2
 TyreChange removed TyreSet                      c4 | ts1
@@ -551,44 +642,87 @@ Document has DocumentNumber                     d1 | '77-123456'
 Document is valid from Date                     d1 | 2025-12-01
 Document expires on Date                        d1 | 2026-12-01
 Document cost Money                             d1 | 610 EUR
-Document has Attachment                         d1 | 'policy.pdf'
 Expense is of Vehicle                           e12 | v1
                                                 e13 | v1
-Expense was on Date                             e12 | 2026-08-03
+Expense was at Moment                           e12 | 2026-08-03 06:15
 Expense is of ExpenseKind                       e12 | 'Parking'
                                                 e13 | 'Toll'
 Expense cost Money                              e12 | 36 EUR
                                                 e13 | 40 CHF
 Expense has Note                                e12 | 'Airport'
 Expense was charged Money                       e13 | 41.60 EUR
+Expense had driver User                         e12 | anna@example.org
 ```
 
 The issuer and the number replace step 1's single name 'Allianz 77-123456'.
-An attachment is a file. How the sync carries files is for later.
+
+### Incomes
+
+```
+Income is of Vehicle                            n30 | v1
+                                                n41 | v1
+Income was at Moment                            n30 | 2026-10-02 19:05
+                                                n41 | 2027-08-30 15:00
+Income was at Distance                          n30 | 153314 km
+                                                n41 | 171020 km
+Income is of IncomeKind                         n30 | 'Transport app'
+                                                n41 | 'Car sale'
+Income earned Money                             n30 | 23.50 EUR
+                                                n41 | 3000 EUR
+Income had driver User                          n30 | ben@example.org
+                                                n41 | anna@example.org
+Income was paid in Instalments                  n41 | 3
+Income was for Trip                             n30 | t9
+Income has Note                                 n41 | 'To a colleague'
+```
+
+### Notes and attachments
+
+```
+Trip has Note                                   t3 | 'Client meeting'
+FillUp has Note                                 f1 | 'Price was up 10 cents'
+...                                             (every event the same)
+Attachment is of FillUp                         a1 | f1
+Attachment is of Document                       a2 | d1
+...                                             (every event, and documents)
+Attachment has FileName                         a1 | 'receipt-0914.jpg'
+                                                a2 | 'policy.pdf'
+```
+
+A record may have many attachments, each of one record. An attachment is
+a file; how the sync carries files is for later.
 
 ### Schedules and reminders
 
 ```
 Schedule is of Vehicle                          sc1 | v1
-Schedule says Text                              sc1 | 'Change the oil'
+                                                sc2 | v1
+Schedule is for Task                            sc1 | 'Oil change'
+Schedule is for ExpenseKind                     sc2 | 'Parking'
+Schedule has Note                               sc2 | "Residents' permit, zone 4"
 Schedule recurs every Distance                  sc1 | 15000 km
 Schedule recurs every Duration                  sc1 | 12
+                                                sc2 | 12
 Reminder is of Vehicle                          m5 | v1
                                                 m6 | v1
 Reminder comes from Schedule                    m5 | sc1
-Reminder says Text                              m6 | 'Put the winter tyres on'
+Reminder is for Task                            m6 | 'Air conditioning'
+Reminder has Note                               m6 | 'It smells musty'
 Reminder is due at Distance                     m5 | 163000 km
 Reminder is due on Date                         m5 | 2027-06-01
-                                                m6 | 2026-11-15
-Reminder was done on Date                       m5 | 2027-05-20
+                                                m6 | 2027-05-01
+Reminder was done at Moment                     m5 | 2027-05-20 11:00
 Reminder was done at Distance                   m5 | 162400 km
 Reminder was done by Service                    m5 | s12
+Reminder was done by Expense                    m7 | e20
 ```
 
-A reminder from a schedule says what the schedule says. "Says Text" is for
-one on its own. A schedule's reminders are kept as records: when one is
-done, the app makes the next one, due its intervals after when and where it
-was done. The owner may change any reminder afterwards, its due distance and
+A reminder from a schedule is for the schedule's work; "is for" on a
+reminder is for one on its own. Work that is a task is done by a service
+that includes it; work that is a kind of expense, by an expense of that
+kind. A schedule's reminders are kept as records: when one is done, the
+app makes the next one, due its intervals after when and where it was
+done. The owner may change any reminder afterwards, its due distance and
 date included.
 
 ### Who entered what
@@ -601,12 +735,14 @@ FillUp was entered by User                      f1 | ben@example.org
 
 ### What's left for later steps
 
-- **Repetition.** Every kind of record repeats "is of Vehicle", "was on
-  Date", "was at Distance", "cost Money", "was entered by User" and its
-  own rate. Step 6 decides whether they are one supertype (an Event, or a
-  Record) with these fact types once, and which records are costs.
-- **Reminders done by work.** "Reminder was done by Service" may also be
-  done by a fill-up, an expense or a tyre change: the same question.
+- **Repetition.** Every kind of record repeats "is of Vehicle", "was at
+  Moment", "was at Distance", "had driver User", "has Note", attachments,
+  "cost Money", "was entered by User" and its own rate. Step 6 decides
+  whether they are one supertype (an Event, or a Record) with these fact
+  types once, and which records are costs and which incomes.
+- **Reminders done by work.** "Reminder was done by Service" and "by
+  Expense", and "is for Task" and "for ExpenseKind": the same question,
+  a supertype of the work and of what does it.
 - **Not stored, worked out:** a trip's distance and duration; a service's
   cost; which tyre set is on; how far a set has gone; when a reminder is
   next due; distance driven; every report. Step 3 lists these
@@ -624,8 +760,8 @@ kind of thing.
   (recurs every) are all distances. A trip's length is a difference of two
   readings, and a reminder is due when a reading reaches a sum of readings
   and intervals. Comparing and subtracting them is the point.
-- **User** is one type for the owner, a driver, who paid and who entered.
-  The same person plays all of these.
+- **User** is one type for the owner, a driver of the vehicle, who drove
+  at each event and who entered it. The same person plays all of these.
 - **Fuel** is one type: what a vehicle uses, and what a fill-up was of.
 - **CostKind replaces ServiceKind and ExpenseKind.** The pie chart puts
   fill-ups, maintenance, repairs, tyres, documents, parking, tolls and
@@ -639,15 +775,23 @@ kind of thing.
   - an expense is 'Parking', 'Toll', 'Wash', or another kind of its own.
 
   Services and expenses say their kind; for the rest it is fixed by what
-  they are, which is a derivation (step 5).
+  they are, which is a derivation (step 5). A schedule or reminder for a
+  kind of expense is then for a CostKind, one of the kinds an expense may
+  be of (step 6).
+- **Moment** is one type for when every event happened, a trip's start
+  and end, and when a reminder was done. They are compared to put records
+  in order.
 
 What stays apart:
 - **Garage, Station and Place:** they play different roles, and nothing
   compares a garage with a trip's destination.
 - **CarModel and TyreModel.**
-- **Note and Reminder text:** text, but nothing compares one with the
-  other.
-- **DocumentKind and Purpose:** lists of their own.
+- **Note and Title:** text, but nothing compares one with the other.
+- **IncomeKind:** incomes aren't costs, and their kinds are a list of
+  their own.
+- **Task:** what a service does, not a kind of cost: a service's kind is
+  'Maintenance' or 'Repair', and its items are tasks.
+- **DocumentKind, Purpose and PaymentMethod:** lists of their own.
 
 ### What is worked out, not stored
 
@@ -665,46 +809,60 @@ Each in the user's preferred units and currency, unless it says otherwise.
 **Records**
 3. *A trip's distance:* where it ended − where it started.
 4. *A trip's duration:* when it ended − when it started.
-5. *A service's cost:* the sum of its items' costs, in the service's
-   currency (an item entered in another converted by what it was charged,
-   or the rates).
-6. *A vehicle's reading on a date:* the latest distance any of its
-   records gives on or before that date (acquisition, meter readings,
-   trips' ends, fill-ups, services, tyre changes).
-7. *Which tyre set is on a vehicle:* the one its latest tyre change
+5. *A service's cost:* the sum of its items' costs, less its discount,
+   in the service's currency (an item entered in another converted by
+   what it was charged, or the rates).
+6. *A vehicle's reading at a moment:* the latest distance any of its
+   records gives at or before that moment (acquisition, meter readings,
+   trips' ends, fill-ups, services, tyre changes, incomes). The forms show
+   it as the last reading, beside the odometer.
+7. *A fill-up's price per volume:* its cost ÷ its volume.
+8. *Which tyre set is on a vehicle:* the one its latest tyre change
    fitted.
-8. *How far a tyre set has gone:* over each time it was on, the distance
+9. *How far a tyre set has gone:* over each time it was on, the distance
    at the change that removed it − the distance at the change that fitted
    it (to the vehicle's latest reading while it is still on).
 
 **Reminders**
-9. *When a schedule's next reminder is due:* the distance and date its
-   last reminder was done + the schedule's intervals. Before any was done,
-   counted from when the schedule was set up: its first reminder's due
-   distance and date are given then.
-10. *Whether a reminder is due, or overdue:* not done, and the vehicle's
+10. *When a schedule's next reminder is due:* the distance and date its
+    last reminder was done + the schedule's intervals. Before any was
+    done, counted from when the schedule was set up: its first reminder's
+    due distance and date are given then.
+11. *Whether a reminder is due, or overdue:* not done, and the vehicle's
     latest reading has reached its distance, or today its date, whichever
     comes first.
+12. *How far and how long until a reminder is due:* its due distance − the
+    vehicle's latest reading; its due date − today.
 
 **Fuel**
-11. *Consumption (L/100 km, km/L or mpg, as the user prefers),* the
-    full-tank method: the volume put in since the last full fill-up ÷ the
+13. *Consumption (L/100 km, km/L or mpg, as the user prefers),* the
+    full-tank method: the volume put in since the full fill-up before ÷ the
     distance driven since it. Only between two fill-ups that filled the
     tank; a partial fill-up's volume counts toward the next full one.
+    Fill-ups are taken in the order of their moments. Each full fill-up
+    shows the consumption up to it.
+14. *Fuel cost per distance:* the same, with cost for volume.
 
-**Reports,** per vehicle and over a period, then per kind of cost:
-12. *Distance driven:* the reading at the period's end − the reading at
+**Reports,** per vehicle and over a period, then per kind of record:
+15. *Distance driven:* the reading at the period's end − the reading at
     its start.
-13. *Costs:* the sum of the costs of the records in the period.
-14. *Revenue:* the sum of what the trips in the period were paid.
-15. *Per day:* a total ÷ the days in the period.
-16. *Per distance:* a total ÷ the distance driven.
-17. *Costs by kind, and by month:* the sums grouped by kind, and by month.
-18. *Fuel consumption:* each full-tank interval's consumption (a chart
-    over time), and the average over the period (all the volume ÷ all the
-    distance between the first and the last full fill-up in it). Also the
-    fuel cost per distance.
-19. *Balance:* revenue − costs, then in each view:
+16. *Costs:* the sum of the costs of the records in the period.
+17. *Income:* the sum of the incomes in the period.
+18. *Per day:* a total ÷ the days in the period.
+19. *Per distance:* a total ÷ the distance driven.
+20. *Costs by kind, by month, by kind of record each month; incomes by
+    kind; service costs by task:* the sums so grouped. A service's
+    discount is spread over its tasks in proportion to their costs.
+21. *Fuel consumption:* each full-tank interval's consumption (a chart
+    over time); the latest, the lowest and the highest of them; and the
+    average over the period (all the volume ÷ all the distance between the
+    first and the last full fill-up in it). The same for the fuel cost per
+    distance. All fuels, or the fill-ups of one fuel. The total volume and
+    cost of fuel.
+22. *Mileage:* each record's moment and distance, in order.
+23. *A month against the month before:* its average consumption ÷ the
+    month before's − 1, as a percentage up or down.
+24. *Balance:* income − costs, then in each view:
     - *cash:* − the purchase price on its date, + the sale price on its
       date;
     - *running:* nothing more;
@@ -723,6 +881,8 @@ These derivations become ORMKit derivation queries. A few need more than
 ORMKit's queries do today, which is part of what building Logbook will
 show:
 - arithmetic between values (differences, products, quotients);
+- the record before or after another, in order of moments (the fill-up
+  before, the next reading); the lowest and highest;
 - unit and currency conversion, the latter by the latest rate on or
   before a date;
 - dates and durations (days in a period, months between dates);
@@ -744,29 +904,37 @@ unique. Each vehicle, record or user has at most one of each of these:
   registration, date and distance acquired, price, expected duration,
   expected further distance, expected sale price, date and price sold.
 - **User:** name, preferred currency, distance unit, volume unit.
-- **MeterReading:** vehicle, date, distance.
+- **MeterReading:** vehicle, moment, distance, driver.
 - **Trip:** vehicle, start and end moments, start and end distances, from,
-  to, purpose, driver, pay.
-- **FillUp:** vehicle, date, distance, volume, fuel, cost, station, payer.
-  Filling the tank is a unary: a fill-up did or didn't.
-- **Service:** vehicle, date, distance, garage, kind, currency.
+  to, purpose, driver.
+- **FillUp:** vehicle, moment, distance, volume, fuel, cost, station,
+  driver. Filling the tank is a unary: a fill-up did or didn't.
+- **Service:** vehicle, moment, distance, title, garage, kind, currency,
+  driver, discount, payment method, instalments.
 - **ServiceItem:** service, task, cost, what it was charged, note.
 - **TyreSet:** vehicle, name, season, model, size, price.
-- **TyreChange:** vehicle, date, distance, the set fitted, the set
-  removed, tread.
+- **TyreChange:** vehicle, moment, distance, the set fitted, the set
+  removed, tread, driver.
 - **Document:** vehicle, kind, issuer, number, valid from, expires,
-  cost, attachment.
-- **Expense:** vehicle, date, kind, cost, what it was charged, note.
-- **Schedule:** vehicle, text, distance interval, time interval.
-- **Reminder:** vehicle, schedule, text, due distance, due date, done
-  date, done distance, the record it was done by.
-- **Every record:** who entered it.
+  cost.
+- **Expense:** vehicle, moment, kind, cost, what it was charged, driver.
+- **Income:** vehicle, moment, distance, kind, money, driver,
+  instalments, the trip it was for.
+- **Schedule:** vehicle, task or kind of expense, note, distance
+  interval, time interval.
+- **Reminder:** vehicle, schedule, task or kind of expense, note, due
+  distance, due date, done moment, done distance, the record it was done
+  by.
+- **Attachment:** the record it is of, file name.
+- **Every record:** who entered it, note.
 
 The other role is not unique in any of these: many trips are of one
 vehicle, many fill-ups cost 74.10 EUR, one set is fitted by many changes
-over the years.
+over the years, a record has many attachments.
 
 **Also unique the other way:**
+- **Income was for Trip:** a trip is paid by at most one income.
+
 - **Money, Distance, Volume:** each has one amount and one currency (or
   quantity and unit), and the two together identify it: (74.10, 'EUR') is
   one money. That is the reference scheme from step 2, an external
@@ -828,27 +996,33 @@ honestly be missing, and each such case is listed with why.
 | --- | --- | --- |
 | Vehicle | owner, name, make, model, year, fuel | VIN and registration (not every car has them to hand); what it was bought for, the expectations, valuations, the sale (each balance view needs only some) |
 | User | email | name and preferences (preferences default to km, L and the device's currency) |
-| MeterReading | vehicle, date, distance | |
-| Trip | vehicle, start and end moments, start and end distances, driver | from, to and purpose (a paid ride may not record them); pay (only paid trips have it) |
-| FillUp | vehicle, date, distance, volume, fuel, cost, station, payer | |
-| Service | vehicle, date, distance, garage, kind, currency | items: a service may have no tasks listed |
+| MeterReading | vehicle, moment, distance, driver | |
+| Trip | vehicle, start and end moments, start and end distances, driver | from, to and purpose (a paid ride may not record them) |
+| FillUp | vehicle, moment, distance, volume, fuel, cost, station, driver | |
+| Service | vehicle, moment, distance, garage, kind, currency, driver | items (a service may have no tasks listed); title (its kind and tasks say what it was); discount (none given); payment method (not everyone keeps it); instalments (paid at once, when missing) |
 | ServiceItem | service, task, cost | note; what it was charged in another currency (only when it was) |
 | TyreSet | vehicle, name, season, model, size | price (a set that came with the car) |
-| TyreChange | vehicle, date, distance, the set fitted, tread | the set removed (the first set fitted, on a car with none recorded) |
-| Document | vehicle, kind, issuer, number, valid from | expiry (a registration certificate doesn't expire); cost (some are free); attachment |
-| Expense | vehicle, date, kind, cost | note; what it was charged in another currency |
-| Schedule | vehicle, text, at least one interval | the other interval: it may recur by distance only, by time only, or both (inclusive-or) |
-| Reminder | vehicle; a due distance or a due date or both (inclusive-or); its schedule or a text of its own, not both (exclusive-or) | the done date, done distance and the record that did it, until it is done; then the date and distance are a must, the record optional |
-| Every record | who entered it | |
+| TyreChange | vehicle, moment, distance, the set fitted, tread, driver | the set removed (the first set fitted, on a car with none recorded) |
+| Document | vehicle, kind, issuer, number, valid from | expiry (a registration certificate doesn't expire); cost (some are free) |
+| Expense | vehicle, moment, kind, cost, driver | what it was charged in another currency |
+| Income | vehicle, moment, kind, money, driver | distance (a refund comes away from the car); the trip (only a ride logged as a trip has one); instalments (paid at once, when missing) |
+| Attachment | the record it is of, file name | |
+| Schedule | vehicle; its work: a task or a kind of expense, not both (exclusive-or); at least one interval | the other interval: it may recur by distance only, by time only, or both (inclusive-or); note |
+| Reminder | vehicle; a due distance or a due date or both (inclusive-or); its schedule or work of its own, a task or a kind of expense, exactly one of the three (exclusive-or) | note; the done moment, done distance and the record that did it, until it is done; then the moment and distance are a must, the record optional (done by hand); that record is a service or an expense, not both (exclusive-or) |
+| Every record | who entered it | note; attachments (any number, none included) |
 | Money, Distance, Volume | amount and currency; quantity and unit | |
 | An exchange rate | all four roles | |
 
 Two of these are more than single mandatory roles:
-- **A reminder that is done** has both a done date and a done distance.
+- **A reminder that is done** has both a done moment and a done distance.
   That's an equality constraint between the two (step 6): it has one if and
   only if it has the other.
 - **"FillUp filled the tank"** is yes or no: a fill-up that doesn't say so
   didn't fill it. A unary can't be mandatory; leaving it out is the "no".
+
+The driver is a must on every event, as a record states all of its facts.
+The forms fill it in with the signed-in user, to be changed when someone
+else drove.
 
 ### Logical derivations
 
@@ -861,23 +1035,38 @@ Facts worked out from others by rules, not arithmetic:
    - a service or an expense is of the kind it says.
 
    So the kind is stored only for services and expenses. The derived fact
-   puts every cost in one list, for the reports.
+   puts every cost in one list, for the reports. Incomes are not costs,
+   and have kinds of their own.
 2. **Who drives a vehicle** (`User drives Vehicle`): the users it is
    shared with, and its owner. *Partly derived*: the sharing is stored, and
    the owner is derived.
 3. **Who a vehicle is shared with:** its drivers other than its owner.
-4. **A reminder's text:** its own, or its schedule's.
-5. **Whether a reminder is done:** it has a done date.
-6. **The reverse exchange rate:** if on a date one X is worth F Y, then
+4. **A reminder's work** (a task or a kind of expense): its own, or its
+   schedule's. Its note likewise.
+5. **Whether a reminder is done:** it has a done moment.
+6. **What did a reminder's work** (`Reminder was done by Service` or
+   `by Expense`): the first record of its vehicle, after it was set, that
+   does its work: a service with an item of its task, or an expense of its
+   kind. *Derived and stored*: when such a record is saved, the reminder
+   not yet done is marked done with the record's moment and distance, and
+   linked to it. The owner may change that afterwards, or mark a reminder
+   done by hand.
+7. **That a vehicle was sold, when and for how much:** from its income of
+   kind 'Car sale', the date of its moment and its money. A vehicle has at
+   most one (step 6).
+8. **The reverse exchange rate:** if on a date one X is worth F Y, then
    one Y is worth 1 ÷ F X. *Derived and stored*: worked out when a rate is
    entered, and kept, so that reports read rates both ways alike. A rate
    entered by hand both ways keeps the one entered.
-7. **Which records a driver may change:** none. The owner may change any
+9. **Which records a driver may change:** none. The owner may change any
    of their vehicles' records. That's a permission, from the facts of who
    owns and who entered, enforced by the service (see Permissions).
 
 ## Next
 
-Step 6: value constraints (the lists, positive amounts and distances),
-set-comparison constraints (a removed tyre set was fitted before), and
-subtyping (the records' common supertype, and which records are costs).
+Step 6: value constraints (the lists, positive amounts and distances,
+instalments of at least 1), set-comparison constraints (a removed tyre
+set was fitted before; a reminder for a kind of expense names one an
+expense may be of; at most one 'Car sale' per vehicle), and subtyping (the
+records' common supertype, which records are costs and which incomes, and
+the work a reminder is for and what does it).
