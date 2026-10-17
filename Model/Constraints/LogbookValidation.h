@@ -22,7 +22,7 @@
 #import "Option+CoreDataClass.h"
 #import "Answer+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
-#import "CurrencyWasWorthFactorInCurrencyOnDate+CoreDataClass.h"
+#import "ExchangeRate+CoreDataClass.h"
 #import "VehicleWasValuedOnDateAtMoney+CoreDataClass.h"
 
 /* Checked by the model's tables (Logbook.ormplans), a subentity's rules with
@@ -117,7 +117,7 @@
 
 /* Checked by the model's tables (Logbook.ormplans), a subentity's rules with
  * its own. */
-@interface CurrencyWasWorthFactorInCurrencyOnDate (ORMValidation)
+@interface ExchangeRate (ORMValidation)
 /* NO, with what is violated in the error: one NSError, or an
  * NSValidationMultipleErrorsError with them under NSDetailedErrorsKey. */
 - (BOOL)orm_validateConstraints:(NSError **)error;

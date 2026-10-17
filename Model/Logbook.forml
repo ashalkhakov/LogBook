@@ -96,7 +96,8 @@ Each Volume is in exactly one VolumeUnit.
 For each Quantity and VolumeUnit, at most one Volume has that Quantity and is in that VolumeUnit.
 This association with Quantity and VolumeUnit provides the preferred identification scheme for Volume.
 
-Currency was worth Factor in Currency on Date
+Currency (as BaseCurrency) was worth Factor in Currency (as QuoteCurrency) on Date
+Fact Type Name: ExchangeRate
 ++ If on a date one X is worth F Y, then one Y is worth 1 / F X; a rate entered by hand both ways keeps the one entered.
 For each Currency1, Currency2 and Date, that Currency1 was worth at most one Factor in that Currency2 on that Date.
 
@@ -169,19 +170,19 @@ Attachment has FileName
 Each Attachment has exactly one FileName.
 
 Each Event is a Record.
-Event was at Moment
+Event was at Moment (as Timestamp)
 Each Event was at exactly one Moment.
 Event had driver User (as Driver)
 Each Event had driver exactly one User.
-Event was at Distance
-Each Event was at at most one Distance.
-Each MeteredEvent is by definition an Event that was at some Distance.
+Each MeteredEvent is an Event.
+MeteredEvent was at Distance (as Mileage)
+Each MeteredEvent was at exactly one Distance.
 
-Record cost Money
+Record cost Money (as Total)
 + A service's: the sum of its items' costs, less its discount, in its currency.
 Each Record cost at most one Money.
 Each Cost is by definition a Record that cost some Money.
-Cost was charged Money
+Cost was charged Money (as Charged)
 Each Cost was charged at most one Money.
 Cost is of CostKind
 * A fill-up is of 'Fuel', a tyre set of 'Tyres', a document of 'Documents'; a service or an expense of the kind it says.
@@ -268,9 +269,9 @@ ServiceItem is part of Service
 Each ServiceItem is part of exactly one Service.
 ServiceItem is of Task
 Each ServiceItem is of exactly one Task.
-ServiceItem cost Money
+ServiceItem cost Money (as Cost)
 Each ServiceItem cost exactly one Money.
-ServiceItem was charged Money
+ServiceItem was charged Money (as Charged)
 Each ServiceItem was charged at most one Money.
 ServiceItem has Note
 Each ServiceItem has at most one Note.
@@ -352,8 +353,10 @@ Reference Mode: .name
 Each Income is an Event.
 Income is of IncomeKind
 Each Income is of exactly one IncomeKind.
-Income earned Money
+Income earned Money (as Earned)
 Each Income earned exactly one Money.
+Income was at Distance (as Mileage)
+Each Income was at at most one Distance.
 Income was paid in Instalments
 Each Income was paid in at most one Instalments.
 Income was for Trip
@@ -439,7 +442,7 @@ Each Schedule is for at most one ExpenseKind.
 Schedule is for Checklist
 Each Schedule is for at most one Checklist.
 For each Schedule, exactly one of the following holds: that Schedule is for some Task; that Schedule is for some ExpenseKind; that Schedule is for some Checklist.
-Schedule recurs after Distance
+Schedule recurs after Distance (as Interval)
 Each Schedule recurs after at most one Distance.
 Schedule recurs after Duration
 Each Schedule recurs after at most one Duration.
@@ -456,17 +459,17 @@ Reminder is for Checklist
 Each Reminder is for at most one Checklist.
 For each Reminder, exactly one of the following holds: that Reminder comes from some Schedule; that Reminder is for some Task; that Reminder is for some ExpenseKind; that Reminder is for some Checklist.
 If some Reminder comes from some Schedule and that Reminder is of some Vehicle then that Schedule is of that Vehicle.
-Reminder is due at Distance
+Reminder is due at Distance (as DueMileage)
 ++ A schedule's next reminder: the distance its last was done at, and the schedule's interval; the owner may change it.
 Each Reminder is due at at most one Distance.
-Reminder is due on Date
+Reminder is due on Date (as DueDate)
 ++ A schedule's next reminder: the date its last was done on, and the schedule's interval; the owner may change it.
 Each Reminder is due on at most one Date.
 Each Reminder is due at some Distance or is due on some Date.
-Reminder was done at Moment
+Reminder was done at Moment (as DoneAt)
 ++ The moment of the event that did its work, when one did.
 Each Reminder was done at at most one Moment.
-Reminder was done at Distance
+Reminder was done at Distance (as DoneMileage)
 ++ The distance of the event that did its work, when one did.
 Each Reminder was done at at most one Distance.
 For each Reminder, that Reminder was done at some Moment if and only if that Reminder was done at some Distance.

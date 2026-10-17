@@ -107,12 +107,12 @@
                 <entry key="ormkit.source" value="_F72328B9-56CA-4974-8B90-AAB83D7CBC1E"/>
             </userInfo>
         </relationship>
-        <relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="isForChecklist2" inverseEntity="Reminder">
+        <relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="checklist" inverseEntity="Reminder">
             <userInfo>
                 <entry key="ormkit.source" value="_E841D7D6-2732-4D51-AF7E-9CCF8F87C8E7"/>
             </userInfo>
         </relationship>
-        <relationship name="schedules" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Schedule" inverseName="isForChecklist" inverseEntity="Schedule">
+        <relationship name="schedules" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Schedule" inverseName="checklist" inverseEntity="Schedule">
             <userInfo>
                 <entry key="ormkit.source" value="_B9167066-2400-4B81-B36C-652DB1D9A13E"/>
             </userInfo>
@@ -136,13 +136,13 @@
         </userInfo>
     </entity>
     <entity name="Cost" representedClassName="Cost" parentEntity="Record" syncable="YES" codeGenerationType="class">
-        <attribute name="moneyAmount2" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+        <attribute name="chargedAmount" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
                 <entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="moneyCurrency2" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="chargedCurrency" optional="YES" attributeType="String" maxValueString="3">
             <userInfo>
                 <entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
@@ -171,15 +171,66 @@
             <entry key="ormkit.source" value="_D3D9EF81-F055-4F1A-A33A-E5C495D7B619"/>
         </userInfo>
     </entity>
-    <entity name="CurrencyWasWorthFactorInCurrencyOnDate" representedClassName="CurrencyWasWorthFactorInCurrencyOnDate" syncable="YES" codeGenerationType="class">
-        <attribute name="currency" attributeType="String" maxValueString="3">
+    <entity name="Document" representedClassName="Document" parentEntity="Record" syncable="YES" codeGenerationType="class">
+        <attribute name="date" attributeType="Date" usesScalarValueType="NO">
             <userInfo>
-                <entry key="ormkit.source" value="_E2A00A69-B2F3-4669-84BB-2F9CBF174124"/>
+                <entry key="ormkit.source" value="_5DF39D0C-3E46-4306-A4AF-AB16219FD65D"/>
             </userInfo>
         </attribute>
-        <attribute name="currency2" attributeType="String" maxValueString="3">
+        <attribute name="documentKind" attributeType="String">
             <userInfo>
-                <entry key="ormkit.source" value="_99FC0383-55CE-4596-8C30-B323ED480337"/>
+                <entry key="ormkit.source" value="_12BB70CC-E3D5-45BD-AA3B-1FDC9B36BFDC"/>
+            </userInfo>
+        </attribute>
+        <attribute name="documentNumber" attributeType="String">
+            <userInfo>
+                <entry key="ormkit.source" value="_707C445E-4DB5-425B-A2FE-A5C3A3853B9A"/>
+            </userInfo>
+        </attribute>
+        <attribute name="expiresOnDate" optional="YES" attributeType="Date" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_48739534-2C03-4157-AA30-8FBF02C8424A"/>
+            </userInfo>
+        </attribute>
+        <attribute name="issuer" attributeType="String">
+            <userInfo>
+                <entry key="ormkit.source" value="_39AA186F-FD57-4387-A7A7-86DC3CA84D01"/>
+            </userInfo>
+        </attribute>
+        <userInfo>
+            <entry key="OData.type" value="Default.Document"/>
+            <entry key="ormkit.rule.ValueComparisonConstraint3" value="For each Document, if that Document is valid from some Date1 and that Document expires on some Date2 then Date1 is less than Date2."/>
+            <entry key="ormkit.source" value="_F5C1FDBA-BDED-4D2F-9FD6-06ABA859B63B"/>
+        </userInfo>
+    </entity>
+    <entity name="Event" representedClassName="Event" parentEntity="Record" syncable="YES" codeGenerationType="class">
+        <attribute name="timestamp" attributeType="Date" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_29AE2287-AC15-42D4-AA20-BE1C9F364295"/>
+            </userInfo>
+        </attribute>
+        <relationship name="driver" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="eventsAsDriver" inverseEntity="User">
+            <userInfo>
+                <entry key="ormkit.mandatory" value="YES"/>
+                <entry key="ormkit.source" value="_2A70C8CB-45ED-4672-B0D8-1ADE420CF521"/>
+            </userInfo>
+        </relationship>
+        <relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="event" inverseEntity="Reminder">
+            <userInfo>
+                <entry key="ormkit.source" value="_018B6151-5214-44CE-B407-C682E26A2C4D"/>
+            </userInfo>
+        </relationship>
+        <userInfo>
+            <entry key="OData.type" value="Default.Event"/>
+            <entry key="ormkit.rule.SubsetConstraint10" value="If some Reminder was done by some Event and that Reminder is of some Vehicle then that Event is of that Vehicle."/>
+            <entry key="ormkit.rule.ValueComparisonConstraint2" value="For each Trip, if that Trip was at some Moment1 and that Trip ended at some Moment2 then Moment1 is less than or equal to Moment2."/>
+            <entry key="ormkit.source" value="_890D546C-1996-4726-98DB-4A4151CA6089"/>
+        </userInfo>
+    </entity>
+    <entity name="ExchangeRate" representedClassName="ExchangeRate" syncable="YES" codeGenerationType="class">
+        <attribute name="baseCurrency" attributeType="String" maxValueString="3">
+            <userInfo>
+                <entry key="ormkit.source" value="_E2A00A69-B2F3-4669-84BB-2F9CBF174124"/>
             </userInfo>
         </attribute>
         <attribute name="date" attributeType="Date" usesScalarValueType="NO">
@@ -200,84 +251,22 @@
                 <entry key="ormkit.source" value="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915.key"/>
             </userInfo>
         </attribute>
+        <attribute name="quoteCurrency" attributeType="String" maxValueString="3">
+            <userInfo>
+                <entry key="ormkit.source" value="_99FC0383-55CE-4596-8C30-B323ED480337"/>
+            </userInfo>
+        </attribute>
         <uniquenessConstraints>
             <uniquenessConstraint>
-                <constraint value="currency"/>
-                <constraint value="currency2"/>
+                <constraint value="baseCurrency"/>
+                <constraint value="quoteCurrency"/>
                 <constraint value="date"/>
             </uniquenessConstraint>
         </uniquenessConstraints>
         <userInfo>
-            <entry key="OData.entitySet" value="CurrencyWasWorthFactorInCurrencyOnDates"/>
-            <entry key="OData.type" value="Default.CurrencyWasWorthFactorInCurrencyOnDate"/>
+            <entry key="OData.entitySet" value="ExchangeRates"/>
+            <entry key="OData.type" value="Default.ExchangeRate"/>
             <entry key="ormkit.source" value="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915"/>
-        </userInfo>
-    </entity>
-    <entity name="Document" representedClassName="Document" parentEntity="Record" syncable="YES" codeGenerationType="class">
-        <attribute name="documentKind" attributeType="String">
-            <userInfo>
-                <entry key="ormkit.source" value="_12BB70CC-E3D5-45BD-AA3B-1FDC9B36BFDC"/>
-            </userInfo>
-        </attribute>
-        <attribute name="documentNumber" attributeType="String">
-            <userInfo>
-                <entry key="ormkit.source" value="_707C445E-4DB5-425B-A2FE-A5C3A3853B9A"/>
-            </userInfo>
-        </attribute>
-        <attribute name="expiresOnDate" optional="YES" attributeType="Date" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="ormkit.source" value="_48739534-2C03-4157-AA30-8FBF02C8424A"/>
-            </userInfo>
-        </attribute>
-        <attribute name="isValidFromDate" attributeType="Date" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="ormkit.source" value="_5DF39D0C-3E46-4306-A4AF-AB16219FD65D"/>
-            </userInfo>
-        </attribute>
-        <attribute name="issuer" attributeType="String">
-            <userInfo>
-                <entry key="ormkit.source" value="_39AA186F-FD57-4387-A7A7-86DC3CA84D01"/>
-            </userInfo>
-        </attribute>
-        <userInfo>
-            <entry key="OData.type" value="Default.Document"/>
-            <entry key="ormkit.rule.ValueComparisonConstraint3" value="For each Document, if that Document is valid from some Date1 and that Document expires on some Date2 then Date1 is less than Date2."/>
-            <entry key="ormkit.source" value="_F5C1FDBA-BDED-4D2F-9FD6-06ABA859B63B"/>
-        </userInfo>
-    </entity>
-    <entity name="Event" representedClassName="Event" parentEntity="Record" syncable="YES" codeGenerationType="class">
-        <attribute name="distanceDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
-            </userInfo>
-        </attribute>
-        <attribute name="distanceQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
-            </userInfo>
-        </attribute>
-        <attribute name="moment" attributeType="Date" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="ormkit.source" value="_29AE2287-AC15-42D4-AA20-BE1C9F364295"/>
-            </userInfo>
-        </attribute>
-        <relationship name="driver" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="eventsAsDriver" inverseEntity="User">
-            <userInfo>
-                <entry key="ormkit.mandatory" value="YES"/>
-                <entry key="ormkit.source" value="_2A70C8CB-45ED-4672-B0D8-1ADE420CF521"/>
-            </userInfo>
-        </relationship>
-        <relationship name="reminderWasDoneBies" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="event" inverseEntity="Reminder">
-            <userInfo>
-                <entry key="ormkit.source" value="_018B6151-5214-44CE-B407-C682E26A2C4D"/>
-            </userInfo>
-        </relationship>
-        <userInfo>
-            <entry key="OData.type" value="Default.Event"/>
-            <entry key="ormkit.rule.SubsetConstraint10" value="If some Reminder was done by some Event and that Reminder is of some Vehicle then that Event is of that Vehicle."/>
-            <entry key="ormkit.rule.ValueComparisonConstraint2" value="For each Trip, if that Trip was at some Moment1 and that Trip ended at some Moment2 then Moment1 is less than or equal to Moment2."/>
-            <entry key="ormkit.source" value="_890D546C-1996-4726-98DB-4A4151CA6089"/>
         </userInfo>
     </entity>
     <entity name="Expense" representedClassName="Expense" parentEntity="Event" syncable="YES" codeGenerationType="class">
@@ -298,12 +287,12 @@
                 <entry key="ormkit.source" value="_A219B837-ABA5-4C6A-B145-CA9317E1774E"/>
             </userInfo>
         </relationship>
-        <relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="isForExpenseKind2" inverseEntity="Reminder">
+        <relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="expenseKind" inverseEntity="Reminder">
             <userInfo>
                 <entry key="ormkit.source" value="_DB887997-8997-4BDB-8534-5833DE4BA4DC"/>
             </userInfo>
         </relationship>
-        <relationship name="schedules" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Schedule" inverseName="isForExpenseKind" inverseEntity="Schedule">
+        <relationship name="schedules" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Schedule" inverseName="expenseKind" inverseEntity="Schedule">
             <userInfo>
                 <entry key="ormkit.source" value="_84E77AA3-CC6A-4033-A03A-231BF65DC0B8"/>
             </userInfo>
@@ -347,25 +336,36 @@
         </userInfo>
     </entity>
     <entity name="Income" representedClassName="Income" parentEntity="Event" syncable="YES" codeGenerationType="class">
-        <attribute name="incomeKind" attributeType="String">
-            <userInfo>
-                <entry key="ormkit.source" value="_0DC0D523-8BC4-40DD-87F2-3AAE12B1F954"/>
-            </userInfo>
-        </attribute>
-        <attribute name="moneyAmount4" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+        <attribute name="earnedAmount" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
                 <entry key="ormkit.source" value="_13D0D1CF-3099-4872-8281-029DCDFD4601/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="moneyCurrency4" attributeType="String" maxValueString="3">
+        <attribute name="earnedCurrency" attributeType="String" maxValueString="3">
             <userInfo>
                 <entry key="ormkit.source" value="_13D0D1CF-3099-4872-8281-029DCDFD4601/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
         </attribute>
-        <attribute name="wasPaidInInstalments" optional="YES" attributeType="Integer 32" minValueString="1" usesScalarValueType="YES">
+        <attribute name="incomeKind" attributeType="String">
+            <userInfo>
+                <entry key="ormkit.source" value="_0DC0D523-8BC4-40DD-87F2-3AAE12B1F954"/>
+            </userInfo>
+        </attribute>
+        <attribute name="instalments" optional="YES" attributeType="Integer 32" minValueString="1" usesScalarValueType="YES">
             <userInfo>
                 <entry key="ormkit.source" value="_55D67005-FDA2-4BBF-ACA3-0510D57A3E65"/>
+            </userInfo>
+        </attribute>
+        <attribute name="mileageDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
+            <userInfo>
+                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
+                <entry key="ormkit.source" value="_829AD7EF-DF6B-4CC4-853C-6EAF4D43D144/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
+            </userInfo>
+        </attribute>
+        <attribute name="mileageQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_829AD7EF-DF6B-4CC4-853C-6EAF4D43D144/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
             </userInfo>
         </attribute>
         <relationship name="trip" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Trip" inverseName="income" inverseEntity="Trip">
@@ -402,8 +402,18 @@
         </userInfo>
     </entity>
     <entity name="MeteredEvent" representedClassName="MeteredEvent" parentEntity="Event" syncable="YES" codeGenerationType="class">
+        <attribute name="mileageDistanceUnit" attributeType="String" regularExpressionString="^(?:km|mi)$">
+            <userInfo>
+                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
+                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
+            </userInfo>
+        </attribute>
+        <attribute name="mileageQuantity" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
+            </userInfo>
+        </attribute>
         <userInfo>
-            <entry key="OData.description" value="Each MeteredEvent is by definition an Event that was at some Distance."/>
             <entry key="OData.type" value="Default.MeteredEvent"/>
             <entry key="ormkit.source" value="_8302E203-13F7-4C5A-938A-C2A4BD091E8B"/>
         </userInfo>
@@ -512,20 +522,20 @@
                 <entry key="ormkit.source" value="_1D003512-6362-46BE-958D-7F1C255EA37D"/>
             </userInfo>
         </attribute>
-        <attribute name="moneyAmount" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+        <attribute name="note" optional="YES" attributeType="String">
+            <userInfo>
+                <entry key="ormkit.source" value="_037C8C25-2E1E-4B21-8A92-56862D767CB7"/>
+            </userInfo>
+        </attribute>
+        <attribute name="totalAmount" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
                 <entry key="ormkit.source" value="_68FA7D37-B900-4D63-AE45-133F36637805/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="moneyCurrency" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="totalCurrency" optional="YES" attributeType="String" maxValueString="3">
             <userInfo>
                 <entry key="ormkit.source" value="_68FA7D37-B900-4D63-AE45-133F36637805/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
-            </userInfo>
-        </attribute>
-        <attribute name="note" optional="YES" attributeType="String">
-            <userInfo>
-                <entry key="ormkit.source" value="_037C8C25-2E1E-4B21-8A92-56862D767CB7"/>
             </userInfo>
         </attribute>
         <relationship name="attachments" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Attachment" inverseName="record" inverseEntity="Attachment">
@@ -557,54 +567,54 @@
         </userInfo>
     </entity>
     <entity name="Reminder" representedClassName="Reminder" parentEntity="Record" syncable="YES" codeGenerationType="class">
-        <attribute name="distanceDistanceUnit4" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
+        <attribute name="doneAt" optional="YES" attributeType="Date" usesScalarValueType="NO">
             <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
+                <entry key="ormkit.source" value="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713"/>
             </userInfo>
         </attribute>
-        <attribute name="distanceDistanceUnit5" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
+        <attribute name="doneMileageDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
             <userInfo>
                 <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
                 <entry key="ormkit.source" value="_2B9ED7BF-75FD-430B-B085-76FD5CB5B07E/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
             </userInfo>
         </attribute>
-        <attribute name="distanceQuantity4" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
-            </userInfo>
-        </attribute>
-        <attribute name="distanceQuantity5" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+        <attribute name="doneMileageQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_2B9ED7BF-75FD-430B-B085-76FD5CB5B07E/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
             </userInfo>
         </attribute>
-        <attribute name="isDueOnDate" optional="YES" attributeType="Date" usesScalarValueType="NO">
+        <attribute name="dueDate" optional="YES" attributeType="Date" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_19DC41CC-EE71-4CBD-B07E-F03EDB0D2163"/>
             </userInfo>
         </attribute>
-        <attribute name="isForTask" optional="YES" attributeType="String">
+        <attribute name="dueMileageDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
+            <userInfo>
+                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
+                <entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
+            </userInfo>
+        </attribute>
+        <attribute name="dueMileageQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
+            </userInfo>
+        </attribute>
+        <attribute name="task" optional="YES" attributeType="String">
             <userInfo>
                 <entry key="ormkit.source" value="_5A29560D-AE23-40A0-BE05-94BBCA3E1708"/>
             </userInfo>
         </attribute>
-        <attribute name="wasDoneAtMoment" optional="YES" attributeType="Date" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="ormkit.source" value="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713"/>
-            </userInfo>
-        </attribute>
-        <relationship name="event" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Event" inverseName="reminderWasDoneBies" inverseEntity="Event">
-            <userInfo>
-                <entry key="ormkit.source" value="_D8C59329-7495-427A-BC65-8A43D64A15D1"/>
-            </userInfo>
-        </relationship>
-        <relationship name="isForChecklist2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Checklist" inverseName="reminders" inverseEntity="Checklist">
+        <relationship name="checklist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Checklist" inverseName="reminders" inverseEntity="Checklist">
             <userInfo>
                 <entry key="ormkit.source" value="_A4F3B195-66D4-4814-A38C-5794ADF0F4C9"/>
             </userInfo>
         </relationship>
-        <relationship name="isForExpenseKind2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExpenseKind" inverseName="reminders" inverseEntity="ExpenseKind">
+        <relationship name="event" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Event" inverseName="reminders" inverseEntity="Event">
+            <userInfo>
+                <entry key="ormkit.source" value="_D8C59329-7495-427A-BC65-8A43D64A15D1"/>
+            </userInfo>
+        </relationship>
+        <relationship name="expenseKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExpenseKind" inverseName="reminders" inverseEntity="ExpenseKind">
             <userInfo>
                 <entry key="ormkit.source" value="_D7A0423C-ED85-491A-AAF5-F63EAC7CA214"/>
             </userInfo>
@@ -624,20 +634,20 @@
         </userInfo>
     </entity>
     <entity name="Schedule" representedClassName="Schedule" parentEntity="Record" syncable="YES" codeGenerationType="class">
-        <attribute name="distanceDistanceUnit3" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
+        <attribute name="duration" optional="YES" attributeType="Integer 32" minValueString="1" usesScalarValueType="YES">
+            <userInfo>
+                <entry key="ormkit.source" value="_05C4E797-E847-40C3-A868-633E6DC427B0"/>
+            </userInfo>
+        </attribute>
+        <attribute name="intervalDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
             <userInfo>
                 <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
                 <entry key="ormkit.source" value="_EB90D8D7-D4BE-4A56-AA30-45556246E847/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
             </userInfo>
         </attribute>
-        <attribute name="distanceQuantity3" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+        <attribute name="intervalQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_EB90D8D7-D4BE-4A56-AA30-45556246E847/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
-            </userInfo>
-        </attribute>
-        <attribute name="duration" optional="YES" attributeType="Integer 32" minValueString="1" usesScalarValueType="YES">
-            <userInfo>
-                <entry key="ormkit.source" value="_05C4E797-E847-40C3-A868-633E6DC427B0"/>
             </userInfo>
         </attribute>
         <attribute name="task" optional="YES" attributeType="String">
@@ -645,12 +655,12 @@
                 <entry key="ormkit.source" value="_879D08C8-83BC-440C-A94B-D0481269C09B"/>
             </userInfo>
         </attribute>
-        <relationship name="isForChecklist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Checklist" inverseName="schedules" inverseEntity="Checklist">
+        <relationship name="checklist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Checklist" inverseName="schedules" inverseEntity="Checklist">
             <userInfo>
                 <entry key="ormkit.source" value="_59A20397-C0BD-45CB-B479-353B6BB915BC"/>
             </userInfo>
         </relationship>
-        <relationship name="isForExpenseKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExpenseKind" inverseName="schedules" inverseEntity="ExpenseKind">
+        <relationship name="expenseKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExpenseKind" inverseName="schedules" inverseEntity="ExpenseKind">
             <userInfo>
                 <entry key="ormkit.source" value="_320F7CB9-1863-4517-905B-7C4AC0B56665"/>
             </userInfo>
@@ -684,13 +694,13 @@
                 <entry key="ormkit.source" value="_8EC846E9-6D26-4CD7-B8A0-1BC7B8A35AF2"/>
             </userInfo>
         </attribute>
-        <attribute name="moneyAmount3" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+        <attribute name="moneyAmount" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
                 <entry key="ormkit.source" value="_FE4B2061-6F87-4F91-8389-8A7BA30B8DEA/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="moneyCurrency3" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="moneyCurrency" optional="YES" attributeType="String" maxValueString="3">
             <userInfo>
                 <entry key="ormkit.source" value="_FE4B2061-6F87-4F91-8389-8A7BA30B8DEA/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
@@ -722,32 +732,32 @@
         </userInfo>
     </entity>
     <entity name="ServiceItem" representedClassName="ServiceItem" syncable="YES" codeGenerationType="class">
-        <attribute name="id" attributeType="UUID" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="OData.key" value="YES"/>
-                <entry key="ormkit.source" value="_68EB0D77-567E-4F04-87A2-6B8867644C7A"/>
-            </userInfo>
-        </attribute>
-        <attribute name="moneyAmount" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
-                <entry key="ormkit.source" value="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
-            </userInfo>
-        </attribute>
-        <attribute name="moneyAmount2" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+        <attribute name="chargedAmount" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
                 <entry key="ormkit.source" value="_B82A332D-1340-4474-A60D-C90A2B4E4E65/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="moneyCurrency" attributeType="String" maxValueString="3">
+        <attribute name="chargedCurrency" optional="YES" attributeType="String" maxValueString="3">
+            <userInfo>
+                <entry key="ormkit.source" value="_B82A332D-1340-4474-A60D-C90A2B4E4E65/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
+            </userInfo>
+        </attribute>
+        <attribute name="costAmount" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
+                <entry key="ormkit.source" value="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
+            </userInfo>
+        </attribute>
+        <attribute name="costCurrency" attributeType="String" maxValueString="3">
             <userInfo>
                 <entry key="ormkit.source" value="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
         </attribute>
-        <attribute name="moneyCurrency2" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO">
             <userInfo>
-                <entry key="ormkit.source" value="_B82A332D-1340-4474-A60D-C90A2B4E4E65/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
+                <entry key="OData.key" value="YES"/>
+                <entry key="ormkit.source" value="_68EB0D77-567E-4F04-87A2-6B8867644C7A"/>
             </userInfo>
         </attribute>
         <attribute name="note" optional="YES" attributeType="String">
@@ -790,18 +800,18 @@
         </userInfo>
     </entity>
     <entity name="Trip" representedClassName="Trip" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class">
-        <attribute name="distanceDistanceUnit2" attributeType="String" regularExpressionString="^(?:km|mi)$">
+        <attribute name="distanceDistanceUnit" attributeType="String" regularExpressionString="^(?:km|mi)$">
             <userInfo>
                 <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
                 <entry key="ormkit.source" value="_9DE6F490-9F69-4987-8E58-6D4F0B469A1F/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
             </userInfo>
         </attribute>
-        <attribute name="distanceQuantity2" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+        <attribute name="distanceQuantity" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_9DE6F490-9F69-4987-8E58-6D4F0B469A1F/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
             </userInfo>
         </attribute>
-        <attribute name="endedAtMoment" attributeType="Date" usesScalarValueType="NO">
+        <attribute name="moment" attributeType="Date" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_C970184F-FE02-4AD1-988A-92466A076E72"/>
             </userInfo>

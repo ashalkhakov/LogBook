@@ -157,7 +157,7 @@
 
 @end
 
-@implementation CurrencyWasWorthFactorInCurrencyOnDate (ORMValidation)
+@implementation ExchangeRate (ORMValidation)
 
 - (BOOL)orm_validateConstraints:(NSError **)error
 {

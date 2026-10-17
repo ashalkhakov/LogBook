@@ -1264,14 +1264,18 @@ FillUp, Service, TyreChange, Expense, Income, Inspection. Once, of Event:
   moment);
 - Event had driver User.
 
-**MeteredEvent** is an event that was at a distance: *each MeteredEvent is
-an Event that was at some Distance*, a subtype defined by a role. Every
-meter reading, trip (where it started), fill-up, service, tyre change and
-inspection is one; an income is one when it says its distance; an expense
-never is. So "was at Distance" is said once, of MeteredEvent, and is a
-must there. This answers step 1's question: each of these gives a reading
-of the meter, and a MeterReading is the event that does nothing else. A
-vehicle's reading at a moment (derivation 6) is over MeteredEvents.
+**MeteredEvent** is an event that was at a distance: every meter reading,
+trip (where it started), fill-up, service, tyre change and inspection.
+"MeteredEvent was at Distance" is said once, of it, and is a must there.
+This answers step 1's question: each of these gives a reading of the
+meter, and a MeterReading is the event that does nothing else.
+
+An income may say its distance, and need not: "Income was at Distance" is
+its own, optional. So MeteredEvent is not defined by having a distance (a
+subtype by a rule, which ORMKit cannot enforce yet, would have left every
+fill-up's distance optional in the store); it is asserted, and its
+subtypes are those whose distance is a must. A vehicle's reading at a
+moment (derivation 6) is over MeteredEvents and incomes.
 
 **Cost** is a record that cost money: *each Cost is a Record that cost
 some Money*. Every fill-up, service and expense is one; a tyre set or a
@@ -1343,7 +1347,7 @@ the vehicle's side: a vehicle is sold at most once. The vehicle's sale
 
 ### For ORMKit
 
-- **Subtypes defined by a rule** (MeteredEvent, Cost, CarSale, the kinds):
+- **Subtypes defined by a rule** (Cost, CarSale, the kinds):
   ORMKit reads NORMA's subtype derivation rules but doesn't run them yet
   ([DERIVATION.md](../../NativeORM2/docs/DERIVATION.md), for later). The
   same query kind as a fact type's derivation would do.
@@ -1500,7 +1504,7 @@ What it cannot say yet, it says in comments, for rules later:
 - the deontic rules about the meter, and that events fall while the
   vehicle is kept (ordering by moment).
 
-The subtypes defined by a rule (MeteredEvent, Cost, CarSale, ServiceKind)
+The subtypes defined by a rule (Cost, CarSale, ServiceKind)
 keep their rule as their definition until ORMKit writes NORMA's subtype
 derivation rules.
 

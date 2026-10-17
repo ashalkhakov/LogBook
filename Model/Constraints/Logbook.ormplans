@@ -93,7 +93,53 @@
 				<string>Each Checklist is kept by exactly one User.</string>
 			</dict>
 		</array>
-		<key>CurrencyWasWorthFactorInCurrencyOnDate</key>
+		<key>Document</key>
+		<array>
+			<dict>
+				<key>check</key>
+				<dict>
+					<key>compare</key>
+					<array>
+						<string>date</string>
+						<string>expiresOnDate</string>
+					</array>
+					<key>comparison</key>
+					<string>&lt;</string>
+				</dict>
+				<key>constraint</key>
+				<string>ValueComparisonConstraint3</string>
+				<key>deontic</key>
+				<false/>
+				<key>keys</key>
+				<array>
+					<string>date</string>
+					<string>expiresOnDate</string>
+				</array>
+				<key>text</key>
+				<string>For each Document, if that Document is valid from some Date1 and that Document expires on some Date2 then Date1 is less than Date2.</string>
+			</dict>
+		</array>
+		<key>Event</key>
+		<array>
+			<dict>
+				<key>check</key>
+				<dict>
+					<key>present</key>
+					<string>driver</string>
+				</dict>
+				<key>constraint</key>
+				<string>SimpleMandatoryConstraint30</string>
+				<key>deontic</key>
+				<false/>
+				<key>keys</key>
+				<array>
+					<string>driver</string>
+				</array>
+				<key>text</key>
+				<string>Each Event had driver exactly one User.</string>
+			</dict>
+		</array>
+		<key>ExchangeRate</key>
 		<array>
 			<dict>
 				<key>check</key>
@@ -120,52 +166,6 @@
 				</array>
 				<key>text</key>
 				<string>The possible values of factor are {(0..]}.</string>
-			</dict>
-		</array>
-		<key>Document</key>
-		<array>
-			<dict>
-				<key>check</key>
-				<dict>
-					<key>compare</key>
-					<array>
-						<string>isValidFromDate</string>
-						<string>expiresOnDate</string>
-					</array>
-					<key>comparison</key>
-					<string>&lt;</string>
-				</dict>
-				<key>constraint</key>
-				<string>ValueComparisonConstraint3</string>
-				<key>deontic</key>
-				<false/>
-				<key>keys</key>
-				<array>
-					<string>isValidFromDate</string>
-					<string>expiresOnDate</string>
-				</array>
-				<key>text</key>
-				<string>For each Document, if that Document is valid from some Date1 and that Document expires on some Date2 then Date1 is less than Date2.</string>
-			</dict>
-		</array>
-		<key>Event</key>
-		<array>
-			<dict>
-				<key>check</key>
-				<dict>
-					<key>present</key>
-					<string>driver</string>
-				</dict>
-				<key>constraint</key>
-				<string>SimpleMandatoryConstraint30</string>
-				<key>deontic</key>
-				<false/>
-				<key>keys</key>
-				<array>
-					<string>driver</string>
-				</array>
-				<key>text</key>
-				<string>Each Event had driver exactly one User.</string>
 			</dict>
 		</array>
 		<key>Expense</key>
@@ -298,15 +298,15 @@
 						</dict>
 						<dict>
 							<key>present</key>
-							<string>isForTask</string>
+							<string>task</string>
 						</dict>
 						<dict>
 							<key>present</key>
-							<string>isForExpenseKind2</string>
+							<string>expenseKind</string>
 						</dict>
 						<dict>
 							<key>present</key>
-							<string>isForChecklist2</string>
+							<string>checklist</string>
 						</dict>
 					</array>
 					<key>exactly</key>
@@ -319,9 +319,9 @@
 				<key>keys</key>
 				<array>
 					<string>schedule</string>
-					<string>isForTask</string>
-					<string>isForExpenseKind2</string>
-					<string>isForChecklist2</string>
+					<string>task</string>
+					<string>expenseKind</string>
+					<string>checklist</string>
 				</array>
 				<key>text</key>
 				<string>For each Reminder, exactly one of the following holds: that Reminder comes from some Schedule; that Reminder is for some Task; that Reminder is for some ExpenseKind; that Reminder is for some Checklist.</string>
@@ -340,7 +340,7 @@
 						</dict>
 						<dict>
 							<key>present</key>
-							<string>wasDoneAtMoment</string>
+							<string>doneAt</string>
 						</dict>
 					</array>
 				</dict>
@@ -351,7 +351,7 @@
 				<key>keys</key>
 				<array>
 					<string>event</string>
-					<string>wasDoneAtMoment</string>
+					<string>doneAt</string>
 				</array>
 				<key>text</key>
 				<string>If some Reminder was done by some Event then that Reminder was done at some Moment.</string>
@@ -370,11 +370,11 @@
 						</dict>
 						<dict>
 							<key>present</key>
-							<string>isForExpenseKind</string>
+							<string>expenseKind</string>
 						</dict>
 						<dict>
 							<key>present</key>
-							<string>isForChecklist</string>
+							<string>checklist</string>
 						</dict>
 					</array>
 					<key>exactly</key>
@@ -387,8 +387,8 @@
 				<key>keys</key>
 				<array>
 					<string>task</string>
-					<string>isForExpenseKind</string>
-					<string>isForChecklist</string>
+					<string>expenseKind</string>
+					<string>checklist</string>
 				</array>
 				<key>text</key>
 				<string>For each Schedule, exactly one of the following holds: that Schedule is for some Task; that Schedule is for some ExpenseKind; that Schedule is for some Checklist.</string>
@@ -441,8 +441,8 @@
 				<dict>
 					<key>compare</key>
 					<array>
+						<string>timestamp</string>
 						<string>moment</string>
-						<string>endedAtMoment</string>
 					</array>
 					<key>comparison</key>
 					<string>&lt;=</string>
@@ -453,8 +453,8 @@
 				<false/>
 				<key>keys</key>
 				<array>
+					<string>timestamp</string>
 					<string>moment</string>
-					<string>endedAtMoment</string>
 				</array>
 				<key>text</key>
 				<string>For each Trip, if that Trip was at some Moment1 and that Trip ended at some Moment2 then Moment1 is less than or equal to Moment2.</string>
