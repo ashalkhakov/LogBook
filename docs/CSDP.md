@@ -329,8 +329,237 @@ So every record says who entered it:
 "Their own records" are those they entered. That is a fact about each
 record, not about the people in it: Ben may enter a fill-up Anna paid.
 
+## Step 2: the fact types, checked against the examples
+
+### How things are identified
+
+Records made on a device and synced need ids that don't clash. So the
+things Logbook records are identified by an id the app makes (a UUID,
+written `v1`, `t3` here):
+- Vehicle, Trip, FillUp, Service, ServiceItem, MeterReading, TyreSet,
+  TyreChange, Document, Expense, Reminder.
+
+The rest are identified by what they are:
+
+| Entity type | Identified by |
+| --- | --- |
+| User | email |
+| Make, CarModel, Fuel, Garage, Station, Place, TyreModel | name |
+| ServiceKind, ExpenseKind, DocumentKind, Purpose, Season | name, from a list |
+| Currency | ISO code ('EUR', 'USD') |
+| Distance | km |
+| Volume | L |
+| Duration | months |
+| Tread | mm |
+| Money | its Amount and its Currency together (74.10 EUR) |
+
+Money has no identity of its own. Two fill-ups costing 74.10 EUR cost the
+same money. The Core Data mapping absorbs it into whatever has it, as an
+amount and a currency.
+
+Distances and volumes are stored in km and L. The app shows them in the
+units the user prefers. Moments (a date with a time) and dates are values.
+
+### People and vehicles
+
+```
+Vehicle is owned by User                        v1 | anna@example.org
+                                                v2 | ben@example.org
+User drives Vehicle                             ben@example.org | v1
+User has PersonName                             anna@example.org | 'Anna'
+Vehicle has VehicleName                         v1 | 'Blue Golf'
+                                                v2 | "Ben's van"
+Vehicle is of Make                              v1 | 'Volkswagen'
+Vehicle is of CarModel                          v1 | 'Golf 1.4 TSI'
+Vehicle was built in Year                       v1 | 2014
+Vehicle uses Fuel                               v1 | 'Petrol 95'
+Vehicle has VIN                                 v1 | 'WVWZZZ1KZEW000001'
+Vehicle has RegistrationNumber                  v1 | '123 ABC'
+```
+
+### What a vehicle cost, and is worth
+
+```
+Vehicle was acquired on Date                    v1 | 2019-05-02
+Vehicle was acquired at Distance                v1 | 84210
+Vehicle was acquired for Money                  v1 | 9500 EUR
+Vehicle is expected to be kept for Duration     v1 | 96
+Vehicle is expected to be driven Distance more  v1 | 120000
+Vehicle is expected to sell for Money           v1 | 2500 EUR
+Vehicle was valued on Date at Money             v1 | 2026-10-01 | 4000 EUR
+                                                v1 | 2027-03-01 | 3600 EUR
+Vehicle was sold on Date                        v1 | 2027-08-30
+Vehicle was sold for Money                      v1 | 3000 EUR
+```
+
+### Money and preferences
+
+```
+Money has Amount                                (74.10 EUR) | 74.10
+Money is in Currency                            (74.10 EUR) | 'EUR'
+on Date one Currency was worth Factor Currency  2026-09-14 | 'EUR' | 1.09 | 'USD'
+                                                2026-09-15 | 'EUR' | 1.08 | 'USD'
+User prefers Currency                           anna@example.org | 'USD'
+User measures distance in DistanceUnit          anna@example.org | 'km'
+User measures volume in VolumeUnit              anna@example.org | 'L'
+```
+
+The exchange rate is a quaternary: the date, the two currencies and the
+factor. Step 4 checks that it's elementary. An amount's own rate goes with
+the record that has it, below.
+
+Units and the preferred currency are each user's. They sync with them, so
+every device of theirs shows the same.
+
+### Meter readings and trips
+
+```
+MeterReading is of Vehicle                      r21 | v1
+MeterReading was on Date                        r21 | 2026-10-01
+MeterReading shows Distance                     r21 | 153120
+Trip is of Vehicle                              t3 | v1
+                                                t9 | v1
+Trip started at Moment                          t3 | 2026-09-20 08:10
+                                                t9 | 2026-10-02 18:40
+Trip ended at Moment                            t3 | 2026-09-20 11:25
+Trip started at Distance                        t3 | 152410
+Trip ended at Distance                          t3 | 152700
+Trip went from Place                            t3 | 'Berlin'
+Trip went to Place                              t3 | 'Hamburg'
+Trip has Purpose                                t3 | 'Business'
+Trip was driven by User                         t3 | anna@example.org
+Trip was paid Money                             t9 | 23.50 EUR
+```
+
+A trip's date is its start's. "Started on Date" and "started at Time" from
+step 1 become one moment: a trip may run past midnight.
+
+### Fill-ups
+
+```
+FillUp is of Vehicle                            f1 | v1
+FillUp was on Date                              f1 | 2026-09-14
+FillUp was at Distance                          f1 | 152300
+FillUp was of Volume                            f1 | 42.5
+FillUp was of Fuel                              f1 | 'Petrol 95'
+FillUp cost Money                               f1 | 74.10 EUR
+FillUp was at Station                           f1 | 'Shell, Main St'
+FillUp filled the tank                          f1
+FillUp was paid by User                         f1 | ben@example.org
+```
+
+### Services
+
+```
+Service is of Vehicle                           s7 | v1
+                                                s8 | v1
+Service was on Date                             s7 | 2026-06-01
+Service was at Distance                         s7 | 148000
+Service was done by Garage                      s7 | 'Garage Müller'
+                                                s8 | 'Carglass'
+Service is of ServiceKind                       s7 | 'Maintenance'
+                                                s8 | 'Repair'
+ServiceItem is part of Service                  i1 | s7
+                                                i2 | s7
+                                                i3 | s7
+ServiceItem is of Task                          i1 | 'Oil change'
+                                                i2 | 'Brake fluid change'
+                                                i3 | 'Labour'
+ServiceItem cost Money                          i1 | 95 EUR
+ServiceItem has Note                            i1 | 'Filter: Mann W 712/95'
+```
+
+Step 1's "Service included Task for Money", with a note on that inclusion,
+is a fact about a fact. So the inclusion is an object of its own, the
+ServiceItem (ORM's objectification), with the task, the cost and the note
+as its facts. Two items of one service may name the same task, such as
+labour on two days.
+
+### Tyres
+
+```
+TyreSet is kept for Vehicle                     ts1 | v1
+                                                ts2 | v1
+TyreSet has TyreSetName                         ts1 | 'Golf winter'
+TyreSet is for Season                           ts1 | 'Winter'
+                                                ts2 | 'Summer'
+TyreSet is of TyreModel                         ts1 | 'Continental WinterContact TS 870'
+TyreSet is of TyreSize                          ts1 | '205/55 R16'
+TyreSet was bought for Money                    ts1 | 480 EUR
+TyreChange is of Vehicle                        c4 | v1
+TyreChange was on Date                          c4 | 2026-04-05
+TyreChange was at Distance                      c4 | 146900
+TyreChange fitted TyreSet                       c3 | ts1
+                                                c4 | ts2
+TyreChange removed TyreSet                      c4 | ts1
+TyreChange measured Tread                       c3 | 8
+```
+
+The tread is measured on the set fitted, at the change: "TyreSet had Tread
+at TyreChange" from step 1 reads more simply from the change.
+
+### Documents and other costs
+
+```
+Document is of Vehicle                          d1 | v1
+Document is of DocumentKind                     d1 | 'Insurance'
+Document was issued by Issuer                   d1 | 'Allianz'
+Document has DocumentNumber                     d1 | '77-123456'
+Document is valid from Date                     d1 | 2025-12-01
+Document expires on Date                        d1 | 2026-12-01
+Document cost Money                             d1 | 610 EUR
+Document has Attachment                         d1 | 'policy.pdf'
+Expense is of Vehicle                           e12 | v1
+                                                e13 | v1
+Expense was on Date                             e12 | 2026-08-03
+Expense is of ExpenseKind                       e12 | 'Parking'
+                                                e13 | 'Toll'
+Expense cost Money                              e12 | 36 EUR
+                                                e13 | 40 CHF
+Expense has Note                                e12 | 'Airport'
+Expense was converted at Factor into Currency   e13 | 1.04 | 'EUR'
+```
+
+The issuer and the number replace step 1's single name 'Allianz 77-123456'.
+An attachment is a file. How the sync carries files is for later.
+
+### Reminders
+
+```
+Reminder is of Vehicle                          m5 | v1
+                                                m6 | v1
+Reminder says Text                              m5 | 'Change the oil filter'
+                                                m6 | 'Change the oil'
+Reminder is due at Distance                     m5 | 160000
+Reminder is due on Date                         m5 | 2027-04-17
+Reminder recurs every Distance                  m6 | 15000
+Reminder recurs every Duration                  m6 | 6
+Reminder is done                                m5
+Reminder was done by Service                    m5 | s7
+```
+
+### Who entered what
+
+```
+Trip was entered by User                        t3 | anna@example.org
+FillUp was entered by User                      f1 | ben@example.org
+...                                             (every record the same)
+```
+
+### What's left for later steps
+
+- **Repetition.** Every kind of record repeats "is of Vehicle", "was on
+  Date", "was at Distance", "cost Money", "was entered by User" and its
+  own rate. Step 6 decides whether they are one supertype (an Event, or a
+  Record) with these fact types once, and which records are costs.
+- **Reminders done by work.** "Reminder was done by Service" may also be
+  done by a fill-up, an expense or a tyre change: the same question.
+- **Not stored, worked out:** a trip's distance and duration; a service's
+  cost; which tyre set is on; how far a set has gone; when a reminder is
+  next due; distance driven; every report. Step 3 lists these
+  derivations.
+
 ## Next
 
-Step 1 is done when you're happy with the examples. Step 2 draws the fact
-types and checks them against the examples: the fact types as sentences,
-each with sample rows.
+Step 3: entity types that should be combined, and the arithmetic
+derivations (what is worked out, not stored).
