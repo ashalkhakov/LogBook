@@ -46,6 +46,21 @@ elementary facts it holds. Still a draft.
 - Vehicle 'Blue Golf' was acquired at Distance 84210.
 - Vehicle 'Blue Golf' was acquired for Money 9500 EUR.
 
+> We expect to keep it 8 years, or another 120,000 km, and to sell it for
+> 2,500 EUR. An online valuation said 4,000 EUR on 2026-10-01. *(Later:)*
+> Sold on 2027-08-30 for 3,000 EUR.
+
+- Vehicle 'Blue Golf' is expected to be kept for Period 8 years.
+- Vehicle 'Blue Golf' is expected to be kept for Distance 120000 more.
+- Vehicle 'Blue Golf' is expected to sell for Money 2500 EUR.
+- Vehicle 'Blue Golf' was valued at Money 4000 EUR on Date 2026-10-01.
+- Vehicle 'Blue Golf' was sold on Date 2027-08-30.
+- Vehicle 'Blue Golf' was sold for Money 3000 EUR.
+
+All of these are optional. They're what the balance's views need (see
+Reports): the expectations for depreciation by time or by distance, the
+valuations for what it's worth now, and the sale for every view.
+
 ### Owner and drivers
 
 > Anna owns the Golf and signs in as anna@example.org. Ben drives it too,
@@ -259,8 +274,20 @@ distance or date.
 Reports are information outputs too: each says derived facts. Per vehicle,
 over a period:
 
-1. **Balance:** revenues minus costs (acquisition included?); per day; in
-   the preferred currency per distance unit.
+1. **Balance:** revenues minus costs; per day; in the preferred currency
+   per distance unit. Every view is offered, for the user to choose:
+   - **cash:** the purchase and the sale counted on the days they were
+     paid;
+   - **running:** the purchase and the sale left out;
+   - **depreciation over time:** the expected loss of value (purchase minus
+     expected sale) spread over the expected years, a cost each day; the
+     sale's difference from the value left is a gain or loss on its day;
+   - **depreciation by distance:** the same, spread over the expected
+     distance, a cost each distance unit driven;
+   - **what it's worth:** the loss of value between valuations (the
+     purchase, each valuation, the sale).
+
+   A view whose inputs are missing isn't offered.
 2. **Distance driven:** total, and average per day.
 3. **Costs:** total, average per day, per distance unit.
 4. **Revenues:** total, average per day, per distance unit.
@@ -290,11 +317,20 @@ for the service and the apps to enforce:
 
 - The owner may change anything about their vehicles, including what was
   recorded before.
-- A driver may add records to a vehicle shared with them. Whether they may
-  change or remove older ones is to be decided.
+- A driver may add records of their own to a vehicle shared with them,
+  and may not change or remove any record.
 
-## Open questions
+So every record says who entered it:
 
-1. **Balance.** Which of the options below the reports offer.
-2. **Drivers and history.** May a driver change records, or only add
-   them? Only their own? Only recent ones?
+> Ben entered the fill-up.
+
+- FillUp 1 was entered by User 'ben@example.org'.
+
+"Their own records" are those they entered. That is a fact about each
+record, not about the people in it: Ben may enter a fill-up Anna paid.
+
+## Next
+
+Step 1 is done when you're happy with the examples. Step 2 draws the fact
+types and checks them against the examples: the fact types as sentences,
+each with sample rows.
