@@ -227,12 +227,14 @@ went.
 - Money is a value object: an Amount in a Currency (74.10, 'EUR').
 - Rate: on Date 2026-09-14, 1 Currency 'EUR' is worth 1.09 Currency 'USD'.
 - The app's preferred Currency is 'USD'.
-- Expense 13's Money 40 CHF was converted at Rate 1.04 EUR per CHF.
+- Expense 13 cost Money 40 CHF.
+- Expense 13 was charged Money 41.60 EUR.
 
 Each amount is kept as entered. Rates are as flexible as can be: a table
 of rates by date, entered by hand or fetched, used for any amount on that
-date (or the latest date before it). An amount may carry its own rate, as
-a receipt or a card statement gives it, which then counts for that amount.
+date (or the latest date before it). An amount may also say what it was
+charged in another currency, as a receipt or a card statement gives it,
+which then counts for that amount in that currency.
 
 ### Units
 
@@ -433,8 +435,8 @@ User measures volume in VolumeUnit              anna@example.org | 'L'
 ```
 
 The exchange rate is a quaternary: the date, the two currencies and the
-factor. Step 4 checks that it's elementary. An amount's own rate goes with
-the record that has it, below.
+factor. Step 4 checks that it's elementary. What an amount was charged in
+another currency goes with the record that has it, below.
 
 The preferred units and currency are each user's. They sync with the user,
 so every device of theirs shows the same. They say only how things are
@@ -502,11 +504,12 @@ ServiceItem is of Task                          i1 | 'Oil change'
 ServiceItem cost Money                          i1 | 95 EUR
                                                 i4 | 40 CHF
 ServiceItem has Note                            i1 | 'Filter: Mann W 712/95'
-ServiceItem was converted at Factor into Currency  i4 | 1.04 | 'EUR'
+ServiceItem was charged Money                   i4 | 41.60 EUR
 
 A service is paid in one currency, and its items' costs are entered in it.
 An item may be entered in another (a part bought abroad), and then
-converted into the service's, by its own factor or by the rates.
+converted into the service's: by what it was charged in that currency, if
+the receipt says, or by the rates.
 ```
 
 Step 1's "Service included Task for Money", with a note on that inclusion,
@@ -557,7 +560,7 @@ Expense is of ExpenseKind                       e12 | 'Parking'
 Expense cost Money                              e12 | 36 EUR
                                                 e13 | 40 CHF
 Expense has Note                                e12 | 'Airport'
-Expense was converted at Factor into Currency   e13 | 1.04 | 'EUR'
+Expense was charged Money                       e13 | 41.60 EUR
 ```
 
 The issuer and the number replace step 1's single name 'Allianz 77-123456'.
@@ -623,7 +626,6 @@ kind of thing.
   and intervals. Comparing and subtracting them is the point.
 - **User** is one type for the owner, a driver, who paid and who entered.
   The same person plays all of these.
-- **Factor** is one type: an exchange rate's, and an amount's own rate.
 - **Fuel** is one type: what a vehicle uses, and what a fill-up was of.
 - **CostKind replaces ServiceKind and ExpenseKind.** The pie chart puts
   fill-ups, maintenance, repairs, tyres, documents, parking, tolls and
@@ -654,9 +656,9 @@ Each in the user's preferred units and currency, unless it says otherwise.
 **Conversions**
 1. *A distance in a unit:* its quantity × the fixed factor between the
    units. The same for volumes.
-2. *Money in a currency:* the amount × its own factor, if it has one into
-   that currency. Otherwise × the rate between the currencies on its date,
-   or on the latest date before it with a rate. When there is no rate at
+2. *Money in a currency:* what it was charged in that currency, if the
+   record says. Otherwise the amount × the rate between the currencies on
+   its date, or on the latest date before it with a rate. When there is no rate at
    all, the amount can't be shown in that currency, and the report says
    so.
 
@@ -664,8 +666,8 @@ Each in the user's preferred units and currency, unless it says otherwise.
 3. *A trip's distance:* where it ended − where it started.
 4. *A trip's duration:* when it ended − when it started.
 5. *A service's cost:* the sum of its items' costs, in the service's
-   currency (an item entered in another converted by its own factor or
-   the rates).
+   currency (an item entered in another converted by what it was charged,
+   or the rates).
 6. *A vehicle's reading on a date:* the latest distance any of its
    records gives on or before that date (acquisition, meter readings,
    trips' ends, fill-ups, services, tyre changes).
@@ -726,7 +728,95 @@ show:
 - dates and durations (days in a period, months between dates);
 - grouping by month.
 
+## Step 4: uniqueness, and whether each fact type is elementary
+
+A uniqueness constraint says which roles' values occur at most once
+together. It also tests elementarity: a fact type of n roles whose
+uniqueness spans fewer than n − 1 roles splits into smaller ones (Halpin's
+n − 1 rule).
+
+### Each at most one
+
+Most fact types say one thing about one record, so the record's role is
+unique. Each vehicle, record or user has at most one of each of these:
+
+- **Vehicle:** owner, name, make, model, year built, fuel, VIN,
+  registration, date and distance acquired, price, expected duration,
+  expected further distance, expected sale price, date and price sold.
+- **User:** name, preferred currency, distance unit, volume unit.
+- **MeterReading:** vehicle, date, distance.
+- **Trip:** vehicle, start and end moments, start and end distances, from,
+  to, purpose, driver, pay.
+- **FillUp:** vehicle, date, distance, volume, fuel, cost, station, payer.
+  Filling the tank is a unary: a fill-up did or didn't.
+- **Service:** vehicle, date, distance, garage, kind, currency.
+- **ServiceItem:** service, task, cost, what it was charged, note.
+- **TyreSet:** vehicle, name, season, model, size, price.
+- **TyreChange:** vehicle, date, distance, the set fitted, the set
+  removed, tread.
+- **Document:** vehicle, kind, issuer, number, valid from, expires,
+  cost, attachment.
+- **Expense:** vehicle, date, kind, cost, what it was charged, note.
+- **Schedule:** vehicle, text, distance interval, time interval.
+- **Reminder:** vehicle, schedule, text, due distance, due date, done
+  date, done distance, the record it was done by.
+- **Every record:** who entered it.
+
+The other role is not unique in any of these: many trips are of one
+vehicle, many fill-ups cost 74.10 EUR, one set is fitted by many changes
+over the years.
+
+**Also unique the other way:**
+- **Money, Distance, Volume:** each has one amount and one currency (or
+  quantity and unit), and the two together identify it: (74.10, 'EUR') is
+  one money. That is the reference scheme from step 2, an external
+  uniqueness over the two.
+
+**Not unique the other way**, deliberately:
+- **A VIN** may be on two vehicles. A car sold from one user to another is
+  in both logbooks, each with its own history.
+- **Registration numbers** change hands, and come back.
+- **Names** (vehicles, tyre sets) aren't checked: two vehicles may both be
+  'Golf'.
+
+### Many to many
+
+- **User drives Vehicle:** a user drives many vehicles, and a vehicle has
+  many drivers. The uniqueness spans both roles: each pair once.
+
+### More than two roles
+
+- **Vehicle was valued on Date at Money:** one value per vehicle per
+  date. The uniqueness spans the vehicle and the date: n − 1 = 2 roles, so
+  it is elementary.
+
+  ```
+  v1 | 2026-10-01 | 4000 EUR
+  v1 | 2027-03-01 | 3600 EUR     different dates: fine
+  v1 | 2026-10-01 | 3900 EUR     the same date again: not allowed
+  ```
+
+- **On Date one Currency was worth Factor Currency:** one factor per date
+  per pair of currencies. The uniqueness spans the date and both
+  currencies: n − 1 = 3 roles, elementary.
+
+  ```
+  2026-09-14 | EUR | 1.09 | USD
+  2026-09-14 | EUR | 1.10 | USD   the same day and pair again: not allowed
+  ```
+
+  The rate the other way (USD to EUR) is its own row, or worked out as
+  1 ÷ the factor. Which, is for step 6.
+
+- **"Was converted at Factor into Currency"** (step 2, for expenses and
+  service items) *wasn't elementary*. Each expense has at most one
+  conversion, so the uniqueness spanned one role of three, fewer than
+  n − 1. It splits into a factor and a currency. But the receipt says it
+  more simply as what the expense was charged in the other currency:
+  "Expense was charged Money 41.60 EUR". One binary, with the factor
+  derived (41.60 ÷ 40). Steps 1 to 3 now say it so.
+
 ## Next
 
-Step 4: uniqueness constraints, and checking that each fact type is
-elementary (the ternaries and the quaternary especially).
+Step 5: mandatory roles (what every vehicle, record and user must have),
+and logical derivations (CostKind for fill-ups, tyres and documents).
