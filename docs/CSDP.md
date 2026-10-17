@@ -347,18 +347,30 @@ The rest are identified by what they are:
 | Make, CarModel, Fuel, Garage, Station, Place, TyreModel | name |
 | ServiceKind, ExpenseKind, DocumentKind, Purpose, Season | name, from a list |
 | Currency | ISO code ('EUR', 'USD') |
-| Distance | km |
-| Volume | L |
+| DistanceUnit | code, from a list: 'km', 'mi' |
+| VolumeUnit | code, from a list: 'L', 'gal (US)', 'gal (imp)' |
 | Duration | months |
 | Tread | mm |
 | Money | its Amount and its Currency together (74.10 EUR) |
+| Distance | its Quantity and its DistanceUnit together (152300 km) |
+| Volume | its Quantity and its VolumeUnit together (42.5 L) |
 
-Money has no identity of its own. Two fill-ups costing 74.10 EUR cost the
-same money. The Core Data mapping absorbs it into whatever has it, as an
-amount and a currency.
+Money, distances and volumes have no identity of their own. Two fill-ups
+costing 74.10 EUR cost the same money, and two trips of 14 km went as far.
+Each is kept as it was entered, in its own unit or currency. The Core Data
+mapping absorbs each into whatever has it, as a quantity and a unit.
 
-Distances and volumes are stored in km and L. The app shows them in the
-units the user prefers. Moments (a date with a time) and dates are values.
+The app shows each in the user's preferred unit or currency, converting as
+it goes:
+- **money:** by exchange rates, which change and are kept by date (below);
+- **distances and volumes:** by fixed factors (1 mi = 1.609344 km,
+  1 gal (US) = 3.785411784 L, 1 gal (imp) = 4.54609 L). These are part of
+  the model, not data anyone enters.
+
+So a US car's odometer can be read in miles, and its fill-ups in gallons,
+while the user sees km and L, or the other way round.
+
+Moments (a date with a time) and dates are values.
 
 ### People and vehicles
 
@@ -381,10 +393,10 @@ Vehicle has RegistrationNumber                  v1 | '123 ABC'
 
 ```
 Vehicle was acquired on Date                    v1 | 2019-05-02
-Vehicle was acquired at Distance                v1 | 84210
+Vehicle was acquired at Distance                v1 | 84210 km
 Vehicle was acquired for Money                  v1 | 9500 EUR
 Vehicle is expected to be kept for Duration     v1 | 96
-Vehicle is expected to be driven Distance more  v1 | 120000
+Vehicle is expected to be driven Distance more  v1 | 120000 km
 Vehicle is expected to sell for Money           v1 | 2500 EUR
 Vehicle was valued on Date at Money             v1 | 2026-10-01 | 4000 EUR
                                                 v1 | 2027-03-01 | 3600 EUR
@@ -397,6 +409,12 @@ Vehicle was sold for Money                      v1 | 3000 EUR
 ```
 Money has Amount                                (74.10 EUR) | 74.10
 Money is in Currency                            (74.10 EUR) | 'EUR'
+Distance has Quantity                           (152300 km) | 152300
+Distance is in DistanceUnit                     (152300 km) | 'km'
+                                                (94640 mi) | 'mi'
+Volume has Quantity                             (42.5 L) | 42.5
+Volume is in VolumeUnit                         (42.5 L) | 'L'
+                                                (11.2 gal (US)) | 'gal (US)'
 on Date one Currency was worth Factor Currency  2026-09-14 | 'EUR' | 1.09 | 'USD'
                                                 2026-09-15 | 'EUR' | 1.08 | 'USD'
 User prefers Currency                           anna@example.org | 'USD'
@@ -408,22 +426,25 @@ The exchange rate is a quaternary: the date, the two currencies and the
 factor. Step 4 checks that it's elementary. An amount's own rate goes with
 the record that has it, below.
 
-Units and the preferred currency are each user's. They sync with them, so
-every device of theirs shows the same.
+The preferred units and currency are each user's. They sync with the user,
+so every device of theirs shows the same. They say only how things are
+shown; what was entered keeps its own unit.
 
 ### Meter readings and trips
 
 ```
 MeterReading is of Vehicle                      r21 | v1
+                                                r22 | v2
 MeterReading was on Date                        r21 | 2026-10-01
-MeterReading shows Distance                     r21 | 153120
+MeterReading shows Distance                     r21 | 153120 km
+                                                r22 | 94640 mi
 Trip is of Vehicle                              t3 | v1
                                                 t9 | v1
 Trip started at Moment                          t3 | 2026-09-20 08:10
                                                 t9 | 2026-10-02 18:40
 Trip ended at Moment                            t3 | 2026-09-20 11:25
-Trip started at Distance                        t3 | 152410
-Trip ended at Distance                          t3 | 152700
+Trip started at Distance                        t3 | 152410 km
+Trip ended at Distance                          t3 | 152700 km
 Trip went from Place                            t3 | 'Berlin'
 Trip went to Place                              t3 | 'Hamburg'
 Trip has Purpose                                t3 | 'Business'
@@ -438,9 +459,11 @@ step 1 become one moment: a trip may run past midnight.
 
 ```
 FillUp is of Vehicle                            f1 | v1
+                                                f2 | v2
 FillUp was on Date                              f1 | 2026-09-14
-FillUp was at Distance                          f1 | 152300
-FillUp was of Volume                            f1 | 42.5
+FillUp was at Distance                          f1 | 152300 km
+FillUp was of Volume                            f1 | 42.5 L
+                                                f2 | 11.2 gal (US)
 FillUp was of Fuel                              f1 | 'Petrol 95'
 FillUp cost Money                               f1 | 74.10 EUR
 FillUp was at Station                           f1 | 'Shell, Main St'
@@ -454,7 +477,7 @@ FillUp was paid by User                         f1 | ben@example.org
 Service is of Vehicle                           s7 | v1
                                                 s8 | v1
 Service was on Date                             s7 | 2026-06-01
-Service was at Distance                         s7 | 148000
+Service was at Distance                         s7 | 148000 km
 Service was done by Garage                      s7 | 'Garage Müller'
                                                 s8 | 'Carglass'
 Service is of ServiceKind                       s7 | 'Maintenance'
@@ -488,7 +511,7 @@ TyreSet is of TyreSize                          ts1 | '205/55 R16'
 TyreSet was bought for Money                    ts1 | 480 EUR
 TyreChange is of Vehicle                        c4 | v1
 TyreChange was on Date                          c4 | 2026-04-05
-TyreChange was at Distance                      c4 | 146900
+TyreChange was at Distance                      c4 | 146900 km
 TyreChange fitted TyreSet                       c3 | ts1
                                                 c4 | ts2
 TyreChange removed TyreSet                      c4 | ts1
@@ -530,9 +553,9 @@ Reminder is of Vehicle                          m5 | v1
                                                 m6 | v1
 Reminder says Text                              m5 | 'Change the oil filter'
                                                 m6 | 'Change the oil'
-Reminder is due at Distance                     m5 | 160000
+Reminder is due at Distance                     m5 | 160000 km
 Reminder is due on Date                         m5 | 2027-04-17
-Reminder recurs every Distance                  m6 | 15000
+Reminder recurs every Distance                  m6 | 15000 km
 Reminder recurs every Duration                  m6 | 6
 Reminder is done                                m5
 Reminder was done by Service                    m5 | s7
