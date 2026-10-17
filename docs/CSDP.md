@@ -820,43 +820,35 @@ over the years.
 
 ### What every one must have
 
-A mandatory role says every instance of the type plays it. The question
-for each is: may Logbook have one of these without it?
+A mandatory role says every instance of the type plays it. The rule here:
+**a record states all of its facts**. A fact is optional only where it can
+honestly be missing, and each such case is listed with why.
 
-- **Vehicle:** an owner and a name. Everything else is optional: make,
-  model, year, fuel, VIN, registration, what it was bought for, the
-  expectations, valuations, the sale.
-- **User:** nothing beyond the email that identifies them. A name and
-  preferences are optional; preferences default to km, L and the device's
-  currency.
-- **Every record** (meter reading, trip, fill-up, service, tyre change,
-  document, expense, reminder, schedule): its vehicle, and who entered it.
-- **MeterReading:** a date and a distance.
-- **Trip:** when it started. The rest is free, as you asked: a trip may be
-  only a date and a note of where, or, if paid, how long, how far and what
-  it was paid.
-- **FillUp:** a date, a volume and a cost. The distance is optional, but
-  without it the fill-up can't count toward consumption.
-- **Service:** a date, a kind, a currency, and at least one item.
-- **ServiceItem:** its service, a task and a cost.
-- **TyreSet:** a season. A name, model, size and price are optional.
-- **TyreChange:** a date, and the set it fitted. Removing a set is
-  optional (the car's first set).
-- **Document:** a kind. The rest is optional, its expiry included (the
-  registration certificate doesn't expire).
-- **Expense:** a date, a kind and a cost.
-- **Schedule:** a text, and at least one interval, by distance or by time
-  or both. That's a disjunctive mandatory (inclusive-or): every schedule
-  recurs every some distance, or every some time.
-- **Reminder:**
-  - a due distance or a due date or both (inclusive-or);
-  - a schedule or a text of its own, but not both (exclusive-or): a
-    schedule's reminder says the schedule's text;
-  - done or not: done when it has a done date. The done distance and the
-    record that did it are optional.
-- **Money, Distance, Volume:** an amount and a currency, a quantity and a
-  unit (their reference schemes).
-- **An exchange rate:** all four of its roles, as with any fact.
+| Record | Must have | May lack, and why |
+| --- | --- | --- |
+| Vehicle | owner, name, make, model, year, fuel | VIN and registration (not every car has them to hand); what it was bought for, the expectations, valuations, the sale (each balance view needs only some) |
+| User | email | name and preferences (preferences default to km, L and the device's currency) |
+| MeterReading | vehicle, date, distance | |
+| Trip | vehicle, start and end moments, start and end distances, driver | from, to and purpose (a paid ride may not record them); pay (only paid trips have it) |
+| FillUp | vehicle, date, distance, volume, fuel, cost, station, payer | |
+| Service | vehicle, date, distance, garage, kind, currency | items: a service may have no tasks listed |
+| ServiceItem | service, task, cost | note; what it was charged in another currency (only when it was) |
+| TyreSet | vehicle, name, season, model, size | price (a set that came with the car) |
+| TyreChange | vehicle, date, distance, the set fitted, tread | the set removed (the first set fitted, on a car with none recorded) |
+| Document | vehicle, kind, issuer, number, valid from | expiry (a registration certificate doesn't expire); cost (some are free); attachment |
+| Expense | vehicle, date, kind, cost | note; what it was charged in another currency |
+| Schedule | vehicle, text, at least one interval | the other interval: it may recur by distance only, by time only, or both (inclusive-or) |
+| Reminder | vehicle; a due distance or a due date or both (inclusive-or); its schedule or a text of its own, not both (exclusive-or) | the done date, done distance and the record that did it, until it is done; then the date and distance are a must, the record optional |
+| Every record | who entered it | |
+| Money, Distance, Volume | amount and currency; quantity and unit | |
+| An exchange rate | all four roles | |
+
+Two of these are more than single mandatory roles:
+- **A reminder that is done** has both a done date and a done distance.
+  That's an equality constraint between the two (step 6): it has one if and
+  only if it has the other.
+- **"FillUp filled the tank"** is yes or no: a fill-up that doesn't say so
+  didn't fill it. A unary can't be mandatory; leaving it out is the "no".
 
 ### Logical derivations
 
