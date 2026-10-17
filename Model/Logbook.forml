@@ -35,11 +35,10 @@ Portable data type: Temporal: Date
 Duration is a value type.
 Portable data type: Numeric: Unsigned Small Integer
 
-Vehicle is owned by User
+Vehicle (as OwnedVehicle) is owned by User (as Owner)
 Each Vehicle is owned by exactly one User.
-User drives Vehicle
+VehicleDriver is where User drives Vehicle.
 + The vehicle's owner drives it; the users it is shared with are stored.
-In each population of User drives Vehicle, each User, Vehicle combination occurs at most once.
 User has PersonName
 Each User has at most one PersonName.
 Vehicle has VehicleName
@@ -48,7 +47,7 @@ Vehicle is of Make
 Each Vehicle is of exactly one Make.
 Vehicle is of CarModel
 Each Vehicle is of exactly one CarModel.
-Vehicle was built in Year
+Vehicle was built in Year (as ManufactureYear)
 Each Vehicle was built in exactly one Year.
 Vehicle uses Fuel
 Each Vehicle uses exactly one Fuel.
@@ -118,24 +117,24 @@ The possible values of VolumeUnit are 'L', 'gal (US)', 'gal (imp)'.
 
 # What a vehicle cost, and is worth
 
-Vehicle was acquired on Date
+Vehicle was acquired on Date (as PurchaseDate)
 Each Vehicle was acquired on at most one Date.
-Vehicle was acquired at Distance
+Vehicle was acquired at Distance (as PurchaseMileage)
 Each Vehicle was acquired at at most one Distance.
-Vehicle was acquired for Money
+Vehicle was acquired for Money (as PurchasePrice)
 Each Vehicle was acquired for at most one Money.
-Vehicle is expected to be kept for Duration
+Vehicle is expected to be kept for Duration (as KeepDuration)
 Each Vehicle is expected to be kept for at most one Duration.
-Vehicle is expected to be driven Distance more
+Vehicle is expected to be driven Distance (as KeepDistance) more
 Each Vehicle is expected to be driven at most one Distance more.
-Vehicle is expected to sell for Money
+Vehicle is expected to sell for Money (as ExpectedSalePrice)
 Each Vehicle is expected to sell for at most one Money.
-Vehicle was valued on Date at Money
+Vehicle was valued on Date at Money (as Valuation)
 For each Vehicle and Date, that Vehicle was valued on that Date at at most one Money.
-Vehicle was sold on Date
+Vehicle was sold on Date (as SaleDate)
 * The date of the moment of the vehicle's CarSale.
 Each Vehicle was sold on at most one Date.
-Vehicle was sold for Money
+Vehicle was sold for Money (as SellingPrice)
 * What the vehicle's CarSale earned.
 Each Vehicle was sold for at most one Money.
 For each Vehicle, if that Vehicle was acquired on some Date1 and that Vehicle was sold on some Date2 then Date1 is less than or equal to Date2.
@@ -160,7 +159,7 @@ Reference Mode: .name
 Record is of Vehicle
 + A reminder from a schedule is of the schedule's vehicle.
 Each Record is of exactly one Vehicle.
-Record was entered by User
+Record was entered by User (as EnteredBy) / User entered Record
 Each Record was entered by exactly one User.
 Record has Note
 Each Record has at most one Note.
@@ -172,7 +171,7 @@ Each Attachment has exactly one FileName.
 Each Event is a Record.
 Event was at Moment
 Each Event was at exactly one Moment.
-Event had driver User
+Event had driver User (as Driver)
 Each Event had driver exactly one User.
 Event was at Distance
 Each Event was at at most one Distance.

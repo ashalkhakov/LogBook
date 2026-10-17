@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot">
+<ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot" xmlns:ormcd="http://schemas.ormkit.org/2026-10/CoreDataBridge">
 	<orm:ORMModel id="_2C7E073F-10CB-4429-9D8F-D072A08D2C9F" Name="Logbook">
 		<orm:Objects>
 			<orm:EntityType id="_1660F6CB-8F66-4035-A24B-1114041EB14B" Name="User" _ReferenceMode="email">
@@ -930,6 +930,14 @@
 					<orm:Role ref="_018B6151-5214-44CE-B407-C682E26A2C4D" />
 				</orm:PlayedRoles>
 			</orm:EntityType>
+			<orm:ObjectifiedType id="_DAB21F33-2484-478F-9871-110A32001FD6" Name="VehicleDriver" IsIndependent="true" _ReferenceMode="">
+				<orm:PlayedRoles>
+					<orm:Role ref="_1947C667-884E-4736-B86D-09110D3438BF" />
+					<orm:Role ref="_E859319C-3CA5-4EAF-A117-889F68FBA2A4" />
+				</orm:PlayedRoles>
+				<orm:PreferredIdentifier ref="_38D1853C-1627-45CA-A761-A4A66586F61E" />
+				<orm:NestedPredicate id="_FA83EF4F-51D7-4160-8080-82FF3FCE76C3" ref="_EBBE620E-37E7-49D4-9C21-A2CE7D5AEDF5" IsImplied="false" />
+			</orm:ObjectifiedType>
 		</orm:Objects>
 		<orm:Facts>
 			<orm:Fact id="_3F9621BD-0E81-4131-AA00-CD5B1D6057B1" _Name="UserHasUseremail">
@@ -1159,10 +1167,10 @@
 			</orm:Fact>
 			<orm:Fact id="_BB719737-8048-4700-8E5D-3AF85A80213C" _Name="VehicleIsOwnedByUser">
 				<orm:FactRoles>
-					<orm:Role id="_A887735F-F812-4607-9B18-891CD9B47891" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+					<orm:Role id="_A887735F-F812-4607-9B18-891CD9B47891" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="OwnedVehicle">
 						<orm:RolePlayer ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 					</orm:Role>
-					<orm:Role id="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
+					<orm:Role id="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="Owner">
 						<orm:RolePlayer ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -1187,7 +1195,7 @@
 					<orm:MandatoryConstraint ref="_A21CA287-2935-45C3-83E4-F14A4AE4006A" />
 				</orm:InternalConstraints>
 			</orm:Fact>
-			<orm:Fact id="_EBBE620E-37E7-49D4-9C21-A2CE7D5AEDF5" _Name="UserDrivesVehicle">
+			<orm:Fact id="_EBBE620E-37E7-49D4-9C21-A2CE7D5AEDF5" _Name="VehicleDriver">
 				<orm:FactRoles>
 					<orm:Role id="_7C7024F3-ABFD-412A-B3F6-1026A5247ACF" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" />
@@ -1349,7 +1357,7 @@
 					<orm:Role id="_E23B9BF1-BABC-4E7A-B21B-8A427E236F4D" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 					</orm:Role>
-					<orm:Role id="_71AFC159-A514-45AD-8629-139D92CEC6F2" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
+					<orm:Role id="_71AFC159-A514-45AD-8629-139D92CEC6F2" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="ManufactureYear">
 						<orm:RolePlayer ref="_5E00C6C8-E4DE-4CBE-8A02-FB5E23CA6DA8" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -1917,7 +1925,7 @@
 					<orm:Role id="_A174D171-F286-4AC6-8833-3AB2ED9C8536" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 					</orm:Role>
-					<orm:Role id="_C24D2C45-9232-438A-9969-2FC1D89D213E" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+					<orm:Role id="_C24D2C45-9232-438A-9969-2FC1D89D213E" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="PurchaseDate">
 						<orm:RolePlayer ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -1946,7 +1954,7 @@
 					<orm:Role id="_FEFAA31A-1146-4115-942D-CBFA2473FE5E" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 					</orm:Role>
-					<orm:Role id="_54B699BF-0BE5-4234-A84C-1854D89B7701" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+					<orm:Role id="_54B699BF-0BE5-4234-A84C-1854D89B7701" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="PurchaseMileage">
 						<orm:RolePlayer ref="_F534255C-BA18-4049-94DC-A816AC865ED6" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -1975,7 +1983,7 @@
 					<orm:Role id="_2EB3F2CC-1F05-4819-BDA7-210CE544BE89" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 					</orm:Role>
-					<orm:Role id="_166811E8-260A-41A0-8F2D-4A02009AF641" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+					<orm:Role id="_166811E8-260A-41A0-8F2D-4A02009AF641" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="PurchasePrice">
 						<orm:RolePlayer ref="_8D76C545-8595-4FF3-981B-EF4585A47794" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -2004,7 +2012,7 @@
 					<orm:Role id="_9C67BC9F-B548-416E-B22D-DA3D657CCC33" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 					</orm:Role>
-					<orm:Role id="_733E915D-3114-42A1-9FA6-626DCB62ED89" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+					<orm:Role id="_733E915D-3114-42A1-9FA6-626DCB62ED89" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="KeepDuration">
 						<orm:RolePlayer ref="_BAA8D8AC-AC9A-43F0-9031-DD65D4CD0E10" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -2033,7 +2041,7 @@
 					<orm:Role id="_0DAF6ED5-294A-4436-B313-6B0B4E9C3FD6" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 					</orm:Role>
-					<orm:Role id="_950B6EA4-A0C2-4634-89FC-170DE9F045EA" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+					<orm:Role id="_950B6EA4-A0C2-4634-89FC-170DE9F045EA" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="KeepDistance">
 						<orm:RolePlayer ref="_F534255C-BA18-4049-94DC-A816AC865ED6" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -2063,7 +2071,7 @@
 					<orm:Role id="_792B1435-3BFD-449A-A6E3-B89F4AFF7F17" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 					</orm:Role>
-					<orm:Role id="_00E2B4DD-D1B9-42D8-B170-ED0107452DC6" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+					<orm:Role id="_00E2B4DD-D1B9-42D8-B170-ED0107452DC6" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="ExpectedSalePrice">
 						<orm:RolePlayer ref="_8D76C545-8595-4FF3-981B-EF4585A47794" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -2095,7 +2103,7 @@
 					<orm:Role id="_21BA079D-4F83-40E4-93C3-7DF3747E48AA" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
 						<orm:RolePlayer ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" />
 					</orm:Role>
-					<orm:Role id="_800B696C-9534-4E42-B669-AD254FC6536A" _IsMandatory="false" _Multiplicity="Unspecified" Name="">
+					<orm:Role id="_800B696C-9534-4E42-B669-AD254FC6536A" _IsMandatory="false" _Multiplicity="Unspecified" Name="Valuation">
 						<orm:RolePlayer ref="_8D76C545-8595-4FF3-981B-EF4585A47794" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -2126,7 +2134,7 @@
 					<orm:Role id="_2A73B8AF-BF83-4744-9DAF-37268BC21B98" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 					</orm:Role>
-					<orm:Role id="_59F74FAC-6A81-4639-9615-6377FAF96626" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+					<orm:Role id="_59F74FAC-6A81-4639-9615-6377FAF96626" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="SaleDate">
 						<orm:RolePlayer ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -2164,7 +2172,7 @@
 					<orm:Role id="_EBCBA483-AA41-4C6B-95B4-52947B2C4733" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 					</orm:Role>
-					<orm:Role id="_1EB0CF8E-7CF6-4769-8ABE-02940EEDFEF4" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+					<orm:Role id="_1EB0CF8E-7CF6-4769-8ABE-02940EEDFEF4" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="SellingPrice">
 						<orm:RolePlayer ref="_8D76C545-8595-4FF3-981B-EF4585A47794" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -2376,7 +2384,7 @@
 					<orm:Role id="_A017BBBE-71EE-4D4A-BD64-31D1619968CF" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_DE5DEB2A-1873-4346-AF20-FEFB6DCA3E76" />
 					</orm:Role>
-					<orm:Role id="_E7E119BF-4572-43E0-BC3A-CF470B74999A" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
+					<orm:Role id="_E7E119BF-4572-43E0-BC3A-CF470B74999A" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="EnteredBy">
 						<orm:RolePlayer ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -2393,6 +2401,20 @@
 						<orm:RoleSequence>
 							<orm:Role ref="_A017BBBE-71EE-4D4A-BD64-31D1619968CF" />
 							<orm:Role ref="_E7E119BF-4572-43E0-BC3A-CF470B74999A" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+					<orm:ReadingOrder id="_1FB4A17F-5541-4CC8-BA2F-C7CFCAE60B61">
+						<orm:Readings>
+							<orm:Reading id="_9486BEF5-398F-4F73-ABEA-07149A7CE204">
+								<orm:Data>{0} entered {1}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" entered " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_E7E119BF-4572-43E0-BC3A-CF470B74999A" />
+							<orm:Role ref="_A017BBBE-71EE-4D4A-BD64-31D1619968CF" />
 						</orm:RoleSequence>
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
@@ -2540,7 +2562,7 @@
 					<orm:Role id="_CBD49779-2E59-420B-BBD7-518AB55E6E7B" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_890D546C-1996-4726-98DB-4A4151CA6089" />
 					</orm:Role>
-					<orm:Role id="_2A70C8CB-45ED-4672-B0D8-1ADE420CF521" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
+					<orm:Role id="_2A70C8CB-45ED-4672-B0D8-1ADE420CF521" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="Driver">
 						<orm:RolePlayer ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -5841,6 +5863,96 @@
 					</orm:FactTypeDerivationPath>
 				</orm:DerivationRule>
 			</orm:Fact>
+			<orm:ImpliedFact id="_1788391E-1C9E-404F-A7C0-D4E408E8088C" _Name="VehicleDriverInvolvesUser">
+				<orm:FactRoles>
+					<orm:RoleProxy id="_7B2082B3-812C-4D5A-95E8-A29F79A6E3D8">
+						<orm:Role ref="_7C7024F3-ABFD-412A-B3F6-1026A5247ACF" />
+					</orm:RoleProxy>
+					<orm:Role id="_1947C667-884E-4736-B86D-09110D3438BF" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+						<orm:RolePlayer ref="_DAB21F33-2484-478F-9871-110A32001FD6" />
+					</orm:Role>
+				</orm:FactRoles>
+				<orm:ReadingOrders>
+					<orm:ReadingOrder id="_7A801E8C-95B0-471D-98DE-DCA3E3583A87">
+						<orm:Readings>
+							<orm:Reading id="_3B2D88D4-64E8-45CE-94B4-A169BFF86A7E">
+								<orm:Data>{0} involves {1}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" involves " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_1947C667-884E-4736-B86D-09110D3438BF" />
+							<orm:Role ref="_7B2082B3-812C-4D5A-95E8-A29F79A6E3D8" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+					<orm:ReadingOrder id="_DFF7A365-61C7-4416-AE9A-AF344398FE31">
+						<orm:Readings>
+							<orm:Reading id="_F8E0125F-6B79-4548-B7CE-D36BE19B5A0B">
+								<orm:Data>{0} is involved in {1}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" is involved in " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_7B2082B3-812C-4D5A-95E8-A29F79A6E3D8" />
+							<orm:Role ref="_1947C667-884E-4736-B86D-09110D3438BF" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+				</orm:ReadingOrders>
+				<orm:InternalConstraints>
+					<orm:UniquenessConstraint ref="_8DB4D488-EF5F-481C-ACA5-8E14EF2F1BEC" />
+					<orm:MandatoryConstraint ref="_21E16AAC-BF93-41EF-9A66-50098DC7DCF7" />
+				</orm:InternalConstraints>
+				<orm:ImpliedByObjectification ref="_FA83EF4F-51D7-4160-8080-82FF3FCE76C3" />
+			</orm:ImpliedFact>
+			<orm:ImpliedFact id="_9267EF5C-AA30-4777-951C-3ED090E9E6EF" _Name="VehicleDriverInvolvesVehicle">
+				<orm:FactRoles>
+					<orm:RoleProxy id="_F98CCCCC-1F0E-4A54-958C-A54FC9745621">
+						<orm:Role ref="_6663B9CB-74F2-43B7-8EBD-FDF256E5F3B2" />
+					</orm:RoleProxy>
+					<orm:Role id="_E859319C-3CA5-4EAF-A117-889F68FBA2A4" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+						<orm:RolePlayer ref="_DAB21F33-2484-478F-9871-110A32001FD6" />
+					</orm:Role>
+				</orm:FactRoles>
+				<orm:ReadingOrders>
+					<orm:ReadingOrder id="_024B7296-A93D-4477-8792-8C5232F4DCEA">
+						<orm:Readings>
+							<orm:Reading id="_8F855407-58AE-4809-A3DF-2EAF4AAE1D34">
+								<orm:Data>{0} involves {1}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" involves " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_E859319C-3CA5-4EAF-A117-889F68FBA2A4" />
+							<orm:Role ref="_F98CCCCC-1F0E-4A54-958C-A54FC9745621" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+					<orm:ReadingOrder id="_D39927EC-94C0-44FE-9E59-1C94CC607238">
+						<orm:Readings>
+							<orm:Reading id="_ECBDC37F-AE26-4C07-83F1-FDDAC1E0AC13">
+								<orm:Data>{0} is involved in {1}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" is involved in " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_F98CCCCC-1F0E-4A54-958C-A54FC9745621" />
+							<orm:Role ref="_E859319C-3CA5-4EAF-A117-889F68FBA2A4" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+				</orm:ReadingOrders>
+				<orm:InternalConstraints>
+					<orm:UniquenessConstraint ref="_60763E7D-6691-4349-9C1A-5E4BAFA72588" />
+					<orm:MandatoryConstraint ref="_B72584C9-2CD6-452A-A7FE-74659E7BFF44" />
+				</orm:InternalConstraints>
+				<orm:ImpliedByObjectification ref="_FA83EF4F-51D7-4160-8080-82FF3FCE76C3" />
+			</orm:ImpliedFact>
 		</orm:Facts>
 		<orm:Constraints>
 			<orm:UniquenessConstraint id="_1FEF91CF-70BC-4EDF-9E47-39016ED2922D" Name="InternalUniquenessConstraint1" IsInternal="true">
@@ -5982,6 +6094,7 @@
 					<orm:Role id="_5C71F481-542A-42CB-AE07-F4E4C5AC106D" ref="_7C7024F3-ABFD-412A-B3F6-1026A5247ACF" />
 					<orm:Role id="_F9578916-7165-4A7A-8BA6-64F1E46B10D3" ref="_6663B9CB-74F2-43B7-8EBD-FDF256E5F3B2" />
 				</orm:RoleSequence>
+				<orm:PreferredIdentifierFor ref="_DAB21F33-2484-478F-9871-110A32001FD6" />
 			</orm:UniquenessConstraint>
 			<orm:MandatoryConstraint id="_C34403EF-7865-433C-9276-3DB59BEDD806" Name="ImpliedMandatoryConstraint8" IsImplied="true">
 				<orm:RoleSequence>
@@ -8443,6 +8556,26 @@
 					</orm:RoleSequence>
 				</orm:RoleSequences>
 			</orm:SubsetConstraint>
+			<orm:UniquenessConstraint id="_8DB4D488-EF5F-481C-ACA5-8E14EF2F1BEC" Name="InternalUniquenessConstraint207" IsInternal="true" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_319ED539-609A-4AC1-80C0-DC585756289E" ref="_1947C667-884E-4736-B86D-09110D3438BF" />
+				</orm:RoleSequence>
+			</orm:UniquenessConstraint>
+			<orm:MandatoryConstraint id="_21E16AAC-BF93-41EF-9A66-50098DC7DCF7" Name="SimpleMandatoryConstraint104" IsSimple="true" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_797F01BD-D2CC-471F-A9F6-0F80A9BB865C" ref="_1947C667-884E-4736-B86D-09110D3438BF" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
+			<orm:UniquenessConstraint id="_60763E7D-6691-4349-9C1A-5E4BAFA72588" Name="InternalUniquenessConstraint208" IsInternal="true" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_A7F40381-C8ED-45F2-AD96-4A57C38F2621" ref="_E859319C-3CA5-4EAF-A117-889F68FBA2A4" />
+				</orm:RoleSequence>
+			</orm:UniquenessConstraint>
+			<orm:MandatoryConstraint id="_B72584C9-2CD6-452A-A7FE-74659E7BFF44" Name="SimpleMandatoryConstraint105" IsSimple="true" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_F818CA3D-2595-43DE-8D14-3E182BE7DCF3" ref="_E859319C-3CA5-4EAF-A117-889F68FBA2A4" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:UnspecifiedDataType id="_75EA85C2-1A83-415B-A49C-FCBB218BCD3B" />
@@ -8465,47 +8598,53 @@
 	</orm:ORMModel>
 	<ormDiagram:ORMDiagram id="_C68245E1-E426-4CFE-BFE0-0F22906B2E3D" IsCompleteView="false" Name="People and vehicles" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
-			<ormDiagram:ObjectTypeShape id="_3AFBC9C7-37E3-4456-B983-F6F42C62C6A6" IsExpanded="true" AbsoluteBounds="17.63888888888889, 7.055555555555555, 0.36000000000000004, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_3AFBC9C7-37E3-4456-B983-F6F42C62C6A6" IsExpanded="true" AbsoluteBounds="3.111111111111111, 3.0972222222222223, 0.36000000000000004, 0.22944444444444445">
 				<ormDiagram:Subject ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_962BCB84-979F-4217-A3B6-94DE0566CE0A" IsExpanded="true" AbsoluteBounds="16.22222222222222, 4.361111111111111, 0.67, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_962BCB84-979F-4217-A3B6-94DE0566CE0A" IsExpanded="true" AbsoluteBounds="4.013888888888889, 1.9305555555555556, 0.67, 0.22944444444444445">
 				<ormDiagram:Subject ref="_52905496-2B6C-4324-97E1-74EBAA34536F" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_A7F3BA80-FCAE-4C06-940C-BC2BA88CCF09" IsExpanded="true" AbsoluteBounds="18.916666666666668, 9.86111111111111, 0.505, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_A7F3BA80-FCAE-4C06-940C-BC2BA88CCF09" IsExpanded="true" AbsoluteBounds="4.388888888888889, 5.902777777777778, 0.505, 0.22944444444444445">
 				<ormDiagram:Subject ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_99031BBC-2098-4660-A3F4-6C07C0F37B3F" IsExpanded="true" AbsoluteBounds="20.63888888888889, 7.277777777777778, 0.7250000000000001, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_99031BBC-2098-4660-A3F4-6C07C0F37B3F" IsExpanded="true" AbsoluteBounds="6.111111111111111, 3.3194444444444446, 0.7250000000000001, 0.22944444444444445">
 				<ormDiagram:Subject ref="_7214E8FB-EC37-4A4B-AF3A-1E3D78C64308" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_68DB30FD-1619-42E9-A5CF-59F254B6374E" IsExpanded="true" AbsoluteBounds="21.88888888888889, 9.055555555555555, 0.36000000000000004, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_68DB30FD-1619-42E9-A5CF-59F254B6374E" IsExpanded="true" AbsoluteBounds="7.361111111111111, 5.097222222222222, 0.36000000000000004, 0.22944444444444445">
 				<ormDiagram:Subject ref="_659B2F3C-B40A-42ED-9F88-25F2EA7DA51F" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_5C29B6C7-4D34-4DCE-9642-B5DBA7BF6056" IsExpanded="true" AbsoluteBounds="20.5, 12.5, 0.56, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_5C29B6C7-4D34-4DCE-9642-B5DBA7BF6056" IsExpanded="true" AbsoluteBounds="5.972222222222222, 8.541666666666666, 0.56, 0.22944444444444445">
 				<ormDiagram:Subject ref="_2F1CC9F5-B0AD-45C8-AAB8-3059D6B8D25D" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_C9A7E0AA-0E1C-40B4-963B-2C0D85E5193B" IsExpanded="true" AbsoluteBounds="21.833333333333332, 10.944444444444445, 0.36000000000000004, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_C9A7E0AA-0E1C-40B4-963B-2C0D85E5193B" IsExpanded="true" AbsoluteBounds="7.305555555555555, 6.986111111111111, 0.36000000000000004, 0.22944444444444445">
 				<ormDiagram:Subject ref="_BAC2C0CB-6C51-4E39-A6B8-EBA840DC48D6" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_FC1A397A-5BC1-408B-AE21-F74A49BCFACB" IsExpanded="true" AbsoluteBounds="16, 9.694444444444445, 0.36000000000000004, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_FC1A397A-5BC1-408B-AE21-F74A49BCFACB" IsExpanded="true" AbsoluteBounds="3.375, 5.375, 0.36000000000000004, 0.22944444444444445">
 				<ormDiagram:Subject ref="_5E00C6C8-E4DE-4CBE-8A02-FB5E23CA6DA8" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_7EA76B08-DEFA-4388-BB87-3D7DFE153E53" IsExpanded="true" AbsoluteBounds="18.625, 12.875, 0.36000000000000004, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_7EA76B08-DEFA-4388-BB87-3D7DFE153E53" IsExpanded="true" AbsoluteBounds="4.097222222222222, 8.916666666666666, 0.36000000000000004, 0.22944444444444445">
 				<ormDiagram:Subject ref="_0E051F1E-AAA1-4273-B486-70626AAFD69C" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_4E2AFB4D-0482-4199-A861-049AC38718FC" IsExpanded="true" AbsoluteBounds="16.09722222222222, 12.041666666666666, 1.11, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_4E2AFB4D-0482-4199-A861-049AC38718FC" IsExpanded="true" AbsoluteBounds="1.5694444444444444, 8.083333333333334, 1.11, 0.22944444444444445">
 				<ormDiagram:Subject ref="_8E7DAF92-F86E-4DF8-99F7-C6BDA41FE8CE" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_5C56AD75-A129-409D-93D7-5805E9B47710" IsExpanded="true" AbsoluteBounds="5.069444444444445, 22.444444444444443, 0.36000000000000004, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_5C56AD75-A129-409D-93D7-5805E9B47710" IsExpanded="true" AbsoluteBounds="1.4583333333333333, 9.11111111111111, 0.36000000000000004, 0.22944444444444445">
 				<ormDiagram:Subject ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_73565CB1-EFA3-41B8-9C7C-96A4853CD708" IsExpanded="true" AbsoluteBounds="0.5, 0.5, 0.56, 0.22944444444444445">
 				<ormDiagram:Subject ref="_BAA8D8AC-AC9A-43F0-9031-DD65D4CD0E10" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_338FAA89-CE10-4ACB-93EF-3995142A4944" IsExpanded="true" AbsoluteBounds="17.97222222222222, 8.51388888888889, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_338FAA89-CE10-4ACB-93EF-3995142A4944" IsExpanded="true" AbsoluteBounds="2.888888888888889, 4.319444444444445, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_609C457A-6C36-46D7-B2D3-DF8A90F99D68" IsExpanded="true" AbsoluteBounds="17.97222222222222, 8.822477777881257, 1.2000000000000002, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_609C457A-6C36-46D7-B2D3-DF8A90F99D68" IsExpanded="true" AbsoluteBounds="2.888888888888889, 4.628033333436814, 1.2000000000000002, 0.1295030266046524">
 						<ormDiagram:Subject ref="_BE810DDA-01C3-4249-9B16-F3D922995F0B" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_9E164195-F628-4C12-8542-26E51B9D9A73" IsExpanded="true" AbsoluteBounds="3.1208333333850735, 4.216388888940629, 0.05, 0.05">
+						<ormDiagram:Subject ref="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E" />
+					</ormDiagram:RoleNameShape>
+					<ormDiagram:RoleNameShape id="_E8318C75-D0DF-4351-B8C0-77BAD799BE22" IsExpanded="true" AbsoluteBounds="2.9608333333850734, 4.216388888940629, 0.05, 0.05">
+						<ormDiagram:Subject ref="_A887735F-F812-4607-9B18-891CD9B47891" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_BB719737-8048-4700-8E5D-3AF85A80213C" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8513,9 +8652,9 @@
 					<ormDiagram:Role ref="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_F31C560B-F0D2-45E2-90C3-C1CE31D911D1" IsExpanded="true" AbsoluteBounds="18.5, 7.916666666666667, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_F31C560B-F0D2-45E2-90C3-C1CE31D911D1" IsExpanded="true" AbsoluteBounds="4.013888888888889, 4.194444444444445, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_1B755729-E9EF-47D5-AC63-227F9761898C" IsExpanded="true" AbsoluteBounds="18.5, 8.225255555659036, 0.9500000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_1B755729-E9EF-47D5-AC63-227F9761898C" IsExpanded="true" AbsoluteBounds="4.013888888888889, 4.503033333436814, 0.9500000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_8117C390-B50A-495A-AD77-BABBAA77FA7F" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8525,9 +8664,9 @@
 					<ormDiagram:Role ref="_6663B9CB-74F2-43B7-8EBD-FDF256E5F3B2" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_A184B4FE-8F8E-4C68-A9E4-2CCC771A024C" IsExpanded="true" AbsoluteBounds="16.930555555555557, 5.444444444444445, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_A184B4FE-8F8E-4C68-A9E4-2CCC771A024C" IsExpanded="true" AbsoluteBounds="3.3333333333333335, 2.5277777777777777, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_3A00A985-6135-4B45-A147-F1A7EB2495A8" IsExpanded="true" AbsoluteBounds="16.930555555555557, 5.753033333436814, 0.9500000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_3A00A985-6135-4B45-A147-F1A7EB2495A8" IsExpanded="true" AbsoluteBounds="3.3333333333333335, 2.8363666667701466, 0.9500000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_F738484C-59F5-4962-9DF2-B339E2131979" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8537,9 +8676,9 @@
 					<ormDiagram:Role ref="_28B650F1-1738-4BB8-9571-2AE2FF443A3C" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_973E58A1-2BE7-4A10-A53D-57D6DD46C7F1" IsExpanded="true" AbsoluteBounds="19.944444444444443, 8.305555555555555, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_973E58A1-2BE7-4A10-A53D-57D6DD46C7F1" IsExpanded="true" AbsoluteBounds="5.416666666666667, 4.347222222222222, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_C0DA76E1-E437-4CFF-9FAE-849DB1393292" IsExpanded="true" AbsoluteBounds="19.944444444444443, 8.614144444547925, 1.1500000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_C0DA76E1-E437-4CFF-9FAE-849DB1393292" IsExpanded="true" AbsoluteBounds="5.416666666666667, 4.655811111214591, 1.1500000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_50287656-0E7F-4A5D-B738-AA08000A3082" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8549,9 +8688,9 @@
 					<ormDiagram:Role ref="_5E18F64C-A928-4EC4-B229-FF6185B78827" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_CADCAD07-645F-4E8C-B0D0-659A4DEF1695" IsExpanded="true" AbsoluteBounds="20.555555555555557, 9.26388888888889, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_CADCAD07-645F-4E8C-B0D0-659A4DEF1695" IsExpanded="true" AbsoluteBounds="6.027777777777778, 5.305555555555555, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_D2EE4846-26B4-4535-8632-703AEBDC886A" IsExpanded="true" AbsoluteBounds="20.555555555555557, 9.572477777881257, 0.8999999999999999, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_D2EE4846-26B4-4535-8632-703AEBDC886A" IsExpanded="true" AbsoluteBounds="6.027777777777778, 5.614144444547924, 0.8999999999999999, 0.1295030266046524">
 						<ormDiagram:Subject ref="_AA594545-05DB-4D51-987D-61F3C3354865" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8561,9 +8700,9 @@
 					<ormDiagram:Role ref="_9E335866-4609-4FEA-9710-05B6898AC988" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_2C529C8F-32CA-435F-BB9F-783C639E85C3" IsExpanded="true" AbsoluteBounds="19.833333333333332, 11.13888888888889, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_2C529C8F-32CA-435F-BB9F-783C639E85C3" IsExpanded="true" AbsoluteBounds="5.305555555555555, 7.180555555555555, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_CC0A26C5-2D2E-426D-AD79-B8414E847CE1" IsExpanded="true" AbsoluteBounds="19.833333333333332, 11.447477777881257, 1.1, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_CC0A26C5-2D2E-426D-AD79-B8414E847CE1" IsExpanded="true" AbsoluteBounds="5.305555555555555, 7.489144444547924, 1.1, 0.1295030266046524">
 						<ormDiagram:Subject ref="_5634811D-F32E-48E3-BB70-A8755A4515AA" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8573,11 +8712,14 @@
 					<ormDiagram:Role ref="_A99B8CF1-1821-4EA0-BB48-D4E19B0278B1" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_D4AC6E18-E371-468C-89C2-0CE41DA49ED9" IsExpanded="true" AbsoluteBounds="17.34722222222222, 9.625, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_D4AC6E18-E371-468C-89C2-0CE41DA49ED9" IsExpanded="true" AbsoluteBounds="2.8194444444444446, 5.666666666666667, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_3276A283-D068-4393-9DBA-FB9CC7B09034" IsExpanded="true" AbsoluteBounds="17.34722222222222, 9.933588888992368, 1.25, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_3276A283-D068-4393-9DBA-FB9CC7B09034" IsExpanded="true" AbsoluteBounds="2.8194444444444446, 5.975255555659036, 1.25, 0.1295030266046524">
 						<ormDiagram:Subject ref="_F351F388-887E-4F40-B53E-3D7E13DF7B8E" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_7BC24C42-9F14-4DA3-AADF-771BB56DC9A4" IsExpanded="true" AbsoluteBounds="3.051388888940629, 5.563611111162851, 0.05, 0.05">
+						<ormDiagram:Subject ref="_71AFC159-A514-45AD-8629-139D92CEC6F2" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_736B24B0-97F5-4C35-BDA2-D35F41A2F376" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8585,9 +8727,9 @@
 					<ormDiagram:Role ref="_71AFC159-A514-45AD-8629-139D92CEC6F2" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_ED8DD933-3EC9-4058-B258-49286ACBE726" IsExpanded="true" AbsoluteBounds="20.51388888888889, 10.305555555555555, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_ED8DD933-3EC9-4058-B258-49286ACBE726" IsExpanded="true" AbsoluteBounds="5.986111111111111, 6.347222222222222, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_E4D7C36F-C881-44A4-9029-45756486DBB5" IsExpanded="true" AbsoluteBounds="20.51388888888889, 10.614144444547925, 0.8500000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_E4D7C36F-C881-44A4-9029-45756486DBB5" IsExpanded="true" AbsoluteBounds="5.986111111111111, 6.655811111214591, 0.8500000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_9908A29C-92B7-45EF-B38A-9D54A022E858" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8597,9 +8739,9 @@
 					<ormDiagram:Role ref="_12C6C26B-FFD2-4C8B-84B2-36F6232B6557" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_E9FDED5D-BF6C-45B7-BEAF-B9C97E694442" IsExpanded="true" AbsoluteBounds="18.75, 11.36111111111111, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_E9FDED5D-BF6C-45B7-BEAF-B9C97E694442" IsExpanded="true" AbsoluteBounds="4.222222222222222, 7.402777777777778, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_E798DF4F-E151-486E-A896-F9569B5FD88B" IsExpanded="true" AbsoluteBounds="18.75, 11.66970000010348, 0.75, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_E798DF4F-E151-486E-A896-F9569B5FD88B" IsExpanded="true" AbsoluteBounds="4.222222222222222, 7.711366666770147, 0.75, 0.1295030266046524">
 						<ormDiagram:Subject ref="_11BACC71-D1FF-4285-875C-B89687EB9D91" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8609,9 +8751,9 @@
 					<ormDiagram:Role ref="_12C08D54-3C2B-474F-962F-175F9AA5B8C9" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_DCEB9C6F-84CD-41D3-82CF-B73452350FEF" IsExpanded="true" AbsoluteBounds="17.625, 10.875, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_DCEB9C6F-84CD-41D3-82CF-B73452350FEF" IsExpanded="true" AbsoluteBounds="3.0972222222222223, 6.916666666666667, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_93AC7FE1-A935-4E71-8BC3-7457A62B5DDF" IsExpanded="true" AbsoluteBounds="17.625, 11.183588888992368, 1.5, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_93AC7FE1-A935-4E71-8BC3-7457A62B5DDF" IsExpanded="true" AbsoluteBounds="3.0972222222222223, 7.225255555659036, 1.5, 0.1295030266046524">
 						<ormDiagram:Subject ref="_EFE618FB-9CC5-4838-A453-E9D0D98BBB77" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8626,30 +8768,30 @@
 	</ormDiagram:ORMDiagram>
 	<ormDiagram:ORMDiagram id="_A2FC1AC7-EAE0-45DC-85C6-94397C267425" IsCompleteView="false" Name="Money and units" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
-			<ormDiagram:ObjectTypeShape id="_2896288A-FA0A-4AF2-863F-C85111CA346C" IsExpanded="true" AbsoluteBounds="15.347222222222221, 8.76388888888889, 0.44999999999999996, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_2896288A-FA0A-4AF2-863F-C85111CA346C" IsExpanded="true" AbsoluteBounds="12.48611111111111, 7.805555555555555, 0.44999999999999996, 0.22944444444444445">
 				<ormDiagram:Subject ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_D983E2AB-6618-42E1-8A4A-A84DABFB1EF6" IsExpanded="true" AbsoluteBounds="11.222222222222221, 4.888888888888889, 0.56, 0.22944444444444445">
 				<ormDiagram:Subject ref="_B831ABCC-D8D4-43A8-9650-E31310C4EB36" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_361A4052-D471-4DA4-900D-7202E8D76869" IsExpanded="true" AbsoluteBounds="0.5833333333333334, 2.611111111111111, 0.56, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_361A4052-D471-4DA4-900D-7202E8D76869" IsExpanded="true" AbsoluteBounds="3.4722222222222223, 2.888888888888889, 0.56, 0.22944444444444445">
 				<ormDiagram:Subject ref="_B10C4EC0-37A3-4C21-A19C-23DD5A5D19DD" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_44737292-A30E-4FDA-88B2-12BF14B5E737" IsExpanded="true" AbsoluteBounds="4.375, 5.486111111111111, 0.7799999999999999, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_44737292-A30E-4FDA-88B2-12BF14B5E737" IsExpanded="true" AbsoluteBounds="6.708333333333333, 5.555555555555555, 0.7799999999999999, 0.22944444444444445">
 				<ormDiagram:Subject ref="_41C1A239-7FFC-4DB2-9E16-14C52E846C42" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_9B56CC0D-527D-4A01-8BA0-F3F50FD9C325" IsExpanded="true" AbsoluteBounds="5.236111111111111, 1.75, 0.67, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_9B56CC0D-527D-4A01-8BA0-F3F50FD9C325" IsExpanded="true" AbsoluteBounds="7.777777777777778, 1.6388888888888888, 0.67, 0.22944444444444445">
 				<ormDiagram:Subject ref="_85EE3DE3-F6D0-48E6-8ACE-B4E615636FC8" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_B830C626-0C43-47AA-BE3F-DDC83398761F" IsExpanded="true" AbsoluteBounds="12.76388888888889, 2.8194444444444446, 0.44999999999999996, 0.22944444444444445">
 				<ormDiagram:Subject ref="_9ECFB556-1615-4B7B-A00C-4DD25A965CBA" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_B8CAE090-101B-4047-8C39-532393130183" IsExpanded="true" AbsoluteBounds="13.652777777777779, 6.875, 0.395, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_B8CAE090-101B-4047-8C39-532393130183" IsExpanded="true" AbsoluteBounds="10.98611111111111, 6.847222222222222, 0.395, 0.22944444444444445">
 				<ormDiagram:Subject ref="_8D76C545-8595-4FF3-981B-EF4585A47794" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_A47C5673-162E-4E44-8666-6CD699535F0C" IsExpanded="true" AbsoluteBounds="14.472222222222221, 7.791666666666667, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_A47C5673-162E-4E44-8666-6CD699535F0C" IsExpanded="true" AbsoluteBounds="11.944444444444445, 7.305555555555555, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_430C43BC-80C7-4D55-9F72-738F17A8A0BD" IsExpanded="true" AbsoluteBounds="14.472222222222221, 8.100255555659036, 0.8, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_430C43BC-80C7-4D55-9F72-738F17A8A0BD" IsExpanded="true" AbsoluteBounds="11.944444444444445, 7.614144444547924, 0.8, 0.1295030266046524">
 						<ormDiagram:Subject ref="_2DE09A9A-38CB-4949-8713-CED2772ADE75" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8659,9 +8801,9 @@
 					<ormDiagram:Role ref="_7AC633A0-DF28-4732-B77D-A55A82EF6A84" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_EC9804B2-70FC-462E-852F-18A5C0C880E2" IsExpanded="true" AbsoluteBounds="12.5, 5.972222222222222, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_EC9804B2-70FC-462E-852F-18A5C0C880E2" IsExpanded="true" AbsoluteBounds="11.291666666666666, 5.861111111111111, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_0334DA4F-F547-4EE8-96A7-11271DD3D351" IsExpanded="true" AbsoluteBounds="12.5, 6.280811111214591, 1, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_0334DA4F-F547-4EE8-96A7-11271DD3D351" IsExpanded="true" AbsoluteBounds="11.291666666666666, 6.16970000010348, 1, 0.1295030266046524">
 						<ormDiagram:Subject ref="_108B0400-0687-45AC-B325-A26CEA61839A" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8671,15 +8813,15 @@
 					<ormDiagram:Role ref="_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ExternalConstraintShape id="_3835CD23-3C8E-4537-B681-EB0781092D83" IsExpanded="true" AbsoluteBounds="13.38888888888889, 7.361111111111111, 0.16, 0.16">
+			<ormDiagram:ExternalConstraintShape id="_3835CD23-3C8E-4537-B681-EB0781092D83" IsExpanded="true" AbsoluteBounds="11.972222222222221, 6.416666666666667, 0.16, 0.16">
 				<ormDiagram:Subject ref="_0279CF1D-EA20-4452-A88F-2AB1E1204D08" />
 			</ormDiagram:ExternalConstraintShape>
-			<ormDiagram:ObjectTypeShape id="_89011631-9D95-48A9-9368-6A020614B3E7" IsExpanded="true" AbsoluteBounds="1.6388888888888888, 5, 0.56, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_89011631-9D95-48A9-9368-6A020614B3E7" IsExpanded="true" AbsoluteBounds="4, 4.277777777777778, 0.56, 0.22944444444444445">
 				<ormDiagram:Subject ref="_F534255C-BA18-4049-94DC-A816AC865ED6" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_6D8644D5-188A-413B-BA65-BE433A40AB6E" IsExpanded="true" AbsoluteBounds="0.7638888888888888, 4, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_6D8644D5-188A-413B-BA65-BE433A40AB6E" IsExpanded="true" AbsoluteBounds="5.083333333333333, 3.375, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_91B82435-0871-47D8-85A8-E815C3932463" IsExpanded="true" AbsoluteBounds="0.7638888888888888, 4.308588888992369, 1.05, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_91B82435-0871-47D8-85A8-E815C3932463" IsExpanded="true" AbsoluteBounds="5.083333333333333, 3.683588888992369, 1.05, 0.1295030266046524">
 						<ormDiagram:Subject ref="_B036BCA5-8A86-4F3B-A49D-E217BC7DB26D" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8701,15 +8843,15 @@
 					<ormDiagram:Role ref="_76B14F66-2B8D-4676-AE73-175539B353C1" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ExternalConstraintShape id="_DB5D5AE3-F1BB-4EA2-8847-B498DF5BAEE9" IsExpanded="true" AbsoluteBounds="1.5416666666666667, 5.458333333333333, 0.16, 0.16">
+			<ormDiagram:ExternalConstraintShape id="_DB5D5AE3-F1BB-4EA2-8847-B498DF5BAEE9" IsExpanded="true" AbsoluteBounds="5.402777777777778, 3.9027777777777777, 0.16, 0.16">
 				<ormDiagram:Subject ref="_6D48613A-E667-4673-B47E-5DA543BA9A21" />
 			</ormDiagram:ExternalConstraintShape>
-			<ormDiagram:ObjectTypeShape id="_2FA1FBDD-D678-4667-A3E7-33F8CC602F80" IsExpanded="true" AbsoluteBounds="2.5694444444444446, 0.9722222222222222, 0.44999999999999996, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_2FA1FBDD-D678-4667-A3E7-33F8CC602F80" IsExpanded="true" AbsoluteBounds="3.4444444444444446, 1.0833333333333333, 0.44999999999999996, 0.22944444444444445">
 				<ormDiagram:Subject ref="_9A8AD5BC-0267-490A-9495-F4F5FEDE61FA" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_6A80FD72-AB96-4941-9E6F-724C5EBFF65A" IsExpanded="true" AbsoluteBounds="1.3472222222222223, 1.1805555555555556, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_6A80FD72-AB96-4941-9E6F-724C5EBFF65A" IsExpanded="true" AbsoluteBounds="3.1944444444444446, 1.8611111111111112, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_0BBA5A0D-9F41-4D3D-8814-0C1DB0A12863" IsExpanded="true" AbsoluteBounds="1.3472222222222223, 1.4891444445479247, 0.9500000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_0BBA5A0D-9F41-4D3D-8814-0C1DB0A12863" IsExpanded="true" AbsoluteBounds="3.1944444444444446, 2.1697000001034805, 0.9500000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_6A89428E-1BF3-482E-8F26-45BF91D3CFAA" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8719,9 +8861,9 @@
 					<ormDiagram:Role ref="_FC3636E5-E73A-44CA-890A-78B0DCF87737" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_2CDE9142-B221-437E-BFD6-878E67A32287" IsExpanded="true" AbsoluteBounds="3.9722222222222223, 0.8333333333333334, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_2CDE9142-B221-437E-BFD6-878E67A32287" IsExpanded="true" AbsoluteBounds="4.847222222222222, 1.0694444444444444, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_69406011-9518-4287-8453-80B75E561139" IsExpanded="true" AbsoluteBounds="3.9722222222222223, 1.1419222223257026, 1.1500000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_69406011-9518-4287-8453-80B75E561139" IsExpanded="true" AbsoluteBounds="4.847222222222222, 1.3780333334368136, 1.1500000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_020B7512-A06A-4F8C-8CC1-61190D5C468F" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8766,9 +8908,9 @@
 					<ormDiagram:Role ref="_6C0C5EDB-89DA-4DDE-AA0D-8366EF8CF338" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_90E5E033-595D-4C56-8426-013A4273723F" IsExpanded="true" AbsoluteBounds="6.180555555555555, 4.847222222222222, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_90E5E033-595D-4C56-8426-013A4273723F" IsExpanded="true" AbsoluteBounds="6.277777777777778, 4.666666666666667, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_0DECFF2A-F1B4-4ED8-AB04-093289850843" IsExpanded="true" AbsoluteBounds="6.180555555555555, 5.155811111214591, 1.9000000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_0DECFF2A-F1B4-4ED8-AB04-093289850843" IsExpanded="true" AbsoluteBounds="6.277777777777778, 4.975255555659036, 1.9000000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_F74B91D0-4986-46D1-A1AB-624D34388DEA" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8778,9 +8920,9 @@
 					<ormDiagram:Role ref="_6836F543-61A0-467A-997A-985D1A1ADA7B" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_6A5EC3C9-919A-477F-A971-866948652F00" IsExpanded="true" AbsoluteBounds="6.638888888888889, 2.7222222222222223, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_6A5EC3C9-919A-477F-A971-866948652F00" IsExpanded="true" AbsoluteBounds="7.291666666666667, 2.861111111111111, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_2CC847FC-4081-48BD-914C-DCE6F5F237A5" IsExpanded="true" AbsoluteBounds="6.638888888888889, 3.0308111112145912, 1.7000000000000002, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_2CC847FC-4081-48BD-914C-DCE6F5F237A5" IsExpanded="true" AbsoluteBounds="7.291666666666667, 3.16970000010348, 1.7000000000000002, 0.1295030266046524">
 						<ormDiagram:Subject ref="_E49DB868-0F72-4991-B066-73E31BD59D41" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8806,6 +8948,9 @@
 					<ormDiagram:ReadingShape id="_98A6D7F3-1055-4F60-BB75-0199A5A4CE52" IsExpanded="true" AbsoluteBounds="5.097222222222222, 2.0169222223257024, 1.4000000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_69EF7E2A-56D1-4C46-B68E-2FAEC099C686" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_BD87675A-B63E-4FBF-8B65-B1E4725AF1DE" IsExpanded="true" AbsoluteBounds="5.3291666667184066, 1.6052777778295182, 0.05, 0.05">
+						<ormDiagram:Subject ref="_C24D2C45-9232-438A-9969-2FC1D89D213E" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_9BA78440-8F49-4C89-9B17-A32099992386" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8821,6 +8966,9 @@
 					<ormDiagram:ReadingShape id="_85C80A79-6EBF-4D83-A87A-CB3F5850B2BD" IsExpanded="true" AbsoluteBounds="4.333333333333333, 4.211366666770147, 1.6, 0.1295030266046524">
 						<ormDiagram:Subject ref="_9446DA1B-B34B-48BE-8F21-D52EAE88BCC1" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_CCB9F6D7-C51B-46E6-9A7A-7DBD9CD987B4" IsExpanded="true" AbsoluteBounds="4.565277777829518, 3.799722222273962, 0.05, 0.05">
+						<ormDiagram:Subject ref="_54B699BF-0BE5-4234-A84C-1854D89B7701" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_2362FF4D-916E-44BC-AA14-A35CD24663DB" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8828,7 +8976,7 @@
 					<ormDiagram:Role ref="_54B699BF-0BE5-4234-A84C-1854D89B7701" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_3593908C-2862-4FEA-8066-38472506B0B6" IsExpanded="true" AbsoluteBounds="2.9305555555555554, 2.263888888888889, 0.395, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_3593908C-2862-4FEA-8066-38472506B0B6" IsExpanded="true" AbsoluteBounds="2.5555555555555554, 1.8888888888888888, 0.395, 0.22944444444444445">
 				<ormDiagram:Subject ref="_8D76C545-8595-4FF3-981B-EF4585A47794" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_70D0817C-FA47-424C-A7EA-F82D0C6C43ED" IsExpanded="true" AbsoluteBounds="2.4444444444444446, 2.9444444444444446, 0.3838888889923692, 0.24388888899236916">
@@ -8836,6 +8984,9 @@
 					<ormDiagram:ReadingShape id="_0C46CCAF-3FBB-4EDD-BF59-3D7E66F33ED6" IsExpanded="true" AbsoluteBounds="2.4444444444444446, 3.2530333334368136, 1.5, 0.1295030266046524">
 						<ormDiagram:Subject ref="_05BCB126-6D94-458A-82E0-EC98B047BDC1" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_93EFE093-AB62-4A19-B424-AA61466520AD" IsExpanded="true" AbsoluteBounds="2.676388888940629, 2.841388888940629, 0.05, 0.05">
+						<ormDiagram:Subject ref="_166811E8-260A-41A0-8F2D-4A02009AF641" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_64757A04-2A57-4C6F-B87A-563081DF5EA8" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8843,14 +8994,17 @@
 					<ormDiagram:Role ref="_166811E8-260A-41A0-8F2D-4A02009AF641" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_163AF862-7A3C-4942-85BD-0203654DBCDE" IsExpanded="true" AbsoluteBounds="0.5, 2.1805555555555554, 0.56, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_163AF862-7A3C-4942-85BD-0203654DBCDE" IsExpanded="true" AbsoluteBounds="1.9444444444444444, 0.8888888888888888, 0.56, 0.22944444444444445">
 				<ormDiagram:Subject ref="_BAA8D8AC-AC9A-43F0-9031-DD65D4CD0E10" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_05E4097F-3F7A-4429-8DC2-FF5D91A7D9DA" IsExpanded="true" AbsoluteBounds="1.9722222222222223, 2.1666666666666665, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_05E4097F-3F7A-4429-8DC2-FF5D91A7D9DA" IsExpanded="true" AbsoluteBounds="1.7222222222222223, 1.9583333333333333, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_2CA77E6B-3AE1-4CF9-86DD-942823CF4F79" IsExpanded="true" AbsoluteBounds="1.9722222222222223, 2.475255555659036, 2.15, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_2CA77E6B-3AE1-4CF9-86DD-942823CF4F79" IsExpanded="true" AbsoluteBounds="1.7222222222222223, 2.2669222223257024, 2.15, 0.1295030266046524">
 						<ormDiagram:Subject ref="_BDD624BD-45D4-4CF3-B8DD-67A38E510280" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_B9CD4AFE-5AE7-4653-9963-D1DE8E983CD5" IsExpanded="true" AbsoluteBounds="1.9541666667184066, 1.8552777778295177, 0.05, 0.05">
+						<ormDiagram:Subject ref="_733E915D-3114-42A1-9FA6-626DCB62ED89" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_155538B8-158C-4C84-9E70-6E50BDF6334F" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8863,6 +9017,9 @@
 					<ormDiagram:ReadingShape id="_B9B81DB1-BDFF-4782-9B22-BE037C9738FE" IsExpanded="true" AbsoluteBounds="4.944444444444445, 3.6002555556590354, 2.3000000000000003, 0.1295030266046524">
 						<ormDiagram:Subject ref="_06E8D778-4BBB-4849-B5D3-48BB29790BF0" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_B220F891-E7F0-44FE-B5DA-F4EAB472B5A6" IsExpanded="true" AbsoluteBounds="5.176388888940629, 3.1886111111628512, 0.05, 0.05">
+						<ormDiagram:Subject ref="_950B6EA4-A0C2-4634-89FC-170DE9F045EA" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_0CB1EBEC-B5C3-4FDC-B6C9-7B35DF84BE3E" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8875,6 +9032,9 @@
 					<ormDiagram:ReadingShape id="_FF550362-F0DE-4697-9776-23484A69318F" IsExpanded="true" AbsoluteBounds="2.6944444444444446, 1.5585888889923691, 1.8500000000000003, 0.1295030266046524">
 						<ormDiagram:Subject ref="_A5EF6174-4A36-45F0-B529-76E5567A62E7" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_E0487697-12CE-40C0-84A8-B1F274084CDD" IsExpanded="true" AbsoluteBounds="2.926388888940629, 1.1469444444961847, 0.05, 0.05">
+						<ormDiagram:Subject ref="_00E2B4DD-D1B9-42D8-B170-ED0107452DC6" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_6EDDABAD-D6F3-4A2E-98BA-EF5378F7B07E" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8887,6 +9047,9 @@
 					<ormDiagram:ReadingShape id="_2897DE97-F20A-472F-AE1B-5C3AC9551450" IsExpanded="true" AbsoluteBounds="3.625, 1.3641444445479247, 1.75, 0.1295030266046524">
 						<ormDiagram:Subject ref="_767C3466-7AB3-4DAA-99F1-B9D760885AC2" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_316DA14D-9B66-4C1F-8B00-E15040E817D4" IsExpanded="true" AbsoluteBounds="4.016944444496184, 0.9525000000517403, 0.05, 0.05">
+						<ormDiagram:Subject ref="_800B696C-9534-4E42-B669-AD254FC6536A" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_35D1CBBA-D05A-4076-A003-27A870F24210" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8900,6 +9063,9 @@
 					<ormDiagram:ReadingShape id="_8442091E-677D-4A42-B551-F65188EACE98" IsExpanded="true" AbsoluteBounds="4.75, 1.4058111112145915, 1.2000000000000002, 0.1295030266046524">
 						<ormDiagram:Subject ref="_89A08B36-A70B-4563-9438-8D7D3938B43F" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_491E7CC2-DAD1-4135-95F4-DE69CFDDC05B" IsExpanded="true" AbsoluteBounds="4.981944444496184, 0.994166666718407, 0.05, 0.05">
+						<ormDiagram:Subject ref="_59F74FAC-6A81-4639-9615-6377FAF96626" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_93972F6B-A0E6-4399-A219-C842BF2153B0" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8912,6 +9078,9 @@
 					<ormDiagram:ReadingShape id="_9E803411-59B1-476F-B55A-2BE921AC3CA7" IsExpanded="true" AbsoluteBounds="3.0694444444444446, 3.8641444445479243, 1.3, 0.1295030266046524">
 						<ormDiagram:Subject ref="_EE594CF3-0E7C-403C-9674-54D733D74E09" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_79FDDA78-C492-4DF3-AA01-69080D9B6C00" IsExpanded="true" AbsoluteBounds="3.301388888940629, 3.45250000005174, 0.05, 0.05">
+						<ormDiagram:Subject ref="_1EB0CF8E-7CF6-4769-8ABE-02940EEDFEF4" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_B32EE5C4-7724-40D2-A321-5C0C1A5CCECF" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8927,30 +9096,30 @@
 	</ormDiagram:ORMDiagram>
 	<ormDiagram:ORMDiagram id="_13ED94DC-EE5E-4FF9-B048-9428411B8D54" IsCompleteView="false" Name="Records" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
 		<ormDiagram:Shapes>
-			<ormDiagram:ObjectTypeShape id="_CDB28C83-640F-4808-B469-204AA4C3F199" IsExpanded="true" AbsoluteBounds="2.5555555555555554, 0.5, 0.44999999999999996, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_CDB28C83-640F-4808-B469-204AA4C3F199" IsExpanded="true" AbsoluteBounds="3.638888888888889, 1.1527777777777777, 0.44999999999999996, 0.22944444444444445">
 				<ormDiagram:Subject ref="_64C7769B-046B-495E-B2CD-AD0522B51F56" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_7FBEC258-C915-4EFF-90E1-D07AA5394CF1" IsExpanded="true" AbsoluteBounds="8.36111111111111, 6.041666666666667, 0.36000000000000004, 0.22944444444444445">
 				<ormDiagram:Subject ref="_DAABFF77-937E-4029-BE3A-34BD9270EFBF" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_58D2652A-7DA5-4FF9-AB2C-2964F2E4E6D2" IsExpanded="true" AbsoluteBounds="4.111111111111111, 11.722222222222221, 0.56, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_58D2652A-7DA5-4FF9-AB2C-2964F2E4E6D2" IsExpanded="true" AbsoluteBounds="4.736111111111111, 9.875, 0.56, 0.22944444444444445">
 				<ormDiagram:Subject ref="_DFE59D43-C9F6-4BB1-AB6F-E703B0F211C3" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_9EFEFEF7-5C72-4FDE-8D85-BB52A5563E33" IsExpanded="true" AbsoluteBounds="5.527777777777778, 5.25, 0.44999999999999996, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_9EFEFEF7-5C72-4FDE-8D85-BB52A5563E33" IsExpanded="true" AbsoluteBounds="4.972222222222222, 3.75, 0.44999999999999996, 0.22944444444444445">
 				<ormDiagram:Subject ref="_DE5DEB2A-1873-4346-AF20-FEFB6DCA3E76" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_8C09BE0C-BBA6-4498-9BA8-14D47B6E0842" IsExpanded="true" AbsoluteBounds="4.611111111111111, 8.833333333333334, 0.67, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_8C09BE0C-BBA6-4498-9BA8-14D47B6E0842" IsExpanded="true" AbsoluteBounds="4.541666666666667, 7.555555555555555, 0.67, 0.22944444444444445">
 				<ormDiagram:Subject ref="_9FF4D860-7EDF-4129-81D0-7484A7F694CA" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_54BF4F47-FD6E-4AD8-ACAB-B084F2E24E6F" IsExpanded="true" AbsoluteBounds="10.625, 2.8472222222222223, 0.56, 0.22944444444444445">
 				<ormDiagram:Subject ref="_D3D9EF81-F055-4F1A-A33A-E5C495D7B619" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_717E0558-DCFF-4A0A-AD7A-1E8C3B1C543C" IsExpanded="true" AbsoluteBounds="7.111111111111111, 7.722222222222222, 0.7799999999999999, 0.3590277777777778">
+			<ormDiagram:ObjectTypeShape id="_717E0558-DCFF-4A0A-AD7A-1E8C3B1C543C" IsExpanded="true" AbsoluteBounds="6.666666666666667, 6.916666666666667, 0.7799999999999999, 0.3590277777777778">
 				<ormDiagram:Subject ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_934D009F-F75A-42FC-9E3D-D5E4300478EB" IsExpanded="true" AbsoluteBounds="6.458333333333333, 6.513888888888889, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_934D009F-F75A-42FC-9E3D-D5E4300478EB" IsExpanded="true" AbsoluteBounds="6.013888888888889, 5.708333333333333, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_83FE5059-03AC-455D-A2AA-9088825E3067" IsExpanded="true" AbsoluteBounds="6.458333333333333, 6.822477777881257, 1, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_83FE5059-03AC-455D-A2AA-9088825E3067" IsExpanded="true" AbsoluteBounds="6.013888888888889, 6.016922222325702, 1, 0.1295030266046524">
 						<ormDiagram:Subject ref="_9FEFBCA1-2730-4D59-8D8C-955B01A00EC8" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8960,14 +9129,17 @@
 					<ormDiagram:Role ref="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_42AE423D-E856-42FD-BB98-962EFF75CF70" IsExpanded="true" AbsoluteBounds="2.513888888888889, 5.513888888888889, 0.7799999999999999, 0.3590277777777778">
+			<ormDiagram:ObjectTypeShape id="_42AE423D-E856-42FD-BB98-962EFF75CF70" IsExpanded="true" AbsoluteBounds="3.4027777777777777, 5.694444444444445, 0.7799999999999999, 0.3590277777777778">
 				<ormDiagram:Subject ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_924F462A-E202-4257-9998-05879894428D" IsExpanded="true" AbsoluteBounds="4.097222222222222, 5.402777777777778, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_924F462A-E202-4257-9998-05879894428D" IsExpanded="true" AbsoluteBounds="3.6944444444444446, 4.569444444444445, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_C361ACDB-A1AC-4AC9-A63B-DECE939AE37E" IsExpanded="true" AbsoluteBounds="4.097222222222222, 5.711366666770147, 1.3, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_C361ACDB-A1AC-4AC9-A63B-DECE939AE37E" IsExpanded="true" AbsoluteBounds="3.6944444444444446, 4.878033333436814, 1.3, 0.1295030266046524">
 						<ormDiagram:Subject ref="_3CDBDFE6-ACCD-4C14-84DB-ECCA183E967F" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_E73CA78D-BEF4-4676-B45C-ED6643D51903" IsExpanded="true" AbsoluteBounds="3.926388888940629, 4.466388888940629, 0.05, 0.05">
+						<ormDiagram:Subject ref="_E7E119BF-4572-43E0-BC3A-CF470B74999A" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_A79546DB-541A-4C49-A4CA-164C3E7F5CDE" />
 				<ormDiagram:RoleDisplayOrder>
@@ -8987,9 +9159,9 @@
 					<ormDiagram:Role ref="_037C8C25-2E1E-4B21-8A92-56862D767CB7" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_F06C7A52-195B-4701-85F8-350581528E5A" IsExpanded="true" AbsoluteBounds="5.097222222222222, 7, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_F06C7A52-195B-4701-85F8-350581528E5A" IsExpanded="true" AbsoluteBounds="5.027777777777778, 5.722222222222222, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_A046823D-16DE-451C-9A6C-C29EB195B3D4" IsExpanded="true" AbsoluteBounds="5.097222222222222, 7.308588888992369, 1.1500000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_A046823D-16DE-451C-9A6C-C29EB195B3D4" IsExpanded="true" AbsoluteBounds="5.027777777777778, 6.030811111214591, 1.1500000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_11579AF6-EBCE-418B-8703-B82F61C2BD9B" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -8999,9 +9171,9 @@
 					<ormDiagram:Role ref="_D423D326-24E2-44BB-8D1A-8BF0FC4C2DB2" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_D994A494-E382-4F21-BFD6-3316F20BA874" IsExpanded="true" AbsoluteBounds="4.444444444444445, 10.277777777777779, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_D994A494-E382-4F21-BFD6-3316F20BA874" IsExpanded="true" AbsoluteBounds="5.069444444444445, 8.430555555555555, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_3042FFE2-A3E0-48F5-A794-C7EF0D2F149A" IsExpanded="true" AbsoluteBounds="4.444444444444445, 10.586366666770147, 1.1500000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_3042FFE2-A3E0-48F5-A794-C7EF0D2F149A" IsExpanded="true" AbsoluteBounds="5.069444444444445, 8.739144444547925, 1.1500000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_B0AA31C6-D6F5-463E-B283-985686DE2FA0" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -9014,9 +9186,9 @@
 			<ormDiagram:ObjectTypeShape id="_866637B8-9E19-4A4D-970F-94F2AAC88298" IsExpanded="true" AbsoluteBounds="3.0416666666666665, 3.4583333333333335, 0.395, 0.22944444444444445">
 				<ormDiagram:Subject ref="_890D546C-1996-4726-98DB-4A4151CA6089" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_3456D44E-7119-40C0-8E30-B66C6725A4A9" IsExpanded="true" AbsoluteBounds="2.8472222222222223, 1.6944444444444444, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_3456D44E-7119-40C0-8E30-B66C6725A4A9" IsExpanded="true" AbsoluteBounds="3.9305555555555554, 2.3472222222222223, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_A40F10CD-B16F-4B39-A784-88DF0EBBA02D" IsExpanded="true" AbsoluteBounds="2.8472222222222223, 2.0030333334368136, 0.9500000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_A40F10CD-B16F-4B39-A784-88DF0EBBA02D" IsExpanded="true" AbsoluteBounds="3.9305555555555554, 2.6558111112145912, 0.9500000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_7B6B3FCD-1286-4414-AF31-50C491BDEC7F" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -9031,6 +9203,9 @@
 					<ormDiagram:ReadingShape id="_D1638202-4E8D-4857-924F-29D6CEBE0BA4" IsExpanded="true" AbsoluteBounds="2.1666666666666665, 4.655811111214591, 1.05, 0.1295030266046524">
 						<ormDiagram:Subject ref="_7E60CACB-B477-4600-9C91-227FA856BFC0" />
 					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_0E850A41-9E78-4BB1-956E-263DE81E7F9A" IsExpanded="true" AbsoluteBounds="2.398611111162851, 4.244166666718407, 0.05, 0.05">
+						<ormDiagram:Subject ref="_2A70C8CB-45ED-4672-B0D8-1ADE420CF521" />
+					</ormDiagram:RoleNameShape>
 				</ormDiagram:RelativeShapes>
 				<ormDiagram:Subject ref="_FD2A35E6-742E-47D1-A756-EEAD42784D04" />
 				<ormDiagram:RoleDisplayOrder>
@@ -9038,12 +9213,12 @@
 					<ormDiagram:Role ref="_2A70C8CB-45ED-4672-B0D8-1ADE420CF521" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_2EE2D686-9709-4962-9188-7A215C8F444E" IsExpanded="true" AbsoluteBounds="0.5, 1.6388888888888888, 0.56, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_2EE2D686-9709-4962-9188-7A215C8F444E" IsExpanded="true" AbsoluteBounds="2.4444444444444446, 1.25, 0.56, 0.22944444444444445">
 				<ormDiagram:Subject ref="_F534255C-BA18-4049-94DC-A816AC865ED6" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_6F7E378B-B506-48D6-9878-E27680382C7A" IsExpanded="true" AbsoluteBounds="1.7083333333333333, 2.3194444444444446, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_6F7E378B-B506-48D6-9878-E27680382C7A" IsExpanded="true" AbsoluteBounds="2.888888888888889, 2.1805555555555554, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_6AE64ED0-E6A4-4986-AAAD-1DF7FD655F61" IsExpanded="true" AbsoluteBounds="1.7083333333333333, 2.6280333334368136, 1.05, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_6AE64ED0-E6A4-4986-AAAD-1DF7FD655F61" IsExpanded="true" AbsoluteBounds="2.888888888888889, 2.4891444445479247, 1.05, 0.1295030266046524">
 						<ormDiagram:Subject ref="_1F319853-565C-40FF-8B93-1E033D2BE3DB" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -9056,12 +9231,12 @@
 			<ormDiagram:ObjectTypeShape id="_2F1B81B0-48D2-4BD0-ADF1-6730C8F2286E" IsExpanded="true" AbsoluteBounds="0.7222222222222222, 3.4722222222222223, 0.7799999999999999, 0.22944444444444445">
 				<ormDiagram:Subject ref="_8302E203-13F7-4C5A-938A-C2A4BD091E8B" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_3A6AB904-3692-47B2-9641-2FB8A55073D2" IsExpanded="true" AbsoluteBounds="6.958333333333333, 2.763888888888889, 0.395, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_3A6AB904-3692-47B2-9641-2FB8A55073D2" IsExpanded="true" AbsoluteBounds="8.875, 4.777777777777778, 0.395, 0.22944444444444445">
 				<ormDiagram:Subject ref="_8D76C545-8595-4FF3-981B-EF4585A47794" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_E06DFDA6-D0AD-42A9-8A39-60E86DC5FE08" IsExpanded="true" AbsoluteBounds="6.194444444444445, 3.75, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_E06DFDA6-D0AD-42A9-8A39-60E86DC5FE08" IsExpanded="true" AbsoluteBounds="7.583333333333333, 4.888888888888889, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_1C6DEC57-E186-4B41-9C27-E732A5FFBAEA" IsExpanded="true" AbsoluteBounds="6.194444444444445, 4.058588888992369, 0.8500000000000001, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_1C6DEC57-E186-4B41-9C27-E732A5FFBAEA" IsExpanded="true" AbsoluteBounds="7.583333333333333, 5.197477777881257, 0.8500000000000001, 0.1295030266046524">
 						<ormDiagram:Subject ref="_39F2144A-6241-4F08-8404-AF9FBE249E77" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -9071,12 +9246,12 @@
 					<ormDiagram:Role ref="_68FA7D37-B900-4D63-AE45-133F36637805" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_66141228-6B1E-4FD4-AC36-FBB5CF339CA8" IsExpanded="true" AbsoluteBounds="7.875, 3.8055555555555554, 0.36000000000000004, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_66141228-6B1E-4FD4-AC36-FBB5CF339CA8" IsExpanded="true" AbsoluteBounds="7.111111111111111, 3.2916666666666665, 0.36000000000000004, 0.22944444444444445">
 				<ormDiagram:Subject ref="_5DF729D6-3861-4733-B1B9-7B153E87A43B" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_9AB38CF7-21F2-4395-8050-A88435CC0AE7" IsExpanded="true" AbsoluteBounds="8.125, 2.3472222222222223, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_9AB38CF7-21F2-4395-8050-A88435CC0AE7" IsExpanded="true" AbsoluteBounds="7.847222222222222, 4.041666666666667, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_6DBC5E90-52D6-487D-B843-8B5619EF4D7A" IsExpanded="true" AbsoluteBounds="8.125, 2.6558111112145912, 1.1, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_6DBC5E90-52D6-487D-B843-8B5619EF4D7A" IsExpanded="true" AbsoluteBounds="7.847222222222222, 4.350255555659036, 1.1, 0.1295030266046524">
 						<ormDiagram:Subject ref="_03162D1C-02E6-4FC3-9417-846AD30D8E1E" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -9207,7 +9382,7 @@
 					<ormDiagram:Role ref="_36505B08-99CC-4722-8097-DAA1F1E2AFF1" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_D2C8BE1A-3C54-499B-9959-E3F3836F9208" IsExpanded="true" AbsoluteBounds="0.5, 2.4166666666666665, 0.7250000000000001, 0.3590277777777778">
+			<ormDiagram:ObjectTypeShape id="_D2C8BE1A-3C54-499B-9959-E3F3836F9208" IsExpanded="true" AbsoluteBounds="2.611111111111111, 1.8194444444444444, 0.7250000000000001, 0.3590277777777778">
 				<ormDiagram:Subject ref="_BAC2C0CB-6C51-4E39-A6B8-EBA840DC48D6" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_9C7A3B2B-5B2C-4C1E-AA2D-DDB6E225FC45" IsExpanded="true" AbsoluteBounds="1.9305555555555556, 2.5694444444444446, 0.3838888889923692, 0.24388888899236916">
@@ -9260,13 +9435,13 @@
 			<ormDiagram:ObjectTypeShape id="_F50CD100-A921-40F7-9092-46A9C252D814" IsExpanded="true" AbsoluteBounds="4.305555555555555, 7.5, 0.44999999999999996, 0.22944444444444445">
 				<ormDiagram:Subject ref="_5C5AA308-73EC-494B-8E31-34CAD27E1E08" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_A4E6021A-3F26-4A43-A90C-2C84BD927575" IsExpanded="true" AbsoluteBounds="9.916666666666666, 0.5, 0.36000000000000004, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_A4E6021A-3F26-4A43-A90C-2C84BD927575" IsExpanded="true" AbsoluteBounds="9.152777777777779, 1.5416666666666667, 0.36000000000000004, 0.22944444444444445">
 				<ormDiagram:Subject ref="_09286992-5484-4F2D-8F2B-6C1BF87B2F6F" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_77B89D27-ECD7-4688-9307-2C9B0771713D" IsExpanded="true" AbsoluteBounds="0.5277777777777778, 3.4305555555555554, 0.835, 0.22944444444444445">
 				<ormDiagram:Subject ref="_9D80123A-9618-4C74-9494-6D8AACBCFA75" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_21660B7B-6323-414C-8FE0-228BD62EF271" IsExpanded="true" AbsoluteBounds="7.375, 2.4166666666666665, 0.7250000000000001, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_21660B7B-6323-414C-8FE0-228BD62EF271" IsExpanded="true" AbsoluteBounds="6.819444444444445, 2.9722222222222223, 0.7250000000000001, 0.22944444444444445">
 				<ormDiagram:Subject ref="_046DBB94-CEE9-4E20-B771-D0E7AB0C7B4D" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_B17FC1D6-045A-47DF-A1AE-0552B67945FA" IsExpanded="true" AbsoluteBounds="2.125, 7.277777777777778, 0.7250000000000001, 0.22944444444444445">
@@ -9329,7 +9504,7 @@
 					<ormDiagram:Role ref="_1705B15D-A920-4517-8AAB-81A7227A7864" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_094FB6E3-4B25-4AD3-95A2-696890A67CFB" IsExpanded="true" AbsoluteBounds="5.708333333333333, 1.8472222222222223, 0.395, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_094FB6E3-4B25-4AD3-95A2-696890A67CFB" IsExpanded="true" AbsoluteBounds="4.958333333333333, 1.0833333333333333, 0.395, 0.22944444444444445">
 				<ormDiagram:Subject ref="_8D76C545-8595-4FF3-981B-EF4585A47794" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_B313E5BD-F3ED-4254-A239-527209B7BE3E" IsExpanded="true" AbsoluteBounds="4.652777777777778, 2.861111111111111, 0.3838888889923692, 0.24388888899236916">
@@ -9380,9 +9555,9 @@
 					<ormDiagram:Role ref="_174E22D7-F26D-4DCB-A62D-1A6CEF83E075" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_41A35B82-51E2-4579-A6B3-7107A9009653" IsExpanded="true" AbsoluteBounds="8.833333333333334, 1.2361111111111112, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_41A35B82-51E2-4579-A6B3-7107A9009653" IsExpanded="true" AbsoluteBounds="8.069444444444445, 2.2777777777777777, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_655B741D-BAA8-4A1F-9132-1B30694537F0" IsExpanded="true" AbsoluteBounds="8.833333333333334, 1.5447000001034803, 1.1, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_655B741D-BAA8-4A1F-9132-1B30694537F0" IsExpanded="true" AbsoluteBounds="8.069444444444445, 2.586366666770147, 1.1, 0.1295030266046524">
 						<ormDiagram:Subject ref="_31A83E83-263C-4A5B-B940-E044EAB5721F" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -9392,9 +9567,9 @@
 					<ormDiagram:Role ref="_7C7F5A1B-3D99-4318-B6BA-2368F91E7E39" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_D4499F8E-ABC8-4F37-BB9C-30E346B4AF9B" IsExpanded="true" AbsoluteBounds="6.902777777777778, 0.9166666666666666, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_D4499F8E-ABC8-4F37-BB9C-30E346B4AF9B" IsExpanded="true" AbsoluteBounds="6.138888888888889, 1.6111111111111112, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_033920AF-CAA5-40F3-ADFA-7F3F7675CCCD" IsExpanded="true" AbsoluteBounds="6.902777777777778, 1.2252555556590359, 1.1, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_033920AF-CAA5-40F3-ADFA-7F3F7675CCCD" IsExpanded="true" AbsoluteBounds="6.138888888888889, 1.9197000001034803, 1.1, 0.1295030266046524">
 						<ormDiagram:Subject ref="_D2A351C2-977A-48C5-849E-A402AA98C9E8" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -9404,9 +9579,9 @@
 					<ormDiagram:Role ref="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_513196A5-F474-4D5F-907E-F543E0955DD1" IsExpanded="true" AbsoluteBounds="6.861111111111111, 1.5277777777777777, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_513196A5-F474-4D5F-907E-F543E0955DD1" IsExpanded="true" AbsoluteBounds="6.027777777777778, 2.4305555555555554, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_E26F4C5B-E09E-4F0A-BE87-1C152EBACFEB" IsExpanded="true" AbsoluteBounds="6.861111111111111, 1.836366666770147, 1.4500000000000002, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_E26F4C5B-E09E-4F0A-BE87-1C152EBACFEB" IsExpanded="true" AbsoluteBounds="6.027777777777778, 2.7391444445479247, 1.4500000000000002, 0.1295030266046524">
 						<ormDiagram:Subject ref="_3C161FC0-7947-46BA-A43D-99B26792B74A" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -9416,12 +9591,12 @@
 					<ormDiagram:Role ref="_B82A332D-1340-4474-A60D-C90A2B4E4E65" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_ACD2351A-B22E-4C1C-AC0B-A87980D5F6C1" IsExpanded="true" AbsoluteBounds="10.51388888888889, 2.9027777777777777, 0.36000000000000004, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_ACD2351A-B22E-4C1C-AC0B-A87980D5F6C1" IsExpanded="true" AbsoluteBounds="9.75, 3.9444444444444446, 0.36000000000000004, 0.22944444444444445">
 				<ormDiagram:Subject ref="_DAABFF77-937E-4029-BE3A-34BD9270EFBF" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_5B5091C9-436D-41A5-9520-7FE4481BD04C" IsExpanded="true" AbsoluteBounds="9.152777777777779, 2.5972222222222223, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_5B5091C9-436D-41A5-9520-7FE4481BD04C" IsExpanded="true" AbsoluteBounds="8.38888888888889, 3.638888888888889, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_B998D85B-9533-4599-AA2F-0D69BA683E56" IsExpanded="true" AbsoluteBounds="9.152777777777779, 2.9058111112145912, 1, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_B998D85B-9533-4599-AA2F-0D69BA683E56" IsExpanded="true" AbsoluteBounds="8.38888888888889, 3.9474777778812578, 1, 0.1295030266046524">
 						<ormDiagram:Subject ref="_3D27D02B-334B-42DD-8CA3-ED6A91BD11DB" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -9442,7 +9617,7 @@
 			<ormDiagram:ObjectTypeShape id="_A28205BF-12A8-4795-815E-7D0B5E7ABFB8" IsExpanded="true" AbsoluteBounds="0.7638888888888888, 5.555555555555555, 0.56, 0.22944444444444445">
 				<ormDiagram:Subject ref="_6549DFF2-86DF-4629-AC30-241356EED0F8" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_A1E352C8-8D83-43FD-9393-30D676225855" IsExpanded="true" AbsoluteBounds="8.01388888888889, 0.5, 0.395, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_A1E352C8-8D83-43FD-9393-30D676225855" IsExpanded="true" AbsoluteBounds="5.680555555555555, 0.5972222222222222, 0.395, 0.22944444444444445">
 				<ormDiagram:Subject ref="_DAA9B2C8-8C60-412C-AB06-340E9E0A8B0D" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:ObjectTypeShape id="_A1A11E34-3051-444F-9D10-CA756AEE83D9" IsExpanded="true" AbsoluteBounds="2.8333333333333335, 6.930555555555555, 0.44999999999999996, 0.22944444444444445">
@@ -9517,7 +9692,7 @@
 					<ormDiagram:Role ref="_69985A53-5D64-4E8D-8A26-91CC079C7823" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ObjectTypeShape id="_565A6957-FE92-40F1-9063-B5AACDB4AFA4" IsExpanded="true" AbsoluteBounds="5.694444444444445, 2.2777777777777777, 0.67, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_565A6957-FE92-40F1-9063-B5AACDB4AFA4" IsExpanded="true" AbsoluteBounds="4.972222222222222, 2.0277777777777777, 0.67, 0.22944444444444445">
 				<ormDiagram:Subject ref="_BE6F548A-112F-49F9-B626-C776869E9ABE" />
 			</ormDiagram:ObjectTypeShape>
 			<ormDiagram:FactTypeShape id="_510CD500-CB8A-4449-840C-C8ECAB6501BD" IsExpanded="true" AbsoluteBounds="4.638888888888889, 2.763888888888889, 0.3838888889923692, 0.24388888899236916">
@@ -9544,9 +9719,9 @@
 					<ormDiagram:Role ref="_06A47C0C-EFC1-4017-ADDD-962B7061B957" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:FactTypeShape id="_15FFA3CD-FFDA-4824-A53E-1BBAE9F38B88" IsExpanded="true" AbsoluteBounds="7.041666666666667, 1.1666666666666667, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_15FFA3CD-FFDA-4824-A53E-1BBAE9F38B88" IsExpanded="true" AbsoluteBounds="4.708333333333333, 1.2638888888888888, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_84523AFA-3DFF-47B2-9DED-3CA23244F403" IsExpanded="true" AbsoluteBounds="7.041666666666667, 1.4752555556590359, 1.25, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_84523AFA-3DFF-47B2-9DED-3CA23244F403" IsExpanded="true" AbsoluteBounds="4.708333333333333, 1.5724777778812582, 1.25, 0.1295030266046524">
 						<ormDiagram:Subject ref="_0E54CDD9-FDB9-42D1-88FA-3A05E0861298" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -9556,7 +9731,7 @@
 					<ormDiagram:Role ref="_CD977102-0F92-4D88-9A4C-F2BFF33C474E" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
-			<ormDiagram:ExternalConstraintShape id="_84B6E2F5-1DAE-434B-AC56-655FEDCED303" IsExpanded="true" AbsoluteBounds="6.013888888888889, 3.2777777777777777, 0.16, 0.16">
+			<ormDiagram:ExternalConstraintShape id="_84B6E2F5-1DAE-434B-AC56-655FEDCED303" IsExpanded="true" AbsoluteBounds="5.361111111111111, 2.861111111111111, 0.16, 0.16">
 				<ormDiagram:Subject ref="_6A956271-9C07-446D-9D8D-07A5301D785D" />
 			</ormDiagram:ExternalConstraintShape>
 		</ormDiagram:Shapes>
@@ -9642,15 +9817,15 @@
 			<ormDiagram:ValueComparisonConstraintShape id="_2ABD601A-D716-4795-8422-46288699DF68" IsExpanded="true" AbsoluteBounds="2.2222222222222223, 13.097222222222221, 0.16, 0.16">
 				<ormDiagram:Subject ref="_0E587B37-5B5E-4D8B-AF9A-E6567C660F4B" />
 			</ormDiagram:ValueComparisonConstraintShape>
-			<ormDiagram:ObjectTypeShape id="_645531B1-3D56-4074-A2BC-21AE2212D1E7" IsExpanded="true" AbsoluteBounds="8.833333333333334, 0.7361111111111112, 0.505, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_645531B1-3D56-4074-A2BC-21AE2212D1E7" IsExpanded="true" AbsoluteBounds="1, 0.8611111111111112, 0.505, 0.22944444444444445">
 				<ormDiagram:Subject ref="_949D41CB-1AE5-45B2-A7BE-192E1A773085" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:ObjectTypeShape id="_F01BFF0A-2ABF-4176-91E9-3A6B73BAB697" IsExpanded="true" AbsoluteBounds="10.944444444444445, 0.6805555555555556, 0.7250000000000001, 0.22944444444444445">
+			<ormDiagram:ObjectTypeShape id="_F01BFF0A-2ABF-4176-91E9-3A6B73BAB697" IsExpanded="true" AbsoluteBounds="3.111111111111111, 0.8055555555555556, 0.7250000000000001, 0.22944444444444445">
 				<ormDiagram:Subject ref="_E3CAD27F-28E1-4AB0-B8B2-D94BDA69C521" />
 			</ormDiagram:ObjectTypeShape>
-			<ormDiagram:FactTypeShape id="_1977FA7E-BDC6-4275-A83D-95E29B5D4A7F" IsExpanded="true" AbsoluteBounds="10.01388888888889, 0.5, 0.3838888889923692, 0.24388888899236916">
+			<ormDiagram:FactTypeShape id="_1977FA7E-BDC6-4275-A83D-95E29B5D4A7F" IsExpanded="true" AbsoluteBounds="2.1805555555555554, 0.625, 0.3838888889923692, 0.24388888899236916">
 				<ormDiagram:RelativeShapes>
-					<ormDiagram:ReadingShape id="_4A4ECF59-D466-4893-A937-7F1D1CFD297D" IsExpanded="true" AbsoluteBounds="10.01388888888889, 0.8085888889923692, 1.25, 0.1295030266046524">
+					<ormDiagram:ReadingShape id="_4A4ECF59-D466-4893-A937-7F1D1CFD297D" IsExpanded="true" AbsoluteBounds="2.1805555555555554, 0.9335888889923692, 1.25, 0.1295030266046524">
 						<ormDiagram:Subject ref="_7B5F80ED-85DE-4929-BEDF-9B7E308E3A5D" />
 					</ormDiagram:ReadingShape>
 				</ormDiagram:RelativeShapes>
@@ -10173,4 +10348,1685 @@
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_2C7E073F-10CB-4429-9D8F-D072A08D2C9F" />
 	</ormDiagram:ORMDiagram>
+	<ormcd:CoreDataMappings>
+		<ormcd:Mapping id="_3B61C307-8E6D-4A2B-BBF6-0C7D1C84F1E8" Name="Logbook" Path="Logbook.xcdatamodeld" Scope="Model" ValidationPath="Constraints" FlattenSubtypes="false" AbsorbIdentifierTypes="true">
+			<ormcd:Baseline>&lt;?xml version="1.0" encoding="UTF-8" standalone="yes"?&gt;
+&lt;model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" minimumToolsVersion="Automatic" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier=""&gt;
+    &lt;entity name="Answer" representedClassName="Answer" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="id" attributeType="Integer 64" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.computed" value="YES"/&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_7026E947-A0DF-48B6-A00C-E4BA722AF64E.key"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="note" optional="YES" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_C034D5F8-C5CF-4FBD-B230-6956473E750E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="yesNo" optional="YES" attributeType="String" regularExpressionString="^(?:Yes|No)$"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.AllowedValues&amp;quot;: [{&amp;quot;Value&amp;quot;: &amp;quot;Yes&amp;quot;}, {&amp;quot;Value&amp;quot;: &amp;quot;No&amp;quot;}]}"/&gt;
+                &lt;entry key="ormkit.source" value="_E1F89759-BE79-4DBE-9A1A-1D73C69087F5"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="inspection" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Inspection" inverseName="answers" inverseEntity="Inspection"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_E34EDF73-C9C2-4863-A49D-F1D6B1A3B0ED"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="options" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Option" inverseName="answers" inverseEntity="Option"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_2B278E26-D082-43BF-BBE4-F67C4F82C5FC"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="question" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Question" inverseName="answers" inverseEntity="Question"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_32EBDD0A-18A7-4BE4-B49E-F2BDD7F147F7"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="inspection"/&gt;
+                &lt;constraint value="question"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Answers"/&gt;
+            &lt;entry key="OData.type" value="Default.Answer"/&gt;
+            &lt;entry key="ormkit.rule.SubsetConstraint7" value="If some Inspection answered some Question then that Inspection went through some Checklist and that Question is in that Checklist."/&gt;
+            &lt;entry key="ormkit.source" value="_7026E947-A0DF-48B6-A00C-E4BA722AF64E"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="AnswerKind" representedClassName="AnswerKind" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String" regularExpressionString="^(?:Yes or no|Any of)$"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.AllowedValues&amp;quot;: [{&amp;quot;Value&amp;quot;: &amp;quot;Yes or no&amp;quot;}, {&amp;quot;Value&amp;quot;: &amp;quot;Any of&amp;quot;}]}"/&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_FA73FDFC-FBC5-4E89-A2F7-A7FB9D9406B7"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="questions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Question" inverseName="answerKind" inverseEntity="Question"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_E126BE23-0C97-445B-A9B3-BDF6AF1FF986"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="AnswerKinds"/&gt;
+            &lt;entry key="OData.type" value="Default.AnswerKind"/&gt;
+            &lt;entry key="ormkit.source" value="_25471B12-1304-4621-B462-E4E6A75F8458"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Attachment" representedClassName="Attachment" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="fileName" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_309F9B10-E65A-4C82-B33C-F496994C6B31"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="id" attributeType="UUID" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_1445068D-D549-4DB6-84A8-D0FD694B389D"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="record" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Record" inverseName="attachments" inverseEntity="Record"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_D423D326-24E2-44BB-8D1A-8BF0FC4C2DB2"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="id"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Attachments"/&gt;
+            &lt;entry key="OData.type" value="Default.Attachment"/&gt;
+            &lt;entry key="ormkit.source" value="_9FF4D860-7EDF-4129-81D0-7484A7F694CA"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="CarModel" representedClassName="CarModel" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_AF446867-2CFA-4B9B-8D10-E80385221C33"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="vehicles" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Vehicle" inverseName="carModel" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_B54784DD-6408-4A48-92F8-81D51E40ED04"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="CarModels"/&gt;
+            &lt;entry key="OData.type" value="Default.CarModel"/&gt;
+            &lt;entry key="ormkit.source" value="_2F1CC9F5-B0AD-45C8-AAB8-3059D6B8D25D"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="CarSale" representedClassName="CarSale" parentEntity="Income" syncable="YES" codeGenerationType="class"&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.description" value="Each CarSale is by definition an Income that is of IncomeKind 'Car sale'."/&gt;
+            &lt;entry key="OData.type" value="Default.CarSale"/&gt;
+            &lt;entry key="ormkit.source" value="_947B322A-21E0-43BC-B353-E2673E43C480"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Checklist" representedClassName="Checklist" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="checklistName" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_4C2D8394-3A30-46E7-A455-42BBB946A6ED"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="id" attributeType="UUID" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_938B5165-66F4-4BB6-B8E5-26E3D731D4FD"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="inspections" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Inspection" inverseName="checklist" inverseEntity="Inspection"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_F69FE2C9-42FB-496E-8587-0A74D2DCD7E3"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="questions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Question" inverseName="checklist" inverseEntity="Question"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_F72328B9-56CA-4974-8B90-AAB83D7CBC1E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="isForChecklist2" inverseEntity="Reminder"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_E841D7D6-2732-4D51-AF7E-9CCF8F87C8E7"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="schedules" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Schedule" inverseName="isForChecklist" inverseEntity="Schedule"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_B9167066-2400-4B81-B36C-652DB1D9A13E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="checklists" inverseEntity="User"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_1A7914F4-A252-4E35-8311-53F7A2A49589"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="id"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Checklists"/&gt;
+            &lt;entry key="OData.type" value="Default.Checklist"/&gt;
+            &lt;entry key="ormkit.rule.SubsetConstraint6" value="If some Inspection went through some Checklist and that Inspection is of some Vehicle that is owned by some User then that Checklist is kept by that User."/&gt;
+            &lt;entry key="ormkit.source" value="_ABD96926-740A-4619-8700-7F35B9192724"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Cost" representedClassName="Cost" parentEntity="Record" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="moneyAmount2" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.Minimum&amp;quot;: 0, &amp;quot;Validation.Minimum@Validation.Exclusive&amp;quot;: true}"/&gt;
+                &lt;entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="moneyCurrency2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="costsAsMoneyCurrency" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.description" value="Each Cost is by definition a Record that cost some Money."/&gt;
+            &lt;entry key="OData.type" value="Default.Cost"/&gt;
+            &lt;entry key="ormkit.source" value="_5DF729D6-3861-4733-B1B9-7B153E87A43B"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="CostKind" representedClassName="CostKind" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_DEFF1D4A-2980-424F-961C-A2657FCEF5A1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="CostKinds"/&gt;
+            &lt;entry key="OData.type" value="Default.CostKind"/&gt;
+            &lt;entry key="ormkit.source" value="_D3D9EF81-F055-4F1A-A33A-E5C495D7B619"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Currency" representedClassName="Currency" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="code" attributeType="String" maxValueString="3"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_BC2BCB48-287A-4734-B1AE-5EF504DCC798"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="costsAsMoneyCurrency" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Cost" inverseName="moneyCurrency2" inverseEntity="Cost"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="currencyWasWorthFactorInCurrencyOnDates" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CurrencyWasWorthFactorInCurrencyOnDate" inverseName="currency" inverseEntity="CurrencyWasWorthFactorInCurrencyOnDate"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915._E2A00A69-B2F3-4669-84BB-2F9CBF174124"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="currencyWasWorthFactorInCurrencyOnDates2" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CurrencyWasWorthFactorInCurrencyOnDate" inverseName="currency2" inverseEntity="CurrencyWasWorthFactorInCurrencyOnDate"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915._99FC0383-55CE-4596-8C30-B323ED480337"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="incomesAsMoneyCurrency" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Income" inverseName="moneyCurrency4" inverseEntity="Income"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_13D0D1CF-3099-4872-8281-029DCDFD4601/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="recordsAsMoneyCurrency" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Record" inverseName="moneyCurrency" inverseEntity="Record"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_68FA7D37-B900-4D63-AE45-133F36637805/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="serviceItems" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ServiceItem" inverseName="moneyCurrency2" inverseEntity="ServiceItem"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_B82A332D-1340-4474-A60D-C90A2B4E4E65/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="serviceItemsAsMoneyCurrency" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ServiceItem" inverseName="moneyCurrency" inverseEntity="ServiceItem"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="services" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Service" inverseName="currency" inverseEntity="Service"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_77E567ED-E4CF-4DE0-A104-01D836B63C90"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="servicesAsMoneyCurrency" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Service" inverseName="moneyCurrency3" inverseEntity="Service"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_FE4B2061-6F87-4F91-8389-8A7BA30B8DEA/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="users" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="User" inverseName="currency" inverseEntity="User"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_D2A31F07-3ED3-4E6B-8289-95F80E11F40C"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="vehicleWasValuedOnDateAtMoneysAsMoneyCurrency" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="VehicleWasValuedOnDateAtMoney" inverseName="moneyCurrency" inverseEntity="VehicleWasValuedOnDateAtMoney"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_800B696C-9534-4E42-B669-AD254FC6536A/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="vehicles" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Vehicle" inverseName="moneyCurrency2" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_00E2B4DD-D1B9-42D8-B170-ED0107452DC6/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="vehiclesAsMoneyCurrency" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Vehicle" inverseName="moneyCurrency" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_166811E8-260A-41A0-8F2D-4A02009AF641/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="code"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Currencies"/&gt;
+            &lt;entry key="OData.type" value="Default.Currency"/&gt;
+            &lt;entry key="ormkit.source" value="_B831ABCC-D8D4-43A8-9650-E31310C4EB36"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="CurrencyWasWorthFactorInCurrencyOnDate" representedClassName="CurrencyWasWorthFactorInCurrencyOnDate" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="date" attributeType="Date" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_F980A95F-97E0-4D49-A496-345447A658AA"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="factor" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.Minimum&amp;quot;: 0, &amp;quot;Validation.Minimum@Validation.Exclusive&amp;quot;: true}"/&gt;
+                &lt;entry key="ormkit.source" value="_70558562-29FC-41A0-89BD-D2172CB60696"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="id" attributeType="Integer 64" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.computed" value="YES"/&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915.key"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="currency" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="currencyWasWorthFactorInCurrencyOnDates" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_E2A00A69-B2F3-4669-84BB-2F9CBF174124"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="currency2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="currencyWasWorthFactorInCurrencyOnDates2" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_99FC0383-55CE-4596-8C30-B323ED480337"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="currency"/&gt;
+                &lt;constraint value="currency2"/&gt;
+                &lt;constraint value="date"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="CurrencyWasWorthFactorInCurrencyOnDates"/&gt;
+            &lt;entry key="OData.type" value="Default.CurrencyWasWorthFactorInCurrencyOnDate"/&gt;
+            &lt;entry key="ormkit.source" value="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="DistanceUnit" representedClassName="DistanceUnit" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="code" attributeType="String" regularExpressionString="^(?:km|mi)$"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.AllowedValues&amp;quot;: [{&amp;quot;Value&amp;quot;: &amp;quot;km&amp;quot;}, {&amp;quot;Value&amp;quot;: &amp;quot;mi&amp;quot;}]}"/&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_30C2C189-2DBB-4D28-8486-F337D0748812"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="eventsAsDistanceDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Event" inverseName="distanceDistanceUnit" inverseEntity="Event"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="distanceDistanceUnit5" inverseEntity="Reminder"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_2B9ED7BF-75FD-430B-B085-76FD5CB5B07E/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="remindersAsDistanceDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="distanceDistanceUnit4" inverseEntity="Reminder"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="schedulesAsDistanceDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Schedule" inverseName="distanceDistanceUnit3" inverseEntity="Schedule"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_EB90D8D7-D4BE-4A56-AA30-45556246E847/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="tripsAsDistanceDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Trip" inverseName="distanceDistanceUnit2" inverseEntity="Trip"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_9DE6F490-9F69-4987-8E58-6D4F0B469A1F/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="users" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="User" inverseName="distanceUnit" inverseEntity="User"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_8EED19CF-03F3-4334-A773-A150F6545871"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="vehicles" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Vehicle" inverseName="distanceDistanceUnit2" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_950B6EA4-A0C2-4634-89FC-170DE9F045EA/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="vehiclesAsDistanceDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Vehicle" inverseName="distanceDistanceUnit" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_54B699BF-0BE5-4234-A84C-1854D89B7701/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="code"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="DistanceUnits"/&gt;
+            &lt;entry key="OData.type" value="Default.DistanceUnit"/&gt;
+            &lt;entry key="ormkit.source" value="_41C1A239-7FFC-4DB2-9E16-14C52E846C42"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Document" representedClassName="Document" parentEntity="Record" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="documentNumber" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_707C445E-4DB5-425B-A2FE-A5C3A3853B9A"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="expiresOnDate" optional="YES" attributeType="Date" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_48739534-2C03-4157-AA30-8FBF02C8424A"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="isValidFromDate" attributeType="Date" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_5DF39D0C-3E46-4306-A4AF-AB16219FD65D"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="documentKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DocumentKind" inverseName="documents" inverseEntity="DocumentKind"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_12BB70CC-E3D5-45BD-AA3B-1FDC9B36BFDC"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="issuer" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Issuer" inverseName="documents" inverseEntity="Issuer"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_39AA186F-FD57-4387-A7A7-86DC3CA84D01"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.Document"/&gt;
+            &lt;entry key="ormkit.rule.ValueComparisonConstraint3" value="For each Document, if that Document is valid from some Date1 and that Document expires on some Date2 then Date1 is less than Date2."/&gt;
+            &lt;entry key="ormkit.source" value="_F5C1FDBA-BDED-4D2F-9FD6-06ABA859B63B"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="DocumentKind" representedClassName="DocumentKind" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_635E88C4-AEE5-49B3-A9A5-98BD72C9C569"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="documents" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Document" inverseName="documentKind" inverseEntity="Document"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_1E3A8BEB-0408-419F-83B9-3D50CF136CD5"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="DocumentKinds"/&gt;
+            &lt;entry key="OData.type" value="Default.DocumentKind"/&gt;
+            &lt;entry key="ormkit.source" value="_C0EB0A8D-7A5D-4DF1-B992-C67531ABE1A1"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Event" representedClassName="Event" parentEntity="Record" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="distanceQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="moment" attributeType="Date" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_29AE2287-AC15-42D4-AA20-BE1C9F364295"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="distanceDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="eventsAsDistanceDistanceUnit" inverseEntity="DistanceUnit"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_76B14F66-2B8D-4676-AE73-175539B353C1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="hadDriverUser" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="events" inverseEntity="User"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_2A70C8CB-45ED-4672-B0D8-1ADE420CF521"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="reminderWasDoneBies" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="event" inverseEntity="Reminder"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_018B6151-5214-44CE-B407-C682E26A2C4D"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.Event"/&gt;
+            &lt;entry key="ormkit.rule.SubsetConstraint10" value="If some Reminder was done by some Event and that Reminder is of some Vehicle then that Event is of that Vehicle."/&gt;
+            &lt;entry key="ormkit.rule.ValueComparisonConstraint2" value="For each Trip, if that Trip was at some Moment1 and that Trip ended at some Moment2 then Moment1 is less than or equal to Moment2."/&gt;
+            &lt;entry key="ormkit.source" value="_890D546C-1996-4726-98DB-4A4151CA6089"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Expense" representedClassName="Expense" parentEntity="Event" syncable="YES" codeGenerationType="class"&gt;
+        &lt;relationship name="expenseKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExpenseKind" inverseName="expenses" inverseEntity="ExpenseKind"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_5283BB76-C7FC-44F8-B9BE-0F6D5FF2BE83"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.Expense"/&gt;
+            &lt;entry key="ormkit.source" value="_949D41CB-1AE5-45B2-A7BE-192E1A773085"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="ExpenseKind" representedClassName="ExpenseKind" parentEntity="CostKind" syncable="YES" codeGenerationType="class"&gt;
+        &lt;relationship name="expenses" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Expense" inverseName="expenseKind" inverseEntity="Expense"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_A219B837-ABA5-4C6A-B145-CA9317E1774E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="isForExpenseKind2" inverseEntity="Reminder"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_DB887997-8997-4BDB-8534-5833DE4BA4DC"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="schedules" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Schedule" inverseName="isForExpenseKind" inverseEntity="Schedule"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_84E77AA3-CC6A-4033-A03A-231BF65DC0B8"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.ExpenseKind"/&gt;
+            &lt;entry key="ormkit.source" value="_E3CAD27F-28E1-4AB0-B8B2-D94BDA69C521"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="FillUp" representedClassName="FillUp" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="filledTheTank" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_3F596A05-853C-4738-A00C-3FB7F0660533"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="volumeQuantity" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_36505B08-99CC-4722-8097-DAA1F1E2AFF1/_FC3636E5-E73A-44CA-890A-78B0DCF87737"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="fuel" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Fuel" inverseName="fillUps" inverseEntity="Fuel"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_DAF50B14-033F-4770-820F-26FF5A5326B1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="station" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Station" inverseName="fillUps" inverseEntity="Station"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_7BB8C860-E748-4D74-8B85-6FAE17D05697"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="volumeVolumeUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="VolumeUnit" inverseName="fillUpsAsVolumeVolumeUnit" inverseEntity="VolumeUnit"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_36505B08-99CC-4722-8097-DAA1F1E2AFF1/_B93DFC92-F0B1-4633-A3A6-3600BDBF0ED2"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.FillUp"/&gt;
+            &lt;entry key="ormkit.source" value="_4722F84A-923A-4586-9A1C-3B81A396C151"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Fuel" representedClassName="Fuel" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_86F08BC4-7032-4053-8449-C9F35E2D4159"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="fillUps" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FillUp" inverseName="fuel" inverseEntity="FillUp"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_426D55D2-2EF3-4729-818E-B6E05C5CDE55"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="vehicles" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Vehicle" inverseName="fuel" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_90EDF1D6-EB72-4C37-B08F-A0164438C98B"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Fuels"/&gt;
+            &lt;entry key="OData.type" value="Default.Fuel"/&gt;
+            &lt;entry key="ormkit.rule.SubsetConstraint3" value="It is obligatory that if some FillUp was of some Fuel and that FillUp is of some Vehicle then that Vehicle uses that Fuel."/&gt;
+            &lt;entry key="ormkit.source" value="_BAC2C0CB-6C51-4E39-A6B8-EBA840DC48D6"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Garage" representedClassName="Garage" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_BAB08D8F-B73E-41E0-B700-4DF7F0391558"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="services" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Service" inverseName="garage" inverseEntity="Service"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_39FF1A67-3EFE-4AAB-B69F-5694B6EB81C5"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Garages"/&gt;
+            &lt;entry key="OData.type" value="Default.Garage"/&gt;
+            &lt;entry key="ormkit.source" value="_5C5AA308-73EC-494B-8E31-34CAD27E1E08"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Income" representedClassName="Income" parentEntity="Event" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="moneyAmount4" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.Minimum&amp;quot;: 0, &amp;quot;Validation.Minimum@Validation.Exclusive&amp;quot;: true}"/&gt;
+                &lt;entry key="ormkit.source" value="_13D0D1CF-3099-4872-8281-029DCDFD4601/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="wasPaidInInstalments" optional="YES" attributeType="Integer 32" minValueString="1" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_55D67005-FDA2-4BBF-ACA3-0510D57A3E65"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="incomeKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="IncomeKind" inverseName="incomes" inverseEntity="IncomeKind"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_0DC0D523-8BC4-40DD-87F2-3AAE12B1F954"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="moneyCurrency4" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="incomesAsMoneyCurrency" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_13D0D1CF-3099-4872-8281-029DCDFD4601/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="trip" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Trip" inverseName="income" inverseEntity="Trip"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_D0C5E7CE-F41E-4E82-835B-803719D437C9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.Income"/&gt;
+            &lt;entry key="ormkit.source" value="_42960B05-4236-4EBD-8AD8-EF3F678DE8B4"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="IncomeKind" representedClassName="IncomeKind" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_D3552C0E-DBE6-4BBC-AFB5-C2D363D74135"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="incomes" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Income" inverseName="incomeKind" inverseEntity="Income"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_6CB158E3-ED46-4664-A845-245CA6B7400E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="IncomeKinds"/&gt;
+            &lt;entry key="OData.type" value="Default.IncomeKind"/&gt;
+            &lt;entry key="ormkit.source" value="_9BFB9B3A-F531-4CC7-BB3C-F6F645654BAD"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Inspection" representedClassName="Inspection" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class"&gt;
+        &lt;relationship name="answers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Answer" inverseName="inspection" inverseEntity="Answer"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_5A5BF447-9620-4FFF-BB60-68C35378D6CD._E34EDF73-C9C2-4863-A49D-F1D6B1A3B0ED"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="checklist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Checklist" inverseName="inspections" inverseEntity="Checklist"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_AE359AF9-C034-46DE-85C5-D3341F4833F9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.Inspection"/&gt;
+            &lt;entry key="ormkit.source" value="_66420072-59C5-42A5-B1BC-62B85C0EAC7C"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Issuer" representedClassName="Issuer" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_6C7DB848-5C4F-4FC3-A612-0A1B51C99660"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="documents" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Document" inverseName="issuer" inverseEntity="Document"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_0E7F6268-7D8F-4BA3-B975-BD60FA510FE9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Issuers"/&gt;
+            &lt;entry key="OData.type" value="Default.Issuer"/&gt;
+            &lt;entry key="ormkit.source" value="_1DEB57B3-E85C-4409-BAFC-E23AFEB7658B"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Make" representedClassName="Make" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_0F647757-55DD-4132-BBEF-EDDA5480B8BE"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="vehicles" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Vehicle" inverseName="make" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_F24BA1B3-C56F-4A8B-9565-5136DDAEBCFB"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Makes"/&gt;
+            &lt;entry key="OData.type" value="Default.Make"/&gt;
+            &lt;entry key="ormkit.source" value="_659B2F3C-B40A-42ED-9F88-25F2EA7DA51F"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="MeterReading" representedClassName="MeterReading" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class"&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.MeterReading"/&gt;
+            &lt;entry key="ormkit.source" value="_5366D673-F8EF-45E1-B0C4-20AF684022D3"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="MeteredEvent" representedClassName="MeteredEvent" parentEntity="Event" syncable="YES" codeGenerationType="class"&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.description" value="Each MeteredEvent is by definition an Event that was at some Distance."/&gt;
+            &lt;entry key="OData.type" value="Default.MeteredEvent"/&gt;
+            &lt;entry key="ormkit.source" value="_8302E203-13F7-4C5A-938A-C2A4BD091E8B"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Option" representedClassName="Option" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="id" attributeType="UUID" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_48357FDE-812F-4FEF-AB75-3949D06223B7"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="optionText" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_72189A2C-2187-4457-84EF-3B6287A7CD70"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="position" attributeType="Integer 32" minValueString="1" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_B3349890-9AE3-4085-B2CF-0CD4D3DF4633"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="answers" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Answer" inverseName="options" inverseEntity="Answer"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_9B8B17F6-45D7-4C21-A44E-9C6161CD380E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="question" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Question" inverseName="options" inverseEntity="Question"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_51ABA202-E720-44FF-B91A-CFC1C6004FD5"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="id"/&gt;
+            &lt;/uniquenessConstraint&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="question"/&gt;
+                &lt;constraint value="position"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Options"/&gt;
+            &lt;entry key="OData.type" value="Default.Option"/&gt;
+            &lt;entry key="ormkit.source" value="_D6EAF7D8-9380-4700-948B-4CA318EECE69"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="PaymentMethod" representedClassName="PaymentMethod" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_7ED0D92C-14FA-43FB-A07B-6F160D8CA66A"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="services" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Service" inverseName="paymentMethod" inverseEntity="Service"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_06DF349B-74D0-4E03-829E-BDD9D30E77DB"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="PaymentMethods"/&gt;
+            &lt;entry key="OData.type" value="Default.PaymentMethod"/&gt;
+            &lt;entry key="ormkit.source" value="_9D80123A-9618-4C74-9494-6D8AACBCFA75"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Place" representedClassName="Place" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_A354F527-8514-41B3-97AF-276D1C255621"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="tripWentTos" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Trip" inverseName="wentToPlace" inverseEntity="Trip"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_63297E7A-B845-4EF8-8139-2577BA8AD0E9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="trips" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Trip" inverseName="place" inverseEntity="Trip"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_E4E61072-FE98-407C-A567-6294D95F80B5"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Places"/&gt;
+            &lt;entry key="OData.type" value="Default.Place"/&gt;
+            &lt;entry key="ormkit.source" value="_C1F61C43-C696-410C-B072-69ED99042272"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Purpose" representedClassName="Purpose" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_88163E6F-DD82-4EAA-80D2-DEC17DFE1411"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="trips" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Trip" inverseName="purpose" inverseEntity="Trip"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_C4587B22-3806-41F5-8FD6-C90E6330C4FE"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Purposes"/&gt;
+            &lt;entry key="OData.type" value="Default.Purpose"/&gt;
+            &lt;entry key="ormkit.source" value="_99E684C5-5FD3-4706-BDC7-BD5EE4113527"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Question" representedClassName="Question" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="id" attributeType="UUID" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_BA21218A-F2CB-403F-B4BB-DABC10B1BBA7"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="position" attributeType="Integer 32" minValueString="1" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_A4C74026-BF77-46F5-8691-A7E16640B604"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="questionText" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_5AC9AD6B-14CC-47F3-BD08-9E6C53C095A6"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="answerKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AnswerKind" inverseName="questions" inverseEntity="AnswerKind"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_C4F2AE6E-8DCC-4313-9C26-C2DBF7011C6A"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="answers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Answer" inverseName="question" inverseEntity="Answer"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_5A5BF447-9620-4FFF-BB60-68C35378D6CD._32EBDD0A-18A7-4BE4-B49E-F2BDD7F147F7"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="checklist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Checklist" inverseName="questions" inverseEntity="Checklist"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_57E3EC5E-ADD9-410F-86B5-AFE836AE977E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="options" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Option" inverseName="question" inverseEntity="Option"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_59FDD1FD-9177-41F6-B336-8539EDE57FF4"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="id"/&gt;
+            &lt;/uniquenessConstraint&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="checklist"/&gt;
+                &lt;constraint value="position"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Questions"/&gt;
+            &lt;entry key="OData.type" value="Default.Question"/&gt;
+            &lt;entry key="ormkit.source" value="_4837A456-81E2-4F0D-B689-0119740347FA"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Record" representedClassName="Record" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="id" attributeType="UUID" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_1D003512-6362-46BE-958D-7F1C255EA37D"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="moneyAmount" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.Minimum&amp;quot;: 0, &amp;quot;Validation.Minimum@Validation.Exclusive&amp;quot;: true}"/&gt;
+                &lt;entry key="ormkit.source" value="_68FA7D37-B900-4D63-AE45-133F36637805/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="note" optional="YES" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_037C8C25-2E1E-4B21-8A92-56862D767CB7"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="attachments" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Attachment" inverseName="record" inverseEntity="Attachment"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_B45FDF16-F834-4BBB-B36A-6CCDBA5CB6F9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="moneyCurrency" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="recordsAsMoneyCurrency" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_68FA7D37-B900-4D63-AE45-133F36637805/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="records" inverseEntity="User"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_E7E119BF-4572-43E0-BC3A-CF470B74999A"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="vehicle" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vehicle" inverseName="records" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="id"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Records"/&gt;
+            &lt;entry key="OData.type" value="Default.Record"/&gt;
+            &lt;entry key="ormkit.source" value="_DE5DEB2A-1873-4346-AF20-FEFB6DCA3E76"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Reminder" representedClassName="Reminder" parentEntity="Record" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="distanceQuantity4" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="distanceQuantity5" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_2B9ED7BF-75FD-430B-B085-76FD5CB5B07E/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="isDueOnDate" optional="YES" attributeType="Date" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_19DC41CC-EE71-4CBD-B07E-F03EDB0D2163"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="wasDoneAtMoment" optional="YES" attributeType="Date" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="distanceDistanceUnit4" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="remindersAsDistanceDistanceUnit" inverseEntity="DistanceUnit"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_76B14F66-2B8D-4676-AE73-175539B353C1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="distanceDistanceUnit5" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="reminders" inverseEntity="DistanceUnit"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_2B9ED7BF-75FD-430B-B085-76FD5CB5B07E/_76B14F66-2B8D-4676-AE73-175539B353C1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="event" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Event" inverseName="reminderWasDoneBies" inverseEntity="Event"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_D8C59329-7495-427A-BC65-8A43D64A15D1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="isForChecklist2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Checklist" inverseName="reminders" inverseEntity="Checklist"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_A4F3B195-66D4-4814-A38C-5794ADF0F4C9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="isForExpenseKind2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExpenseKind" inverseName="reminders" inverseEntity="ExpenseKind"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_D7A0423C-ED85-491A-AAF5-F63EAC7CA214"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="isForTask" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Task" inverseName="reminders" inverseEntity="Task"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_5A29560D-AE23-40A0-BE05-94BBCA3E1708"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="schedule" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Schedule" inverseName="reminders" inverseEntity="Schedule"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_855A0C39-9802-4DDC-A04E-A94B39C4D3BA"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.Reminder"/&gt;
+            &lt;entry key="ormkit.rule.EqualityConstraint2" value="For each Reminder, that Reminder was done at some Moment if and only if that Reminder was done at some Distance."/&gt;
+            &lt;entry key="ormkit.rule.ExclusionConstraint3" value="For each Reminder, exactly one of the following holds: that Reminder comes from some Schedule; that Reminder is for some Task; that Reminder is for some ExpenseKind; that Reminder is for some Checklist."/&gt;
+            &lt;entry key="ormkit.rule.InclusiveOrConstraint2" value="Each Reminder is due at some Distance or is due on some Date."/&gt;
+            &lt;entry key="ormkit.rule.SubsetConstraint9" value="If some Reminder was done by some Event then that Reminder was done at some Moment."/&gt;
+            &lt;entry key="ormkit.source" value="_66C78B16-140E-4A92-A0A6-2E08441358FE"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Schedule" representedClassName="Schedule" parentEntity="Record" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="distanceQuantity3" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_EB90D8D7-D4BE-4A56-AA30-45556246E847/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="duration" optional="YES" attributeType="Integer 32" minValueString="1" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_05C4E797-E847-40C3-A868-633E6DC427B0"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="distanceDistanceUnit3" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="schedulesAsDistanceDistanceUnit" inverseEntity="DistanceUnit"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_EB90D8D7-D4BE-4A56-AA30-45556246E847/_76B14F66-2B8D-4676-AE73-175539B353C1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="isForChecklist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Checklist" inverseName="schedules" inverseEntity="Checklist"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_59A20397-C0BD-45CB-B479-353B6BB915BC"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="isForExpenseKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExpenseKind" inverseName="schedules" inverseEntity="ExpenseKind"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_320F7CB9-1863-4517-905B-7C4AC0B56665"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="schedule" inverseEntity="Reminder"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_17961EBF-66AC-4859-A326-3566DAF9D99E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="task" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Task" inverseName="schedules" inverseEntity="Task"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_879D08C8-83BC-440C-A94B-D0481269C09B"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.Schedule"/&gt;
+            &lt;entry key="ormkit.rule.ExclusionConstraint2" value="For each Schedule, exactly one of the following holds: that Schedule is for some Task; that Schedule is for some ExpenseKind; that Schedule is for some Checklist."/&gt;
+            &lt;entry key="ormkit.rule.InclusiveOrConstraint1" value="Each Schedule recurs after some Distance or recurs after some Duration."/&gt;
+            &lt;entry key="ormkit.rule.SubsetConstraint8" value="If some Reminder comes from some Schedule and that Reminder is of some Vehicle then that Schedule is of that Vehicle."/&gt;
+            &lt;entry key="ormkit.source" value="_B6AA67C5-64A7-4DEF-AC86-845569D27FB0"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Season" representedClassName="Season" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String" regularExpressionString="^(?:Summer|Winter|All-season)$"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.AllowedValues&amp;quot;: [{&amp;quot;Value&amp;quot;: &amp;quot;Summer&amp;quot;}, {&amp;quot;Value&amp;quot;: &amp;quot;Winter&amp;quot;}, {&amp;quot;Value&amp;quot;: &amp;quot;All-season&amp;quot;}]}"/&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_0F84537E-187B-45A7-9691-155AA966DA7A"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="tyreSets" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TyreSet" inverseName="season" inverseEntity="TyreSet"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_1F0021CB-2478-408A-BDE4-62ED4F887A41"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Seasons"/&gt;
+            &lt;entry key="OData.type" value="Default.Season"/&gt;
+            &lt;entry key="ormkit.source" value="_5288998E-3268-4770-95BF-E75D603A1FCE"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Service" representedClassName="Service" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="instalments" optional="YES" attributeType="Integer 32" minValueString="1" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_8EC846E9-6D26-4CD7-B8A0-1BC7B8A35AF2"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="moneyAmount3" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.Minimum&amp;quot;: 0, &amp;quot;Validation.Minimum@Validation.Exclusive&amp;quot;: true}"/&gt;
+                &lt;entry key="ormkit.source" value="_FE4B2061-6F87-4F91-8389-8A7BA30B8DEA/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="title" optional="YES" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_2CFD7BF3-A1D0-45DB-8050-4A8781A40466"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="currency" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="services" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_1705B15D-A920-4517-8AAB-81A7227A7864"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="garage" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Garage" inverseName="services" inverseEntity="Garage"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_D1C25B61-C479-41E7-8996-76208A45EF1B"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="moneyCurrency3" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="servicesAsMoneyCurrency" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_FE4B2061-6F87-4F91-8389-8A7BA30B8DEA/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="paymentMethod" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="PaymentMethod" inverseName="services" inverseEntity="PaymentMethod"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_7D96F91F-186D-4259-8471-AC6ABAE4D40A"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="serviceItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ServiceItem" inverseName="service" inverseEntity="ServiceItem"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_75DEBF27-698E-4071-A4B3-482B2F26CCA3"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="serviceKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ServiceKind" inverseName="services" inverseEntity="ServiceKind"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_58A721B3-B44E-46EA-A912-F113D1811C36"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.Service"/&gt;
+            &lt;entry key="ormkit.source" value="_C8ABD2FD-EC16-4E20-8F07-F2CB6B76AA45"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="ServiceItem" representedClassName="ServiceItem" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="id" attributeType="UUID" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_68EB0D77-567E-4F04-87A2-6B8867644C7A"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="moneyAmount" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.Minimum&amp;quot;: 0, &amp;quot;Validation.Minimum@Validation.Exclusive&amp;quot;: true}"/&gt;
+                &lt;entry key="ormkit.source" value="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="moneyAmount2" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.Minimum&amp;quot;: 0, &amp;quot;Validation.Minimum@Validation.Exclusive&amp;quot;: true}"/&gt;
+                &lt;entry key="ormkit.source" value="_B82A332D-1340-4474-A60D-C90A2B4E4E65/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="note" optional="YES" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_6FC22055-0C68-4172-BB39-409BDFEAA192"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="moneyCurrency" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="serviceItemsAsMoneyCurrency" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="moneyCurrency2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="serviceItems" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_B82A332D-1340-4474-A60D-C90A2B4E4E65/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="service" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Service" inverseName="serviceItems" inverseEntity="Service"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_174E22D7-F26D-4DCB-A62D-1A6CEF83E075"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="task" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Task" inverseName="serviceItems" inverseEntity="Task"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_7C7F5A1B-3D99-4318-B6BA-2368F91E7E39"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="id"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="ServiceItems"/&gt;
+            &lt;entry key="OData.type" value="Default.ServiceItem"/&gt;
+            &lt;entry key="ormkit.source" value="_046DBB94-CEE9-4E20-B771-D0E7AB0C7B4D"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="ServiceKind" representedClassName="ServiceKind" parentEntity="CostKind" syncable="YES" codeGenerationType="class"&gt;
+        &lt;relationship name="services" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Service" inverseName="serviceKind" inverseEntity="Service"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_08176891-075D-473E-B357-A6F844F0AE04"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.description" value="Each ServiceKind is by definition a CostKind that is 'Maintenance' or 'Repair'."/&gt;
+            &lt;entry key="OData.type" value="Default.ServiceKind"/&gt;
+            &lt;entry key="ormkit.source" value="_E2A6BACB-870C-4087-AC76-629EFE2BFAC4"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Station" representedClassName="Station" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_98B04E91-9CF7-4E86-B617-296C7DAB4AD5"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="fillUps" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="FillUp" inverseName="station" inverseEntity="FillUp"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_8376DBCD-CF79-47DF-8C47-DF5DDE967DD4"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Stations"/&gt;
+            &lt;entry key="OData.type" value="Default.Station"/&gt;
+            &lt;entry key="ormkit.source" value="_1A529462-91E4-4783-9655-1EF804C714C3"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Task" representedClassName="Task" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_075EBD2D-3B7E-4627-BE98-005D3ED43301"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="isForTask" inverseEntity="Reminder"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_B73F901E-8A4B-48B9-9561-BF5369E8B15B"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="schedules" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Schedule" inverseName="task" inverseEntity="Schedule"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_E48A1A56-5402-422B-9E5A-A239902D7917"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="serviceItems" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="ServiceItem" inverseName="task" inverseEntity="ServiceItem"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_9B7348E6-758A-4962-9A77-8A0D63EC7B5D"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Tasks"/&gt;
+            &lt;entry key="OData.type" value="Default.Task"/&gt;
+            &lt;entry key="ormkit.source" value="_09286992-5484-4F2D-8F2B-6C1BF87B2F6F"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Trip" representedClassName="Trip" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="distanceQuantity2" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_9DE6F490-9F69-4987-8E58-6D4F0B469A1F/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="endedAtMoment" attributeType="Date" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_C970184F-FE02-4AD1-988A-92466A076E72"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="distanceDistanceUnit2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="tripsAsDistanceDistanceUnit" inverseEntity="DistanceUnit"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_9DE6F490-9F69-4987-8E58-6D4F0B469A1F/_76B14F66-2B8D-4676-AE73-175539B353C1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="income" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Income" inverseName="trip" inverseEntity="Income"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_847D381A-BDEB-4AB0-BFA7-4B6EC9DA513E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="place" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Place" inverseName="trips" inverseEntity="Place"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_131582A3-0BCB-4E87-828B-49DC14CFCA20"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="purpose" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Purpose" inverseName="trips" inverseEntity="Purpose"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_D2D76A94-9FF7-417E-9921-F8773F34A9D6"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="wentToPlace" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Place" inverseName="tripWentTos" inverseEntity="Place"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_09773DBF-BAD8-4B39-A498-6B38FF9AB2E1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.Trip"/&gt;
+            &lt;entry key="ormkit.rule.SubsetConstraint5" value="If some Income was for some Trip and that Income is of some Vehicle then that Trip is of that Vehicle."/&gt;
+            &lt;entry key="ormkit.source" value="_BC7D1EAD-F12C-4A00-A629-1BA516C808EE"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="TyreChange" representedClassName="TyreChange" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="tread" attributeType="Decimal" minValueString="0" maxValueString="20" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_CD977102-0F92-4D88-9A4C-F2BFF33C474E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="tyreSet" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TyreSet" inverseName="tyreChanges" inverseEntity="TyreSet"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_C254ACAC-A996-46CB-B77F-A33CE3EC77D7"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.TyreChange"/&gt;
+            &lt;entry key="ormkit.rule.ExclusionConstraint1" value="No TyreChange fitted and removed the same TyreSet."/&gt;
+            &lt;entry key="ormkit.source" value="_BE6F548A-112F-49F9-B626-C776869E9ABE"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="TyreModel" representedClassName="TyreModel" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="name" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_F53EBE4C-8FDF-4D2B-8152-0BCCBB10998D"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="tyreSets" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TyreSet" inverseName="tyreModel" inverseEntity="TyreSet"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_5D806C9F-4F3B-484D-993D-7F3F46AC5C9E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="name"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="TyreModels"/&gt;
+            &lt;entry key="OData.type" value="Default.TyreModel"/&gt;
+            &lt;entry key="ormkit.source" value="_47DFF4C0-B89D-4C6C-A252-74E7BE57E921"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="TyreSet" representedClassName="TyreSet" parentEntity="Record" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_69985A53-5D64-4E8D-8A26-91CC079C7823"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="tyreSetName" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_D7CCA84F-2824-4F99-818E-6731F14CF70B"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="tyreSize" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_EAFAB7F3-8BED-4F69-9328-9331D10DAB64"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="season" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Season" inverseName="tyreSets" inverseEntity="Season"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_5028C836-A8EA-4596-A013-6524E491217F"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="tyreChanges" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TyreChange" inverseName="tyreSet" inverseEntity="TyreChange"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_137C339E-A19E-49CB-9AE9-6E74F9438577"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="tyreModel" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TyreModel" inverseName="tyreSets" inverseEntity="TyreModel"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_CDFF34FD-0BDD-48F4-8EF9-B91CB57B432A"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.type" value="Default.TyreSet"/&gt;
+            &lt;entry key="ormkit.rule.EqualityConstraint1" value="For each TyreSet, that TyreSet was bought on some Date if and only if that TyreSet cost some Money."/&gt;
+            &lt;entry key="ormkit.rule.SubsetConstraint4" value="If some TyreChange fitted some TyreSet and that TyreChange is of some Vehicle then that TyreSet is of that Vehicle."/&gt;
+            &lt;entry key="ormkit.source" value="_CC4538D7-3893-4ABB-A914-D3001F4B0CA0"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="User" representedClassName="User" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="email" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_16B678C5-E62A-4BAD-8CEA-93E84C91327D"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="personName" optional="YES" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_28B650F1-1738-4BB8-9571-2AE2FF443A3C"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="checklists" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Checklist" inverseName="user" inverseEntity="Checklist"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_5F5D0DD2-A45B-45DC-A152-405922509840"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="currency" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="users" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_6C0C5EDB-89DA-4DDE-AA0D-8366EF8CF338"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="distanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="users" inverseEntity="DistanceUnit"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_6836F543-61A0-467A-997A-985D1A1ADA7B"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="drivesVehicles" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Vehicle" inverseName="users" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_6663B9CB-74F2-43B7-8EBD-FDF256E5F3B2"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="events" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Event" inverseName="hadDriverUser" inverseEntity="Event"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_CBD49779-2E59-420B-BBD7-518AB55E6E7B"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="records" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Record" inverseName="user" inverseEntity="Record"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_A017BBBE-71EE-4D4A-BD64-31D1619968CF"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="vehicles" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Vehicle" inverseName="user" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_A887735F-F812-4607-9B18-891CD9B47891"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="volumeUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="VolumeUnit" inverseName="users" inverseEntity="VolumeUnit"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_668073F9-295A-4EB4-874A-4E2EA746F819"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="email"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Users"/&gt;
+            &lt;entry key="OData.type" value="Default.User"/&gt;
+            &lt;entry key="ormkit.rule.SubsetConstraint1" value="If some Event had driver some User and that Event is of some Vehicle then that User drives that Vehicle."/&gt;
+            &lt;entry key="ormkit.rule.SubsetConstraint2" value="If some User entered some Record that is of some Vehicle then that User drives that Vehicle."/&gt;
+            &lt;entry key="ormkit.source" value="_1660F6CB-8F66-4035-A24B-1114041EB14B"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="Vehicle" representedClassName="Vehicle" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="date" optional="YES" attributeType="Date" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_C24D2C45-9232-438A-9969-2FC1D89D213E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="distanceQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_54B699BF-0BE5-4234-A84C-1854D89B7701/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="distanceQuantity2" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_950B6EA4-A0C2-4634-89FC-170DE9F045EA/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="duration" optional="YES" attributeType="Integer 32" minValueString="1" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_733E915D-3114-42A1-9FA6-626DCB62ED89"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="id" attributeType="UUID" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_BA44DD9B-4E8A-4FD7-BF70-7F568DF4B17E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="moneyAmount" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.Minimum&amp;quot;: 0, &amp;quot;Validation.Minimum@Validation.Exclusive&amp;quot;: true}"/&gt;
+                &lt;entry key="ormkit.source" value="_166811E8-260A-41A0-8F2D-4A02009AF641/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="moneyAmount2" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.Minimum&amp;quot;: 0, &amp;quot;Validation.Minimum@Validation.Exclusive&amp;quot;: true}"/&gt;
+                &lt;entry key="ormkit.source" value="_00E2B4DD-D1B9-42D8-B170-ED0107452DC6/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="registrationNumber" optional="YES" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_5FFD9E35-EFA3-4333-ABC0-D322729071D5"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="vehicleName" attributeType="String"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_5E18F64C-A928-4EC4-B229-FF6185B78827"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="vin" optional="YES" attributeType="String" maxValueString="17"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_12C08D54-3C2B-474F-962F-175F9AA5B8C9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="year" attributeType="Integer 32" minValueString="1886" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_71AFC159-A514-45AD-8629-139D92CEC6F2"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="carModel" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CarModel" inverseName="vehicles" inverseEntity="CarModel"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_A99B8CF1-1821-4EA0-BB48-D4E19B0278B1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="distanceDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="vehiclesAsDistanceDistanceUnit" inverseEntity="DistanceUnit"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_54B699BF-0BE5-4234-A84C-1854D89B7701/_76B14F66-2B8D-4676-AE73-175539B353C1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="distanceDistanceUnit2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="vehicles" inverseEntity="DistanceUnit"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_950B6EA4-A0C2-4634-89FC-170DE9F045EA/_76B14F66-2B8D-4676-AE73-175539B353C1"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="fuel" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Fuel" inverseName="vehicles" inverseEntity="Fuel"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_12C6C26B-FFD2-4C8B-84B2-36F6232B6557"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="make" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Make" inverseName="vehicles" inverseEntity="Make"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_9E335866-4609-4FEA-9710-05B6898AC988"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="moneyCurrency" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="vehiclesAsMoneyCurrency" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_166811E8-260A-41A0-8F2D-4A02009AF641/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="moneyCurrency2" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="vehicles" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_00E2B4DD-D1B9-42D8-B170-ED0107452DC6/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="records" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Record" inverseName="vehicle" inverseEntity="Record"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_9E39171D-A1A8-4494-9AEF-2FBC80042310"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="vehicles" inverseEntity="User"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="users" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="User" inverseName="drivesVehicles" inverseEntity="User"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_7C7024F3-ABFD-412A-B3F6-1026A5247ACF"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="vehicleWasValuedOnDateAtMoneys" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="VehicleWasValuedOnDateAtMoney" inverseName="vehicle" inverseEntity="VehicleWasValuedOnDateAtMoney"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_35D1CBBA-D05A-4076-A003-27A870F24210._B1E102E2-6C0D-4A65-BE9B-F86098E0B262"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="id"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="Vehicles"/&gt;
+            &lt;entry key="OData.type" value="Default.Vehicle"/&gt;
+            &lt;entry key="ormkit.rule.ValueComparisonConstraint1" value="For each Vehicle, if that Vehicle was acquired on some Date1 and that Vehicle was sold on some Date2 then Date1 is less than or equal to Date2."/&gt;
+            &lt;entry key="ormkit.source" value="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="VehicleWasValuedOnDateAtMoney" representedClassName="VehicleWasValuedOnDateAtMoney" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="date" attributeType="Date" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_21BA079D-4F83-40E4-93C3-7DF3747E48AA"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="id" attributeType="Integer 64" usesScalarValueType="YES"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.computed" value="YES"/&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_35D1CBBA-D05A-4076-A003-27A870F24210.key"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;attribute name="moneyAmount" attributeType="Decimal" minValueString="0" usesScalarValueType="NO"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.Minimum&amp;quot;: 0, &amp;quot;Validation.Minimum@Validation.Exclusive&amp;quot;: true}"/&gt;
+                &lt;entry key="ormkit.source" value="_800B696C-9534-4E42-B669-AD254FC6536A/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="moneyCurrency" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Currency" inverseName="vehicleWasValuedOnDateAtMoneysAsMoneyCurrency" inverseEntity="Currency"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_800B696C-9534-4E42-B669-AD254FC6536A/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="vehicle" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Vehicle" inverseName="vehicleWasValuedOnDateAtMoneys" inverseEntity="Vehicle"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.mandatory" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_B1E102E2-6C0D-4A65-BE9B-F86098E0B262"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="vehicle"/&gt;
+                &lt;constraint value="date"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="VehicleWasValuedOnDateAtMoneys"/&gt;
+            &lt;entry key="OData.type" value="Default.VehicleWasValuedOnDateAtMoney"/&gt;
+            &lt;entry key="ormkit.source" value="_35D1CBBA-D05A-4076-A003-27A870F24210"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+    &lt;entity name="VolumeUnit" representedClassName="VolumeUnit" syncable="YES" codeGenerationType="class"&gt;
+        &lt;attribute name="code" attributeType="String" regularExpressionString="^(?:L|gal \(US\)|gal \(imp\))$"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="OData.annotations" value="{&amp;quot;Validation.AllowedValues&amp;quot;: [{&amp;quot;Value&amp;quot;: &amp;quot;L&amp;quot;}, {&amp;quot;Value&amp;quot;: &amp;quot;gal (US)&amp;quot;}, {&amp;quot;Value&amp;quot;: &amp;quot;gal (imp)&amp;quot;}]}"/&gt;
+                &lt;entry key="OData.key" value="YES"/&gt;
+                &lt;entry key="ormkit.source" value="_3C97AB94-62FF-41C9-BC06-9E93363C727B"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/attribute&gt;
+        &lt;relationship name="fillUpsAsVolumeVolumeUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FillUp" inverseName="volumeVolumeUnit" inverseEntity="FillUp"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_36505B08-99CC-4722-8097-DAA1F1E2AFF1/_B93DFC92-F0B1-4633-A3A6-3600BDBF0ED2.inverse"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;relationship name="users" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="User" inverseName="volumeUnit" inverseEntity="User"&gt;
+            &lt;userInfo&gt;
+                &lt;entry key="ormkit.source" value="_832C0151-D064-4606-AF7A-1AB3ECDD5384"/&gt;
+            &lt;/userInfo&gt;
+        &lt;/relationship&gt;
+        &lt;uniquenessConstraints&gt;
+            &lt;uniquenessConstraint&gt;
+                &lt;constraint value="code"/&gt;
+            &lt;/uniquenessConstraint&gt;
+        &lt;/uniquenessConstraints&gt;
+        &lt;userInfo&gt;
+            &lt;entry key="OData.entitySet" value="VolumeUnits"/&gt;
+            &lt;entry key="OData.type" value="Default.VolumeUnit"/&gt;
+            &lt;entry key="ormkit.source" value="_85EE3DE3-F6D0-48E6-8ACE-B4E615636FC8"/&gt;
+        &lt;/userInfo&gt;
+    &lt;/entity&gt;
+&lt;/model&gt;</ormcd:Baseline>
+		</ormcd:Mapping>
+	</ormcd:CoreDataMappings>
 </ormRoot:ORM2>
