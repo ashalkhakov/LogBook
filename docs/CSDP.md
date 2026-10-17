@@ -57,7 +57,13 @@ elementary facts it holds. Still a draft.
 
 A driver is a user, signed in, with whom the owner shares the vehicle. The
 owner drives it too, and whoever drives it can keep all of its data. Who
-drove, who filled up and who paid are users.
+drove, who filled up and who paid are users. A driver sees the vehicles
+shared with them, and may add vehicles of their own, which they then own.
+The owner may stop sharing.
+
+> Ben adds his own van; he owns it, and shares it with nobody.
+
+- Vehicle 'Ben's van' is owned by User 'ben@example.org'.
 
 ### A meter reading
 
@@ -88,6 +94,11 @@ just events with a distance, is for step 6 (subtypes).
 - Trip 3 was driven by User 'anna@example.org'.
 
 How far and how long it took are derived: 290 km, 3 h 15 min.
+
+Trips are recorded freely: they need not agree with the meter, nor with
+each other (gaps and overlaps are allowed). The owner may change what was
+recorded before; whether drivers may too, or only add, is a permission,
+not a fact (see below).
 
 ### A fill-up
 
@@ -231,6 +242,14 @@ unit they're stored in is for later.
 - Reminder 6 recurs every Period 6 months.
 
 Users write their own, per vehicle; no manufacturer's catalogue for now. A
+reminder is only a reminder: it is ticked off by hand. It may also be
+linked to the work that did it.
+
+> The oil filter was changed in Service 7.
+
+- Reminder 5 was done by Service 7.
+
+ A
 reminder is due at a distance, on a date, or both (whichever comes first),
 once or recurring. When it is done, a recurring one moves on from that
 distance or date.
@@ -264,16 +283,18 @@ Every one is derived, from events' amounts, dates and distances, and from
 rates. Distance driven is the meter's difference over the period, from the
 readings every event gives. These become ORMKit derivation queries.
 
+## Permissions
+
+These are not facts about cars. They're rules about who may change what,
+for the service and the apps to enforce:
+
+- The owner may change anything about their vehicles, including what was
+  recorded before.
+- A driver may add records to a vehicle shared with them. Whether they may
+  change or remove older ones is to be decided.
+
 ## Open questions
 
-1. **Balance.** Do the purchase price and a sale price count (as capital,
-   or as depreciation over the years owned)? Or is the balance only the
-   paid trips' revenue against running costs?
-2. **Sharing.** Does a driver see only the vehicles shared with them, and
-   can they also add vehicles of their own (owning them)? Can the owner
-   stop sharing?
-3. **Reminders done.** Is a reminder ticked off on its own, or by the
-   service or fill-up that did it (linking the two)?
-4. **Trips.** Should a trip have to agree with the meter: no gaps or
-   overlaps between consecutive trips' distances? Or are they recorded
-   freely?
+1. **Balance.** Which of the options below the reports offer.
+2. **Drivers and history.** May a driver change records, or only add
+   them? Only their own? Only recent ones?
