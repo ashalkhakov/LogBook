@@ -1469,10 +1469,10 @@ CarSale: n41; OpenReminder: m6).
 
 ### For ORMKit
 
-- **Deontic constraints** are in NORMA and ORMKit's model; the generated
-  checks need to warn for them rather than refuse.
-- **Value comparison constraints** are NORMA's; ORMKit's generated checks
-  need them.
+- **Value comparisons and deontic constraints** ORMKit already has: the
+  Core Data validation it generates checks value comparisons, and marks
+  each rule from a deontic constraint as such, for the app to warn rather
+  than refuse.
 - **Ordering by moment** ("the change before", "the readings in order")
   is the step 3 gap again, now in constraints too.
 
