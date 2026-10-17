@@ -583,9 +583,10 @@ Reminder was done by Service                    m5 | s12
 ```
 
 A reminder from a schedule says what the schedule says. "Says Text" is for
-one on its own. Whether a schedule's reminders are kept as records, each
-made when the one before is done, or worked out from the schedule, is a
-question below.
+one on its own. A schedule's reminders are kept as records: when one is
+done, the app makes the next one, due its intervals after when and where it
+was done. The owner may change any reminder afterwards, its due distance and
+date included.
 
 ### Who entered what
 
@@ -713,18 +714,6 @@ Each in the user's preferred units and currency, unless it says otherwise.
       on the date of the valuation that shows it;
     - and in the depreciation views, when sold: + (sale price − the value
       left on paper), on the sale's date.
-
-### Question
-
-**A schedule's reminders: kept, or worked out?**
-- **Kept as records:** when a reminder is done, the app makes the next
-  one, due its intervals later. The user can move it ("the garage said
-  wait"), and it syncs like any record.
-- **Worked out:** only the done ones are kept. The next one exists only as
-  a derivation from the last one done.
-
-Kept is simpler for the apps and lets a due date be changed by hand. I'd
-keep them.
 
 ### For ORMKit
 
