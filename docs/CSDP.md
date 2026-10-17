@@ -213,7 +213,8 @@ count maintenance and repairs as kinds of cost each.
 - TyreSet 'Golf winter' had Tread 8 mm at TyreChange 3. *(when fitted)*
 
 From the tyre changes, the app works out which set is on the car, and how
-far each set has been driven.
+far each set has been driven. Which set a change removed is worked out
+too: the one on the car before it (step 7).
 
 ### A document
 
@@ -276,7 +277,7 @@ went.
 > certificate in the car? Are the tyres in good condition? Has the oil
 > level been checked? Which of these are not working: low beams, high
 > beams, indicators, brake lights, horn? On 2026-08-28 at 12:00, at
-> 153,200 km, she went through it on the Golf: yes, yes, yes; the low and
+> 151,600 km, she went through it on the Golf: yes, yes, yes; the low and
 > high beams aren't working. She took a photo.
 
 - Checklist 'Basic vehicle inspection' is kept by User 'anna@example.org'.
@@ -292,7 +293,7 @@ went.
 - Inspection 50 is of Vehicle 'Blue Golf'.
 - Inspection 50 went through Checklist 'Basic vehicle inspection'.
 - Inspection 50 was at Moment 2026-08-28 12:00.
-- Inspection 50 was at Distance 153200.
+- Inspection 50 was at Distance 151600.
 - Inspection 50 had driver User 'anna@example.org'.
 - In Inspection 50, Question 'Is the registration certificate in the car?'
   was answered 'Yes'.
@@ -694,7 +695,7 @@ TyreChange was at Distance                      c4 | 146900 km
 TyreChange had driver User                      c4 | anna@example.org
 TyreChange fitted TyreSet                       c3 | ts1
                                                 c4 | ts2
-TyreChange removed TyreSet                      c4 | ts1
+TyreChange removed TyreSet *                    c4 | ts1
 TyreChange measured Tread                       c3 | 8
 ```
 
@@ -816,7 +817,7 @@ Option is at Position                           o1 | 1
 Inspection is of Vehicle                        in50 | v1
 Inspection went through Checklist               in50 | cl1
 Inspection was at Moment                        in50 | 2026-08-28 12:00
-Inspection was at Distance                      in50 | 153200 km
+Inspection was at Distance                      in50 | 151600 km
 Inspection had driver User                      in50 | anna@example.org
 Answer is of Inspection                         an1 | in50
                                                 an4 | in50
@@ -1133,7 +1134,7 @@ honestly be missing, and each such case is listed with why.
 | Service | vehicle, moment, distance, garage, kind, currency, driver | items (a service may have no tasks listed); title (its kind and tasks say what it was); discount (none given); payment method (not everyone keeps it); instalments (paid at once, when missing) |
 | ServiceItem | service, task, cost | note; what it was charged in another currency (only when it was) |
 | TyreSet | vehicle, name, season, model, size | price and the date bought, both or neither (a set that came with the car) |
-| TyreChange | vehicle, moment, distance, the set fitted, tread, driver | the set removed (the first set fitted, on a car with none recorded) |
+| TyreChange | vehicle, moment, distance, the set fitted, tread, driver | |
 | Document | vehicle, kind, issuer, number, valid from | expiry (a registration certificate doesn't expire); cost (some are free) |
 | Expense | vehicle, moment, kind, cost, driver | what it was charged in another currency |
 | Income | vehicle, moment, kind, money, driver | distance (a refund comes away from the car); the trip (only a ride logged as a trip has one); instalments (paid at once, when missing) |
@@ -1197,7 +1198,10 @@ Facts worked out from others by rules, not arithmetic:
 9. **Which questions an inspection left unanswered:** its checklist's
    questions with no answer of it.
 10. **Which checklists a driver may use:** the vehicle owner's.
-11. **Which records a driver may change:** none. The owner may change any
+11. **Which set a tyre change removed** (`TyreChange removed TyreSet`):
+    the set the vehicle's tyre change before it fitted. None for the first
+    change recorded. *Derived*, not stored (step 7).
+12. **Which records a driver may change:** none. The owner may change any
    of their vehicles' records. That's a permission, from the facts of who
    owns and who entered, enforced by the service (see Permissions).
 
@@ -1328,7 +1332,8 @@ the vehicle's side: a vehicle is sold at most once. The vehicle's sale
   Question* only for 'Any of' questions.
 
 **Exclusion** (not both):
-- a tyre change doesn't fit and remove the same set;
+- a tyre change doesn't fit and remove the same set (a set already on
+  isn't fitted again);
 - a reminder comes from a schedule, or is for a task, a kind of expense
   or a checklist of its own: exactly one (step 5's exclusive-or; a
   schedule's the same, over its three);
@@ -1347,12 +1352,134 @@ the vehicle's side: a vehicle is sold at most once. The vehicle's sale
 - **Value ranges per role** on a shared value type, and **join subsets**,
   NORMA has, and ORMKit with it.
 
+## Step 7: other constraints, and the final checks
+
+### Ring constraints
+
+A ring constraint is on two roles played by the same type. Logbook has
+few such fact types; one needs a constraint:
+- **On Date one Currency was worth Factor Currency:** irreflexive over
+  the two currencies. A currency isn't worth anything in itself.
+
+### Value comparisons
+
+A value comparison constraint compares two values of one instance.
+
+| Instance | Constraint |
+| --- | --- |
+| Trip | it ended at or after the moment it started; at or beyond the distance it started |
+| Document | it expires after it's valid from |
+| Vehicle | sold (its CarSale's moment) on or after it was acquired |
+| TyreSet | bought on or before the first change that fitted it |
+| Reminder | done on or after the moment it was set (its record's moment) |
+
+### Frequency constraints
+
+- **A schedule has at most one reminder not yet done.** The next is made
+  only when one is done. That's a uniqueness on a subtype: *each
+  OpenReminder is a Reminder that was not done*, and *OpenReminder comes
+  from Schedule* is unique on the schedule's side.
+- **A checklist an inspection went through has at least one question.**
+
+### Deontic constraints: what ought to be, not what must
+
+An alethic constraint can't be broken: the app refuses what breaks it. A
+deontic one ought not to be, and the app warns, then keeps what was
+entered. The users said records may be entered freely and history edited
+afterwards, so the rules about the meter and time are deontic:
+
+- **The meter only goes up.** A vehicle's metered events, in order of
+  their moments, ought to have distances that don't go down. The form
+  shows the last reading beside the odometer, and warns when the new one
+  is lower.
+- **Events fall while the vehicle is kept:** on or after it was acquired,
+  at or beyond the distance it was acquired at, and not after it was sold.
+- **A fill-up's fuel ought to be one the vehicle uses.** Not a must:
+  Drivvo's logs show premium and regular petrol in one car. "Vehicle uses
+  Fuel" is the form's default.
+- **A document ought not to be expired** while its vehicle is kept: that's
+  what a reminder is for, and the app shows it as one.
+
+Trips may overlap and leave gaps (step 1): no constraint at all.
+
+### Final check 1: the examples against the constraints
+
+Every example from step 1, as a population, against every constraint.
+One broke one: Inspection 50, on 2026-08-28, said 153,200 km, but the
+meter reading of 2026-10-01 says 153,120 km. Only a deontic constraint,
+but the example was wrong; it is now 151,600 km. The rest hold:
+
+```
+2025-10-20   tyre set ts1 bought
+2025-11-02   141500 km   tyre change c3 fits ts1
+2025-12-01               insurance d1 valid (to 2026-12-01)
+2026-04-05   146900 km   tyre change c4 fits ts2, removes ts1
+2026-06-01   148000 km   service s7; schedule sc1 counts from it
+2026-08-03               expense e12 (no distance)
+2026-08-28   151600 km   inspection in50
+2026-09-14   152300 km   fill-up f1
+2026-09-20   152410 km → 152700 km   trip t3
+2026-10-01   153120 km   meter reading r21
+2026-10-02   153300 km → 153314 km   trip t9; income n30 for it
+2027-05-20   162400 km   reminder m5 done (due 163000 km, 2027-06-01)
+2027-08-30   171020 km   car sale n41
+```
+
+### Final check 2: nothing stored that can be derived
+
+Each derivable fact is derived, unless kept for a reason:
+- **Which set a tyre change removed** was stored; it's the set fitted by
+  the change before. It's now derived (step 5, derivation 11), and can no
+  longer disagree with the changes.
+- **A reminder's vehicle,** for one from a schedule, is the schedule's.
+  *Partly derived*: stored for a reminder of its own, derived for one
+  from a schedule. The join subset of step 6 then always holds.
+- **A schedule's next reminder, its due distance and date:** *derived and
+  stored*, because the owner may change them afterwards (step 2).
+- **The reverse exchange rate:** *derived and stored*, so reports read
+  both directions alike (step 5).
+- **A service's cost, a vehicle's sale, a record's kind of cost, the
+  drivers:** derived, not stored.
+
+### Final check 3: every report from the facts
+
+Each report of step 1 against the derivations of step 3:
+
+| Report | From |
+| --- | --- |
+| Balance, every view | costs, incomes, the purchase, expectations, valuations, the car sale, rates |
+| Distance driven, mileage | metered events' moments and distances |
+| Costs, by kind, by month, by task | costs with their dates and kinds; service items, with the discount spread |
+| Incomes, by kind | incomes |
+| Fuel consumption, its lowest, highest and latest, by fuel | fill-ups in order of moments, full or not |
+| Each month against the one before | the same, grouped by month |
+| Reminders due, how far and how long | reminders, the latest reading, today |
+| Inspections | answers, questions in order |
+
+Two inputs were missing, and are now there: a moment for every event (the
+cross-check with Drivvo) and a date for a tyre set's price (step 6).
+
+### Final check 4: every fact type can be populated
+
+The constraints together allow a population of every fact type: step 1's
+examples are one. The exclusive-ors (what a reminder is for; yes or no
+against chosen options) each leave every role a case of its own, and
+every subtype a member (MeteredEvent: a fill-up; Cost: a fill-up;
+CarSale: n41; OpenReminder: m6).
+
+### For ORMKit
+
+- **Deontic constraints** are in NORMA and ORMKit's model; the generated
+  checks need to warn for them rather than refuse.
+- **Value comparison constraints** are NORMA's; ORMKit's generated checks
+  need them.
+- **Ordering by moment** ("the change before", "the readings in order")
+  is the step 3 gap again, now in constraints too.
+
 ## Next
 
-Step 7: the other constraints and the final checks. Ring constraints (an
-exchange rate is between two different currencies), value comparisons (a
-trip ends no earlier and no nearer than it started; a document expires
-after it's valid; a removed tyre set was fitted before), frequency
-constraints, and then the checks Halpin ends with: that every fact type
-can be populated, that nothing derivable is stored without a reason, and
-the whole schema against the examples.
+The schema is complete. Next, it becomes `Model/Logbook.orm`: entered
+through ORMKit, every fact type with its readings, constraints and
+derivations, and verbalized back to check it reads as these steps say.
+Then the Core Data model, the OData service and the checks are generated
+from it, and the apps written around them.
