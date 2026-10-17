@@ -673,9 +673,10 @@ currency.
 
 Step 1's "Service included Task for Money", with a note on that inclusion,
 is a fact about a fact. So the inclusion is an object of its own, the
-ServiceItem (ORM's objectification), with the task, the cost and the note
-as its facts. Two items of one service may name the same task, such as
-labour on two days.
+ServiceItem, with the task, the cost and the note as its facts. Two items
+of one service may name the same task, such as labour on two days, so an
+item is not the objectified pair of its service and task (that would be
+one per pair): it has an id of its own, and is part of its service.
 
 ### Tyres
 
@@ -1476,10 +1477,34 @@ CarSale: n41; OpenReminder: m6).
 - **Ordering by moment** ("the change before", "the readings in order")
   is the step 3 gap again, now in constraints too.
 
+## The model
+
+The schema is [`Model/Logbook.forml`](../Model/Logbook.forml): every
+fact type, constraint, subtype and derivation above, a statement a line,
+as ORMKit's verbalizer says them. `Model/Logbook.orm` is built from it:
+
+```sh
+ormtool build Model/Logbook.forml Model/Logbook.orm
+ormtool verbalize Model/Logbook.orm      # read it back
+```
+
+What it cannot say yet, it says in comments, for rules later:
+- a currency code's pattern;
+- that a trip ends no nearer than it started (distances are a quantity
+  and a unit each, compared after converting);
+- that a schedule has at most one reminder not done (a uniqueness over a
+  subtype's instances; a vehicle's one car sale is kept by its derived
+  sale date, unique for the vehicle);
+- that an answer's options are its question's, and that yes or no goes
+  with yes-or-no questions (rules over the answer's question);
+- the deontic rules about the meter, and that events fall while the
+  vehicle is kept (ordering by moment).
+
+The subtypes defined by a rule (MeteredEvent, Cost, CarSale, ServiceKind)
+keep their rule as their definition until ORMKit writes NORMA's subtype
+derivation rules.
+
 ## Next
 
-The schema is complete. Next, it becomes `Model/Logbook.orm`: entered
-through ORMKit, every fact type with its readings, constraints and
-derivations, and verbalized back to check it reads as these steps say.
-Then the Core Data model, the OData service and the checks are generated
-from it, and the apps written around them.
+The Core Data model, the OData service and the checks are generated from
+the model, and the apps written around them.
