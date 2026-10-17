@@ -805,8 +805,8 @@ over the years.
   2026-09-14 | EUR | 1.10 | USD   the same day and pair again: not allowed
   ```
 
-  The rate the other way (USD to EUR) is its own row, or worked out as
-  1 ÷ the factor. Which, is for step 6.
+  The rate the other way (USD to EUR) is derived, 1 ÷ the factor, and
+  stored, so that reports read rates in both directions alike (step 5).
 
 - **"Was converted at Factor into Currency"** (step 2, for expenses and
   service items) *wasn't elementary*. Each expense has at most one
@@ -816,7 +816,76 @@ over the years.
   "Expense was charged Money 41.60 EUR". One binary, with the factor
   derived (41.60 ÷ 40). Steps 1 to 3 now say it so.
 
+## Step 5: what must be there, and logical derivations
+
+### What every one must have
+
+A mandatory role says every instance of the type plays it. The question
+for each is: may Logbook have one of these without it?
+
+- **Vehicle:** an owner and a name. Everything else is optional: make,
+  model, year, fuel, VIN, registration, what it was bought for, the
+  expectations, valuations, the sale.
+- **User:** nothing beyond the email that identifies them. A name and
+  preferences are optional; preferences default to km, L and the device's
+  currency.
+- **Every record** (meter reading, trip, fill-up, service, tyre change,
+  document, expense, reminder, schedule): its vehicle, and who entered it.
+- **MeterReading:** a date and a distance.
+- **Trip:** when it started. The rest is free, as you asked: a trip may be
+  only a date and a note of where, or, if paid, how long, how far and what
+  it was paid.
+- **FillUp:** a date, a volume and a cost. The distance is optional, but
+  without it the fill-up can't count toward consumption.
+- **Service:** a date, a kind, a currency, and at least one item.
+- **ServiceItem:** its service, a task and a cost.
+- **TyreSet:** a season. A name, model, size and price are optional.
+- **TyreChange:** a date, and the set it fitted. Removing a set is
+  optional (the car's first set).
+- **Document:** a kind. The rest is optional, its expiry included (the
+  registration certificate doesn't expire).
+- **Expense:** a date, a kind and a cost.
+- **Schedule:** a text, and at least one interval, by distance or by time
+  or both. That's a disjunctive mandatory (inclusive-or): every schedule
+  recurs every some distance, or every some time.
+- **Reminder:**
+  - a due distance or a due date or both (inclusive-or);
+  - a schedule or a text of its own, but not both (exclusive-or): a
+    schedule's reminder says the schedule's text;
+  - done or not: done when it has a done date. The done distance and the
+    record that did it are optional.
+- **Money, Distance, Volume:** an amount and a currency, a quantity and a
+  unit (their reference schemes).
+- **An exchange rate:** all four of its roles, as with any fact.
+
+### Logical derivations
+
+Facts worked out from others by rules, not arithmetic:
+
+1. **Each record's kind of cost** (`Record is of CostKind`):
+   - a fill-up is of 'Fuel';
+   - a tyre set, bought, is of 'Tyres';
+   - a document with a cost is of 'Documents';
+   - a service or an expense is of the kind it says.
+
+   So the kind is stored only for services and expenses. The derived fact
+   puts every cost in one list, for the reports.
+2. **Who drives a vehicle** (`User drives Vehicle`): the users it is
+   shared with, and its owner. *Partly derived*: the sharing is stored, and
+   the owner is derived.
+3. **Who a vehicle is shared with:** its drivers other than its owner.
+4. **A reminder's text:** its own, or its schedule's.
+5. **Whether a reminder is done:** it has a done date.
+6. **The reverse exchange rate:** if on a date one X is worth F Y, then
+   one Y is worth 1 ÷ F X. *Derived and stored*: worked out when a rate is
+   entered, and kept, so that reports read rates both ways alike. A rate
+   entered by hand both ways keeps the one entered.
+7. **Which records a driver may change:** none. The owner may change any
+   of their vehicles' records. That's a permission, from the facts of who
+   owns and who entered, enforced by the service (see Permissions).
+
 ## Next
 
-Step 5: mandatory roles (what every vehicle, record and user must have),
-and logical derivations (CostKind for fill-ups, tyres and documents).
+Step 6: value constraints (the lists, positive amounts and distances),
+set-comparison constraints (a removed tyre set was fitted before), and
+subtyping (the records' common supertype, and which records are costs).
