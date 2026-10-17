@@ -582,7 +582,129 @@ FillUp was entered by User                      f1 | ben@example.org
   next due; distance driven; every report. Step 3 lists these
   derivations.
 
+## Step 3: entity types combined, arithmetic derived
+
+### Entity types combined
+
+Two entity types are one when their instances can be compared as the same
+kind of thing.
+
+- **Distance** is one type, whatever role it plays. An odometer reading
+  (acquired at, shows, at), a length (driven, more) and an interval
+  (recurs every) are all distances. A trip's length is a difference of two
+  readings, and a reminder is due when a reading reaches a sum of readings
+  and intervals. Comparing and subtracting them is the point.
+- **User** is one type for the owner, a driver, who paid and who entered.
+  The same person plays all of these.
+- **Factor** is one type: an exchange rate's, and an amount's own rate.
+- **Fuel** is one type: what a vehicle uses, and what a fill-up was of.
+- **CostKind replaces ServiceKind and ExpenseKind.** The pie chart puts
+  fill-ups, maintenance, repairs, tyres, documents, parking, tolls and
+  washes side by side as kinds of cost. So there is one list of kinds, and
+  each record gets its kind:
+  - a fill-up is 'Fuel';
+  - a service is 'Maintenance' or 'Repair' (what step 2 called its
+    ServiceKind);
+  - buying a tyre set is 'Tyres';
+  - a document is 'Documents';
+  - an expense is 'Parking', 'Toll', 'Wash', or another kind of its own.
+
+  Services and expenses say their kind; for the rest it is fixed by what
+  they are, which is a derivation (step 5).
+
+What stays apart:
+- **Garage, Station and Place:** they play different roles, and nothing
+  compares a garage with a trip's destination.
+- **CarModel and TyreModel.**
+- **Note and Reminder text:** text, but nothing compares one with the
+  other.
+- **DocumentKind and Purpose:** lists of their own.
+
+### What is worked out, not stored
+
+Each in the user's preferred units and currency, unless it says otherwise.
+
+**Conversions**
+1. *A distance in a unit:* its quantity × the fixed factor between the
+   units. The same for volumes.
+2. *Money in a currency:* the amount × its own factor, if it has one into
+   that currency. Otherwise × the rate between the currencies on its date,
+   or on the latest date before it with a rate. When there is no rate at
+   all, the amount can't be shown in that currency, and the report says
+   so.
+
+**Records**
+3. *A trip's distance:* where it ended − where it started.
+4. *A trip's duration:* when it ended − when it started.
+5. *A service's cost:* the sum of its items' costs.
+6. *A vehicle's reading on a date:* the latest distance any of its
+   records gives on or before that date (acquisition, meter readings,
+   trips' ends, fill-ups, services, tyre changes).
+7. *Which tyre set is on a vehicle:* the one its latest tyre change
+   fitted.
+8. *How far a tyre set has gone:* over each time it was on, the distance
+   at the change that removed it − the distance at the change that fitted
+   it (to the vehicle's latest reading while it is still on).
+
+**Reminders**
+9. *When a reminder is next due:* a one-off one, its distance and date. A
+   recurring one, the distance and date it was last done + its intervals.
+   Whichever comes first.
+10. *Whether it is overdue:* the vehicle's latest reading is past its
+    distance, or today is past its date.
+
+**Fuel**
+11. *Consumption (L/100 km, or mpg),* the full-tank method: the volume put
+    in since the last full fill-up ÷ the distance driven since it. Only
+    between two fill-ups that filled the tank.
+
+**Reports,** per vehicle and over a period, then per kind of cost:
+12. *Distance driven:* the reading at the period's end − the reading at
+    its start.
+13. *Costs:* the sum of the costs of the records in the period.
+14. *Revenue:* the sum of what the trips in the period were paid.
+15. *Per day:* a total ÷ the days in the period.
+16. *Per distance:* a total ÷ the distance driven.
+17. *Costs by kind, and by month:* the sums grouped by kind, and by month.
+18. *Balance:* revenue − costs, then in each view:
+    - *cash:* − the purchase price on its date, + the sale price on its
+      date;
+    - *running:* nothing more;
+    - *depreciation over time:* − (purchase price − expected sale price) ÷
+      expected duration, a cost per day;
+    - *depreciation by distance:* − (purchase price − expected sale
+      price) ÷ expected further distance, a cost per distance driven;
+    - *what it's worth:* − the drop in value between valuations, counted
+      on the date of the valuation that shows it;
+    - and in the depreciation views, when sold: + (sale price − the value
+      left on paper), on the sale's date.
+
+### Questions
+
+1. **Doing a recurring reminder.** To know when it was last done, a done
+   reminder needs a date and a distance. Linked to work, they come from
+   that work. Ticked by hand, should the user give them (defaulting to
+   today and the latest reading)? Or should each doing be kept as a record,
+   with a history?
+2. **Mixed currencies in one service.** A service's items might be in
+   different currencies (labour in CHF, parts bought in EUR). Is the
+   service's cost then shown only in the preferred currency? Or are items
+   in one currency per service?
+3. **Fuel consumption** wasn't in your reports, but the full-tank flag
+   allows it. Shall the reports include it?
+
+### For ORMKit
+
+These derivations become ORMKit derivation queries. A few need more than
+ORMKit's queries do today, which is part of what building Logbook will
+show:
+- arithmetic between values (differences, products, quotients);
+- unit and currency conversion, the latter by the latest rate on or
+  before a date;
+- dates and durations (days in a period, months between dates);
+- grouping by month.
+
 ## Next
 
-Step 3: entity types that should be combined, and the arithmetic
-derivations (what is worked out, not stored).
+Step 4: uniqueness constraints, and checking that each fact type is
+elementary (the ternaries and the quaternary especially).
