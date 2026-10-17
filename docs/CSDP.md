@@ -20,6 +20,7 @@ constraints.
   - documents;
   - other costs: parking, tolls, washes;
   - incomes: paid rides, freight, refunds, the car's sale;
+  - inspections: going through a checklist the users write, item by item;
   - schedules of work the users plan, and the reminders they mark done.
 - **Every record of an event** says when it happened, to the minute, and
   who was driving. It may carry a note and attached files.
@@ -101,7 +102,7 @@ readings too, or just events with a distance, is for step 6 (subtypes).
 ### What every event has
 
 Each event (meter reading, trip, fill-up, service, tyre change, expense,
-income) happened at a moment, a date and a time of day: two fill-ups on one
+income, inspection) happened at a moment, a date and a time of day: two fill-ups on one
 day must come in order, or the consumption between them is wrong. Each
 says who was driving, and may carry a note and any number of attached
 files (a receipt, a photo):
@@ -268,6 +269,44 @@ It may name the trip it was for; a trip needn't be paid. A paid trip
 needn't name its places, but it does say how long it took and how far it
 went.
 
+### Checklists and inspections
+
+> Anna's checklist "Before a long trip": tyre pressure, lights, oil level,
+> wipers and washer fluid, spare wheel. On 2026-10-10 at 08:00, at
+> 153,200 km, she went through it on the Golf: all fine but the washer
+> fluid, which was low.
+
+- Checklist 'Before a long trip' is kept by User 'anna@example.org'.
+- ChecklistItem 'Tyre pressure' is in Checklist 'Before a long trip' at
+  Position 1.
+- ChecklistItem 'Washer fluid' is in Checklist 'Before a long trip' at
+  Position 4.
+- Inspection 50 is of Vehicle 'Blue Golf'.
+- Inspection 50 went through Checklist 'Before a long trip'.
+- Inspection 50 was at Moment 2026-10-10 08:00.
+- Inspection 50 was at Distance 153200.
+- Inspection 50 had driver User 'anna@example.org'.
+- In Inspection 50, ChecklistItem 'Tyre pressure' was found Result 'OK'.
+- In Inspection 50, ChecklistItem 'Washer fluid' was found Result 'Not OK'.
+- In Inspection 50, ChecklistItem 'Washer fluid' has Note 'Low, topped
+  up'.
+
+A **checklist** is a list of things to check, in order, that a user
+writes once and uses on any of their vehicles: before a long trip, when
+handing the car to another driver, a monthly look round. Drivers use the
+checklists of the vehicle's owner. An **inspection** is one going
+through it, on one vehicle, at a moment: an event like the others. Each
+item is found 'OK' or 'Not OK', and may have a note (and the inspection
+photos, as attachments). An item left unchecked has no result.
+
+A checklist can be planned work too:
+
+> Go through "Monthly look round" every month.
+
+- Schedule 'Monthly' is for Checklist 'Monthly look round'.
+
+and an inspection through it does that work.
+
 ### Money
 
 > 74.10 EUR, on 2026-09-14; the preferred currency is USD, and that day
@@ -326,13 +365,14 @@ unit they're stored in is for later.
 
 A **schedule** is planned work: which work, and how often, by distance,
 by time, or both, whichever comes first. The work is a task (what a
-service does) or a kind of expense (what an expense pays for). It is never
-done itself.
+service does), a kind of expense (what an expense pays for) or a
+checklist (what an inspection goes through). It is never done itself.
 
 A **reminder** is one time the work is due. The work it's for is its
 schedule's, or, set once by hand with no schedule, its own. It is done by
 the first record of that work after it was set: a service that includes
-the task, or an expense of that kind. Saving such a record marks the
+the task, an expense of that kind, or an inspection through the
+checklist. Saving such a record marks the
 reminder done, with the record's moment and distance, and links it to the
 record; the owner may also mark one done by hand, with no record. A
 schedule's reminders come one after another: when one is done, the next
@@ -382,9 +422,11 @@ over a period:
     (5% lower than June).
 12. **Each fill-up in the history:** its consumption since the full
     fill-up before.
+13. **Each inspection in the history:** how many of its items were found
+    'Not OK', and which.
 
 There are the same reports per kind of event (fill-ups, services,
-expenses, incomes, trips, meter readings), as tabs.
+expenses, incomes, trips, meter readings, inspections), as tabs.
 
 As facts, for example:
 - Vehicle 'Blue Golf' cost Money 1234 USD in Period 2026-09.
@@ -426,7 +468,8 @@ Records made on a device and synced need ids that don't clash. So the
 things Logbook records are identified by an id the app makes (a UUID,
 written `v1`, `t3` here):
 - Vehicle, Trip, FillUp, Service, ServiceItem, MeterReading, TyreSet,
-  TyreChange, Document, Expense, Income, Schedule, Reminder, Attachment.
+  TyreChange, Document, Expense, Income, Schedule, Reminder, Attachment,
+  Checklist, ChecklistItem, Inspection, Check.
 
 The rest are identified by what they are:
 
@@ -435,7 +478,9 @@ The rest are identified by what they are:
 | User | email |
 | Make, CarModel, Fuel, Garage, Station, Place, TyreModel | name |
 | ServiceKind, ExpenseKind, IncomeKind, DocumentKind, Purpose, Season, Task, PaymentMethod | name, from a list |
-| Title, Note | text |
+| Title, Note, ChecklistName, ItemText | text |
+| Result | name, from a fixed list: 'OK', 'Not OK' |
+| Position | a count, 1 or more |
 | Instalments | a count, 1 or more |
 | Currency | ISO code ('EUR', 'USD') |
 | DistanceUnit | code, from a list: 'km', 'mi' |
@@ -725,6 +770,40 @@ app makes the next one, due its intervals after when and where it was
 done. The owner may change any reminder afterwards, its due distance and
 date included.
 
+### Checklists and inspections
+
+```
+Checklist is kept by User                       cl1 | anna@example.org
+Checklist has ChecklistName                     cl1 | 'Before a long trip'
+ChecklistItem is in Checklist                   ci1 | cl1
+                                                ci4 | cl1
+ChecklistItem says ItemText                     ci1 | 'Tyre pressure'
+                                                ci4 | 'Washer fluid'
+ChecklistItem is at Position                    ci1 | 1
+                                                ci4 | 4
+Inspection is of Vehicle                        in50 | v1
+Inspection went through Checklist               in50 | cl1
+Inspection was at Moment                        in50 | 2026-10-10 08:00
+Inspection was at Distance                      in50 | 153200 km
+Inspection had driver User                      in50 | anna@example.org
+Check is of Inspection                          k1 | in50
+                                                k4 | in50
+Check is of ChecklistItem                       k1 | ci1
+                                                k4 | ci4
+Check found Result                              k1 | 'OK'
+                                                k4 | 'Not OK'
+Check has Note                                  k4 | 'Low, topped up'
+Schedule is for Checklist                       sc3 | cl2
+Reminder was done by Inspection                 m8 | in51
+```
+
+Items are records with ids, not just their text: an item's text may be
+reworded later, and the inspections that checked it still point at it.
+Step 1's "In Inspection, ChecklistItem was found Result", with a note on
+it, is a fact about a fact, as a service's item was. So each check is an
+object of its own, the Check (objectification), with the result and the
+note as its facts.
+
 ### Who entered what
 
 ```
@@ -740,9 +819,10 @@ FillUp was entered by User                      f1 | ben@example.org
   "cost Money", "was entered by User" and its own rate. Step 6 decides
   whether they are one supertype (an Event, or a Record) with these fact
   types once, and which records are costs and which incomes.
-- **Reminders done by work.** "Reminder was done by Service" and "by
-  Expense", and "is for Task" and "for ExpenseKind": the same question,
-  a supertype of the work and of what does it.
+- **Reminders done by work.** "Reminder was done by Service", "by
+  Expense" and "by Inspection", and "is for Task", "for ExpenseKind" and
+  "for Checklist": the same question, a supertype of the work and of what
+  does it.
 - **Not stored, worked out:** a trip's distance and duration; a service's
   cost; which tyre set is on; how far a set has gone; when a reminder is
   next due; distance driven; every report. Step 3 lists these
@@ -792,12 +872,14 @@ What stays apart:
 - **Task:** what a service does, not a kind of cost: a service's kind is
   'Maintenance' or 'Repair', and its items are tasks.
 - **DocumentKind, Purpose and PaymentMethod:** lists of their own.
+- **Result:** a check's, not a kind of anything else.
 
 ### What is worked out, not stored
 
 Each in the user's preferred units and currency, unless it says otherwise.
 
 **Conversions**
+
 1. *A distance in a unit:* its quantity × the fixed factor between the
    units. The same for volumes.
 2. *Money in a currency:* what it was charged in that currency, if the
@@ -807,6 +889,7 @@ Each in the user's preferred units and currency, unless it says otherwise.
    so.
 
 **Records**
+
 3. *A trip's distance:* where it ended − where it started.
 4. *A trip's duration:* when it ended − when it started.
 5. *A service's cost:* the sum of its items' costs, less its discount,
@@ -824,6 +907,7 @@ Each in the user's preferred units and currency, unless it says otherwise.
    it (to the vehicle's latest reading while it is still on).
 
 **Reminders**
+
 10. *When a schedule's next reminder is due:* the distance and date its
     last reminder was done + the schedule's intervals. Before any was
     done, counted from when the schedule was set up: its first reminder's
@@ -835,6 +919,7 @@ Each in the user's preferred units and currency, unless it says otherwise.
     vehicle's latest reading; its due date − today.
 
 **Fuel**
+
 13. *Consumption (L/100 km, km/L or mpg, as the user prefers),* the
     full-tank method: the volume put in since the full fill-up before ÷ the
     distance driven since it. Only between two fill-ups that filled the
@@ -844,6 +929,7 @@ Each in the user's preferred units and currency, unless it says otherwise.
 14. *Fuel cost per distance:* the same, with cost for volume.
 
 **Reports,** per vehicle and over a period, then per kind of record:
+
 15. *Distance driven:* the reading at the period's end − the reading at
     its start.
 16. *Costs:* the sum of the costs of the records in the period.
@@ -920,11 +1006,15 @@ unique. Each vehicle, record or user has at most one of each of these:
 - **Expense:** vehicle, moment, kind, cost, what it was charged, driver.
 - **Income:** vehicle, moment, distance, kind, money, driver,
   instalments, the trip it was for.
-- **Schedule:** vehicle, task or kind of expense, note, distance
-  interval, time interval.
-- **Reminder:** vehicle, schedule, task or kind of expense, note, due
-  distance, due date, done moment, done distance, the record it was done
-  by.
+- **Checklist:** who keeps it, name.
+- **ChecklistItem:** checklist, text, position.
+- **Inspection:** vehicle, checklist, moment, distance, driver.
+- **Check:** inspection, item, result, note.
+- **Schedule:** vehicle, task, kind of expense or checklist, note,
+  distance interval, time interval.
+- **Reminder:** vehicle, schedule, task, kind of expense or checklist,
+  note, due distance, due date, done moment, done distance, the record it
+  was done by.
 - **Attachment:** the record it is of, file name.
 - **Every record:** who entered it, note.
 
@@ -934,7 +1024,12 @@ over the years, a record has many attachments.
 
 **Also unique the other way:**
 - **Income was for Trip:** a trip is paid by at most one income.
-
+- **A check's inspection and item:** an inspection checks each item at
+  most once. An external uniqueness over the two, so the inspection and
+  the item together identify the check, as a service item's could not
+  (two items of a service may name the same task).
+- **A checklist item's checklist and position:** one item at each place
+  in a list.
 - **Money, Distance, Volume:** each has one amount and one currency (or
   quantity and unit), and the two together identify it: (74.10, 'EUR') is
   one money. That is the reference scheme from step 2, an external
@@ -1007,8 +1102,12 @@ honestly be missing, and each such case is listed with why.
 | Expense | vehicle, moment, kind, cost, driver | what it was charged in another currency |
 | Income | vehicle, moment, kind, money, driver | distance (a refund comes away from the car); the trip (only a ride logged as a trip has one); instalments (paid at once, when missing) |
 | Attachment | the record it is of, file name | |
-| Schedule | vehicle; its work: a task or a kind of expense, not both (exclusive-or); at least one interval | the other interval: it may recur by distance only, by time only, or both (inclusive-or); note |
-| Reminder | vehicle; a due distance or a due date or both (inclusive-or); its schedule or work of its own, a task or a kind of expense, exactly one of the three (exclusive-or) | note; the done moment, done distance and the record that did it, until it is done; then the moment and distance are a must, the record optional (done by hand); that record is a service or an expense, not both (exclusive-or) |
+| Checklist | who keeps it, name | items (a new list, still being written) |
+| ChecklistItem | checklist, text, position | |
+| Inspection | vehicle, checklist, moment, distance, driver | checks (an inspection may be saved before every item is gone through) |
+| Check | inspection, item, result | note |
+| Schedule | vehicle; its work: a task, a kind of expense or a checklist, exactly one (exclusive-or); at least one interval | the other interval: it may recur by distance only, by time only, or both (inclusive-or); note |
+| Reminder | vehicle; a due distance or a due date or both (inclusive-or); its schedule or work of its own, a task, a kind of expense or a checklist, exactly one of the four (exclusive-or) | note; the done moment, done distance and the record that did it, until it is done; then the moment and distance are a must, the record optional (done by hand); that record is a service, an expense or an inspection, exactly one (exclusive-or) |
 | Every record | who entered it | note; attachments (any number, none included) |
 | Money, Distance, Volume | amount and currency; quantity and unit | |
 | An exchange rate | all four roles | |
@@ -1041,13 +1140,13 @@ Facts worked out from others by rules, not arithmetic:
    shared with, and its owner. *Partly derived*: the sharing is stored, and
    the owner is derived.
 3. **Who a vehicle is shared with:** its drivers other than its owner.
-4. **A reminder's work** (a task or a kind of expense): its own, or its
-   schedule's. Its note likewise.
+4. **A reminder's work** (a task, a kind of expense or a checklist): its
+   own, or its schedule's. Its note likewise.
 5. **Whether a reminder is done:** it has a done moment.
-6. **What did a reminder's work** (`Reminder was done by Service` or
-   `by Expense`): the first record of its vehicle, after it was set, that
-   does its work: a service with an item of its task, or an expense of its
-   kind. *Derived and stored*: when such a record is saved, the reminder
+6. **What did a reminder's work** (`Reminder was done by Service`, `by
+   Expense` or `by Inspection`): the first record of its vehicle, after it
+   was set, that does its work: a service with an item of its task, an
+   expense of its kind, or an inspection through its checklist. *Derived and stored*: when such a record is saved, the reminder
    not yet done is marked done with the record's moment and distance, and
    linked to it. The owner may change that afterwards, or mark a reminder
    done by hand.
@@ -1058,7 +1157,11 @@ Facts worked out from others by rules, not arithmetic:
    one Y is worth 1 ÷ F X. *Derived and stored*: worked out when a rate is
    entered, and kept, so that reports read rates both ways alike. A rate
    entered by hand both ways keeps the one entered.
-9. **Which records a driver may change:** none. The owner may change any
+9. **Whether an inspection found anything:** some check of it found 'Not
+   OK'. And which checklist items of its were never checked: those with
+   no check.
+10. **Which checklists a driver may use:** the vehicle owner's.
+11. **Which records a driver may change:** none. The owner may change any
    of their vehicles' records. That's a permission, from the facts of who
    owns and who entered, enforced by the service (see Permissions).
 
@@ -1067,6 +1170,7 @@ Facts worked out from others by rules, not arithmetic:
 Step 6: value constraints (the lists, positive amounts and distances,
 instalments of at least 1), set-comparison constraints (a removed tyre
 set was fitted before; a reminder for a kind of expense names one an
-expense may be of; at most one 'Car sale' per vehicle), and subtyping (the
+expense may be of; at most one 'Car sale' per vehicle; an inspection's
+checks are of items of the checklist it went through), and subtyping (the
 records' common supertype, which records are costs and which incomes, and
 the work a reminder is for and what does it).
