@@ -20,7 +20,7 @@ constraints.
   - documents;
   - other costs: parking, tolls, washes;
   - revenues: what paid trips earn;
-  - reminders the users set themselves.
+  - schedules of work the users plan, and the reminders they mark done.
 - **Reports** per vehicle, and per kind of event.
 - **Units** (distance, volume) are set for the app. Amounts may be entered
   in any currency and are reported in the preferred one.
@@ -242,32 +242,39 @@ a receipt or a card statement gives it, which then counts for that amount.
 Distances and volumes are stored in one unit and shown in the app's. Which
 unit they're stored in is for later.
 
-### Reminders
+### Schedules and reminders
 
-> In 6 months or at 160,000 km, whichever comes first: change the oil
-> filter. Every 15,000 km: change the oil. On 2026-11-15: put the winter
-> tyres on.
+> Change the oil every 15,000 km or every 12 months, whichever comes first,
+> counting from the last change (148,000 km, 2026-06-01). And once: put the
+> winter tyres on by 2026-11-15.
 
-- Reminder 5 is of Vehicle 'Blue Golf'.
-- Reminder 5 says Text 'Change the oil filter'.
-- Reminder 5 is due at Distance 160000.
-- Reminder 5 is due on Date 2027-04-17.
-- Reminder 6 says Text 'Change the oil'.
-- Reminder 6 recurs every Distance 15000.
-- Reminder 6 recurs every Period 6 months.
+- Schedule 'Oil' is of Vehicle 'Blue Golf'.
+- Schedule 'Oil' says Text 'Change the oil'.
+- Schedule 'Oil' recurs every Distance 15000 km.
+- Schedule 'Oil' recurs every Duration 12 months.
+- Reminder 5 comes from Schedule 'Oil'.
+- Reminder 5 is due at Distance 163000 km.
+- Reminder 5 is due on Date 2027-06-01.
+- Reminder 6 is of Vehicle 'Blue Golf'.
+- Reminder 6 says Text 'Put the winter tyres on'.
+- Reminder 6 is due on Date 2026-11-15.
 
-Users write their own, per vehicle; no manufacturer's catalogue for now. A
-reminder is only a reminder: it is ticked off by hand. It may also be
-linked to the work that did it.
+> The oil was changed at Garage Müller on 2027-05-20 at 162,400 km.
 
-> The oil filter was changed in Service 7.
+- Reminder 5 was done on Date 2027-05-20.
+- Reminder 5 was done at Distance 162400 km.
+- Reminder 5 was done by Service 12.
 
-- Reminder 5 was done by Service 7.
+A **schedule** is planned work: what to do, and how often, by distance,
+by time, or both, whichever comes first. It is never done itself.
 
- A
-reminder is due at a distance, on a date, or both (whichever comes first),
-once or recurring. When it is done, a recurring one moves on from that
-distance or date.
+A **reminder** is one time the work is due. It is marked done, with when
+and at what distance, and may be linked to the work that did it. A
+schedule's reminders come one after another: when one is done, the next is
+due its intervals after when and where it was done. A reminder may also
+stand on its own, set once by hand, with no schedule. Users write their
+own schedules and reminders, per vehicle; there's no manufacturer's
+catalogue for now.
 
 ### Reports
 
@@ -295,6 +302,9 @@ over a period:
 6. **Costs by kind:** pie chart (fill-ups, services, tyres, documents,
    parking, tolls, washes, ...).
 7. **Costs by month:** bar chart.
+8. **Fuel consumption:** per full tank over time (a chart), and the
+   average over the period, in L/100 km, km/L or mpg; fuel cost per
+   distance.
 
 There are the same reports per kind of event (fill-ups, services, ...).
 
@@ -482,6 +492,7 @@ Service was done by Garage                      s7 | 'Garage Müller'
                                                 s8 | 'Carglass'
 Service is of ServiceKind                       s7 | 'Maintenance'
                                                 s8 | 'Repair'
+Service is paid in Currency                     s7 | 'EUR'
 ServiceItem is part of Service                  i1 | s7
                                                 i2 | s7
                                                 i3 | s7
@@ -489,7 +500,13 @@ ServiceItem is of Task                          i1 | 'Oil change'
                                                 i2 | 'Brake fluid change'
                                                 i3 | 'Labour'
 ServiceItem cost Money                          i1 | 95 EUR
+                                                i4 | 40 CHF
 ServiceItem has Note                            i1 | 'Filter: Mann W 712/95'
+ServiceItem was converted at Factor into Currency  i4 | 1.04 | 'EUR'
+
+A service is paid in one currency, and its items' costs are entered in it.
+An item may be entered in another (a part bought abroad), and then
+converted into the service's, by its own factor or by the rates.
 ```
 
 Step 1's "Service included Task for Money", with a note on that inclusion,
@@ -546,20 +563,29 @@ Expense was converted at Factor into Currency   e13 | 1.04 | 'EUR'
 The issuer and the number replace step 1's single name 'Allianz 77-123456'.
 An attachment is a file. How the sync carries files is for later.
 
-### Reminders
+### Schedules and reminders
 
 ```
+Schedule is of Vehicle                          sc1 | v1
+Schedule says Text                              sc1 | 'Change the oil'
+Schedule recurs every Distance                  sc1 | 15000 km
+Schedule recurs every Duration                  sc1 | 12
 Reminder is of Vehicle                          m5 | v1
                                                 m6 | v1
-Reminder says Text                              m5 | 'Change the oil filter'
-                                                m6 | 'Change the oil'
-Reminder is due at Distance                     m5 | 160000 km
-Reminder is due on Date                         m5 | 2027-04-17
-Reminder recurs every Distance                  m6 | 15000 km
-Reminder recurs every Duration                  m6 | 6
-Reminder is done                                m5
-Reminder was done by Service                    m5 | s7
+Reminder comes from Schedule                    m5 | sc1
+Reminder says Text                              m6 | 'Put the winter tyres on'
+Reminder is due at Distance                     m5 | 163000 km
+Reminder is due on Date                         m5 | 2027-06-01
+                                                m6 | 2026-11-15
+Reminder was done on Date                       m5 | 2027-05-20
+Reminder was done at Distance                   m5 | 162400 km
+Reminder was done by Service                    m5 | s12
 ```
+
+A reminder from a schedule says what the schedule says. "Says Text" is for
+one on its own. Whether a schedule's reminders are kept as records, each
+made when the one before is done, or worked out from the schedule, is a
+question below.
 
 ### Who entered what
 
@@ -636,7 +662,9 @@ Each in the user's preferred units and currency, unless it says otherwise.
 **Records**
 3. *A trip's distance:* where it ended − where it started.
 4. *A trip's duration:* when it ended − when it started.
-5. *A service's cost:* the sum of its items' costs.
+5. *A service's cost:* the sum of its items' costs, in the service's
+   currency (an item entered in another converted by its own factor or
+   the rates).
 6. *A vehicle's reading on a date:* the latest distance any of its
    records gives on or before that date (acquisition, meter readings,
    trips' ends, fill-ups, services, tyre changes).
@@ -647,16 +675,19 @@ Each in the user's preferred units and currency, unless it says otherwise.
    it (to the vehicle's latest reading while it is still on).
 
 **Reminders**
-9. *When a reminder is next due:* a one-off one, its distance and date. A
-   recurring one, the distance and date it was last done + its intervals.
-   Whichever comes first.
-10. *Whether it is overdue:* the vehicle's latest reading is past its
-    distance, or today is past its date.
+9. *When a schedule's next reminder is due:* the distance and date its
+   last reminder was done + the schedule's intervals. Before any was done,
+   counted from when the schedule was set up: its first reminder's due
+   distance and date are given then.
+10. *Whether a reminder is due, or overdue:* not done, and the vehicle's
+    latest reading has reached its distance, or today its date, whichever
+    comes first.
 
 **Fuel**
-11. *Consumption (L/100 km, or mpg),* the full-tank method: the volume put
-    in since the last full fill-up ÷ the distance driven since it. Only
-    between two fill-ups that filled the tank.
+11. *Consumption (L/100 km, km/L or mpg, as the user prefers),* the
+    full-tank method: the volume put in since the last full fill-up ÷ the
+    distance driven since it. Only between two fill-ups that filled the
+    tank; a partial fill-up's volume counts toward the next full one.
 
 **Reports,** per vehicle and over a period, then per kind of cost:
 12. *Distance driven:* the reading at the period's end − the reading at
@@ -666,7 +697,11 @@ Each in the user's preferred units and currency, unless it says otherwise.
 15. *Per day:* a total ÷ the days in the period.
 16. *Per distance:* a total ÷ the distance driven.
 17. *Costs by kind, and by month:* the sums grouped by kind, and by month.
-18. *Balance:* revenue − costs, then in each view:
+18. *Fuel consumption:* each full-tank interval's consumption (a chart
+    over time), and the average over the period (all the volume ÷ all the
+    distance between the first and the last full fill-up in it). Also the
+    fuel cost per distance.
+19. *Balance:* revenue − costs, then in each view:
     - *cash:* − the purchase price on its date, + the sale price on its
       date;
     - *running:* nothing more;
@@ -679,19 +714,17 @@ Each in the user's preferred units and currency, unless it says otherwise.
     - and in the depreciation views, when sold: + (sale price − the value
       left on paper), on the sale's date.
 
-### Questions
+### Question
 
-1. **Doing a recurring reminder.** To know when it was last done, a done
-   reminder needs a date and a distance. Linked to work, they come from
-   that work. Ticked by hand, should the user give them (defaulting to
-   today and the latest reading)? Or should each doing be kept as a record,
-   with a history?
-2. **Mixed currencies in one service.** A service's items might be in
-   different currencies (labour in CHF, parts bought in EUR). Is the
-   service's cost then shown only in the preferred currency? Or are items
-   in one currency per service?
-3. **Fuel consumption** wasn't in your reports, but the full-tank flag
-   allows it. Shall the reports include it?
+**A schedule's reminders: kept, or worked out?**
+- **Kept as records:** when a reminder is done, the app makes the next
+  one, due its intervals later. The user can move it ("the garage said
+  wait"), and it syncs like any record.
+- **Worked out:** only the done ones are kept. The next one exists only as
+  a derivation from the last one done.
+
+Kept is simpler for the apps and lets a due date be changed by hand. I'd
+keep them.
 
 ### For ORMKit
 
