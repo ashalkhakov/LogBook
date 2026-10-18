@@ -480,6 +480,15 @@
 				</orm:PlayedRoles>
 				<orm:SubtypeDerivationRule>
 					<orm:SubtypeDerivationPath id="_2E4AD025-2AA5-40F7-B49C-6D396FDF47FA">
+						<orm:PathComponents>
+							<orm:RolePath id="_970E244F-76B8-51CA-595F-B6024D050C97">
+								<orm:RootObjectType id="_6DD404EC-97D5-6F88-BD70-804183788973" ref="_DE5DEB2A-1873-4346-AF20-FEFB6DCA3E76" />
+								<orm:PathedRoles>
+									<orm:PathedRole id="_D6E26EAA-C3A3-EC6F-837C-594BBCBEFD54" ref="_9EC441CE-644A-430F-A60C-96232379B58F" Purpose="PostInnerJoin" />
+									<orm:PathedRole id="_7230A04A-58B8-6801-0ACE-834201894B96" ref="_68FA7D37-B900-4D63-AE45-133F36637805" Purpose="SameFactType" />
+								</orm:PathedRoles>
+							</orm:RolePath>
+						</orm:PathComponents>
 						<orm:InformalRule>
 							<orm:DerivationNote id="_B2878D2E-64BE-4342-B257-FCC6AF559687">
 								<orm:Body>a Record that cost some Money</orm:Body>
@@ -842,6 +851,23 @@
 				</orm:PlayedRoles>
 				<orm:SubtypeDerivationRule>
 					<orm:SubtypeDerivationPath id="_248F9572-A44E-409E-8174-38FC5B3B5387">
+						<orm:PathComponents>
+							<orm:RolePath id="_E311CD32-D437-2192-C5B9-65067F887257">
+								<orm:RootObjectType id="_56B3DCA0-FFB4-562E-3CB2-68EAA3D33755" ref="_42960B05-4236-4EBD-8AD8-EF3F678DE8B4" />
+								<orm:PathedRoles>
+									<orm:PathedRole id="_502103C0-D71A-8404-0AC3-0EC1531D61FB" ref="_6CB158E3-ED46-4664-A845-245CA6B7400E" Purpose="PostInnerJoin" />
+									<orm:PathedRole id="_8AB64AE1-A6A8-959E-4E82-2C66DA8AE079" ref="_0DC0D523-8BC4-40DD-87F2-3AAE12B1F954" Purpose="SameFactType">
+										<orm:ValueRestriction>
+											<orm:PathedRoleConditionValueConstraint id="_2C9A0534-767D-FEA9-5855-16BE6EB63CE8">
+												<orm:ValueRanges>
+													<orm:ValueRange id="_68872C6F-8E04-07B8-DA60-C7A7FCFC260D" MinValue="Car sale" MaxValue="Car sale" MinInclusion="NotSet" MaxInclusion="NotSet" />
+												</orm:ValueRanges>
+											</orm:PathedRoleConditionValueConstraint>
+										</orm:ValueRestriction>
+									</orm:PathedRole>
+								</orm:PathedRoles>
+							</orm:RolePath>
+						</orm:PathComponents>
 						<orm:InformalRule>
 							<orm:DerivationNote id="_4AC895FE-117D-4225-B88A-6A8139CC82CC">
 								<orm:Body>an Income that is of IncomeKind 'Car sale'</orm:Body>
@@ -6226,6 +6252,58 @@
 				</orm:InternalConstraints>
 				<orm:DerivationRule>
 					<orm:FactTypeDerivationPath id="_D178111C-83EF-4A10-95E6-AD3BD8528A28">
+						<orm:PathComponents>
+							<orm:RolePath id="_732B5C8F-FEEE-1B72-B72D-6CC67A80F24F">
+								<orm:RootObjectType id="_D94D6F7B-9302-8918-1DCB-8A463530F753" ref="_BC7D1EAD-F12C-4A00-A629-1BA516C808EE" />
+								<orm:SubPaths>
+									<orm:SubPath id="_BB41AE3D-FFDB-A666-FDE8-3974BFC99ADD">
+										<orm:PathedRoles>
+											<orm:PathedRole id="_EAACD30C-BC95-6EE3-A462-CB713CC5C260" ref="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_2F38A603-B439-27A5-DE1A-C6AEA6122FE2" ref="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Purpose="SameFactType" />
+										</orm:PathedRoles>
+									</orm:SubPath>
+									<orm:SubPath id="_880959DE-0FCC-062A-D3DE-2B4F4298D7A5">
+										<orm:PathedRoles>
+											<orm:PathedRole id="_A245DF60-9D4B-7047-3782-C98FFF2DDC98" ref="_62DB9499-7823-4423-9C08-930FCAC0BCD4" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_C2F42AF0-A3B0-E562-BC84-4300186FF829" ref="_C970184F-FE02-4AD1-988A-92466A076E72" Purpose="SameFactType" />
+										</orm:PathedRoles>
+									</orm:SubPath>
+								</orm:SubPaths>
+								<orm:CalculatedValues>
+									<orm:CalculatedValue id="_559FDF85-2328-72DD-4A29-D71D9D82BABE">
+										<orm:Function ref="_124193E2-394E-9EBE-DD4B-85257E1A7F69" />
+										<orm:Inputs>
+											<orm:Input id="_7C71C272-9E11-5520-D2BD-CBE945AF02B9">
+												<orm:Parameter ref="_B3B0AFC1-DF4C-CDEB-57A0-34A2D2F861B2" />
+												<orm:Source>
+													<orm:PathedRole ref="_2F38A603-B439-27A5-DE1A-C6AEA6122FE2" />
+												</orm:Source>
+											</orm:Input>
+											<orm:Input id="_7C71C372-9E11-56D3-D2BD-CAE945AF0106">
+												<orm:Parameter ref="_5F8C491D-BF67-8F22-046A-2E234C0B5CAB" />
+												<orm:Source>
+													<orm:PathedRole ref="_C2F42AF0-A3B0-E562-BC84-4300186FF829" />
+												</orm:Source>
+											</orm:Input>
+										</orm:Inputs>
+									</orm:CalculatedValue>
+								</orm:CalculatedValues>
+							</orm:RolePath>
+						</orm:PathComponents>
+						<orm:DerivationProjections>
+							<orm:DerivationProjection id="_94ADF8B4-48EB-9F1C-6F9C-AFD6E249F815" ref="_732B5C8F-FEEE-1B72-B72D-6CC67A80F24F">
+								<orm:RoleProjection id="_B3C1E46F-935B-F3FC-039E-3356E3033C51" ref="_0B6BA0BB-929B-4355-9C50-F191EEFD71AE">
+									<orm:DerivationSource>
+										<orm:PathRoot ref="_D94D6F7B-9302-8918-1DCB-8A463530F753" />
+									</orm:DerivationSource>
+								</orm:RoleProjection>
+								<orm:RoleProjection id="_086B01D7-D2BD-BF73-E96E-B36D3CD0411E" ref="_E490462F-D07D-4F38-BB06-DFD9E03A8AD2">
+									<orm:DerivationSource>
+										<orm:CalculatedValue ref="_559FDF85-2328-72DD-4A29-D71D9D82BABE" />
+									</orm:DerivationSource>
+								</orm:RoleProjection>
+							</orm:DerivationProjection>
+						</orm:DerivationProjections>
 						<orm:InformalRule>
 							<orm:DerivationNote id="_B4C2E463-6116-44EE-8D57-803FE71E2BFA">
 								<orm:Body>For each Trip and Minutes, that Trip lasted Minutes if and only if that Trip was at some Moment1 and ended at some Moment2 and Minutes is the number of minutes from Moment1 to Moment2.</orm:Body>
@@ -8906,6 +8984,14 @@
 			<orm:TrueOrFalseLogicalDataType id="_95CEC07E-8D2F-4F4A-8FBA-C1E7AF9622AD" />
 			<orm:UnsignedIntegerNumericDataType id="_D1B5152D-8878-4B1B-9FC0-787DAEA55DCB" />
 		</orm:DataTypes>
+		<orm:Functions>
+			<orm:Function id="_124193E2-394E-9EBE-DD4B-85257E1A7F69" Name="minutes">
+				<orm:Parameters>
+					<orm:Parameter id="_B3B0AFC1-DF4C-CDEB-57A0-34A2D2F861B2" Name="from" />
+					<orm:Parameter id="_5F8C491D-BF67-8F22-046A-2E234C0B5CAB" Name="to" />
+				</orm:Parameters>
+			</orm:Function>
+		</orm:Functions>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_4E5357F6-9496-4719-949C-E5516006F2BC" FormatString="{1}" ReferenceModeType="General" />
 			<orm:ReferenceModeKind id="_DDA747E9-05E7-4BCB-A089-FFF054068E9A" FormatString="{0}_{1}" ReferenceModeType="Popular" />
