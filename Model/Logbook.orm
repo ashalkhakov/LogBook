@@ -529,6 +529,7 @@
 					<orm:Role ref="_63297E7A-B845-4EF8-8139-2577BA8AD0E9" />
 					<orm:Role ref="_C4587B22-3806-41F5-8FD6-C90E6330C4FE" />
 					<orm:Role ref="_D0C5E7CE-F41E-4E82-835B-803719D437C9" />
+					<orm:Role ref="_0B6BA0BB-929B-4355-9C50-F191EEFD71AE" />
 				</orm:PlayedRoles>
 			</orm:EntityType>
 			<orm:EntityType id="_1A529462-91E4-4783-9655-1EF804C714C3" Name="Station" _ReferenceMode="name">
@@ -1020,6 +1021,9 @@
 				<orm:NestedPredicate id="_FA83EF4F-51D7-4160-8080-82FF3FCE76C3" ref="_EBBE620E-37E7-49D4-9C21-A2CE7D5AEDF5" IsImplied="false" />
 			</orm:ObjectifiedType>
 			<orm:ValueType id="_528B4C28-ED93-44C3-97C7-3ED4EC417B7E" Name="Minutes">
+				<orm:PlayedRoles>
+					<orm:Role ref="_E490462F-D07D-4F38-BB06-DFD9E03A8AD2" />
+				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_23D5483E-41F5-472E-B07D-1B2C08B8AE2E" ref="_D1B5152D-8878-4B1B-9FC0-787DAEA55DCB" Scale="0" Length="0" />
 			</orm:ValueType>
 		</orm:Objects>
@@ -6192,6 +6196,44 @@
 				</orm:Instances>
 				<ormv:ReferenceData>true</ormv:ReferenceData>
 			</orm:Fact>
+			<orm:Fact id="_D349F969-0A6F-49B0-B1AC-9760C5EA2139" _Name="TripLastedMinutes">
+				<orm:FactRoles>
+					<orm:Role id="_0B6BA0BB-929B-4355-9C50-F191EEFD71AE" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
+						<orm:RolePlayer ref="_BC7D1EAD-F12C-4A00-A629-1BA516C808EE" />
+					</orm:Role>
+					<orm:Role id="_E490462F-D07D-4F38-BB06-DFD9E03A8AD2" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+						<orm:RolePlayer ref="_528B4C28-ED93-44C3-97C7-3ED4EC417B7E" />
+					</orm:Role>
+				</orm:FactRoles>
+				<orm:ReadingOrders>
+					<orm:ReadingOrder id="_621DE87C-D565-4A42-8DFA-D4B7FF66177D">
+						<orm:Readings>
+							<orm:Reading id="_3E4144E0-8753-4549-B18A-EDA83795D9BB">
+								<orm:Data>{0} lasted {1}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" lasted " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_0B6BA0BB-929B-4355-9C50-F191EEFD71AE" />
+							<orm:Role ref="_E490462F-D07D-4F38-BB06-DFD9E03A8AD2" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+				</orm:ReadingOrders>
+				<orm:InternalConstraints>
+					<orm:UniquenessConstraint ref="_95695157-DEE7-4A83-8D26-8AC638B1997B" />
+				</orm:InternalConstraints>
+				<orm:DerivationRule>
+					<orm:FactTypeDerivationPath id="_D178111C-83EF-4A10-95E6-AD3BD8528A28">
+						<orm:InformalRule>
+							<orm:DerivationNote id="_B4C2E463-6116-44EE-8D57-803FE71E2BFA">
+								<orm:Body>For each Trip and Minutes, that Trip lasted Minutes if and only if that Trip was at some Moment1 and ended at some Moment2 and Minutes is the number of minutes from Moment1 to Moment2.</orm:Body>
+							</orm:DerivationNote>
+						</orm:InformalRule>
+					</orm:FactTypeDerivationPath>
+				</orm:DerivationRule>
+			</orm:Fact>
 		</orm:Facts>
 		<orm:Constraints>
 			<orm:UniquenessConstraint id="_1FEF91CF-70BC-4EDF-9E47-39016ED2922D" Name="InternalUniquenessConstraint1" IsInternal="true">
@@ -8844,6 +8886,11 @@
 					<orm:Role id="_E9DF0F9F-7719-49A3-BEFB-9F7A0344B760" ref="_8FB67366-2A27-490F-BB25-E0A66377898E" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
+			<orm:UniquenessConstraint id="_95695157-DEE7-4A83-8D26-8AC638B1997B" Name="InternalUniquenessConstraint212" IsInternal="true">
+				<orm:RoleSequence>
+					<orm:Role id="_5805203B-F0B2-4BCD-970E-5A51055C24A3" ref="_0B6BA0BB-929B-4355-9C50-F191EEFD71AE" />
+				</orm:RoleSequence>
+			</orm:UniquenessConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:UnspecifiedDataType id="_75EA85C2-1A83-415B-A49C-FCBB218BCD3B" />
@@ -10721,6 +10768,29 @@
 				<ormDiagram:RoleDisplayOrder>
 					<ormDiagram:Role ref="_8FB67366-2A27-490F-BB25-E0A66377898E" />
 					<ormDiagram:Role ref="_24946629-9DA9-4A87-8ACB-CC708E7B709E" />
+				</ormDiagram:RoleDisplayOrder>
+			</ormDiagram:FactTypeShape>
+		</ormDiagram:Shapes>
+		<ormDiagram:Subject ref="_2C7E073F-10CB-4429-9D8F-D072A08D2C9F" />
+	</ormDiagram:ORMDiagram>
+	<ormDiagram:ORMDiagram id="_C54E200E-4E12-4563-80ED-FE35EBCDB2F9" IsCompleteView="false" Name="Logbook" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
+		<ormDiagram:Shapes>
+			<ormDiagram:ObjectTypeShape id="_7968559B-753F-48CB-98E5-CA506497C1E1" IsExpanded="true" AbsoluteBounds="2.361111111111111, 0.5, 0.36000000000000004, 0.22944444444444445">
+				<ormDiagram:Subject ref="_BC7D1EAD-F12C-4A00-A629-1BA516C808EE" />
+			</ormDiagram:ObjectTypeShape>
+			<ormDiagram:ObjectTypeShape id="_5F97CA02-BE94-4747-AEA1-801293CE4AF2" IsExpanded="true" AbsoluteBounds="0.5, 1.7361111111111112, 0.505, 0.22944444444444445">
+				<ormDiagram:Subject ref="_528B4C28-ED93-44C3-97C7-3ED4EC417B7E" />
+			</ormDiagram:ObjectTypeShape>
+			<ormDiagram:FactTypeShape id="_FFAF1F98-3C11-4489-9B65-F84630E263E2" IsExpanded="true" AbsoluteBounds="1.4444444444444444, 0.9861111111111112, 0.3838888889923692, 0.24388888899236916">
+				<ormDiagram:RelativeShapes>
+					<ormDiagram:ReadingShape id="_662B10E4-38AF-4E3B-B1F3-3F4E8D6DCE46" IsExpanded="true" AbsoluteBounds="1.4444444444444444, 1.2947000001034803, 0.9500000000000001, 0.1295030266046524">
+						<ormDiagram:Subject ref="_621DE87C-D565-4A42-8DFA-D4B7FF66177D" />
+					</ormDiagram:ReadingShape>
+				</ormDiagram:RelativeShapes>
+				<ormDiagram:Subject ref="_D349F969-0A6F-49B0-B1AC-9760C5EA2139" />
+				<ormDiagram:RoleDisplayOrder>
+					<ormDiagram:Role ref="_0B6BA0BB-929B-4355-9C50-F191EEFD71AE" />
+					<ormDiagram:Role ref="_E490462F-D07D-4F38-BB06-DFD9E03A8AD2" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
 		</ormDiagram:Shapes>
@@ -12655,17 +12725,6 @@
 				<ormq:Value id="_3425CD8F-9654-46DE-9805-A276D8727896" ref="_B10C4EC0-37A3-4C21-A19C-23DD5A5D19DD" Name="Consumption" Expression="round(multiply(divide(#_4E6471D7-E01B-4957-BB44-F084E9004724, subtract(#_35C49D44-AB06-492E-92DC-849BDBFAF75E, #_B6B645FF-FC50-433F-AE50-1559A04E0236)), 100), 2)" Projected="true" />
 			</ormq:Node>
 		</ormq:Query>
-		<ormq:Query id="_0189121F-A693-42C9-BA85-1E631B2D19B3" Name="TripDuration">
-			<ormq:Node id="_1369363A-6904-4589-A3C9-A66F0A1C359C" ref="_BC7D1EAD-F12C-4A00-A629-1BA516C808EE" Projected="true">
-				<ormq:Step id="_BA0170C6-EE25-408E-BD5C-05195C555056" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
-					<ormq:Node id="_55476FA8-BCDC-4248-A11A-978C69014560" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Label="1" />
-				</ormq:Step>
-				<ormq:Step id="_E989A53E-5EB3-4165-8E94-A0B502BC8DD7" ref="_111B2908-0601-4DB4-8169-92D893DF836B" Role="_62DB9499-7823-4423-9C08-930FCAC0BCD4">
-					<ormq:Node id="_1EF7D166-928C-402E-9B5D-D417B794A8C4" Role="_C970184F-FE02-4AD1-988A-92466A076E72" Label="2" />
-				</ormq:Step>
-				<ormq:Value id="_E2864A8B-F739-4A6A-B9BC-908CE2FC2E10" ref="_528B4C28-ED93-44C3-97C7-3ED4EC417B7E" Name="Duration" Expression="minutes(#_55476FA8-BCDC-4248-A11A-978C69014560, #_1EF7D166-928C-402E-9B5D-D417B794A8C4)" Projected="true" />
-			</ormq:Node>
-		</ormq:Query>
 		<ormq:Query id="_C938CC04-2EA9-4E57-AAE3-F8125FCE4248" Name="ReminderNextDue">
 			<ormq:Node id="_BE92CF9D-FBEB-4408-9D80-ADEA8C605245" ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" Projected="true">
 				<ormq:Step id="_E7C536AF-BD4C-4966-B34A-3393A07AF01A" ref="_32B05AAD-BC11-491C-A0FF-7EE672CBA187" Role="_DA621017-953F-4CA7-8B10-1FC5B35191D2">
@@ -12855,6 +12914,24 @@
 					</ormq:Node>
 				</ormq:Step>
 				<ormq:Value id="_A11F6004-6EDE-4660-93B7-5E13178E3174" ref="_B10C4EC0-37A3-4C21-A19C-23DD5A5D19DD" Name="Length" Expression="divide(subtract(multiply(#_BB1E58AA-9DEE-4EE6-AEBB-9754470FEB34, #_A1C0754E-4A1C-440D-9D55-9E13D2163869), multiply(#_0E0FE0C9-6B4D-438F-B31B-774E0D913526, #_0E5B801A-82DA-4704-A47E-530606A4B712)), coalesce(#_7DE6B23E-A4B5-4A98-880B-18369FC00FA2, 1))" Projected="true" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_453D0CD4-674D-41EF-9C30-1B8711A28B82" Name="TripLasted" Kind="Derivation" Of="_D349F969-0A6F-49B0-B1AC-9760C5EA2139">
+			<ormq:Node id="_F0CFD71B-1205-46F5-B4C1-E90662B03B58" ref="_BC7D1EAD-F12C-4A00-A629-1BA516C808EE" Projected="true">
+				<ormq:Step id="_306A9E05-E358-4794-B004-DC8DC51EB1E0" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+					<ormq:Node id="_CF30E870-534E-431A-B5D7-D8462781F2D5" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Label="1" />
+				</ormq:Step>
+				<ormq:Step id="_FAAA731F-027E-4597-820B-3C34F22C55CC" ref="_111B2908-0601-4DB4-8169-92D893DF836B" Role="_62DB9499-7823-4423-9C08-930FCAC0BCD4">
+					<ormq:Node id="_433D58AB-8273-4150-91E9-4E1808440D48" Role="_C970184F-FE02-4AD1-988A-92466A076E72" Label="2" />
+				</ormq:Step>
+				<ormq:Value id="_932E9F51-8D61-457C-BB0D-C24273705DB2" ref="_528B4C28-ED93-44C3-97C7-3ED4EC417B7E" Name="Minutes" Expression="minutes(#_CF30E870-534E-431A-B5D7-D8462781F2D5, #_433D58AB-8273-4150-91E9-4E1808440D48)" Projected="true" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_276625F2-49AF-4F3F-803B-FF4C1C76B800" Name="TripDuration">
+			<ormq:Node id="_3996077F-432F-40E3-91EB-3BE1893DAFAE" ref="_BC7D1EAD-F12C-4A00-A629-1BA516C808EE" Projected="true">
+				<ormq:Step id="_0EAD48DE-0777-4A4F-BB8E-ABFC6A5E1568" ref="_D349F969-0A6F-49B0-B1AC-9760C5EA2139" Role="_0B6BA0BB-929B-4355-9C50-F191EEFD71AE">
+					<ormq:Node id="_6887AFC9-5462-4E3A-8142-6DC3907ADBAD" Role="_E490462F-D07D-4F38-BB06-DFD9E03A8AD2" Projected="true" />
+				</ormq:Step>
 			</ormq:Node>
 		</ormq:Query>
 	</ormq:Queries>

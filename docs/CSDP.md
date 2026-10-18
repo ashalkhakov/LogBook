@@ -1521,8 +1521,9 @@ unit of volume (`PricePerVolume`), in the units its record is in. "The one befor
 is an aggregate value, the latest earlier, that another node is compared
 with: the fill-up before each (`FillUpBefore`), and the consumption at
 each full tank, the fuel put in since the full tank before over the
-distance since (`FullTankConsumption`). Dates are computed too: a
-trip's duration in minutes (`TripDuration`), and when a done reminder's
+distance since (`FullTankConsumption`). Dates are computed too: how long
+a trip lasted, a fact type derived by a query with a value node ("Trip
+lasted Minutes", `TripLasted`; `TripDuration` lists it), and when a done reminder's
 schedule is next due by date (`ReminderNextDue`). The report by month is
 a grouped list: each vehicle's costs for each month and currency, the
 latest month first (`CostsByMonth`).

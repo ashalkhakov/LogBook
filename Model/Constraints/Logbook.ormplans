@@ -5628,7 +5628,7 @@
 					<key>identifier</key>
 					<string>id</string>
 					<key>node</key>
-					<string>_1369363A-6904-4589-A3C9-A66F0A1C359C</string>
+					<string>_3996077F-432F-40E3-91EB-3BE1893DAFAE</string>
 					<key>path</key>
 					<dict>
 						<key>steps</key>
@@ -5641,9 +5641,9 @@
 				</dict>
 				<dict>
 					<key>node</key>
-					<string>_E2864A8B-F739-4A6A-B9BC-908CE2FC2E10</string>
+					<string>_6887AFC9-5462-4E3A-8142-6DC3907ADBAD</string>
 					<key>title</key>
-					<string>Duration</string>
+					<string>Minutes (TripLasted 1)</string>
 					<key>value</key>
 					<dict>
 						<key>apply</key>

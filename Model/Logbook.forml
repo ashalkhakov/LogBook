@@ -315,12 +315,21 @@ Query TripLength:
       + is worth Factor3 km
   ✓Length = (Quantity2 * Factor2 - Quantity1 * Factor1) / coalesce(Factor3, 1)
 
-// How long a trip took.
-Query TripDuration:
+// How long a trip took, a fact worked out from when it started and ended
+// whenever it is asked.
+Trip lasted Minutes
+Each Trip lasted at most one Minutes.
+
+Query TripLasted:
+Derivation of "Trip lasted Minutes":
 ✓Trip
   + was at Moment1
   + ended at Moment2
-  ✓Duration: Minutes = minutes(Moment1, Moment2)
+  ✓Minutes: Minutes = minutes(Moment1, Moment2)
+
+Query TripDuration:
+✓Trip
+  + lasted ✓Minutes
 
 # Fill-ups
 

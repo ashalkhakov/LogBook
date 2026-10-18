@@ -41,16 +41,6 @@
 	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"FullTankConsumption" model:model error:error];
 }
 
-+ (ORMQueryResult *)tripDurationInContext:(NSManagedObjectContext *)context error:(NSError **)error
-{
-	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"TripDuration" inContext:context error:error];
-}
-
-+ (ORMQueryOData *)tripDurationRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
-{
-	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"TripDuration" model:model error:error];
-}
-
 + (ORMQueryResult *)reminderNextDueInContext:(NSManagedObjectContext *)context error:(NSError **)error
 {
 	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"ReminderNextDue" inContext:context error:error];
@@ -79,6 +69,16 @@
 + (ORMQueryOData *)tripLengthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
 {
 	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"TripLength" model:model error:error];
+}
+
++ (ORMQueryResult *)tripDurationInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"TripDuration" inContext:context error:error];
+}
+
++ (ORMQueryOData *)tripDurationRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"TripDuration" model:model error:error];
 }
 
 @end
