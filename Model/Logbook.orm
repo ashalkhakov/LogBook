@@ -400,11 +400,6 @@
 				</orm:PlayedRoles>
 			</orm:EntityType>
 			<orm:EntityType id="_5DF729D6-3861-4733-B1B9-7B153E87A43B" Name="Cost" _ReferenceMode="">
-				<orm:Definitions>
-					<orm:Definition id="_D7C0A9A9-501E-4DEA-9505-146DFBD935CF">
-						<orm:Text>Each Cost is by definition a Record that cost some Money.</orm:Text>
-					</orm:Definition>
-				</orm:Definitions>
 				<orm:PlayedRoles>
 					<orm:SubtypeMetaRole ref="_C4992865-635A-461B-8390-C8C483EA9C9D" />
 					<orm:Role ref="_CCD5278E-3DD9-450E-90A3-3E48E70D6ED8" />
@@ -413,6 +408,15 @@
 					<orm:SupertypeMetaRole ref="_B938AC8C-8C10-4E9A-9B78-9A8258EFC908" />
 					<orm:SupertypeMetaRole ref="_2628DD23-E848-4E6E-A3FB-7560B4A17168" />
 				</orm:PlayedRoles>
+				<orm:SubtypeDerivationRule>
+					<orm:SubtypeDerivationPath id="_2E4AD025-2AA5-40F7-B49C-6D396FDF47FA">
+						<orm:InformalRule>
+							<orm:DerivationNote id="_B2878D2E-64BE-4342-B257-FCC6AF559687">
+								<orm:Body>a Record that cost some Money</orm:Body>
+							</orm:DerivationNote>
+						</orm:InformalRule>
+					</orm:SubtypeDerivationPath>
+				</orm:SubtypeDerivationRule>
 			</orm:EntityType>
 			<orm:EntityType id="_C1F61C43-C696-410C-B072-69ED99042272" Name="Place" _ReferenceMode="name">
 				<orm:PlayedRoles>
@@ -572,15 +576,19 @@
 				<orm:ConceptualDataType id="_64D76B2F-D2B0-4323-B101-D35BF20F7EEF" ref="_EA5BBACA-CD80-4C5B-B0E5-1C3525347A21" Scale="0" Length="0" />
 			</orm:ValueType>
 			<orm:EntityType id="_E2A6BACB-870C-4087-AC76-629EFE2BFAC4" Name="ServiceKind" _ReferenceMode="">
-				<orm:Definitions>
-					<orm:Definition id="_380334DA-D2F0-41F2-A37A-975EFBD5F344">
-						<orm:Text>Each ServiceKind is by definition a CostKind that is 'Maintenance' or 'Repair'.</orm:Text>
-					</orm:Definition>
-				</orm:Definitions>
 				<orm:PlayedRoles>
 					<orm:SubtypeMetaRole ref="_061211AC-F857-4E11-8222-19F70BA03384" />
 					<orm:Role ref="_58A721B3-B44E-46EA-A912-F113D1811C36" />
 				</orm:PlayedRoles>
+				<orm:SubtypeDerivationRule>
+					<orm:SubtypeDerivationPath id="_66052D14-8E53-4D84-BC2F-9204565F7C6B">
+						<orm:InformalRule>
+							<orm:DerivationNote id="_0BFB7F1B-0F1B-4CCB-81B2-FC059DAD527A">
+								<orm:Body>a CostKind that is 'Maintenance' or 'Repair'</orm:Body>
+							</orm:DerivationNote>
+						</orm:InformalRule>
+					</orm:SubtypeDerivationPath>
+				</orm:SubtypeDerivationRule>
 			</orm:EntityType>
 			<orm:EntityType id="_E3CAD27F-28E1-4AB0-B8B2-D94BDA69C521" Name="ExpenseKind" _ReferenceMode="">
 				<orm:PlayedRoles>
@@ -758,14 +766,18 @@
 				</orm:PlayedRoles>
 			</orm:EntityType>
 			<orm:EntityType id="_947B322A-21E0-43BC-B353-E2673E43C480" Name="CarSale" _ReferenceMode="">
-				<orm:Definitions>
-					<orm:Definition id="_66093AA9-71F7-4A7D-9101-9CA079334DD8">
-						<orm:Text>Each CarSale is by definition an Income that is of IncomeKind 'Car sale'.</orm:Text>
-					</orm:Definition>
-				</orm:Definitions>
 				<orm:PlayedRoles>
 					<orm:SubtypeMetaRole ref="_DB2DDF9F-925C-4AE7-BF17-9D2895B458FB" />
 				</orm:PlayedRoles>
+				<orm:SubtypeDerivationRule>
+					<orm:SubtypeDerivationPath id="_248F9572-A44E-409E-8174-38FC5B3B5387">
+						<orm:InformalRule>
+							<orm:DerivationNote id="_4AC895FE-117D-4225-B88A-6A8139CC82CC">
+								<orm:Body>an Income that is of IncomeKind 'Car sale'</orm:Body>
+							</orm:DerivationNote>
+						</orm:InformalRule>
+					</orm:SubtypeDerivationPath>
+				</orm:SubtypeDerivationRule>
 			</orm:EntityType>
 			<orm:ValueType id="_936E0667-705B-4428-B7C9-757773C2FB91" Name="ChecklistName">
 				<orm:PlayedRoles>
@@ -12249,6 +12261,20 @@
 							<ormq:Node id="_DEB06CC6-EFA5-47A4-82AB-CF6B006E26A8" Role="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
 						</ormq:Step>
 					</ormq:Node>
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_6C0DAF96-EA31-4EF0-A7D2-6CD8DD522842" Name="CostRule" Kind="Derivation" Of="_5DF729D6-3861-4733-B1B9-7B153E87A43B">
+			<ormq:Node id="_610DE7DF-8FA6-4805-9BA1-4BFDF5D79399" ref="_DE5DEB2A-1873-4346-AF20-FEFB6DCA3E76" Projected="true">
+				<ormq:Step id="_7C5BACC3-BDE1-4B65-A59C-5F31D17C682C" ref="_B309B12B-DF14-4BE4-A2AD-8B566F2F7870" Role="_9EC441CE-644A-430F-A60C-96232379B58F">
+					<ormq:Node id="_6272A02D-547E-498F-8338-D1495C1E0C02" Role="_68FA7D37-B900-4D63-AE45-133F36637805" />
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_F41F6857-4080-4236-9BE3-D117295EA4E5" Name="CarSaleRule" Kind="Derivation" Of="_947B322A-21E0-43BC-B353-E2673E43C480">
+			<ormq:Node id="_74ABCFEA-B110-4041-A9D8-E6487792762E" ref="_42960B05-4236-4EBD-8AD8-EF3F678DE8B4" Projected="true">
+				<ormq:Step id="_ABD6D36B-8940-48DC-85BA-DA1D175BA303" ref="_DD33C22E-AC0D-4858-89E7-9EF78A768126" Role="_6CB158E3-ED46-4664-A845-245CA6B7400E">
+					<ormq:Node id="_B8B91153-9E63-4245-A75B-B899211CFDF1" Role="_0DC0D523-8BC4-40DD-87F2-3AAE12B1F954" Comparison="=" Value="Car sale" />
 				</ormq:Step>
 			</ormq:Node>
 		</ormq:Query>

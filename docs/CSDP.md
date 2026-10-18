@@ -1515,9 +1515,14 @@ What it cannot say yet, it says in comments, for later:
 - that events fall while the vehicle is kept, and a tyre set is bought
   before it is fitted (a date compared with a moment).
 
-The subtypes defined by a rule (Cost, CarSale, ServiceKind)
-keep their rule as their definition until ORMKit writes NORMA's subtype
-derivation rules.
+The subtypes defined by a rule keep it as NORMA keeps a subtype's
+derivation rule, and two of them run it as a query: a Cost is a record
+that cost some money (`CostRule`), a CarSale an income of kind 'Car sale'
+(`CarSaleRule`). ServiceKind's, a cost kind that is 'Maintenance' or
+'Repair', is words alone for now: a query cannot yet ask that its root is
+one of a list. A derived subtype is no entity of its own in Core Data: its
+fact types are its supertype's, so every record has what a cost is
+charged, whichever entity it is.
 
 ## Next
 

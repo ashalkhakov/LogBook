@@ -78,13 +78,6 @@
             <entry key="ormkit.source" value="_9FF4D860-7EDF-4129-81D0-7484A7F694CA"/>
         </userInfo>
     </entity>
-    <entity name="CarSale" representedClassName="CarSale" parentEntity="Income" syncable="YES" codeGenerationType="class">
-        <userInfo>
-            <entry key="OData.description" value="Each CarSale is by definition an Income that is of IncomeKind 'Car sale'."/>
-            <entry key="OData.type" value="Default.CarSale"/>
-            <entry key="ormkit.source" value="_947B322A-21E0-43BC-B353-E2673E43C480"/>
-        </userInfo>
-    </entity>
     <entity name="Checklist" representedClassName="Checklist" syncable="YES" codeGenerationType="class">
         <attribute name="checklistName" attributeType="String">
             <userInfo>
@@ -136,24 +129,6 @@
             <entry key="ormkit.source" value="_ABD96926-740A-4619-8700-7F35B9192724"/>
         </userInfo>
     </entity>
-    <entity name="Cost" representedClassName="Cost" parentEntity="Record" syncable="YES" codeGenerationType="class">
-        <attribute name="chargedAmount" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
-                <entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
-            </userInfo>
-        </attribute>
-        <attribute name="chargedCurrency" optional="YES" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
-            <userInfo>
-                <entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
-            </userInfo>
-        </attribute>
-        <userInfo>
-            <entry key="OData.description" value="Each Cost is by definition a Record that cost some Money."/>
-            <entry key="OData.type" value="Default.Cost"/>
-            <entry key="ormkit.source" value="_5DF729D6-3861-4733-B1B9-7B153E87A43B"/>
-        </userInfo>
-    </entity>
     <entity name="CostKind" representedClassName="CostKind" syncable="YES" codeGenerationType="class">
         <attribute name="name" attributeType="String">
             <userInfo>
@@ -161,6 +136,11 @@
                 <entry key="ormkit.source" value="_DEFF1D4A-2980-424F-961C-A2657FCEF5A1"/>
             </userInfo>
         </attribute>
+        <relationship name="services" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Service" inverseName="serviceKind" inverseEntity="Service">
+            <userInfo>
+                <entry key="ormkit.source" value="_08176891-075D-473E-B357-A6F844F0AE04"/>
+            </userInfo>
+        </relationship>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="name"/>
@@ -517,6 +497,17 @@
         </userInfo>
     </entity>
     <entity name="Record" representedClassName="Record" syncable="YES" codeGenerationType="class">
+        <attribute name="chargedAmount" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
+                <entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
+            </userInfo>
+        </attribute>
+        <attribute name="chargedCurrency" optional="YES" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
+            <userInfo>
+                <entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
+            </userInfo>
+        </attribute>
         <attribute name="id" attributeType="UUID" usesScalarValueType="NO">
             <userInfo>
                 <entry key="OData.key" value="YES"/>
@@ -721,7 +712,7 @@
                 <entry key="ormkit.source" value="_75DEBF27-698E-4071-A4B3-482B2F26CCA3"/>
             </userInfo>
         </relationship>
-        <relationship name="serviceKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ServiceKind" inverseName="services" inverseEntity="ServiceKind">
+        <relationship name="serviceKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CostKind" inverseName="services" inverseEntity="CostKind">
             <userInfo>
                 <entry key="ormkit.mandatory" value="YES"/>
                 <entry key="ormkit.source" value="_58A721B3-B44E-46EA-A912-F113D1811C36"/>
@@ -786,18 +777,6 @@
             <entry key="OData.entitySet" value="ServiceItems"/>
             <entry key="OData.type" value="Default.ServiceItem"/>
             <entry key="ormkit.source" value="_046DBB94-CEE9-4E20-B771-D0E7AB0C7B4D"/>
-        </userInfo>
-    </entity>
-    <entity name="ServiceKind" representedClassName="ServiceKind" parentEntity="CostKind" syncable="YES" codeGenerationType="class">
-        <relationship name="services" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Service" inverseName="serviceKind" inverseEntity="Service">
-            <userInfo>
-                <entry key="ormkit.source" value="_08176891-075D-473E-B357-A6F844F0AE04"/>
-            </userInfo>
-        </relationship>
-        <userInfo>
-            <entry key="OData.description" value="Each ServiceKind is by definition a CostKind that is 'Maintenance' or 'Repair'."/>
-            <entry key="OData.type" value="Default.ServiceKind"/>
-            <entry key="ormkit.source" value="_E2A6BACB-870C-4087-AC76-629EFE2BFAC4"/>
         </userInfo>
     </entity>
     <entity name="Trip" representedClassName="Trip" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class">

@@ -184,6 +184,12 @@ Record cost Money (as Total)
 ++ A service's: the sum of its items' costs, less its discount, in its currency.
 Each Record cost at most one Money.
 Each Cost is by definition a Record that cost some Money.
+
+Query CostRule:
+Derivation of Cost:
+✓Record
+  + cost Money
+
 Cost was charged Money (as Charged)
 Each Cost was charged at most one Money.
 Cost is of CostKind
@@ -384,6 +390,12 @@ Each Income was for at most one Trip.
 For each Trip, at most one Income was for that Trip.
 If some Income was for some Trip and that Income is of some Vehicle then that Trip is of that Vehicle.
 Each CarSale is by definition an Income that is of IncomeKind 'Car sale'.
+
+Query CarSaleRule:
+Derivation of CarSale:
+✓Income
+  + is of IncomeKind = 'Car sale'
+
 // A vehicle is sold at most once: "Vehicle was sold on Date" is unique
 // for the vehicle, and derived from its car sales.
 
