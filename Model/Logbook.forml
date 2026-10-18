@@ -100,6 +100,19 @@ Each Volume is in exactly one VolumeUnit.
 For each Quantity and VolumeUnit, at most one Volume has that Quantity and is in that VolumeUnit.
 This association with Quantity and VolumeUnit provides the preferred identification scheme for Volume.
 
+// What a unit is worth in kilometres or litres: reference data, the
+// app's own, every store starts with it. Conversion is a step to it and
+// a product.
+DistanceUnit is worth Factor km
+Each DistanceUnit is worth exactly one Factor km.
+Reference data: km, 1
+Reference data: mi, 1.609344
+VolumeUnit is worth Factor litres
+Each VolumeUnit is worth exactly one Factor litres.
+Reference data: L, 1
+Reference data: 'gal (US)', 3.785411784
+Reference data: 'gal (imp)', 4.54609
+
 Currency (as BaseCurrency) was worth Factor in Currency (as QuoteCurrency) on Date
 Fact Type Name: ExchangeRate
 ++ If on a date one X is worth F Y, then one Y is worth 1 / F X; a rate entered by hand both ways keeps the one entered.
@@ -226,8 +239,9 @@ Query CostsByMonth:
     ✓Month = month(Moment) ↓
     ✓Total = total(Amount) for Vehicle, Month, Currency
 
-// The meter goes up: a vehicle's later reading, in the same unit, ought
-// not to be lower. Ought: the owner may enter history out of order.
+// The meter goes up: a vehicle's later reading, in kilometres whatever
+// its unit, ought not to be lower. Ought: the owner may enter history out
+// of order.
 Query MeterGoesUp:
 It is forbidden that:
 ✓MeteredEvent1
@@ -235,14 +249,18 @@ It is forbidden that:
   + was at Distance1
     + has Quantity1
     + is in DistanceUnit1
+      + is worth Factor1 km
   + is of Vehicle
     + Record is of that Vehicle
       + is Event
         + is MeteredEvent2
           + was at Moment2 > Moment1
           + was at Distance2
-            + has Quantity2 < Quantity1
-            + is in DistanceUnit1
+            + has Quantity2
+            + is in DistanceUnit2
+              + is worth Factor2 km
+          Km2 = Quantity2 * Factor2 < Km1
+  Km1 = Quantity1 * Factor1
 
 # Meter readings and trips
 
@@ -265,28 +283,37 @@ Trip has Purpose
 Each Trip has at most one Purpose.
 For each Trip, if that Trip was at some Moment1 and that Trip ended at some Moment2 then Moment1 is less than or equal to Moment2.
 
-// A trip ends no nearer than it started, where both are in one unit
-// (across units, with conversion: EXPRESSIONS.md, step 5).
+// A trip ends no nearer than it started, in kilometres whatever the units.
 Query TripEndsNoNearer:
 It is impossible that:
 ✓Trip
   + was at Distance1
     + has Quantity1
     + is in DistanceUnit1
+      + is worth Factor1 km
   + ended at Distance2
-    + has Quantity2 < Quantity1
-    + is in DistanceUnit1
+    + has Quantity2
+    + is in DistanceUnit2
+      + is worth Factor2 km
+  Km1 = Quantity1 * Factor1
+  Km2 = Quantity2 * Factor2 < Km1
 
-// How far a trip went, in the unit both its readings are in.
+// How far a trip went, in its driver's unit (kilometres where the driver
+// has none), whatever units its readings are in.
 Query TripLength:
 ✓Trip
   + was at Distance1
     + has Quantity1
-    + is in ✓DistanceUnit1
+    + is in DistanceUnit1
+      + is worth Factor1 km
   + ended at Distance2
     + has Quantity2
-    + is in DistanceUnit1
-  ✓Length = Quantity2 - Quantity1
+    + is in DistanceUnit2
+      + is worth Factor2 km
+  + had driver User
+    + maybe measures distance in ✓DistanceUnit3
+      + is worth Factor3 km
+  ✓Length = (Quantity2 * Factor2 - Quantity1 * Factor1) / coalesce(Factor3, 1)
 
 // How long a trip took.
 Query TripDuration:

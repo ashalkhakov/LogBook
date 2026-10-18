@@ -11,16 +11,6 @@
 
 @implementation LogbookQueries
 
-+ (ORMQueryResult *)tripLengthInContext:(NSManagedObjectContext *)context error:(NSError **)error
-{
-	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"TripLength" inContext:context error:error];
-}
-
-+ (ORMQueryOData *)tripLengthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
-{
-	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"TripLength" model:model error:error];
-}
-
 + (ORMQueryResult *)pricePerVolumeInContext:(NSManagedObjectContext *)context error:(NSError **)error
 {
 	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"PricePerVolume" inContext:context error:error];
@@ -81,9 +71,59 @@
 	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"CostsByMonth" model:model error:error];
 }
 
++ (ORMQueryResult *)tripLengthInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"TripLength" inContext:context error:error];
+}
+
++ (ORMQueryOData *)tripLengthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"TripLength" model:model error:error];
+}
+
+@end
+
+@implementation LogbookReferenceData
+
++ (BOOL)seedContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	ORMTables *tables = [ORMTables tablesNamed:@"Logbook" error:error];
+	return tables != nil && [tables seedContext:context error:error];
+}
+
 @end
 
 @implementation Vehicle (ORMValidation)
+
+- (BOOL)orm_validateConstraints:(NSError **)error
+{
+	ORMValidator *validator = [ORMValidator validatorNamed:@"Logbook" error:error];
+	return validator != nil && [validator validate:self error:error];
+}
+
+- (NSArray<NSError *> *)orm_deonticViolations
+{
+	return [[ORMValidator validatorNamed:@"Logbook" error:NULL] violationsOf:self deontic:YES] ?: @[];
+}
+
+@end
+
+@implementation DistanceUnit (ORMValidation)
+
+- (BOOL)orm_validateConstraints:(NSError **)error
+{
+	ORMValidator *validator = [ORMValidator validatorNamed:@"Logbook" error:error];
+	return validator != nil && [validator validate:self error:error];
+}
+
+- (NSArray<NSError *> *)orm_deonticViolations
+{
+	return [[ORMValidator validatorNamed:@"Logbook" error:NULL] violationsOf:self deontic:YES] ?: @[];
+}
+
+@end
+
+@implementation VolumeUnit (ORMValidation)
 
 - (BOOL)orm_validateConstraints:(NSError **)error
 {

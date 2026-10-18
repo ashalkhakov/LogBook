@@ -14,6 +14,8 @@
 #import <CoreData/CoreData.h>
 #import <ORMRuntime/ORMRuntime.h>
 #import "Vehicle+CoreDataClass.h"
+#import "DistanceUnit+CoreDataClass.h"
+#import "VolumeUnit+CoreDataClass.h"
 #import "Record+CoreDataClass.h"
 #import "Attachment+CoreDataClass.h"
 #import "ServiceItem+CoreDataClass.h"
@@ -28,6 +30,26 @@
 /* Checked by the model's tables (Logbook.ormplans), a subentity's rules with
  * its own. */
 @interface Vehicle (ORMValidation)
+/* NO, with what is violated in the error: one NSError, or an
+ * NSValidationMultipleErrorsError with them under NSDetailedErrorsKey. */
+- (BOOL)orm_validateConstraints:(NSError **)error;
+/* The deontic rules broken: obligations to be told of, not enforced. */
+- (NSArray<NSError *> *)orm_deonticViolations;
+@end
+
+/* Checked by the model's tables (Logbook.ormplans), a subentity's rules with
+ * its own. */
+@interface DistanceUnit (ORMValidation)
+/* NO, with what is violated in the error: one NSError, or an
+ * NSValidationMultipleErrorsError with them under NSDetailedErrorsKey. */
+- (BOOL)orm_validateConstraints:(NSError **)error;
+/* The deontic rules broken: obligations to be told of, not enforced. */
+- (NSArray<NSError *> *)orm_deonticViolations;
+@end
+
+/* Checked by the model's tables (Logbook.ormplans), a subentity's rules with
+ * its own. */
+@interface VolumeUnit (ORMValidation)
 /* NO, with what is violated in the error: one NSError, or an
  * NSValidationMultipleErrorsError with them under NSDetailedErrorsKey. */
 - (BOOL)orm_validateConstraints:(NSError **)error;
@@ -139,9 +161,6 @@
  * in a context, every row; or as requests to the model's OData service. nil,
  * and why, where it cannot be run there. */
 @interface LogbookQueries : NSObject
-/* TripLength: List each Trip, DistanceUnit and Length where that Trip was at some Distance1 that has some Quantity1 and that Trip ended at some Distance2 that has some Quantity2 and Distance1 is in that DistanceUnit and Distance2 is in that DistanceUnit and Length is Quantity2 minus Quantity1. */
-+ (ORMQueryResult *)tripLengthInContext:(NSManagedObjectContext *)context error:(NSError **)error;
-+ (ORMQueryOData *)tripLengthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
 /* PricePerVolume: List each FillUp, VolumeUnit, Currency and Price where that FillUp was of some Volume that has some Quantity and that FillUp cost some Money that has some Amount and that Volume is in that VolumeUnit and that Money is in that Currency and Price is (that Amount divided by that Quantity) rounded to 3 decimal places. */
 + (ORMQueryResult *)pricePerVolumeInContext:(NSManagedObjectContext *)context error:(NSError **)error;
 + (ORMQueryOData *)pricePerVolumeRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
@@ -160,6 +179,16 @@
 /* CostsByMonth: List each Vehicle, Currency, Month and Total where some Record is of that Vehicle and that Record cost some Money that has some Amount and that Money is in that Currency and that Record is an Event that was at some Moment and Month is the first day of the month of that Moment and Total is the total of that Amount for that Vehicle, Month and that Currency in descending order of Month. */
 + (ORMQueryResult *)costsByMonthInContext:(NSManagedObjectContext *)context error:(NSError **)error;
 + (ORMQueryOData *)costsByMonthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
+/* TripLength: List each Trip, DistanceUnit3 and Length where that Trip was at some Distance1 that has some Quantity1 and that Trip ended at some Distance2 that has some Quantity2 and that Trip had driver some User that possibly measures distance in DistanceUnit3 that is worth some Factor3 km and Distance1 is in some DistanceUnit1 that is worth some Factor1 km and Distance2 is in some DistanceUnit2 that is worth some Factor2 km and Length is (Quantity2 times Factor2 minus Quantity1 times Factor1) divided by Factor3, or 1 where there is none. */
++ (ORMQueryResult *)tripLengthInContext:(NSManagedObjectContext *)context error:(NSError **)error;
++ (ORMQueryOData *)tripLengthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
+@end
+
+/* The model's reference data (docs/EXPRESSIONS.md), from the tables (Logbook.ormplans):
+ * each object found by its key or inserted, given what the reference data
+ * says. Call it before a store is first used, and after an update. */
+@interface LogbookReferenceData : NSObject
++ (BOOL)seedContext:(NSManagedObjectContext *)context error:(NSError **)error;
 @end
 
 /* Saving (docs/DERIVATION.md): call before save:, as Core Data's will-save

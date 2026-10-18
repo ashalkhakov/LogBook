@@ -152,6 +152,76 @@
             <entry key="ormkit.source" value="_D3D9EF81-F055-4F1A-A33A-E5C495D7B619"/>
         </userInfo>
     </entity>
+    <entity name="DistanceUnit" representedClassName="DistanceUnit" syncable="YES" codeGenerationType="class">
+        <attribute name="code" attributeType="String" regularExpressionString="^(?:km|mi)$">
+            <userInfo>
+                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
+                <entry key="OData.key" value="YES"/>
+                <entry key="ormkit.source" value="_30C2C189-2DBB-4D28-8486-F337D0748812"/>
+            </userInfo>
+        </attribute>
+        <attribute name="factor" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
+                <entry key="ormkit.source" value="_EA02BE45-9262-4477-8742-B0D154AB0772"/>
+            </userInfo>
+        </attribute>
+        <relationship name="incomesAsMileageDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Income" inverseName="mileageDistanceUnit" inverseEntity="Income">
+            <userInfo>
+                <entry key="ormkit.source" value="_829AD7EF-DF6B-4CC4-853C-6EAF4D43D144/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
+            </userInfo>
+        </relationship>
+        <relationship name="meteredEventsAsMileageDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MeteredEvent" inverseName="mileageDistanceUnit" inverseEntity="MeteredEvent">
+            <userInfo>
+                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
+            </userInfo>
+        </relationship>
+        <relationship name="remindersAsDoneMileageDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="doneMileageDistanceUnit" inverseEntity="Reminder">
+            <userInfo>
+                <entry key="ormkit.source" value="_2B9ED7BF-75FD-430B-B085-76FD5CB5B07E/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
+            </userInfo>
+        </relationship>
+        <relationship name="remindersAsDueMileageDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="dueMileageDistanceUnit" inverseEntity="Reminder">
+            <userInfo>
+                <entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
+            </userInfo>
+        </relationship>
+        <relationship name="schedulesAsIntervalDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Schedule" inverseName="intervalDistanceUnit" inverseEntity="Schedule">
+            <userInfo>
+                <entry key="ormkit.source" value="_EB90D8D7-D4BE-4A56-AA30-45556246E847/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
+            </userInfo>
+        </relationship>
+        <relationship name="tripsAsDistanceDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Trip" inverseName="distanceDistanceUnit" inverseEntity="Trip">
+            <userInfo>
+                <entry key="ormkit.source" value="_9DE6F490-9F69-4987-8E58-6D4F0B469A1F/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
+            </userInfo>
+        </relationship>
+        <relationship name="users" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="User" inverseName="distanceUnit" inverseEntity="User">
+            <userInfo>
+                <entry key="ormkit.source" value="_8EED19CF-03F3-4334-A773-A150F6545871"/>
+            </userInfo>
+        </relationship>
+        <relationship name="vehiclesAsKeepDistanceDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Vehicle" inverseName="keepDistanceDistanceUnit" inverseEntity="Vehicle">
+            <userInfo>
+                <entry key="ormkit.source" value="_950B6EA4-A0C2-4634-89FC-170DE9F045EA/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
+            </userInfo>
+        </relationship>
+        <relationship name="vehiclesAsPurchaseMileageDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Vehicle" inverseName="purchaseMileageDistanceUnit" inverseEntity="Vehicle">
+            <userInfo>
+                <entry key="ormkit.source" value="_54B699BF-0BE5-4234-A84C-1854D89B7701/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
+            </userInfo>
+        </relationship>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="code"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+        <userInfo>
+            <entry key="OData.entitySet" value="DistanceUnits"/>
+            <entry key="OData.type" value="Default.DistanceUnit"/>
+            <entry key="ormkit.source" value="_41C1A239-7FFC-4DB2-9E16-14C52E846C42"/>
+        </userInfo>
+    </entity>
     <entity name="Document" representedClassName="Document" parentEntity="Record" syncable="YES" codeGenerationType="class">
         <attribute name="date" attributeType="Date" usesScalarValueType="NO">
             <userInfo>
@@ -304,12 +374,12 @@
                 <entry key="ormkit.source" value="_36505B08-99CC-4722-8097-DAA1F1E2AFF1/_FC3636E5-E73A-44CA-890A-78B0DCF87737"/>
             </userInfo>
         </attribute>
-        <attribute name="volumeVolumeUnit" attributeType="String" regularExpressionString="^(?:L|gal \(US\)|gal \(imp\))$">
+        <relationship name="volumeVolumeUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="VolumeUnit" inverseName="fillUpsAsVolumeVolumeUnit" inverseEntity="VolumeUnit">
             <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;L&quot;}, {&quot;Value&quot;: &quot;gal (US)&quot;}, {&quot;Value&quot;: &quot;gal (imp)&quot;}]}"/>
+                <entry key="ormkit.mandatory" value="YES"/>
                 <entry key="ormkit.source" value="_36505B08-99CC-4722-8097-DAA1F1E2AFF1/_B93DFC92-F0B1-4633-A3A6-3600BDBF0ED2"/>
             </userInfo>
-        </attribute>
+        </relationship>
         <userInfo>
             <entry key="OData.type" value="Default.FillUp"/>
             <entry key="ormkit.rule.SubsetConstraint3" value="It is obligatory that if some FillUp was of some Fuel and that FillUp is of some Vehicle then that Vehicle uses that Fuel."/>
@@ -338,17 +408,16 @@
                 <entry key="ormkit.source" value="_55D67005-FDA2-4BBF-ACA3-0510D57A3E65"/>
             </userInfo>
         </attribute>
-        <attribute name="mileageDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_829AD7EF-DF6B-4CC4-853C-6EAF4D43D144/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
-            </userInfo>
-        </attribute>
         <attribute name="mileageQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_829AD7EF-DF6B-4CC4-853C-6EAF4D43D144/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
             </userInfo>
         </attribute>
+        <relationship name="mileageDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="incomesAsMileageDistanceUnit" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.source" value="_829AD7EF-DF6B-4CC4-853C-6EAF4D43D144/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
+            </userInfo>
+        </relationship>
         <relationship name="trip" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Trip" inverseName="income" inverseEntity="Trip">
             <userInfo>
                 <entry key="ormkit.source" value="_D0C5E7CE-F41E-4E82-835B-803719D437C9"/>
@@ -383,17 +452,17 @@
         </userInfo>
     </entity>
     <entity name="MeteredEvent" representedClassName="MeteredEvent" parentEntity="Event" syncable="YES" codeGenerationType="class">
-        <attribute name="mileageDistanceUnit" attributeType="String" regularExpressionString="^(?:km|mi)$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
-            </userInfo>
-        </attribute>
         <attribute name="mileageQuantity" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
             </userInfo>
         </attribute>
+        <relationship name="mileageDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="meteredEventsAsMileageDistanceUnit" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.mandatory" value="YES"/>
+                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
+            </userInfo>
+        </relationship>
         <userInfo>
             <entry key="OData.type" value="Default.MeteredEvent"/>
             <entry key="ormkit.source" value="_8302E203-13F7-4C5A-938A-C2A4BD091E8B"/>
@@ -564,12 +633,6 @@
                 <entry key="ormkit.source" value="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713"/>
             </userInfo>
         </attribute>
-        <attribute name="doneMileageDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_2B9ED7BF-75FD-430B-B085-76FD5CB5B07E/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
-            </userInfo>
-        </attribute>
         <attribute name="doneMileageQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_2B9ED7BF-75FD-430B-B085-76FD5CB5B07E/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
@@ -578,12 +641,6 @@
         <attribute name="dueDate" optional="YES" attributeType="Date" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_19DC41CC-EE71-4CBD-B07E-F03EDB0D2163"/>
-            </userInfo>
-        </attribute>
-        <attribute name="dueMileageDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
             </userInfo>
         </attribute>
         <attribute name="dueMileageQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
@@ -599,6 +656,16 @@
         <relationship name="checklist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Checklist" inverseName="reminders" inverseEntity="Checklist">
             <userInfo>
                 <entry key="ormkit.source" value="_A4F3B195-66D4-4814-A38C-5794ADF0F4C9"/>
+            </userInfo>
+        </relationship>
+        <relationship name="doneMileageDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="remindersAsDoneMileageDistanceUnit" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.source" value="_2B9ED7BF-75FD-430B-B085-76FD5CB5B07E/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
+            </userInfo>
+        </relationship>
+        <relationship name="dueMileageDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="remindersAsDueMileageDistanceUnit" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
             </userInfo>
         </relationship>
         <relationship name="event" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Event" inverseName="reminders" inverseEntity="Event">
@@ -631,12 +698,6 @@
                 <entry key="ormkit.source" value="_05C4E797-E847-40C3-A868-633E6DC427B0"/>
             </userInfo>
         </attribute>
-        <attribute name="intervalDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_EB90D8D7-D4BE-4A56-AA30-45556246E847/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
-            </userInfo>
-        </attribute>
         <attribute name="intervalQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_EB90D8D7-D4BE-4A56-AA30-45556246E847/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
@@ -655,6 +716,11 @@
         <relationship name="expenseKind" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ExpenseKind" inverseName="schedules" inverseEntity="ExpenseKind">
             <userInfo>
                 <entry key="ormkit.source" value="_320F7CB9-1863-4517-905B-7C4AC0B56665"/>
+            </userInfo>
+        </relationship>
+        <relationship name="intervalDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="schedulesAsIntervalDistanceUnit" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.source" value="_EB90D8D7-D4BE-4A56-AA30-45556246E847/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
             </userInfo>
         </relationship>
         <relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="schedule" inverseEntity="Reminder">
@@ -780,12 +846,6 @@
         </userInfo>
     </entity>
     <entity name="Trip" representedClassName="Trip" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class">
-        <attribute name="distanceDistanceUnit" attributeType="String" regularExpressionString="^(?:km|mi)$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_9DE6F490-9F69-4987-8E58-6D4F0B469A1F/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
-            </userInfo>
-        </attribute>
         <attribute name="distanceQuantity" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_9DE6F490-9F69-4987-8E58-6D4F0B469A1F/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
@@ -811,6 +871,12 @@
                 <entry key="ormkit.source" value="_09773DBF-BAD8-4B39-A498-6B38FF9AB2E1"/>
             </userInfo>
         </attribute>
+        <relationship name="distanceDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="tripsAsDistanceDistanceUnit" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.mandatory" value="YES"/>
+                <entry key="ormkit.source" value="_9DE6F490-9F69-4987-8E58-6D4F0B469A1F/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
+            </userInfo>
+        </relationship>
         <relationship name="income" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Income" inverseName="trip" inverseEntity="Income">
             <userInfo>
                 <entry key="ormkit.source" value="_847D381A-BDEB-4AB0-BFA7-4B6EC9DA513E"/>
@@ -885,12 +951,6 @@
                 <entry key="ormkit.source" value="_6C0C5EDB-89DA-4DDE-AA0D-8366EF8CF338"/>
             </userInfo>
         </attribute>
-        <attribute name="distanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_6836F543-61A0-467A-997A-985D1A1ADA7B"/>
-            </userInfo>
-        </attribute>
         <attribute name="email" attributeType="String">
             <userInfo>
                 <entry key="OData.key" value="YES"/>
@@ -902,15 +962,14 @@
                 <entry key="ormkit.source" value="_28B650F1-1738-4BB8-9571-2AE2FF443A3C"/>
             </userInfo>
         </attribute>
-        <attribute name="volumeUnit" optional="YES" attributeType="String" regularExpressionString="^(?:L|gal \(US\)|gal \(imp\))$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;L&quot;}, {&quot;Value&quot;: &quot;gal (US)&quot;}, {&quot;Value&quot;: &quot;gal (imp)&quot;}]}"/>
-                <entry key="ormkit.source" value="_668073F9-295A-4EB4-874A-4E2EA746F819"/>
-            </userInfo>
-        </attribute>
         <relationship name="checklists" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Checklist" inverseName="user" inverseEntity="Checklist">
             <userInfo>
                 <entry key="ormkit.source" value="_5F5D0DD2-A45B-45DC-A152-405922509840"/>
+            </userInfo>
+        </relationship>
+        <relationship name="distanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="users" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.source" value="_6836F543-61A0-467A-997A-985D1A1ADA7B"/>
             </userInfo>
         </relationship>
         <relationship name="eventsAsDriver" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Event" inverseName="driver" inverseEntity="Event">
@@ -931,6 +990,11 @@
         <relationship name="vehicleDrivers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="VehicleDriver" inverseName="user" inverseEntity="VehicleDriver">
             <userInfo>
                 <entry key="ormkit.source" value="_EBBE620E-37E7-49D4-9C21-A2CE7D5AEDF5._7C7024F3-ABFD-412A-B3F6-1026A5247ACF"/>
+            </userInfo>
+        </relationship>
+        <relationship name="volumeUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="VolumeUnit" inverseName="users" inverseEntity="VolumeUnit">
+            <userInfo>
+                <entry key="ormkit.source" value="_668073F9-295A-4EB4-874A-4E2EA746F819"/>
             </userInfo>
         </relationship>
         <uniquenessConstraints>
@@ -974,12 +1038,6 @@
                 <entry key="ormkit.source" value="_BA44DD9B-4E8A-4FD7-BF70-7F568DF4B17E"/>
             </userInfo>
         </attribute>
-        <attribute name="keepDistanceDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_950B6EA4-A0C2-4634-89FC-170DE9F045EA/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
-            </userInfo>
-        </attribute>
         <attribute name="keepDistanceQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_950B6EA4-A0C2-4634-89FC-170DE9F045EA/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
@@ -1003,12 +1061,6 @@
         <attribute name="purchaseDate" optional="YES" attributeType="Date" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_C24D2C45-9232-438A-9969-2FC1D89D213E"/>
-            </userInfo>
-        </attribute>
-        <attribute name="purchaseMileageDistanceUnit" optional="YES" attributeType="String" regularExpressionString="^(?:km|mi)$">
-            <userInfo>
-                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;km&quot;}, {&quot;Value&quot;: &quot;mi&quot;}]}"/>
-                <entry key="ormkit.source" value="_54B699BF-0BE5-4234-A84C-1854D89B7701/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
             </userInfo>
         </attribute>
         <attribute name="purchaseMileageQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
@@ -1042,10 +1094,20 @@
                 <entry key="ormkit.source" value="_12C08D54-3C2B-474F-962F-175F9AA5B8C9"/>
             </userInfo>
         </attribute>
+        <relationship name="keepDistanceDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="vehiclesAsKeepDistanceDistanceUnit" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.source" value="_950B6EA4-A0C2-4634-89FC-170DE9F045EA/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
+            </userInfo>
+        </relationship>
         <relationship name="owner" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="ownedVehicles" inverseEntity="User">
             <userInfo>
                 <entry key="ormkit.mandatory" value="YES"/>
                 <entry key="ormkit.source" value="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E"/>
+            </userInfo>
+        </relationship>
+        <relationship name="purchaseMileageDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="vehiclesAsPurchaseMileageDistanceUnit" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.source" value="_54B699BF-0BE5-4234-A84C-1854D89B7701/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
             </userInfo>
         </relationship>
         <relationship name="records" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Record" inverseName="vehicle" inverseEntity="Record">
@@ -1147,6 +1209,41 @@
             <entry key="OData.entitySet" value="VehicleWasValuedOnDateAtMoneys"/>
             <entry key="OData.type" value="Default.VehicleWasValuedOnDateAtMoney"/>
             <entry key="ormkit.source" value="_35D1CBBA-D05A-4076-A003-27A870F24210"/>
+        </userInfo>
+    </entity>
+    <entity name="VolumeUnit" representedClassName="VolumeUnit" syncable="YES" codeGenerationType="class">
+        <attribute name="code" attributeType="String" regularExpressionString="^(?:L|gal \(US\)|gal \(imp\))$">
+            <userInfo>
+                <entry key="OData.annotations" value="{&quot;Validation.AllowedValues&quot;: [{&quot;Value&quot;: &quot;L&quot;}, {&quot;Value&quot;: &quot;gal (US)&quot;}, {&quot;Value&quot;: &quot;gal (imp)&quot;}]}"/>
+                <entry key="OData.key" value="YES"/>
+                <entry key="ormkit.source" value="_3C97AB94-62FF-41C9-BC06-9E93363C727B"/>
+            </userInfo>
+        </attribute>
+        <attribute name="factor" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="OData.annotations" value="{&quot;Validation.Minimum&quot;: 0, &quot;Validation.Minimum@Validation.Exclusive&quot;: true}"/>
+                <entry key="ormkit.source" value="_24946629-9DA9-4A87-8ACB-CC708E7B709E"/>
+            </userInfo>
+        </attribute>
+        <relationship name="fillUpsAsVolumeVolumeUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="FillUp" inverseName="volumeVolumeUnit" inverseEntity="FillUp">
+            <userInfo>
+                <entry key="ormkit.source" value="_36505B08-99CC-4722-8097-DAA1F1E2AFF1/_B93DFC92-F0B1-4633-A3A6-3600BDBF0ED2.inverse"/>
+            </userInfo>
+        </relationship>
+        <relationship name="users" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="User" inverseName="volumeUnit" inverseEntity="User">
+            <userInfo>
+                <entry key="ormkit.source" value="_832C0151-D064-4606-AF7A-1AB3ECDD5384"/>
+            </userInfo>
+        </relationship>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="code"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+        <userInfo>
+            <entry key="OData.entitySet" value="VolumeUnits"/>
+            <entry key="OData.type" value="Default.VolumeUnit"/>
+            <entry key="ormkit.source" value="_85EE3DE3-F6D0-48E6-8ACE-B4E615636FC8"/>
         </userInfo>
     </entity>
 </model>

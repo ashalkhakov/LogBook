@@ -1495,6 +1495,11 @@ ormtool verbalize Model/Logbook.orm      # read it back
 Currency codes and VINs have patterns, ORMKit's own (NORMA has none):
 Core Data checks them.
 
+What each unit is worth in kilometres or litres is reference data: facts
+of the app's own, which every store starts with (`LogbookReferenceData`
+seeds them), not the user's. A distance or a volume converts by a step to
+its unit's factor and a product.
+
 What no graphical constraint says is a rule, a query whose answers are
 what must not be ([RULES.md](../../NativeORM2/docs/RULES.md)), written
 in the schema as its outline:
@@ -1502,17 +1507,17 @@ in the schema as its outline:
 - an answer's options are its question's; yes or no only for a yes-or-no
   question, options only for an any-of one (`AnswerOptionsOfItsQuestion`,
   `YesOrNoAnswers`, `AnyOfAnswers`, `OptionsOfAnyOfQuestions`);
-- the meter goes up: a vehicle's later reading, in the same unit, ought
-  not to be lower (`MeterGoesUp`, deontic);
-- a trip ends no nearer than it started, in the same unit
+- the meter goes up: a vehicle's later reading, in kilometres whatever its
+  unit, ought not to be lower (`MeterGoesUp`, deontic);
+- a trip ends no nearer than it started, in kilometres whatever its units
   (`TripEndsNoNearer`);
 - events fall while the vehicle is kept, on or after the day it was
   acquired (`EventsWhileKept`, deontic).
 
 Some of what is worked out is computed by queries, with value nodes
 ([EXPRESSIONS.md](../../NativeORM2/docs/EXPRESSIONS.md)): a trip's
-length (`TripLength`) and a fill-up's price per unit of volume
-(`PricePerVolume`), each in the units its record is in. "The one before"
+length in its driver's unit (`TripLength`), and a fill-up's price per
+unit of volume (`PricePerVolume`), in the units its record is in. "The one before"
 is an aggregate value, the latest earlier, that another node is compared
 with: the fill-up before each (`FillUpBefore`), and the consumption at
 each full tank, the fuel put in since the full tank before over the
