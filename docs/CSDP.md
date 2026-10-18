@@ -1525,7 +1525,8 @@ distance since (`FullTankConsumption`). Dates are computed too: how long
 a trip lasted, a fact type derived by a query with a value node ("Trip
 lasted Minutes", `TripLasted`; `TripDuration` lists it), and when a done reminder's
 schedule is next due by date (`ReminderNextDue`). The report by month is
-a grouped list: each vehicle's costs for each month and currency, the
+a grouped list: each vehicle's costs for each month in its owner's
+currency, each cost at the latest exchange rate on or before its day, the
 latest month first (`CostsByMonth`).
 
 A vehicle's one car sale is kept by its derived sale date, unique for the

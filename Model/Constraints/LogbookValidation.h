@@ -173,15 +173,15 @@
 /* ReminderNextDue: List each Reminder, Schedule and NextDue where that Reminder was done at some Moment and comes from that Schedule that recurs after some Duration and NextDue is the date of that Moment plus that Duration months. */
 + (ORMQueryResult *)reminderNextDueInContext:(NSManagedObjectContext *)context error:(NSError **)error;
 + (ORMQueryOData *)reminderNextDueRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
-/* CostsByMonth: List each Vehicle, Currency, Month and Total where some Record is of that Vehicle and that Record cost some Money that has some Amount and that Money is in that Currency and that Record is an Event that was at some Moment and Month is the first day of the month of that Moment and Total is the total of that Amount for that Vehicle, Month and that Currency in descending order of Month. */
-+ (ORMQueryResult *)costsByMonthInContext:(NSManagedObjectContext *)context error:(NSError **)error;
-+ (ORMQueryOData *)costsByMonthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
 /* TripLength: List each Trip, DistanceUnit3 and Length where that Trip was at some Distance1 that has some Quantity1 and that Trip ended at some Distance2 that has some Quantity2 and that Trip had driver some User that possibly measures distance in DistanceUnit3 that is worth some Factor3 km and Distance1 is in some DistanceUnit1 that is worth some Factor1 km and Distance2 is in some DistanceUnit2 that is worth some Factor2 km and Length is (Quantity2 times Factor2 minus Quantity1 times Factor1) divided by Factor3, or 1 where there is none. */
 + (ORMQueryResult *)tripLengthInContext:(NSManagedObjectContext *)context error:(NSError **)error;
 + (ORMQueryOData *)tripLengthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
 /* TripDuration: List each Trip and Minutes where that Trip lasted that Minutes. */
 + (ORMQueryResult *)tripDurationInContext:(NSManagedObjectContext *)context error:(NSError **)error;
 + (ORMQueryOData *)tripDurationRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
+/* CostsByMonth: List each Vehicle, Currency1, Month and Total where that Vehicle is owned by some User that prefers Currency1 and some Record is of that Vehicle and that Record is an Event that was at some Moment and that Record cost some Money that has some Amount and that Money is in some Currency2 that possibly was worth some Factor1 in Currency1 on some Date1 and possibly Currency2 was worth some Factor2 in Currency1 on some Date2 and Date1 is at most Day and Date2 is RateDay and Day is the date of that Moment and RateDay is the maximum of Date1 for that Record and Rate is the maximum of Factor2 for that Record and Month is the first day of the month of that Moment and Converted is that Amount times Rate, or 1 where there is none and Total is the total of Converted for that Vehicle and Month in descending order of Month. */
++ (ORMQueryResult *)costsByMonthInContext:(NSManagedObjectContext *)context error:(NSError **)error;
++ (ORMQueryOData *)costsByMonthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
 @end
 
 /* The model's reference data (docs/EXPRESSIONS.md), from the tables (Logbook.ormplans):

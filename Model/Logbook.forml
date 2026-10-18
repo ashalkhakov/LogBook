@@ -226,18 +226,27 @@ It is forbidden that:
 
 If some Record was entered by some User and that Record is of some Vehicle then that User drives that Vehicle.
 
-// What each vehicle cost each month, in each currency, the latest month
-// first: the report by month (in one currency with EXPRESSIONS.md, step 5).
+// What each vehicle cost each month, in its owner's currency, the latest
+// month first: each cost at the latest rate on or before its day, one in
+// that currency as it is (one in a currency with no rate, as it is too).
 Query CostsByMonth:
 ✓Vehicle
+  + is owned by User
+    + prefers ✓Currency2
   + Record is of that Vehicle
-    + cost Money
-      + has Amount
-      + is in ✓Currency
     + is Event
       + was at Moment
+    + cost Money
+      + has Amount
+      + is in Currency1
+        + maybe was worth Factor1 in Currency2 on Date1 <= Day
+        + maybe was worth Factor2 in Currency2 on Date2 = RateDay
+    Day: Date = date(Moment)
+    RateDay = max(Date1) for Record
+    Rate = max(Factor2) for Record
     ✓Month = month(Moment) ↓
-    ✓Total = total(Amount) for Vehicle, Month, Currency
+    Converted = Amount * coalesce(Rate, 1)
+    ✓Total = total(Converted) for Vehicle, Month
 
 // The meter goes up: a vehicle's later reading, in kilometres whatever
 // its unit, ought not to be lower. Ought: the owner may enter history out

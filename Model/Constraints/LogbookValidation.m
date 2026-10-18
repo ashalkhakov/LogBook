@@ -51,16 +51,6 @@
 	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"ReminderNextDue" model:model error:error];
 }
 
-+ (ORMQueryResult *)costsByMonthInContext:(NSManagedObjectContext *)context error:(NSError **)error
-{
-	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"CostsByMonth" inContext:context error:error];
-}
-
-+ (ORMQueryOData *)costsByMonthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
-{
-	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"CostsByMonth" model:model error:error];
-}
-
 + (ORMQueryResult *)tripLengthInContext:(NSManagedObjectContext *)context error:(NSError **)error
 {
 	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"TripLength" inContext:context error:error];
@@ -79,6 +69,16 @@
 + (ORMQueryOData *)tripDurationRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
 {
 	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"TripDuration" model:model error:error];
+}
+
++ (ORMQueryResult *)costsByMonthInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"CostsByMonth" inContext:context error:error];
+}
+
++ (ORMQueryOData *)costsByMonthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"CostsByMonth" model:model error:error];
 }
 
 @end
