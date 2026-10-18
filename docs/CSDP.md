@@ -1510,7 +1510,11 @@ in the schema as its outline:
 Some of what is worked out is computed by queries, with value nodes
 ([EXPRESSIONS.md](../../NativeORM2/docs/EXPRESSIONS.md)): a trip's
 length (`TripLength`) and a fill-up's price per unit of volume
-(`PricePerVolume`), each in the units its record is in.
+(`PricePerVolume`), each in the units its record is in. "The one before"
+is an aggregate value, the latest earlier, that another node is compared
+with: the fill-up before each (`FillUpBefore`), and the consumption at
+each full tank, the fuel put in since the full tank before over the
+distance since (`FullTankConsumption`).
 
 A vehicle's one car sale is kept by its derived sale date, unique for the
 vehicle. Three partly derived fact types are stored (a record's vehicle,

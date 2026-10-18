@@ -288,6 +288,60 @@ Query PricePerVolume:
     + is in ✓Currency
   ✓Price = round(Amount / Quantity, 3)
 
+// The fill-up before each: the latest earlier one of its vehicle.
+Query FillUpBefore:
+✓FillUp1
+  + was at Moment1
+  + is of Vehicle
+    + Record is of that Vehicle
+      + is Event
+        + is MeteredEvent
+          + is FillUp2
+            + was at Moment2 < Moment1
+    + Record is of that Vehicle
+      + is Event
+        + is MeteredEvent
+          + is ✓FillUp3
+            + was at Moment3 = Previous
+  Previous = max(Moment2) for FillUp1
+
+// Litres per hundred kilometres (or the units it is in) at each full
+// tank: the fuel put in since the full tank before, up to and with this
+// one, over the distance since. The meter goes up, so "before" is by
+// reading; fill-ups in other units are left out until they convert
+// (EXPRESSIONS.md, step 5).
+Query FullTankConsumption:
+✓FillUp1
+  + filled the tank
+  + was at Distance1
+    + has Quantity1
+    + is in ✓DistanceUnit1
+  + was of Volume1
+    + is in ✓VolumeUnit1
+  + is of Vehicle
+    + Record is of that Vehicle
+      + is Event
+        + is MeteredEvent
+          + is FillUp2
+            + filled the tank
+            + was at Distance2
+              + has Quantity2 < Quantity1
+              + is in DistanceUnit1
+    + Record is of that Vehicle
+      + is Event
+        + is MeteredEvent
+          + is FillUp3
+            + was at Distance3
+              + has Quantity3 > Previous
+              + has Quantity3 <= Quantity1
+              + is in DistanceUnit1
+            + was of Volume3
+              + has Quantity4
+              + is in VolumeUnit1
+  Previous = max(Quantity2) for FillUp1
+  Fuel = total(Quantity4) for FillUp1
+  ✓Consumption = round(Fuel / (Quantity1 - Previous) * 100, 2)
+
 # Services
 
 Title is a value type.

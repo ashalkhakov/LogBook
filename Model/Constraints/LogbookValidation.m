@@ -31,6 +31,26 @@
 	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"PricePerVolume" model:model error:error];
 }
 
++ (ORMQueryResult *)fillUpBeforeInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"FillUpBefore" inContext:context error:error];
+}
+
++ (ORMQueryOData *)fillUpBeforeRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"FillUpBefore" model:model error:error];
+}
+
++ (ORMQueryResult *)fullTankConsumptionInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"FullTankConsumption" inContext:context error:error];
+}
+
++ (ORMQueryOData *)fullTankConsumptionRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"FullTankConsumption" model:model error:error];
+}
+
 @end
 
 @implementation Vehicle (ORMValidation)
