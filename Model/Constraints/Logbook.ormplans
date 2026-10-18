@@ -12,6 +12,482 @@
 	<string>Logbook</string>
 	<key>queries</key>
 	<dict>
+		<key>CostsByMonth</key>
+		<dict>
+			<key>columns</key>
+			<array>
+				<dict>
+					<key>identifier</key>
+					<string>id</string>
+					<key>node</key>
+					<string>_9858A917-516B-42CD-839E-CC617793740F</string>
+					<key>path</key>
+					<dict>
+						<key>steps</key>
+						<array/>
+					</dict>
+					<key>title</key>
+					<string>Vehicle</string>
+					<key>trail</key>
+					<array/>
+				</dict>
+				<dict>
+					<key>node</key>
+					<string>_F4C73245-FA1A-477D-B9C4-1EDC3D0D2619</string>
+					<key>path</key>
+					<dict>
+						<key>steps</key>
+						<array>
+							<dict>
+								<key>key</key>
+								<string>totalCurrency</string>
+							</dict>
+						</array>
+						<key>variable</key>
+						<string>x1</string>
+					</dict>
+					<key>title</key>
+					<string>Currency</string>
+					<key>trail</key>
+					<array>
+						<string>records</string>
+						<string>totalCurrency</string>
+					</array>
+				</dict>
+				<dict>
+					<key>node</key>
+					<string>_B04868A8-5D8D-4FA1-B6B6-09643661E99D</string>
+					<key>title</key>
+					<string>Month</string>
+					<key>value</key>
+					<dict>
+						<key>apply</key>
+						<string>month</string>
+						<key>to</key>
+						<array>
+							<dict>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>as</key>
+											<string>Event</string>
+										</dict>
+										<dict>
+											<key>key</key>
+											<string>timestamp</string>
+										</dict>
+									</array>
+									<key>variable</key>
+									<string>x1</string>
+								</dict>
+							</dict>
+						</array>
+					</dict>
+				</dict>
+				<dict>
+					<key>node</key>
+					<string>_0148E684-6EC0-4438-B96D-761730AAED81</string>
+					<key>title</key>
+					<string>Total</string>
+					<key>value</key>
+					<dict>
+						<key>aggregate</key>
+						<string>sum</string>
+						<key>alsoAre</key>
+						<array>
+							<dict>
+								<key>apply</key>
+								<string>month</string>
+								<key>to</key>
+								<array>
+									<dict>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>as</key>
+													<string>Event</string>
+												</dict>
+												<dict>
+													<key>key</key>
+													<string>timestamp</string>
+												</dict>
+											</array>
+											<key>variable</key>
+											<string>x1</string>
+										</dict>
+									</dict>
+								</array>
+							</dict>
+							<dict>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>totalCurrency</string>
+										</dict>
+									</array>
+									<key>variable</key>
+									<string>x1</string>
+								</dict>
+							</dict>
+						</array>
+						<key>alsoWhere</key>
+						<array>
+							<string>_B04868A8-5D8D-4FA1-B6B6-09643661E99D</string>
+							<string>_F4C73245-FA1A-477D-B9C4-1EDC3D0D2619</string>
+						</array>
+						<key>in</key>
+						<string>bag1</string>
+						<key>is</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>id</string>
+								</dict>
+							</array>
+						</dict>
+						<key>of</key>
+						<string>_FC464EAA-B0C0-4BFD-93B2-E2620116281A</string>
+						<key>where</key>
+						<string>_9858A917-516B-42CD-839E-CC617793740F</string>
+					</dict>
+				</dict>
+			</array>
+			<key>condition</key>
+			<dict>
+				<key>kind</key>
+				<string>exists</string>
+				<key>operand</key>
+				<dict>
+					<key>kind</key>
+					<string>all</string>
+					<key>operands</key>
+					<array>
+						<dict>
+							<key>kind</key>
+							<string>notNull</string>
+							<key>path</key>
+							<dict>
+								<key>steps</key>
+								<array>
+									<dict>
+										<key>key</key>
+										<string>totalAmount</string>
+									</dict>
+								</array>
+								<key>variable</key>
+								<string>x1</string>
+							</dict>
+						</dict>
+						<dict>
+							<key>kind</key>
+							<string>notNull</string>
+							<key>path</key>
+							<dict>
+								<key>steps</key>
+								<array>
+									<dict>
+										<key>key</key>
+										<string>totalCurrency</string>
+									</dict>
+								</array>
+								<key>variable</key>
+								<string>x1</string>
+							</dict>
+						</dict>
+						<dict>
+							<key>entity</key>
+							<string>Event</string>
+							<key>kind</key>
+							<string>isOf</string>
+							<key>path</key>
+							<dict>
+								<key>steps</key>
+								<array/>
+								<key>variable</key>
+								<string>x1</string>
+							</dict>
+						</dict>
+						<dict>
+							<key>kind</key>
+							<string>notNull</string>
+							<key>path</key>
+							<dict>
+								<key>steps</key>
+								<array>
+									<dict>
+										<key>as</key>
+										<string>Event</string>
+									</dict>
+									<dict>
+										<key>key</key>
+										<string>timestamp</string>
+									</dict>
+								</array>
+								<key>variable</key>
+								<string>x1</string>
+							</dict>
+						</dict>
+					</array>
+				</dict>
+				<key>path</key>
+				<dict>
+					<key>steps</key>
+					<array>
+						<dict>
+							<key>key</key>
+							<string>records</string>
+						</dict>
+					</array>
+				</dict>
+				<key>variable</key>
+				<string>x1</string>
+			</dict>
+			<key>definitions</key>
+			<array>
+				<dict>
+					<key>name</key>
+					<string>bag1</string>
+					<key>plan</key>
+					<dict>
+						<key>columns</key>
+						<array>
+							<dict>
+								<key>identifier</key>
+								<string>id</string>
+								<key>node</key>
+								<string>_9858A917-516B-42CD-839E-CC617793740F</string>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array/>
+								</dict>
+								<key>title</key>
+								<string>Vehicle</string>
+								<key>trail</key>
+								<array/>
+							</dict>
+							<dict>
+								<key>identifier</key>
+								<string>id</string>
+								<key>node</key>
+								<string>_03B7D286-1A28-4FFE-93BF-CA35696EED6B</string>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array/>
+									<key>variable</key>
+									<string>x2</string>
+								</dict>
+								<key>title</key>
+								<string>Record</string>
+								<key>trail</key>
+								<array>
+									<string>records</string>
+								</array>
+							</dict>
+							<dict>
+								<key>node</key>
+								<string>_FC464EAA-B0C0-4BFD-93B2-E2620116281A</string>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>totalAmount</string>
+										</dict>
+									</array>
+									<key>variable</key>
+									<string>x2</string>
+								</dict>
+								<key>title</key>
+								<string>Amount</string>
+								<key>trail</key>
+								<array>
+									<string>records</string>
+									<string>totalAmount</string>
+								</array>
+							</dict>
+							<dict>
+								<key>node</key>
+								<string>_F4C73245-FA1A-477D-B9C4-1EDC3D0D2619</string>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>totalCurrency</string>
+										</dict>
+									</array>
+									<key>variable</key>
+									<string>x2</string>
+								</dict>
+								<key>title</key>
+								<string>Currency</string>
+								<key>trail</key>
+								<array>
+									<string>records</string>
+									<string>totalCurrency</string>
+								</array>
+							</dict>
+							<dict>
+								<key>node</key>
+								<string>_B04868A8-5D8D-4FA1-B6B6-09643661E99D</string>
+								<key>title</key>
+								<string>Month</string>
+								<key>value</key>
+								<dict>
+									<key>apply</key>
+									<string>month</string>
+									<key>to</key>
+									<array>
+										<dict>
+											<key>path</key>
+											<dict>
+												<key>steps</key>
+												<array>
+													<dict>
+														<key>as</key>
+														<string>Event</string>
+													</dict>
+													<dict>
+														<key>key</key>
+														<string>timestamp</string>
+													</dict>
+												</array>
+												<key>variable</key>
+												<string>x2</string>
+											</dict>
+										</dict>
+									</array>
+								</dict>
+							</dict>
+						</array>
+						<key>condition</key>
+						<dict>
+							<key>kind</key>
+							<string>exists</string>
+							<key>operand</key>
+							<dict>
+								<key>kind</key>
+								<string>all</string>
+								<key>operands</key>
+								<array>
+									<dict>
+										<key>kind</key>
+										<string>notNull</string>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>key</key>
+													<string>totalAmount</string>
+												</dict>
+											</array>
+											<key>variable</key>
+											<string>x2</string>
+										</dict>
+									</dict>
+									<dict>
+										<key>kind</key>
+										<string>notNull</string>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>key</key>
+													<string>totalCurrency</string>
+												</dict>
+											</array>
+											<key>variable</key>
+											<string>x2</string>
+										</dict>
+									</dict>
+									<dict>
+										<key>entity</key>
+										<string>Event</string>
+										<key>kind</key>
+										<string>isOf</string>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array/>
+											<key>variable</key>
+											<string>x2</string>
+										</dict>
+									</dict>
+									<dict>
+										<key>kind</key>
+										<string>notNull</string>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>as</key>
+													<string>Event</string>
+												</dict>
+												<dict>
+													<key>key</key>
+													<string>timestamp</string>
+												</dict>
+											</array>
+											<key>variable</key>
+											<string>x2</string>
+										</dict>
+									</dict>
+								</array>
+							</dict>
+							<key>path</key>
+							<dict>
+								<key>steps</key>
+								<array>
+									<dict>
+										<key>key</key>
+										<string>records</string>
+									</dict>
+								</array>
+							</dict>
+							<key>variable</key>
+							<string>x2</string>
+						</dict>
+						<key>entity</key>
+						<string>Vehicle</string>
+						<key>notes</key>
+						<array/>
+						<key>sorts</key>
+						<array/>
+					</dict>
+				</dict>
+			</array>
+			<key>entity</key>
+			<string>Vehicle</string>
+			<key>notes</key>
+			<array/>
+			<key>rowSorts</key>
+			<array>
+				<dict>
+					<key>ascending</key>
+					<false/>
+					<key>column</key>
+					<string>_B04868A8-5D8D-4FA1-B6B6-09643661E99D</string>
+				</dict>
+			</array>
+			<key>sorts</key>
+			<array/>
+		</dict>
 		<key>FillUpBefore</key>
 		<dict>
 			<key>columns</key>
@@ -6317,7 +6793,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_83D13BF0-656B-4C57-A65B-09E830C99B8C</string>
+									<string>_601DC6D5-475C-4A0C-B87F-A70F3B0DCDC1</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -6630,7 +7106,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_34C7ADE8-CF58-4703-95C5-D120463F1D7B</string>
+									<string>_D5EFA790-AE94-4D1F-9C33-77A74B764441</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -6755,7 +7231,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_08313536-3D19-46C8-A908-3425532D3D3F</string>
+									<string>_07B01DBC-C274-4621-9771-208FE0348370</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -6889,7 +7365,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_A5F9E83F-F023-447D-AF13-5B55EA386FAB</string>
+									<string>_C0453177-418A-4C75-A0E4-13A698A6FF00</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7025,7 +7501,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_87D7B766-C965-451E-9DB8-C61392189950</string>
+									<string>_DC9C5D18-BA4F-4D66-B17B-A998B9910CEB</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7612,7 +8088,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_95B46FE1-1758-4F06-9929-69778DC08EB3</string>
+									<string>_7EB18F05-DE49-4396-956A-42CA420A5C7A</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7787,7 +8263,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_0081332D-231E-46B3-AAF4-1809CB56604B</string>
+									<string>_FA2B633A-6FFD-42E4-AF69-8284F8A3D0B5</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7901,7 +8377,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_980824FE-972B-4077-9C3A-21CB14D65DA5</string>
+									<string>_EC0B6406-21B8-457B-B25E-B8356D0F59FE</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7992,7 +8468,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_2F2291F1-1E2B-4133-ACF6-0DD53A0ED8BA</string>
+									<string>_9513277C-94C2-423F-908C-A277704767BF</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -8078,7 +8554,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_F5712DF1-1502-4DB4-919F-A4E65501C44C</string>
+									<string>_E807799B-1732-42BD-8EB2-AC18BC479D50</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -8194,7 +8670,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_6843F396-F637-4F91-9410-FC5E96D88AED</string>
+									<string>_779D2AD9-4743-4D1C-8FB1-4ACF79A619D1</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -8345,7 +8821,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_AA3E5A36-C640-4F22-BBD3-76FAD0B6CCB6</string>
+									<string>_30BD3758-68AA-4AC8-B759-3A38B4AD3E48</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -8755,7 +9231,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_EAC9F862-C387-40A9-AE1A-992C1767C0BD</string>
+									<string>_F71BA25F-CA71-4680-ABEA-6B8C6A3A34D5</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -8872,7 +9348,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_69916A64-3D8D-46A6-9219-9863B2DA1783</string>
+									<string>_7B95C060-D010-45C5-BB4E-BE3E01A3AD65</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -8958,7 +9434,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_3554BA0C-4D9E-49E8-9991-D75AA6D49961</string>
+									<string>_DE49B046-CD64-4A2E-A97A-2B91006DCB48</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>

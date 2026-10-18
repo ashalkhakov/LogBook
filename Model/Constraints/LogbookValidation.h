@@ -157,6 +157,9 @@
 /* ReminderNextDue: List each Reminder, Schedule and NextDue where that Reminder was done at some Moment and comes from that Schedule that recurs after some Duration and NextDue is the date of that Moment plus that Duration months. */
 + (ORMQueryResult *)reminderNextDueInContext:(NSManagedObjectContext *)context error:(NSError **)error;
 + (ORMQueryOData *)reminderNextDueRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
+/* CostsByMonth: List each Vehicle, Currency, Month and Total where some Record is of that Vehicle and that Record cost some Money that has some Amount and that Money is in that Currency and that Record is an Event that was at some Moment and Month is the first day of the month of that Moment and Total is the total of that Amount for that Vehicle, Month and that Currency in descending order of Month. */
++ (ORMQueryResult *)costsByMonthInContext:(NSManagedObjectContext *)context error:(NSError **)error;
++ (ORMQueryOData *)costsByMonthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
 @end
 
 /* Saving (docs/DERIVATION.md): call before save:, as Core Data's will-save

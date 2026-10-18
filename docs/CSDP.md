@@ -1518,7 +1518,9 @@ with: the fill-up before each (`FillUpBefore`), and the consumption at
 each full tank, the fuel put in since the full tank before over the
 distance since (`FullTankConsumption`). Dates are computed too: a
 trip's duration in minutes (`TripDuration`), and when a done reminder's
-schedule is next due by date (`ReminderNextDue`).
+schedule is next due by date (`ReminderNextDue`). The report by month is
+a grouped list: each vehicle's costs for each month and currency, the
+latest month first (`CostsByMonth`).
 
 A vehicle's one car sale is kept by its derived sale date, unique for the
 vehicle. Three partly derived fact types are stored (a record's vehicle,

@@ -213,6 +213,19 @@ It is forbidden that:
 
 If some Record was entered by some User and that Record is of some Vehicle then that User drives that Vehicle.
 
+// What each vehicle cost each month, in each currency, the latest month
+// first: the report by month (in one currency with EXPRESSIONS.md, step 5).
+Query CostsByMonth:
+✓Vehicle
+  + Record is of that Vehicle
+    + cost Money
+      + has Amount
+      + is in ✓Currency
+    + is Event
+      + was at Moment
+    ✓Month = month(Moment) ↓
+    ✓Total = total(Amount) for Vehicle, Month, Currency
+
 // The meter goes up: a vehicle's later reading, in the same unit, ought
 // not to be lower. Ought: the owner may enter history out of order.
 Query MeterGoesUp:

@@ -71,6 +71,16 @@
 	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"ReminderNextDue" model:model error:error];
 }
 
++ (ORMQueryResult *)costsByMonthInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"CostsByMonth" inContext:context error:error];
+}
+
++ (ORMQueryOData *)costsByMonthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"CostsByMonth" model:model error:error];
+}
+
 @end
 
 @implementation Vehicle (ORMValidation)
