@@ -237,8 +237,29 @@ Each Trip went to at most one Place.
 Trip has Purpose
 Each Trip has at most one Purpose.
 For each Trip, if that Trip was at some Moment1 and that Trip ended at some Moment2 then Moment1 is less than or equal to Moment2.
-// That a trip ends no nearer than it started compares distances, which
-// are a quantity and a unit each: a rule, later.
+
+// A trip ends no nearer than it started, where both are in one unit
+// (across units, with conversion: EXPRESSIONS.md, step 5).
+Query TripEndsNoNearer:
+It is impossible that:
+✓Trip
+  + was at Distance1
+    + has Quantity1
+    + is in DistanceUnit1
+  + ended at Distance2
+    + has Quantity2 < Quantity1
+    + is in DistanceUnit1
+
+// How far a trip went, in the unit both its readings are in.
+Query TripLength:
+✓Trip
+  + was at Distance1
+    + has Quantity1
+    + is in ✓DistanceUnit1
+  + ended at Distance2
+    + has Quantity2
+    + is in DistanceUnit1
+  ✓Length = Quantity2 - Quantity1
 
 # Fill-ups
 
@@ -255,6 +276,17 @@ FillUp was at Station
 Each FillUp was at exactly one Station.
 FillUp filled the tank
 It is obligatory that if some FillUp was of some Fuel and that FillUp is of some Vehicle then that Vehicle uses that Fuel.
+
+// What a unit of fuel cost, in the fill-up's units and currency.
+Query PricePerVolume:
+✓FillUp
+  + was of Volume
+    + has Quantity
+    + is in ✓VolumeUnit
+  + cost Money
+    + has Amount
+    + is in ✓Currency
+  ✓Price = round(Amount / Quantity, 3)
 
 # Services
 

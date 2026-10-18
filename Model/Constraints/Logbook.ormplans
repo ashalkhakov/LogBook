@@ -11,7 +11,357 @@
 	<key>model</key>
 	<string>Logbook</string>
 	<key>queries</key>
-	<dict/>
+	<dict>
+		<key>PricePerVolume</key>
+		<dict>
+			<key>columns</key>
+			<array>
+				<dict>
+					<key>identifier</key>
+					<string>id</string>
+					<key>node</key>
+					<string>_60923F11-4EE9-4A0D-AE88-AC9F5871E4B3</string>
+					<key>path</key>
+					<dict>
+						<key>steps</key>
+						<array/>
+					</dict>
+					<key>title</key>
+					<string>FillUp</string>
+					<key>trail</key>
+					<array/>
+				</dict>
+				<dict>
+					<key>node</key>
+					<string>_BF837940-65D2-4791-A6D6-267770589FEA</string>
+					<key>path</key>
+					<dict>
+						<key>steps</key>
+						<array>
+							<dict>
+								<key>key</key>
+								<string>volumeVolumeUnit</string>
+							</dict>
+						</array>
+					</dict>
+					<key>title</key>
+					<string>VolumeUnit</string>
+					<key>trail</key>
+					<array>
+						<string>volumeVolumeUnit</string>
+					</array>
+				</dict>
+				<dict>
+					<key>node</key>
+					<string>_9BD558D7-875E-44C2-89E6-AA5EF32C288F</string>
+					<key>path</key>
+					<dict>
+						<key>steps</key>
+						<array>
+							<dict>
+								<key>key</key>
+								<string>totalCurrency</string>
+							</dict>
+						</array>
+					</dict>
+					<key>title</key>
+					<string>Currency</string>
+					<key>trail</key>
+					<array>
+						<string>totalCurrency</string>
+					</array>
+				</dict>
+				<dict>
+					<key>node</key>
+					<string>_0F678396-FCF9-4B2F-A881-4339E41055F4</string>
+					<key>title</key>
+					<string>Price</string>
+					<key>value</key>
+					<dict>
+						<key>apply</key>
+						<string>round</string>
+						<key>to</key>
+						<array>
+							<dict>
+								<key>apply</key>
+								<string>divide</string>
+								<key>to</key>
+								<array>
+									<dict>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>key</key>
+													<string>totalAmount</string>
+												</dict>
+											</array>
+										</dict>
+									</dict>
+									<dict>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>key</key>
+													<string>volumeQuantity</string>
+												</dict>
+											</array>
+										</dict>
+									</dict>
+								</array>
+							</dict>
+							<dict>
+								<key>constant</key>
+								<string>3</string>
+								<key>type</key>
+								<string>Integer 64</string>
+							</dict>
+						</array>
+					</dict>
+				</dict>
+			</array>
+			<key>condition</key>
+			<dict>
+				<key>kind</key>
+				<string>all</string>
+				<key>operands</key>
+				<array>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>volumeQuantity</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>volumeVolumeUnit</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>totalAmount</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>totalCurrency</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+				</array>
+			</dict>
+			<key>entity</key>
+			<string>FillUp</string>
+			<key>notes</key>
+			<array/>
+			<key>sorts</key>
+			<array/>
+		</dict>
+		<key>TripLength</key>
+		<dict>
+			<key>columns</key>
+			<array>
+				<dict>
+					<key>identifier</key>
+					<string>id</string>
+					<key>node</key>
+					<string>_65692A03-CA4C-4C73-BA35-14C48CB60D2C</string>
+					<key>path</key>
+					<dict>
+						<key>steps</key>
+						<array/>
+					</dict>
+					<key>title</key>
+					<string>Trip</string>
+					<key>trail</key>
+					<array/>
+				</dict>
+				<dict>
+					<key>node</key>
+					<string>_F2D0F2B5-10F2-491C-818E-B3AB4620CE60</string>
+					<key>path</key>
+					<dict>
+						<key>steps</key>
+						<array>
+							<dict>
+								<key>key</key>
+								<string>mileageDistanceUnit</string>
+							</dict>
+						</array>
+					</dict>
+					<key>title</key>
+					<string>DistanceUnit1</string>
+					<key>trail</key>
+					<array>
+						<string>mileageDistanceUnit</string>
+					</array>
+				</dict>
+				<dict>
+					<key>node</key>
+					<string>_583B38D3-4762-4364-A527-8FA40DAF0AFB</string>
+					<key>title</key>
+					<string>Length</string>
+					<key>value</key>
+					<dict>
+						<key>apply</key>
+						<string>subtract</string>
+						<key>to</key>
+						<array>
+							<dict>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>distanceQuantity</string>
+										</dict>
+									</array>
+								</dict>
+							</dict>
+							<dict>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>mileageQuantity</string>
+										</dict>
+									</array>
+								</dict>
+							</dict>
+						</array>
+					</dict>
+				</dict>
+			</array>
+			<key>condition</key>
+			<dict>
+				<key>kind</key>
+				<string>all</string>
+				<key>operands</key>
+				<array>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>mileageQuantity</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>mileageDistanceUnit</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>distanceQuantity</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+					<dict>
+						<key>comparison</key>
+						<string>=</string>
+						<key>kind</key>
+						<string>compare</string>
+						<key>left</key>
+						<dict>
+							<key>path</key>
+							<dict>
+								<key>steps</key>
+								<array>
+									<dict>
+										<key>key</key>
+										<string>distanceDistanceUnit</string>
+									</dict>
+								</array>
+							</dict>
+						</dict>
+						<key>right</key>
+						<dict>
+							<key>path</key>
+							<dict>
+								<key>steps</key>
+								<array>
+									<dict>
+										<key>key</key>
+										<string>mileageDistanceUnit</string>
+									</dict>
+								</array>
+							</dict>
+						</dict>
+					</dict>
+				</array>
+			</dict>
+			<key>entity</key>
+			<string>Trip</string>
+			<key>notes</key>
+			<array/>
+			<key>sorts</key>
+			<array/>
+		</dict>
+	</dict>
 	<key>ruleBacks</key>
 	<dict>
 		<key>Answer</key>
@@ -249,6 +599,8 @@
 				</array>
 			</array>
 		</array>
+		<key>Trip</key>
+		<array/>
 		<key>TyreChange</key>
 		<array>
 			<array>
@@ -800,7 +1152,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_68EEC0D3-D5FB-4DA4-A1E1-ED1F5C94895E</string>
+									<string>_9D857C6F-5B57-4472-9BC1-FA4C74ACFA36</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -985,7 +1337,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_EE463AF0-9222-4600-851E-E63FFB7FCFC7</string>
+									<string>_A084F4DC-F405-4189-A482-DE9B5B5FA5E5</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -1110,7 +1462,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_91191052-18C2-4002-90BD-439D256E3F5A</string>
+									<string>_E90FB2CC-D950-4EF8-935F-27FCE8C87BDE</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -1244,7 +1596,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_5EF030CF-6036-4026-89FD-1553CA53D5AF</string>
+									<string>_4812F50E-986D-4447-8814-557DAFDE91A7</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -1380,7 +1732,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_AF6DEA52-7B5B-4CB7-B4F5-C119AB82A8EE</string>
+									<string>_94DD4A19-7242-4F99-B5C9-CB041D633582</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -1967,7 +2319,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_FEDCB673-8477-4FA9-8D88-233656C6A3E6</string>
+									<string>_1ECE57AF-6CDF-48F9-9257-916EF57A8BE9</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -2142,7 +2494,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_2AA165B2-1FAA-4482-A28F-80B7C3EA5843</string>
+									<string>_10F1069D-EE73-4A1D-84C7-9B641B2A94A6</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -2256,7 +2608,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_5A2727B4-F579-4A2D-B4A4-CD7ABF9C039B</string>
+									<string>_0E30B48E-B3E5-4B30-A79D-3D6D2D3D647C</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -2347,7 +2699,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_9797FFC1-F4CC-4A63-91A7-8F8590A7EBAF</string>
+									<string>_031A6E00-B6FE-4F0B-9FAC-85B4D489F7BA</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -2433,7 +2785,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_C35C00BB-30E0-4711-85B9-25FDEE447BD9</string>
+									<string>_AFFD1AF3-775C-4D2C-831E-50D8DC5ECDCB</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -2549,7 +2901,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_FDD76E45-E413-4E34-ACB2-A468952B5418</string>
+									<string>_39F89BD5-77EE-4005-8892-E0F166A7C90C</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -2700,7 +3052,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_5D7F4AFD-317D-45A8-AC03-FC29FB67E2DA</string>
+									<string>_2668206D-FD8D-4DC1-80A9-D27CF532B94D</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -2932,6 +3284,151 @@
 				<key>text</key>
 				<string>For each Trip, if that Trip was at some Moment1 and that Trip ended at some Moment2 then Moment1 is less than or equal to Moment2.</string>
 			</dict>
+			<dict>
+				<key>check</key>
+				<dict>
+					<key>not</key>
+					<dict>
+						<key>plan</key>
+						<dict>
+							<key>columns</key>
+							<array>
+								<dict>
+									<key>identifier</key>
+									<string>id</string>
+									<key>node</key>
+									<string>_1BC1E955-18C2-4003-AFFB-32D664AFC873</string>
+									<key>path</key>
+									<dict>
+										<key>steps</key>
+										<array/>
+									</dict>
+									<key>title</key>
+									<string>Trip</string>
+									<key>trail</key>
+									<array/>
+								</dict>
+							</array>
+							<key>condition</key>
+							<dict>
+								<key>kind</key>
+								<string>all</string>
+								<key>operands</key>
+								<array>
+									<dict>
+										<key>kind</key>
+										<string>notNull</string>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>key</key>
+													<string>mileageQuantity</string>
+												</dict>
+											</array>
+										</dict>
+									</dict>
+									<dict>
+										<key>kind</key>
+										<string>notNull</string>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>key</key>
+													<string>mileageDistanceUnit</string>
+												</dict>
+											</array>
+										</dict>
+									</dict>
+									<dict>
+										<key>comparison</key>
+										<string>&lt;</string>
+										<key>kind</key>
+										<string>compare</string>
+										<key>left</key>
+										<dict>
+											<key>path</key>
+											<dict>
+												<key>steps</key>
+												<array>
+													<dict>
+														<key>key</key>
+														<string>distanceQuantity</string>
+													</dict>
+												</array>
+											</dict>
+										</dict>
+										<key>right</key>
+										<dict>
+											<key>path</key>
+											<dict>
+												<key>steps</key>
+												<array>
+													<dict>
+														<key>key</key>
+														<string>mileageQuantity</string>
+													</dict>
+												</array>
+											</dict>
+										</dict>
+									</dict>
+									<dict>
+										<key>comparison</key>
+										<string>=</string>
+										<key>kind</key>
+										<string>compare</string>
+										<key>left</key>
+										<dict>
+											<key>path</key>
+											<dict>
+												<key>steps</key>
+												<array>
+													<dict>
+														<key>key</key>
+														<string>distanceDistanceUnit</string>
+													</dict>
+												</array>
+											</dict>
+										</dict>
+										<key>right</key>
+										<dict>
+											<key>path</key>
+											<dict>
+												<key>steps</key>
+												<array>
+													<dict>
+														<key>key</key>
+														<string>mileageDistanceUnit</string>
+													</dict>
+												</array>
+											</dict>
+										</dict>
+									</dict>
+								</array>
+							</dict>
+							<key>entity</key>
+							<string>Trip</string>
+							<key>notes</key>
+							<array/>
+							<key>sorts</key>
+							<array/>
+						</dict>
+					</dict>
+				</dict>
+				<key>constraint</key>
+				<string>TripEndsNoNearer</string>
+				<key>deontic</key>
+				<false/>
+				<key>keys</key>
+				<array/>
+				<key>remark</key>
+				<string>Checked from Trip, and by orm_prepareForSave: for each Trip a change reaches.</string>
+				<key>text</key>
+				<string>It is impossible that some Trip was at some Distance1 that has some Quantity1 and that Trip ended at some Distance2 that has some Quantity2 and Distance1 is in some DistanceUnit and Distance2 is in that DistanceUnit and Quantity2 is less than Quantity1.</string>
+			</dict>
 		</array>
 		<key>TyreChange</key>
 		<array>
@@ -2965,7 +3462,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_A9CD21A1-F1B5-4769-B4E9-0730ED52A043</string>
+									<string>_877A879F-7489-4E3F-9A21-77AA034395AF</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -3082,7 +3579,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_1AC70A5E-1E01-4FB8-9570-D248E8951BE5</string>
+									<string>_7755032C-6104-453B-8C9D-487FE055109A</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -3168,7 +3665,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_4B86CE34-9DCE-465A-9061-FB66F4EF08D6</string>
+									<string>_9CE58883-750C-4494-89E3-23398EEFA4F9</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>

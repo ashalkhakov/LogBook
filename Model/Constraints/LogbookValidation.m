@@ -9,6 +9,30 @@
  */
 
 
+@implementation LogbookQueries
+
++ (ORMQueryResult *)tripLengthInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"TripLength" inContext:context error:error];
+}
+
++ (ORMQueryOData *)tripLengthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"TripLength" model:model error:error];
+}
+
++ (ORMQueryResult *)pricePerVolumeInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"PricePerVolume" inContext:context error:error];
+}
+
++ (ORMQueryOData *)pricePerVolumeRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"PricePerVolume" model:model error:error];
+}
+
+@end
+
 @implementation Vehicle (ORMValidation)
 
 - (BOOL)orm_validateConstraints:(NSError **)error

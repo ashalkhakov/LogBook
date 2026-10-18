@@ -1503,7 +1503,14 @@ in the schema as its outline:
   question, options only for an any-of one (`AnswerOptionsOfItsQuestion`,
   `YesOrNoAnswers`, `AnyOfAnswers`, `OptionsOfAnyOfQuestions`);
 - the meter goes up: a vehicle's later reading, in the same unit, ought
-  not to be lower (`MeterGoesUp`, deontic).
+  not to be lower (`MeterGoesUp`, deontic);
+- a trip ends no nearer than it started, in the same unit
+  (`TripEndsNoNearer`).
+
+Some of what is worked out is computed by queries, with value nodes
+([EXPRESSIONS.md](../../NativeORM2/docs/EXPRESSIONS.md)): a trip's
+length (`TripLength`) and a fill-up's price per unit of volume
+(`PricePerVolume`), each in the units its record is in.
 
 A vehicle's one car sale is kept by its derived sale date, unique for the
 vehicle. Three partly derived fact types are stored (a record's vehicle,
