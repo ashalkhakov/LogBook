@@ -151,6 +151,12 @@
 /* FullTankConsumption: List each FillUp1, DistanceUnit, VolumeUnit and Consumption where FillUp1 filled the tank and was at some Distance1 that has some Quantity1 and FillUp1 was of some Volume1 that is in that VolumeUnit and FillUp1 is of some Vehicle and Distance1 is in that DistanceUnit and some Record1 is of that Vehicle and Record1 is an Event1 that is a MeteredEvent1 that is a FillUp2 that filled the tank and FillUp2 was at some Distance2 that has some Quantity2 and Distance2 is in that DistanceUnit and some Record2 is of that Vehicle and Record2 is an Event2 that is a MeteredEvent2 that is a FillUp3 that was at some Distance3 that has some Quantity3 and Distance3 has Quantity3 and Distance3 is in that DistanceUnit and FillUp3 was of some Volume2 that has some Quantity4 and Volume2 is in that VolumeUnit and Quantity2 is less than Quantity1 and Quantity3 is greater than Previous and Quantity3 is at most Quantity1 and Previous is the maximum of Quantity2 for FillUp1 and Fuel is the total of Quantity4 for FillUp1 and Consumption is (Fuel divided by (Quantity1 minus Previous) times 100) rounded to 2 decimal places. */
 + (ORMQueryResult *)fullTankConsumptionInContext:(NSManagedObjectContext *)context error:(NSError **)error;
 + (ORMQueryOData *)fullTankConsumptionRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
+/* TripDuration: List each Trip and Duration where that Trip was at some Moment1 and ended at some Moment2 and Duration is the number of minutes from Moment1 to Moment2. */
++ (ORMQueryResult *)tripDurationInContext:(NSManagedObjectContext *)context error:(NSError **)error;
++ (ORMQueryOData *)tripDurationRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
+/* ReminderNextDue: List each Reminder, Schedule and NextDue where that Reminder was done at some Moment and comes from that Schedule that recurs after some Duration and NextDue is the date of that Moment plus that Duration months. */
++ (ORMQueryResult *)reminderNextDueInContext:(NSManagedObjectContext *)context error:(NSError **)error;
++ (ORMQueryOData *)reminderNextDueRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
 @end
 
 /* Saving (docs/DERIVATION.md): call before save:, as Core Data's will-save

@@ -1505,7 +1505,9 @@ in the schema as its outline:
 - the meter goes up: a vehicle's later reading, in the same unit, ought
   not to be lower (`MeterGoesUp`, deontic);
 - a trip ends no nearer than it started, in the same unit
-  (`TripEndsNoNearer`).
+  (`TripEndsNoNearer`);
+- events fall while the vehicle is kept, on or after the day it was
+  acquired (`EventsWhileKept`, deontic).
 
 Some of what is worked out is computed by queries, with value nodes
 ([EXPRESSIONS.md](../../NativeORM2/docs/EXPRESSIONS.md)): a trip's
@@ -1514,7 +1516,9 @@ length (`TripLength`) and a fill-up's price per unit of volume
 is an aggregate value, the latest earlier, that another node is compared
 with: the fill-up before each (`FillUpBefore`), and the consumption at
 each full tank, the fuel put in since the full tank before over the
-distance since (`FullTankConsumption`).
+distance since (`FullTankConsumption`). Dates are computed too: a
+trip's duration in minutes (`TripDuration`), and when a done reminder's
+schedule is next due by date (`ReminderNextDue`).
 
 A vehicle's one car sale is kept by its derived sale date, unique for the
 vehicle. Three partly derived fact types are stored (a record's vehicle,

@@ -34,6 +34,8 @@ Date is a value type.
 Portable data type: Temporal: Date
 Duration is a value type.
 Portable data type: Numeric: Unsigned Small Integer
+Minutes is a value type.
+Portable data type: Numeric: Unsigned Integer
 
 Vehicle (as OwnedVehicle) is owned by User (as Owner)
 Each Vehicle is owned by exactly one User.
@@ -197,6 +199,18 @@ Cost is of CostKind
 Each Cost is of exactly one CostKind.
 
 If some Event had driver some User and that Event is of some Vehicle then that User drives that Vehicle.
+
+// Events fall while the vehicle is kept: not before the day it was
+// acquired. Ought: the owner may log what came before. (Not after it was
+// sold: its sale date is derived by words alone, which queries cannot run.)
+Query EventsWhileKept:
+It is forbidden that:
+✓Event
+  + was at Moment
+  + is of Vehicle
+    + was acquired on Date1
+  Day: Date = date(Moment) < Date1
+
 If some Record was entered by some User and that Record is of some Vehicle then that User drives that Vehicle.
 
 // The meter goes up: a vehicle's later reading, in the same unit, ought
@@ -260,6 +274,13 @@ Query TripLength:
     + has Quantity2
     + is in DistanceUnit1
   ✓Length = Quantity2 - Quantity1
+
+// How long a trip took.
+Query TripDuration:
+✓Trip
+  + was at Moment1
+  + ended at Moment2
+  ✓Duration: Minutes = minutes(Moment1, Moment2)
 
 # Fill-ups
 
@@ -623,6 +644,15 @@ Reminder was done by Event
 Each Reminder was done by at most one Event.
 If some Reminder was done by some Event then that Reminder was done at some Moment.
 If some Reminder was done by some Event and that Reminder is of some Vehicle then that Event is of that Vehicle.
+// When a done reminder's schedule is next due by date: the day it was
+// done, and the schedule's months.
+Query ReminderNextDue:
+✓Reminder
+  + was done at Moment
+  + comes from ✓Schedule
+    + recurs after Duration
+  ✓NextDue: Date = addMonths(date(Moment), Duration)
+
 // A schedule has at most one reminder not yet done.
 Query OneOpenReminder:
 It is impossible that:

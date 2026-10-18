@@ -949,6 +949,9 @@
 				<orm:PreferredIdentifier ref="_38D1853C-1627-45CA-A761-A4A66586F61E" />
 				<orm:NestedPredicate id="_FA83EF4F-51D7-4160-8080-82FF3FCE76C3" ref="_EBBE620E-37E7-49D4-9C21-A2CE7D5AEDF5" IsImplied="false" />
 			</orm:ObjectifiedType>
+			<orm:ValueType id="_528B4C28-ED93-44C3-97C7-3ED4EC417B7E" Name="Minutes">
+				<orm:ConceptualDataType id="_23D5483E-41F5-472E-B07D-1B2C08B8AE2E" ref="_D1B5152D-8878-4B1B-9FC0-787DAEA55DCB" Scale="0" Length="0" />
+			</orm:ValueType>
 		</orm:Objects>
 		<orm:Facts>
 			<orm:Fact id="_3F9621BD-0E81-4131-AA00-CD5B1D6057B1" _Name="UserHasUseremail">
@@ -8651,6 +8654,7 @@
 			<orm:DateAndTimeTemporalDataType id="_0E0A13D2-1DAE-4FD1-977F-0BAC2E7EFBB8" />
 			<orm:LargeLengthTextDataType id="_0CC390D3-5E1E-4326-B05B-B2622E526B32" />
 			<orm:TrueOrFalseLogicalDataType id="_95CEC07E-8D2F-4F4A-8FBA-C1E7AF9622AD" />
+			<orm:UnsignedIntegerNumericDataType id="_D1B5152D-8878-4B1B-9FC0-787DAEA55DCB" />
 		</orm:DataTypes>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_4E5357F6-9496-4719-949C-E5516006F2BC" FormatString="{1}" ReferenceModeType="General" />
@@ -10470,6 +10474,14 @@
 			<ormDiagram:ExternalConstraintShape id="_47681C65-95DF-42BD-8559-C2D724323946" IsExpanded="true" AbsoluteBounds="3.3194444444444446, 0.875, 0.16, 0.16">
 				<ormDiagram:Subject ref="_CF663118-C448-48B9-B04B-7F6B86A1745E" />
 			</ormDiagram:ExternalConstraintShape>
+		</ormDiagram:Shapes>
+		<ormDiagram:Subject ref="_2C7E073F-10CB-4429-9D8F-D072A08D2C9F" />
+	</ormDiagram:ORMDiagram>
+	<ormDiagram:ORMDiagram id="_D67F452B-7FE1-4C07-B73A-CCC26A301A39" IsCompleteView="false" Name="Logbook" BaseFontName="Tahoma" BaseFontSize="0.0972222238779068">
+		<ormDiagram:Shapes>
+			<ormDiagram:ObjectTypeShape id="_A98B1125-6189-49AD-B454-5337AD0C8F11" IsExpanded="true" AbsoluteBounds="0.5, 0.5, 0.505, 0.22944444444444445">
+				<ormDiagram:Subject ref="_528B4C28-ED93-44C3-97C7-3ED4EC417B7E" />
+			</ormDiagram:ObjectTypeShape>
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_2C7E073F-10CB-4429-9D8F-D072A08D2C9F" />
 	</ormDiagram:ORMDiagram>
@@ -12495,6 +12507,47 @@
 				<ormq:Value id="_B6B645FF-FC50-433F-AE50-1559A04E0236" ref="_B10C4EC0-37A3-4C21-A19C-23DD5A5D19DD" Name="Previous" Expression="max(#_5FAF96AB-5F88-4AF7-86EA-1BFA1314AAB2) for #_CA57C0D4-F976-4F56-910A-29F0E51E13AE" />
 				<ormq:Value id="_4E6471D7-E01B-4957-BB44-F084E9004724" ref="_B10C4EC0-37A3-4C21-A19C-23DD5A5D19DD" Name="Fuel" Expression="total(#_4C95DE6E-9749-4D72-9C97-4FCC24B901DB) for #_CA57C0D4-F976-4F56-910A-29F0E51E13AE" />
 				<ormq:Value id="_3425CD8F-9654-46DE-9805-A276D8727896" ref="_B10C4EC0-37A3-4C21-A19C-23DD5A5D19DD" Name="Consumption" Expression="round(multiply(divide(#_4E6471D7-E01B-4957-BB44-F084E9004724, subtract(#_35C49D44-AB06-492E-92DC-849BDBFAF75E, #_B6B645FF-FC50-433F-AE50-1559A04E0236)), 100), 2)" Projected="true" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_0189121F-A693-42C9-BA85-1E631B2D19B3" Name="TripDuration">
+			<ormq:Node id="_1369363A-6904-4589-A3C9-A66F0A1C359C" ref="_BC7D1EAD-F12C-4A00-A629-1BA516C808EE" Projected="true">
+				<ormq:Step id="_BA0170C6-EE25-408E-BD5C-05195C555056" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+					<ormq:Node id="_55476FA8-BCDC-4248-A11A-978C69014560" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Label="1" />
+				</ormq:Step>
+				<ormq:Step id="_E989A53E-5EB3-4165-8E94-A0B502BC8DD7" ref="_111B2908-0601-4DB4-8169-92D893DF836B" Role="_62DB9499-7823-4423-9C08-930FCAC0BCD4">
+					<ormq:Node id="_1EF7D166-928C-402E-9B5D-D417B794A8C4" Role="_C970184F-FE02-4AD1-988A-92466A076E72" Label="2" />
+				</ormq:Step>
+				<ormq:Value id="_E2864A8B-F739-4A6A-B9BC-908CE2FC2E10" ref="_528B4C28-ED93-44C3-97C7-3ED4EC417B7E" Name="Duration" Expression="minutes(#_55476FA8-BCDC-4248-A11A-978C69014560, #_1EF7D166-928C-402E-9B5D-D417B794A8C4)" Projected="true" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_C938CC04-2EA9-4E57-AAE3-F8125FCE4248" Name="ReminderNextDue">
+			<ormq:Node id="_BE92CF9D-FBEB-4408-9D80-ADEA8C605245" ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" Projected="true">
+				<ormq:Step id="_E7C536AF-BD4C-4966-B34A-3393A07AF01A" ref="_32B05AAD-BC11-491C-A0FF-7EE672CBA187" Role="_DA621017-953F-4CA7-8B10-1FC5B35191D2">
+					<ormq:Node id="_9A763D52-4146-494A-97F6-9459B9D62B33" Role="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
+				</ormq:Step>
+				<ormq:Step id="_B26869D0-9E09-4A77-B7B8-8A1FDFF23696" ref="_8FA60450-3E5F-4CCA-A106-6CAD11AF1A79" Role="_17961EBF-66AC-4859-A326-3566DAF9D99E">
+					<ormq:Node id="_5FCF75A1-4607-40B2-BDD6-F529ADD8A202" Role="_855A0C39-9802-4DDC-A04E-A94B39C4D3BA" Projected="true">
+						<ormq:Step id="_64DDC6B8-B710-465E-8D88-6054BCDFFB22" ref="_5CD490D7-46DC-44B2-A45E-1D337B3921C8" Role="_BCEA6059-0167-4ECE-ADD7-442E26071231">
+							<ormq:Node id="_03D2A720-EA04-48E8-B20D-83A45AD285E5" Role="_05C4E797-E847-40C3-A868-633E6DC427B0" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_6DBB34BA-420D-4FC4-B577-ED3C65E4CA87" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="NextDue" Expression="addMonths(date(#_9A763D52-4146-494A-97F6-9459B9D62B33), #_03D2A720-EA04-48E8-B20D-83A45AD285E5)" Projected="true" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_872106E8-3CEE-4A07-814E-56DEA39C6445" Name="EventsWhileKept" Kind="Constraint" Modality="Deontic">
+			<ormq:Node id="_01E481C6-A46C-4712-9881-116A0B0421CA" ref="_890D546C-1996-4726-98DB-4A4151CA6089" Projected="true">
+				<ormq:Step id="_76A45310-4A63-4192-9BE7-F1B7208F6854" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+					<ormq:Node id="_33F7BB5E-2AE4-45F0-BF8E-F70A2FA93152" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
+				</ormq:Step>
+				<ormq:Step id="_CF38072C-475D-46C3-A2CF-19097DBCDC20" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+					<ormq:Node id="_750D99BB-BC57-41CF-A0F7-E40631FD140A" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+						<ormq:Step id="_074405F1-02D8-4317-B8C2-45F38BC51C59" ref="_9BA78440-8F49-4C89-9B17-A32099992386" Role="_A174D171-F286-4AC6-8833-3AB2ED9C8536">
+							<ormq:Node id="_F8FBEB55-FA6B-4DFC-86DC-2EB791646246" Role="_C24D2C45-9232-438A-9969-2FC1D89D213E" Label="1" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_53D51862-A495-419F-A7D6-B90EB13A4E20" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="date(#_33F7BB5E-2AE4-45F0-BF8E-F70A2FA93152)" Comparison="&lt;" CompareTo="_F8FBEB55-FA6B-4DFC-86DC-2EB791646246" />
 			</ormq:Node>
 		</ormq:Query>
 	</ormq:Queries>

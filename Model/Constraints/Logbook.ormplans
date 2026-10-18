@@ -5120,6 +5120,245 @@
 			<key>sorts</key>
 			<array/>
 		</dict>
+		<key>ReminderNextDue</key>
+		<dict>
+			<key>columns</key>
+			<array>
+				<dict>
+					<key>identifier</key>
+					<string>id</string>
+					<key>node</key>
+					<string>_BE92CF9D-FBEB-4408-9D80-ADEA8C605245</string>
+					<key>path</key>
+					<dict>
+						<key>steps</key>
+						<array/>
+					</dict>
+					<key>title</key>
+					<string>Reminder</string>
+					<key>trail</key>
+					<array/>
+				</dict>
+				<dict>
+					<key>identifier</key>
+					<string>id</string>
+					<key>node</key>
+					<string>_5FCF75A1-4607-40B2-BDD6-F529ADD8A202</string>
+					<key>path</key>
+					<dict>
+						<key>steps</key>
+						<array>
+							<dict>
+								<key>key</key>
+								<string>schedule</string>
+							</dict>
+						</array>
+					</dict>
+					<key>title</key>
+					<string>Schedule</string>
+					<key>trail</key>
+					<array>
+						<string>schedule</string>
+					</array>
+				</dict>
+				<dict>
+					<key>node</key>
+					<string>_6DBB34BA-420D-4FC4-B577-ED3C65E4CA87</string>
+					<key>title</key>
+					<string>NextDue</string>
+					<key>value</key>
+					<dict>
+						<key>apply</key>
+						<string>addMonths</string>
+						<key>to</key>
+						<array>
+							<dict>
+								<key>apply</key>
+								<string>date</string>
+								<key>to</key>
+								<array>
+									<dict>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>key</key>
+													<string>doneAt</string>
+												</dict>
+											</array>
+										</dict>
+									</dict>
+								</array>
+							</dict>
+							<dict>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>schedule</string>
+										</dict>
+										<dict>
+											<key>key</key>
+											<string>duration</string>
+										</dict>
+									</array>
+								</dict>
+							</dict>
+						</array>
+					</dict>
+				</dict>
+			</array>
+			<key>condition</key>
+			<dict>
+				<key>kind</key>
+				<string>all</string>
+				<key>operands</key>
+				<array>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>doneAt</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>schedule</string>
+								</dict>
+								<dict>
+									<key>key</key>
+									<string>duration</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+				</array>
+			</dict>
+			<key>entity</key>
+			<string>Reminder</string>
+			<key>notes</key>
+			<array/>
+			<key>sorts</key>
+			<array/>
+		</dict>
+		<key>TripDuration</key>
+		<dict>
+			<key>columns</key>
+			<array>
+				<dict>
+					<key>identifier</key>
+					<string>id</string>
+					<key>node</key>
+					<string>_1369363A-6904-4589-A3C9-A66F0A1C359C</string>
+					<key>path</key>
+					<dict>
+						<key>steps</key>
+						<array/>
+					</dict>
+					<key>title</key>
+					<string>Trip</string>
+					<key>trail</key>
+					<array/>
+				</dict>
+				<dict>
+					<key>node</key>
+					<string>_E2864A8B-F739-4A6A-B9BC-908CE2FC2E10</string>
+					<key>title</key>
+					<string>Duration</string>
+					<key>value</key>
+					<dict>
+						<key>apply</key>
+						<string>minutes</string>
+						<key>to</key>
+						<array>
+							<dict>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>timestamp</string>
+										</dict>
+									</array>
+								</dict>
+							</dict>
+							<dict>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>moment</string>
+										</dict>
+									</array>
+								</dict>
+							</dict>
+						</array>
+					</dict>
+				</dict>
+			</array>
+			<key>condition</key>
+			<dict>
+				<key>kind</key>
+				<string>all</string>
+				<key>operands</key>
+				<array>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>timestamp</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+					<dict>
+						<key>kind</key>
+						<string>notNull</string>
+						<key>path</key>
+						<dict>
+							<key>steps</key>
+							<array>
+								<dict>
+									<key>key</key>
+									<string>moment</string>
+								</dict>
+							</array>
+						</dict>
+					</dict>
+				</array>
+			</dict>
+			<key>entity</key>
+			<string>Trip</string>
+			<key>notes</key>
+			<array/>
+			<key>sorts</key>
+			<array/>
+		</dict>
 		<key>TripLength</key>
 		<dict>
 			<key>columns</key>
@@ -6078,7 +6317,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_DE844A6A-177D-4C86-88F2-387D6854D2C7</string>
+									<string>_83D13BF0-656B-4C57-A65B-09E830C99B8C</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -6198,6 +6437,134 @@
 				<key>text</key>
 				<string>If some Event had driver some User and that Event is of some Vehicle then that User drives that Vehicle.</string>
 			</dict>
+			<dict>
+				<key>check</key>
+				<dict>
+					<key>not</key>
+					<dict>
+						<key>plan</key>
+						<dict>
+							<key>columns</key>
+							<array>
+								<dict>
+									<key>identifier</key>
+									<string>id</string>
+									<key>node</key>
+									<string>_01E481C6-A46C-4712-9881-116A0B0421CA</string>
+									<key>path</key>
+									<dict>
+										<key>steps</key>
+										<array/>
+									</dict>
+									<key>title</key>
+									<string>Event</string>
+									<key>trail</key>
+									<array/>
+								</dict>
+							</array>
+							<key>condition</key>
+							<dict>
+								<key>kind</key>
+								<string>all</string>
+								<key>operands</key>
+								<array>
+									<dict>
+										<key>kind</key>
+										<string>notNull</string>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>key</key>
+													<string>timestamp</string>
+												</dict>
+											</array>
+										</dict>
+									</dict>
+									<dict>
+										<key>kind</key>
+										<string>notNull</string>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>key</key>
+													<string>vehicle</string>
+												</dict>
+												<dict>
+													<key>key</key>
+													<string>purchaseDate</string>
+												</dict>
+											</array>
+										</dict>
+									</dict>
+									<dict>
+										<key>comparison</key>
+										<string>&lt;</string>
+										<key>kind</key>
+										<string>compare</string>
+										<key>left</key>
+										<dict>
+											<key>apply</key>
+											<string>date</string>
+											<key>to</key>
+											<array>
+												<dict>
+													<key>path</key>
+													<dict>
+														<key>steps</key>
+														<array>
+															<dict>
+																<key>key</key>
+																<string>timestamp</string>
+															</dict>
+														</array>
+													</dict>
+												</dict>
+											</array>
+										</dict>
+										<key>right</key>
+										<dict>
+											<key>path</key>
+											<dict>
+												<key>steps</key>
+												<array>
+													<dict>
+														<key>key</key>
+														<string>vehicle</string>
+													</dict>
+													<dict>
+														<key>key</key>
+														<string>purchaseDate</string>
+													</dict>
+												</array>
+											</dict>
+										</dict>
+									</dict>
+								</array>
+							</dict>
+							<key>entity</key>
+							<string>Event</string>
+							<key>notes</key>
+							<array/>
+							<key>sorts</key>
+							<array/>
+						</dict>
+					</dict>
+				</dict>
+				<key>constraint</key>
+				<string>EventsWhileKept</string>
+				<key>deontic</key>
+				<true/>
+				<key>keys</key>
+				<array/>
+				<key>remark</key>
+				<string>Checked from Event, and by orm_prepareForSave: for each Event a change reaches.</string>
+				<key>text</key>
+				<string>It is forbidden that some Event was at some Moment and is of some Vehicle that was acquired on some Date and Day is the date of that Moment and Day is less than that Date.</string>
+			</dict>
 		</array>
 		<key>ExchangeRate</key>
 		<array>
@@ -6263,7 +6630,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_1D092751-ADEF-4DDB-96BC-44E1169015FA</string>
+									<string>_34C7ADE8-CF58-4703-95C5-D120463F1D7B</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -6388,7 +6755,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_86B9DDE8-1C0D-4DD1-9116-98B2855AC24A</string>
+									<string>_08313536-3D19-46C8-A908-3425532D3D3F</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -6522,7 +6889,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_FEAC4452-99B9-4B5F-BC3F-B53566292EC4</string>
+									<string>_A5F9E83F-F023-447D-AF13-5B55EA386FAB</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -6658,7 +7025,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_CB3361F3-B708-4362-9180-8E85491B426D</string>
+									<string>_87D7B766-C965-451E-9DB8-C61392189950</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7245,7 +7612,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_3450F85E-6333-4269-8ACF-365FE824D328</string>
+									<string>_95B46FE1-1758-4F06-9929-69778DC08EB3</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7420,7 +7787,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_0E402BCA-688C-4D92-B3DF-D2A19101533A</string>
+									<string>_0081332D-231E-46B3-AAF4-1809CB56604B</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7534,7 +7901,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_0B2F3B5A-5613-4A4E-AD10-590186FBAAB0</string>
+									<string>_980824FE-972B-4077-9C3A-21CB14D65DA5</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7625,7 +7992,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_84B580D7-D9B0-4FE4-8C1F-8C017637C400</string>
+									<string>_2F2291F1-1E2B-4133-ACF6-0DD53A0ED8BA</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7711,7 +8078,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_DB6B9C70-E5BD-4F98-B807-FAC843A9CB87</string>
+									<string>_F5712DF1-1502-4DB4-919F-A4E65501C44C</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7827,7 +8194,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_98EF44CC-7032-4AC6-B82E-D423B835FF20</string>
+									<string>_6843F396-F637-4F91-9410-FC5E96D88AED</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -7978,7 +8345,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_9555DB09-88BC-4971-8C9C-281054CB16F3</string>
+									<string>_AA3E5A36-C640-4F22-BBD3-76FAD0B6CCB6</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -8388,7 +8755,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_E772DFC3-E2F2-44E8-9249-4979AFE4A6A4</string>
+									<string>_EAC9F862-C387-40A9-AE1A-992C1767C0BD</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -8505,7 +8872,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_305D6210-3D21-43BD-8CA8-8BBA6CF339D5</string>
+									<string>_69916A64-3D8D-46A6-9219-9863B2DA1783</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
@@ -8591,7 +8958,7 @@
 									<key>identifier</key>
 									<string>id</string>
 									<key>node</key>
-									<string>_D88ABCB2-232A-4D41-BB2E-8CCE883CF32E</string>
+									<string>_3554BA0C-4D9E-49E8-9991-D75AA6D49961</string>
 									<key>path</key>
 									<dict>
 										<key>steps</key>
