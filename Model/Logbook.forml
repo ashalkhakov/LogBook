@@ -469,6 +469,25 @@ Each ServiceItem has at most one Note.
 
 The possible values of Instalments are at least 1.
 
+// A service's cost: the sum of its items' costs, in its currency, less
+// its discount. Partly derived and stored ("++" above): worked out at save
+// for a service with items; any other record keeps the cost entered.
+Query ServiceCost:
+Derivation of "Record cost Money":
+✓Record
+  + is Event
+    + is MeteredEvent
+      + is Service
+        + is paid in ✓Currency1
+        + ServiceItem is part of that Service
+          + cost Money1
+            + has Amount1
+            + is in Currency1
+        + maybe had a discount of Money2
+          + has Amount2
+  Items = total(Amount1) for Record
+  ✓Amount = Items - coalesce(Amount2, 0)
+
 # Tyres
 
 TyreSetName is a value type.

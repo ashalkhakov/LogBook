@@ -2761,7 +2761,7 @@
 					<orm:FactTypeDerivationPath id="_9DBD6B6B-A00A-414A-B65E-C746424DE413" DerivationCompleteness="PartiallyDerived" DerivationStorage="Stored">
 						<orm:InformalRule>
 							<orm:DerivationNote id="_9D5BE663-F617-4F24-AEAC-68552C493091">
-								<orm:Body>A service's: the sum of its items' costs, less its discount, in its currency.</orm:Body>
+								<orm:Body>For each Record, Amount and Currency, that Record cost the Money of Amount and Currency if that Record is an Event that is a MeteredEvent that is a Service that is paid in that Currency and some ServiceItem is part of that Service that possibly had a discount of some Money2 that has some Amount2 and that ServiceItem cost some Money1 that has some Amount1 and Money1 is in that Currency and Items is the total of Amount1 for that Record and Amount is Items minus Amount2, or 0 where there is none.</orm:Body>
 							</orm:DerivationNote>
 						</orm:InformalRule>
 					</orm:FactTypeDerivationPath>
@@ -12954,6 +12954,48 @@
 						<ormq:Value id="_AD4839D6-5269-4522-8E97-A4B9B51509BD" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Total" Expression="total(#_26A41EF3-BE20-4A54-A044-0518BABDCD4C) for #_B11E5ECF-F568-4C46-B32C-4501CFDAF6E7, #_87ED26A6-0B33-4F33-9CF9-8FFD5171F368" Projected="true" />
 					</ormq:Node>
 				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_91F2C2E7-8B4A-4EB1-9D69-6BD2BF963DFE" Name="ServiceCost" Kind="Derivation" Of="_B309B12B-DF14-4BE4-A2AD-8B566F2F7870">
+			<ormq:Node id="_BBF62D85-7AFC-4308-85B1-C97210CA4567" ref="_DE5DEB2A-1873-4346-AF20-FEFB6DCA3E76" Projected="true">
+				<ormq:Step id="_F9E2E760-64AF-4EF0-ADE8-1E4F8C06B874" ref="_91438FE4-8D6B-46B9-88B0-108182FCF9FE" Role="_A9366C8F-304C-4984-A137-0D71A63310AD">
+					<ormq:Node id="_35DA515E-C9EE-4D30-B626-CBB30FE5C477" Role="_9EE052E5-C881-4AE1-A581-371DF6DF6907">
+						<ormq:Step id="_60540EA1-1FD6-45DB-9FE2-C31BD917348C" ref="_29537824-9554-462F-B419-EABD70DBFF9D" Role="_4B437DD5-94F9-478D-BC03-D26586384E89">
+							<ormq:Node id="_E37A1239-C76B-4272-894F-10AB4E07BA61" Role="_F6771E34-B105-43BF-9E9C-72B00BE6CD0F">
+								<ormq:Step id="_29C4DC4A-2C59-4B79-9418-4F739BE00EC6" ref="_1F042BAC-1835-484B-8E0A-1C11CD49EDF0" Role="_3D6243A1-2F4F-4176-97AD-C385F05229CB">
+									<ormq:Node id="_6AB81789-7CCE-46FF-95D0-2D97ED629CC4" Role="_AA493DA4-4E73-43BA-893F-3CDCEAE2CBF4">
+										<ormq:Step id="_B28E90AD-8946-43D7-825B-0DB5C4AFB0D6" ref="_3BDB0246-76B7-476A-8632-63D2677E8B05" Role="_77E567ED-E4CF-4DE0-A104-01D836B63C90">
+											<ormq:Node id="_A5BC0F12-83C7-4AE7-AE72-4236F6047E7F" Role="_1705B15D-A920-4517-8AAB-81A7227A7864" Projected="true" Label="1" />
+										</ormq:Step>
+										<ormq:Step id="_4255FBC5-9B87-4347-B979-283A6BC9FA65" ref="_08710721-5929-417B-B1C7-D13E97597D7D" Role="_174E22D7-F26D-4DCB-A62D-1A6CEF83E075">
+											<ormq:Node id="_D6988759-45E1-4E87-B63E-EACA9AE2B1FB" Role="_75DEBF27-698E-4071-A4B3-482B2F26CCA3">
+												<ormq:Step id="_F2A5E1C2-1683-4B97-BC21-A9867F6CF229" ref="_13E88952-E904-452B-98B0-2C4175D8D5BF" Role="_9FE717B6-0A35-4240-9871-C5555C79BA85">
+													<ormq:Node id="_BB648D0D-F9C0-41AF-B24F-DB215488129B" Role="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16" Label="1">
+														<ormq:Step id="_5A7E7F99-84F5-4526-BD12-98CDD680B8EB" ref="_35078FD3-0C55-4B6F-BF86-9B815AFD0D2C" Role="_BBB4CA81-4788-428A-8881-9CF87E882F71">
+															<ormq:Node id="_334B0311-A15F-409E-8163-1BE55D1C9285" Role="_7AC633A0-DF28-4732-B77D-A55A82EF6A84" Label="1" />
+														</ormq:Step>
+														<ormq:Step id="_F489F6F5-6015-4FED-B1B9-2F714B0C6603" ref="_81A2CCB8-26B1-44A3-BEE7-16A70064FBB1" Role="_7BAA2193-CD89-4DD8-AE4E-633CA6DC513A">
+															<ormq:Node id="_5520A8EF-3986-4C85-BF7C-7A15E8709D58" Role="_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9" Label="1" />
+														</ormq:Step>
+													</ormq:Node>
+												</ormq:Step>
+											</ormq:Node>
+										</ormq:Step>
+										<ormq:Step id="_5D3514B2-218B-4E38-8F97-0B0A0FADD48A" ref="_A041CCB5-E49E-4D68-8A95-27C426A843A7" Role="_4D2DA320-8480-4EC2-B30F-830AE7454EE5" Operator="Maybe">
+											<ormq:Node id="_84067AF7-302B-406F-A5B5-496F14C2B962" Role="_FE4B2061-6F87-4F91-8389-8A7BA30B8DEA" Label="2">
+												<ormq:Step id="_702E7500-7364-4AC7-AE6E-82EB5B99AD09" ref="_35078FD3-0C55-4B6F-BF86-9B815AFD0D2C" Role="_BBB4CA81-4788-428A-8881-9CF87E882F71">
+													<ormq:Node id="_B783FAB9-D2E9-4C2D-AE75-06A5A664EADF" Role="_7AC633A0-DF28-4732-B77D-A55A82EF6A84" Label="2" />
+												</ormq:Step>
+											</ormq:Node>
+										</ormq:Step>
+									</ormq:Node>
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_680293E5-CEA5-4730-9E9A-D70258FC5706" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Items" Expression="total(#_334B0311-A15F-409E-8163-1BE55D1C9285) for #_BBF62D85-7AFC-4308-85B1-C97210CA4567" />
+				<ormq:Value id="_0D75A298-E55C-43A9-87A7-3663AA8E857F" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Amount" Expression="subtract(#_680293E5-CEA5-4730-9E9A-D70258FC5706, coalesce(#_B783FAB9-D2E9-4C2D-AE75-06A5A664EADF, 0))" Projected="true" />
 			</ormq:Node>
 		</ormq:Query>
 	</ormq:Queries>

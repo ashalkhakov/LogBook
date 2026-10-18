@@ -1529,6 +1529,11 @@ a grouped list: each vehicle's costs for each month in its owner's
 currency, each cost at the latest exchange rate on or before its day, the
 latest month first (`CostsByMonth`).
 
+A service's cost is worked out from its items, less its discount, in its
+currency (`ServiceCost`): "Record cost Money" is partly derived and
+stored, so the generated code sets a service's cost at save, and any other
+record keeps the cost entered for it.
+
 A vehicle's one car sale is kept by its derived sale date, unique for the
 vehicle. Three partly derived fact types are stored (a record's vehicle,
 its cost, who drives a vehicle), so that queries go through them.
