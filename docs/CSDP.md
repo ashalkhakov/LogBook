@@ -1492,17 +1492,28 @@ ormtool build Model/Logbook.forml Model/Logbook.orm
 ormtool verbalize Model/Logbook.orm      # read it back
 ```
 
-What it cannot say yet, it says in comments, for rules later:
-- a currency code's pattern;
-- that a trip ends no nearer than it started (distances are a quantity
-  and a unit each, compared after converting);
-- that a schedule has at most one reminder not done (a uniqueness over a
-  subtype's instances; a vehicle's one car sale is kept by its derived
-  sale date, unique for the vehicle);
-- that an answer's options are its question's, and that yes or no goes
-  with yes-or-no questions (rules over the answer's question);
-- the deontic rules about the meter, and that events fall while the
-  vehicle is kept (ordering by moment).
+Currency codes and VINs have patterns, ORMKit's own (NORMA has none):
+Core Data checks them.
+
+What no graphical constraint says is a rule, a query whose answers are
+what must not be ([RULES.md](../../NativeORM2/docs/RULES.md)), written
+in the schema as its outline:
+- a schedule has at most one reminder not yet done (`OneOpenReminder`);
+- an answer's options are its question's; yes or no only for a yes-or-no
+  question, options only for an any-of one (`AnswerOptionsOfItsQuestion`,
+  `YesOrNoAnswers`, `AnyOfAnswers`, `OptionsOfAnyOfQuestions`);
+- the meter goes up: a vehicle's later reading, in the same unit, ought
+  not to be lower (`MeterGoesUp`, deontic).
+
+A vehicle's one car sale is kept by its derived sale date, unique for the
+vehicle. Three partly derived fact types are stored (a record's vehicle,
+its cost, who drives a vehicle), so that queries go through them.
+
+What it cannot say yet, it says in comments, for later:
+- that a trip ends no nearer than it started, and the meter rule across
+  units (distances compared after converting);
+- that events fall while the vehicle is kept, and a tyre set is bought
+  before it is fitted (a date compared with a moment).
 
 The subtypes defined by a rule (Cost, CarSale, ServiceKind)
 keep their rule as their definition until ORMKit writes NORMA's subtype

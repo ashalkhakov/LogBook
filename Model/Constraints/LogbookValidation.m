@@ -5,20 +5,7 @@
 
 /* Not checked here:
  *   ValueComparisonConstraint1: For each Vehicle, if that Vehicle was acquired on some Date1 and that Vehicle was sold on some Date2 then Date1 is less than or equal to Date2.
- *   SubsetConstraint1: If some Event had driver some User and that Event is of some Vehicle then that User drives that Vehicle.
- *   SubsetConstraint2: If some User entered some Record that is of some Vehicle then that User drives that Vehicle.
- *   SubsetConstraint3: It is obligatory that if some FillUp was of some Fuel and that FillUp is of some Vehicle then that Vehicle uses that Fuel.
- *   EqualityConstraint1: For each TyreSet, that TyreSet was bought on some Date if and only if that TyreSet cost some Money.
  *   ExclusionConstraint1: No TyreChange fitted and removed the same TyreSet.
- *   SubsetConstraint4: If some TyreChange fitted some TyreSet and that TyreChange is of some Vehicle then that TyreSet is of that Vehicle.
- *   SubsetConstraint5: If some Income was for some Trip and that Income is of some Vehicle then that Trip is of that Vehicle.
- *   SubsetConstraint6: If some Inspection went through some Checklist and that Inspection is of some Vehicle that is owned by some User then that Checklist is kept by that User.
- *   SubsetConstraint7: If some Inspection answered some Question then that Inspection went through some Checklist and that Question is in that Checklist.
- *   InclusiveOrConstraint1: Each Schedule recurs after some Distance or recurs after some Duration.
- *   SubsetConstraint8: If some Reminder comes from some Schedule and that Reminder is of some Vehicle then that Schedule is of that Vehicle.
- *   InclusiveOrConstraint2: Each Reminder is due at some Distance or is due on some Date.
- *   EqualityConstraint2: For each Reminder, that Reminder was done at some Moment if and only if that Reminder was done at some Distance.
- *   SubsetConstraint10: If some Reminder was done by some Event and that Reminder is of some Vehicle then that Event is of that Vehicle.
  */
 
 
@@ -183,6 +170,30 @@
 - (NSArray<NSError *> *)orm_deonticViolations
 {
 	return [[ORMValidator validatorNamed:@"Logbook" error:NULL] violationsOf:self deontic:YES] ?: @[];
+}
+
+@end
+
+@implementation NSManagedObjectContext (ORMSave)
+
+- (BOOL)orm_prepareForSave:(NSError **)error
+{
+	NSMutableSet *changed = [NSMutableSet setWithSet:[self insertedObjects]];
+	[changed unionSet:[self updatedObjects]];
+	[changed unionSet:[self deletedObjects]];
+	/* The model's tables (Logbook.ormplans), by the driver. */
+	ORMTables *tables = [ORMTables tablesNamed:@"Logbook" error:error];
+	if (tables == nil) {
+		return NO;
+	}
+	ORMSaveHook *hook = [[ORMSaveHook alloc] initWithTables:tables];
+	if (![hook deriveInContext:self changed:changed error:error]) {
+		return NO;
+	}
+	NSMutableArray<NSError *> *violations = [NSMutableArray array];
+	[hook prepareJoinedInContext:self changed:changed violations:violations];
+	[hook checkInContext:self changed:changed violations:violations];
+	return [ORMValidator report:violations error:error];
 }
 
 @end

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot" xmlns:ormcd="http://schemas.ormkit.org/2026-10/CoreDataBridge">
+<ormRoot:ORM2 xmlns:orm="http://schemas.neumont.edu/ORM/2006-04/ORMCore" xmlns:ormDiagram="http://schemas.neumont.edu/ORM/2006-04/ORMDiagram" xmlns:ormRoot="http://schemas.neumont.edu/ORM/2006-04/ORMRoot" xmlns:ormcd="http://schemas.ormkit.org/2026-10/CoreDataBridge" xmlns:ormv="http://schemas.ormkit.org/2026-10/Values" xmlns:ormq="http://schemas.ormkit.org/2026-10/Queries">
 	<orm:ORMModel id="_2C7E073F-10CB-4429-9D8F-D072A08D2C9F" Name="Logbook">
 		<orm:Objects>
 			<orm:EntityType id="_1660F6CB-8F66-4035-A24B-1114041EB14B" Name="User" _ReferenceMode="email">
@@ -124,6 +124,7 @@
 					<orm:Role ref="_12C08D54-3C2B-474F-962F-175F9AA5B8C9" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_481E468A-992C-4951-883C-77B03765322C" ref="_9E243C9C-F5DD-4191-BDC9-B6FD32FF1B92" Scale="0" Length="17" />
+				<ormv:Pattern>[A-HJ-NPR-Z0-9]{17}</ormv:Pattern>
 			</orm:ValueType>
 			<orm:ValueType id="_8E7DAF92-F86E-4DF8-99F7-C6BDA41FE8CE" Name="RegistrationNumber">
 				<orm:PlayedRoles>
@@ -187,6 +188,7 @@
 					<orm:Role ref="_BC2BCB48-287A-4734-B1AE-5EF504DCC798" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_3D89D14F-EA70-4B04-93BC-F05A9F67807E" ref="_9E243C9C-F5DD-4191-BDC9-B6FD32FF1B92" Scale="0" Length="3" />
+				<ormv:Pattern>[A-Z]{3}</ormv:Pattern>
 			</orm:ValueType>
 			<orm:ValueType id="_B10C4EC0-37A3-4C21-A19C-23DD5A5D19DD" Name="Quantity">
 				<orm:PlayedRoles>
@@ -1221,10 +1223,10 @@
 					<orm:UniquenessConstraint ref="_38D1853C-1627-45CA-A761-A4A66586F61E" />
 				</orm:InternalConstraints>
 				<orm:DerivationRule>
-					<orm:FactTypeDerivationPath id="_451A0FDA-F7E4-4E60-81BE-ECA43A280B3D" DerivationCompleteness="PartiallyDerived">
+					<orm:FactTypeDerivationPath id="_451A0FDA-F7E4-4E60-81BE-ECA43A280B3D" DerivationCompleteness="PartiallyDerived" DerivationStorage="Stored">
 						<orm:InformalRule>
 							<orm:DerivationNote id="_D7AAF951-8FA9-4C75-924F-248CFA8DB007">
-								<orm:Body>The vehicle's owner drives it; the users it is shared with are stored.</orm:Body>
+								<orm:Body>The vehicle's owner drives it; the users it is shared with are entered.</orm:Body>
 							</orm:DerivationNote>
 						</orm:InformalRule>
 					</orm:FactTypeDerivationPath>
@@ -2367,7 +2369,7 @@
 					<orm:MandatoryConstraint ref="_BB131D80-88DA-4FE0-B3F9-1459BC703030" />
 				</orm:InternalConstraints>
 				<orm:DerivationRule>
-					<orm:FactTypeDerivationPath id="_EFE969CD-470E-4EEE-883E-741D5048C2A4" DerivationCompleteness="PartiallyDerived">
+					<orm:FactTypeDerivationPath id="_EFE969CD-470E-4EEE-883E-741D5048C2A4" DerivationCompleteness="PartiallyDerived" DerivationStorage="Stored">
 						<orm:InformalRule>
 							<orm:DerivationNote id="_5AD44754-4A00-4471-BA2C-7019DB5F576D">
 								<orm:Body>A reminder from a schedule is of the schedule's vehicle.</orm:Body>
@@ -2658,7 +2660,7 @@
 					<orm:UniquenessConstraint ref="_AB4B46D3-9F3C-4C25-B424-9919EAF3173F" />
 				</orm:InternalConstraints>
 				<orm:DerivationRule>
-					<orm:FactTypeDerivationPath id="_9DBD6B6B-A00A-414A-B65E-C746424DE413" DerivationCompleteness="PartiallyDerived">
+					<orm:FactTypeDerivationPath id="_9DBD6B6B-A00A-414A-B65E-C746424DE413" DerivationCompleteness="PartiallyDerived" DerivationStorage="Stored">
 						<orm:InformalRule>
 							<orm:DerivationNote id="_9D5BE663-F617-4F24-AEAC-68552C493091">
 								<orm:Body>A service's: the sum of its items' costs, less its discount, in its currency.</orm:Body>
@@ -8614,6 +8616,16 @@
 					<orm:Role id="_B69A26E3-A174-4CC2-BDD9-73128CD7366F" ref="_2E94686B-4AE2-41F9-9656-A7EDB620598A" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
+			<orm:SubsetConstraint id="_4D671879-628C-4D8B-9798-B322FA3D4EC0" Name="SubsetConstraint11">
+				<orm:RoleSequences>
+					<orm:RoleSequence id="_4070474A-D1C2-4C23-AAED-12E5F9F65E22">
+						<orm:Role id="_6F2262F1-6F76-4B7D-87C7-44188170FEE2" ref="_AE359AF9-C034-46DE-85C5-D3341F4833F9" />
+					</orm:RoleSequence>
+					<orm:RoleSequence id="_117E7191-6F01-4EA5-9205-6E4A01AA9CE0">
+						<orm:Role id="_93697170-D4C7-4F8B-88FA-BD41757DD673" ref="_57E3EC5E-ADD9-410F-86B5-AFE836AE977E" />
+					</orm:RoleSequence>
+				</orm:RoleSequences>
+			</orm:SubsetConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:UnspecifiedDataType id="_75EA85C2-1A83-415B-A49C-FCBB218BCD3B" />
@@ -10207,6 +10219,9 @@
 					<ormDiagram:Role ref="_C034D5F8-C5CF-4FBD-B230-6956473E750E" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
+			<ormDiagram:ExternalConstraintShape id="_E7BA94A7-B43D-4259-B003-A84602F12EFF" IsExpanded="true" AbsoluteBounds="6.680555555555555, 6.930555555555555, 0.16, 0.16">
+				<ormDiagram:Subject ref="_4D671879-628C-4D8B-9798-B322FA3D4EC0" />
+			</ormDiagram:ExternalConstraintShape>
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_2C7E073F-10CB-4429-9D8F-D072A08D2C9F" />
 	</ormDiagram:ORMDiagram>
@@ -12127,4 +12142,115 @@
 &lt;/model&gt;</ormcd:Baseline>
 		</ormcd:Mapping>
 	</ormcd:CoreDataMappings>
+	<ormq:Queries>
+		<ormq:Query id="_2E65E4F2-E69F-49E3-81C2-E674C3916D19" Name="MeterGoesUp" Kind="Constraint" Modality="Deontic">
+			<ormq:Node id="_77C4C642-4967-432E-A416-E45BA987FD83" ref="_8302E203-13F7-4C5A-938A-C2A4BD091E8B" Projected="true" Label="1">
+				<ormq:Step id="_46D8F948-FD4B-4991-B9FC-C4F9328EE289" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+					<ormq:Node id="_7C69EAA2-3933-4EC8-AC06-3E5A145E4C9D" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Label="1" />
+				</ormq:Step>
+				<ormq:Step id="_9FB46C8B-CEA7-4B78-974A-1CF610655E90" ref="_3A4A8DF9-EC83-4E61-BB8A-B266C6182E7B" Role="_F57F012E-C765-4E66-B443-E7812562A4D6">
+					<ormq:Node id="_86BDC12E-DCDE-4CE0-8828-84A6FDF445F1" Role="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114" Label="1">
+						<ormq:Step id="_56A75FF0-60D3-438C-B546-771579D0B346" ref="_13CBF384-A68B-4FD3-A720-55179343E9E9" Role="_E47336B1-F09F-4DFC-81E1-531090EBE3CD">
+							<ormq:Node id="_6557667B-63E3-4E8F-B371-A8E15C05F5AB" Role="_89A393AC-E378-4ECE-A7E8-3E331C1CE254" Label="1" />
+						</ormq:Step>
+						<ormq:Step id="_3DD3F875-D148-48DB-9D6F-E260B44104C8" ref="_31DFBF56-B9E2-4EA2-ADB0-5F71BE1948FA" Role="_F43699ED-FB6A-4BD4-80A1-E4C397B81F36">
+							<ormq:Node id="_1A60B0EE-2D46-4F81-9026-31B5B212CC1E" Role="_76B14F66-2B8D-4676-AE73-175539B353C1" Label="1" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Step id="_9866766B-07D4-4E69-AA75-184C1307A1BD" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+					<ormq:Node id="_FCBD5879-6A90-4694-9EDB-B7793E1E76F6" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+						<ormq:Step id="_A6159546-89F0-4D50-A0B8-E943EFEDA742" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+							<ormq:Node id="_43AF75A8-FAB1-4FE1-B5FA-264925AC9785" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+								<ormq:Step id="_5D0528B5-C068-4DE1-A03A-41CDA1EE5906" ref="_91438FE4-8D6B-46B9-88B0-108182FCF9FE" Role="_A9366C8F-304C-4984-A137-0D71A63310AD">
+									<ormq:Node id="_97ADD866-4052-4310-B001-F4741088B51D" Role="_9EE052E5-C881-4AE1-A581-371DF6DF6907">
+										<ormq:Step id="_945F514D-B98D-4C74-AF3C-E500DCEC9D55" ref="_29537824-9554-462F-B419-EABD70DBFF9D" Role="_4B437DD5-94F9-478D-BC03-D26586384E89">
+											<ormq:Node id="_16E571D5-8D64-4065-9CF0-E24BAC2350BE" Role="_F6771E34-B105-43BF-9E9C-72B00BE6CD0F" Label="2">
+												<ormq:Step id="_7650941D-BD0D-41E2-A3E2-F3DB9B5E774D" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+													<ormq:Node id="_4CA57B2B-4E16-4EE6-8D94-A61C67B2F9DD" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Label="2" Comparison="&gt;" CompareTo="_7C69EAA2-3933-4EC8-AC06-3E5A145E4C9D" />
+												</ormq:Step>
+												<ormq:Step id="_BE2E6A3B-DF51-4040-B245-A25962407BF5" ref="_3A4A8DF9-EC83-4E61-BB8A-B266C6182E7B" Role="_F57F012E-C765-4E66-B443-E7812562A4D6">
+													<ormq:Node id="_610F8CCC-8C6B-4F90-806C-B2DF7801359F" Role="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114" Label="2">
+														<ormq:Step id="_2F86DF44-EB45-469F-86B5-93C9D05D797E" ref="_13CBF384-A68B-4FD3-A720-55179343E9E9" Role="_E47336B1-F09F-4DFC-81E1-531090EBE3CD">
+															<ormq:Node id="_4A5C5F1B-1810-40B8-84B3-3A982125A9E1" Role="_89A393AC-E378-4ECE-A7E8-3E331C1CE254" Label="2" Comparison="&lt;" CompareTo="_6557667B-63E3-4E8F-B371-A8E15C05F5AB" />
+														</ormq:Step>
+														<ormq:Step id="_C44BA4F7-D358-4EE5-9D36-E1C456534FE7" ref="_31DFBF56-B9E2-4EA2-ADB0-5F71BE1948FA" Role="_F43699ED-FB6A-4BD4-80A1-E4C397B81F36">
+															<ormq:Node id="_369EC026-B493-4977-9933-7D27C860338E" Role="_76B14F66-2B8D-4676-AE73-175539B353C1" Label="1" />
+														</ormq:Step>
+													</ormq:Node>
+												</ormq:Step>
+											</ormq:Node>
+										</ormq:Step>
+									</ormq:Node>
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_53F1065B-D4F9-4A83-9220-053920F3F89B" Name="AnswerOptionsOfItsQuestion" Kind="Constraint">
+			<ormq:Node id="_6B0931BC-FFD1-4383-85C0-8EBFCFE1B85A" ref="_7026E947-A0DF-48B6-A00C-E4BA722AF64E" Projected="true">
+				<ormq:Step id="_A217288F-2FA7-41E6-8548-553F6D3BDA46" ref="_A218A5B6-098A-41B9-BA9A-66239482B70D" Role="_9A888B9E-FF96-4A53-B4CB-1A284C99355D">
+					<ormq:Node id="_5F2F91ED-49EE-44DD-B307-C58EABA045E6" Role="_67AF35C0-3270-4684-ABF3-3917E28F9227" Label="1" />
+				</ormq:Step>
+				<ormq:Step id="_D6B07A17-2CFA-4A58-804F-9E798EADE068" ref="_15F373C6-6E75-4384-8926-A5D337A036FE" Role="_9B8B17F6-45D7-4C21-A44E-9C6161CD380E">
+					<ormq:Node id="_9B4212E2-3791-4845-A0F9-C97040DEBCAC" Role="_2B278E26-D082-43BF-BBE4-F67C4F82C5FC">
+						<ormq:Step id="_F0A09D98-ED95-4597-80F3-DCE507CE8036" ref="_098E13E0-ECAB-4479-B991-57787DFD13FD" Role="_59FDD1FD-9177-41F6-B336-8539EDE57FF4">
+							<ormq:Node id="_E5DD4169-DD22-4790-8F1E-EFC192139B17" Role="_51ABA202-E720-44FF-B91A-CFC1C6004FD5" Label="2" Comparison="&lt;&gt;" CompareTo="_5F2F91ED-49EE-44DD-B307-C58EABA045E6" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_5F7C99FF-0B9F-44B9-93A0-7001E2201EA3" Name="YesOrNoAnswers" Kind="Constraint">
+			<ormq:Node id="_55EE04EC-02FE-414B-A851-282186D7992D" ref="_7026E947-A0DF-48B6-A00C-E4BA722AF64E" Projected="true">
+				<ormq:Step id="_FAC8F349-E71F-4B75-AACD-C4D6038E5D88" ref="_120FCAE9-8E93-4CBC-A41E-858BBD963B0F" Role="_3A0539A8-AE79-4898-8878-68935D01E702">
+					<ormq:Node id="_82ABFA6E-1631-49B4-9476-F946E06A92D4" Role="_E1F89759-BE79-4DBE-9A1A-1D73C69087F5" />
+				</ormq:Step>
+				<ormq:Step id="_6C2C1D08-5E92-473B-9FA1-2E5AC1DB290A" ref="_A218A5B6-098A-41B9-BA9A-66239482B70D" Role="_9A888B9E-FF96-4A53-B4CB-1A284C99355D">
+					<ormq:Node id="_34ECFAFE-0F08-42FF-87C6-E9C740201FDA" Role="_67AF35C0-3270-4684-ABF3-3917E28F9227">
+						<ormq:Step id="_D1883BDD-0F54-4A0E-84F2-3ED594B6C19C" ref="_0567E993-7B7F-420B-95D1-CB14BEB51E61" Role="_E126BE23-0C97-445B-A9B3-BDF6AF1FF986">
+							<ormq:Node id="_07505CF4-2CFE-4605-BA3D-D86D3F8A5B8E" Role="_C4F2AE6E-8DCC-4313-9C26-C2DBF7011C6A" Comparison="=" Value="Any of" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_E4D46EF5-0573-492F-94E1-E392A4F35102" Name="AnyOfAnswers" Kind="Constraint">
+			<ormq:Node id="_E55A1118-F7DA-45E2-9458-D67DFFEB2372" ref="_7026E947-A0DF-48B6-A00C-E4BA722AF64E" Projected="true">
+				<ormq:Step id="_D9A8EDAE-5D72-4FCB-A481-4093C8650722" ref="_15F373C6-6E75-4384-8926-A5D337A036FE" Role="_9B8B17F6-45D7-4C21-A44E-9C6161CD380E">
+					<ormq:Node id="_26833B19-284E-44A5-86C7-B80670307BA3" Role="_2B278E26-D082-43BF-BBE4-F67C4F82C5FC" />
+				</ormq:Step>
+				<ormq:Step id="_9AA95C5D-BA57-45D0-B6F9-4B9BAB694EC8" ref="_A218A5B6-098A-41B9-BA9A-66239482B70D" Role="_9A888B9E-FF96-4A53-B4CB-1A284C99355D">
+					<ormq:Node id="_8673E55B-BF7D-421B-B56B-050929BD5856" Role="_67AF35C0-3270-4684-ABF3-3917E28F9227">
+						<ormq:Step id="_7B898484-CA4F-4B3B-AD03-06900831B127" ref="_0567E993-7B7F-420B-95D1-CB14BEB51E61" Role="_E126BE23-0C97-445B-A9B3-BDF6AF1FF986">
+							<ormq:Node id="_1B677782-ADDA-42DE-870F-61DBAA917E8A" Role="_C4F2AE6E-8DCC-4313-9C26-C2DBF7011C6A" Comparison="=" Value="Yes or no" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_5563F951-5302-499B-864E-A68EE813CD8F" Name="OptionsOfAnyOfQuestions" Kind="Constraint">
+			<ormq:Node id="_2386FED5-7325-4264-A842-54897BBF9EF9" ref="_4837A456-81E2-4F0D-B689-0119740347FA" Projected="true">
+				<ormq:Step id="_B5CAFB91-BF95-482B-B0B6-87138227D94A" ref="_0567E993-7B7F-420B-95D1-CB14BEB51E61" Role="_E126BE23-0C97-445B-A9B3-BDF6AF1FF986">
+					<ormq:Node id="_16EE3082-9F7C-4703-A9FA-8FDC64A99FD7" Role="_C4F2AE6E-8DCC-4313-9C26-C2DBF7011C6A" Comparison="=" Value="Yes or no" />
+				</ormq:Step>
+				<ormq:Step id="_1A132232-FB37-433B-AC0E-40488DAFC823" ref="_098E13E0-ECAB-4479-B991-57787DFD13FD" Role="_51ABA202-E720-44FF-B91A-CFC1C6004FD5">
+					<ormq:Node id="_24ECBBCC-F400-4414-9AD0-066CACDE8827" Role="_59FDD1FD-9177-41F6-B336-8539EDE57FF4" />
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_2B6D8FA6-AAC4-470C-8CF2-B1ADA43A40EC" Name="OneOpenReminder" Kind="Constraint">
+			<ormq:Node id="_B73A2DF9-7BB8-4D3E-8479-CBE77D5FC586" ref="_B6AA67C5-64A7-4DEF-AC86-845569D27FB0" Projected="true">
+				<ormq:Step id="_32FEE602-BD57-4437-804B-AD8F3320B05F" ref="_8FA60450-3E5F-4CCA-A106-6CAD11AF1A79" Role="_855A0C39-9802-4DDC-A04E-A94B39C4D3BA" Count="&gt;" CountValue="1" AggregateNode="_67D01455-03BD-4DA4-9ED5-509CAE644017">
+					<ormq:Node id="_67D01455-03BD-4DA4-9ED5-509CAE644017" Role="_17961EBF-66AC-4859-A326-3566DAF9D99E">
+						<ormq:Step id="_1BD5BF27-AD5A-493F-B087-26A46710B48E" ref="_32B05AAD-BC11-491C-A0FF-7EE672CBA187" Role="_DA621017-953F-4CA7-8B10-1FC5B35191D2" Operator="Not">
+							<ormq:Node id="_DEB06CC6-EFA5-47A4-82AB-CF6B006E26A8" Role="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+	</ormq:Queries>
 </ormRoot:ORM2>

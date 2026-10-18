@@ -134,3 +134,15 @@
 /* The deontic rules broken: obligations to be told of, not enforced. */
 - (NSArray<NSError *> *)orm_deonticViolations;
 @end
+
+/* Saving (docs/DERIVATION.md): call before save:, as Core Data's will-save
+ * notification cannot refuse one.
+ *
+ *   if ([context orm_prepareForSave:&error] && [context save:&error]) ...
+ *
+ * The stored derived facts are worked out for the objects the changes reach,
+ * then the rules are checked again for each object a change reaches. NO,
+ * with the alethic violations, when one is broken: save nothing then. */
+@interface NSManagedObjectContext (ORMSave)
+- (BOOL)orm_prepareForSave:(NSError **)error;
+@end

@@ -131,6 +131,7 @@
         <userInfo>
             <entry key="OData.entitySet" value="Checklists"/>
             <entry key="OData.type" value="Default.Checklist"/>
+            <entry key="ormkit.rule.SubsetConstraint11" value="If some Inspection went through some Checklist then some Question is in that Checklist."/>
             <entry key="ormkit.rule.SubsetConstraint6" value="If some Inspection went through some Checklist and that Inspection is of some Vehicle that is owned by some User then that Checklist is kept by that User."/>
             <entry key="ormkit.source" value="_ABD96926-740A-4619-8700-7F35B9192724"/>
         </userInfo>
@@ -142,7 +143,7 @@
                 <entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="chargedCurrency" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="chargedCurrency" optional="YES" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_E3E8E55D-E018-4905-8818-0F5B998D6200/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
@@ -228,7 +229,7 @@
         </userInfo>
     </entity>
     <entity name="ExchangeRate" representedClassName="ExchangeRate" syncable="YES" codeGenerationType="class">
-        <attribute name="baseCurrency" attributeType="String" maxValueString="3">
+        <attribute name="baseCurrency" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_E2A00A69-B2F3-4669-84BB-2F9CBF174124"/>
             </userInfo>
@@ -251,7 +252,7 @@
                 <entry key="ormkit.source" value="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915.key"/>
             </userInfo>
         </attribute>
-        <attribute name="quoteCurrency" attributeType="String" maxValueString="3">
+        <attribute name="quoteCurrency" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_99FC0383-55CE-4596-8C30-B323ED480337"/>
             </userInfo>
@@ -342,7 +343,7 @@
                 <entry key="ormkit.source" value="_13D0D1CF-3099-4872-8281-029DCDFD4601/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="earnedCurrency" attributeType="String" maxValueString="3">
+        <attribute name="earnedCurrency" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_13D0D1CF-3099-4872-8281-029DCDFD4601/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
@@ -533,7 +534,7 @@
                 <entry key="ormkit.source" value="_68FA7D37-B900-4D63-AE45-133F36637805/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="totalCurrency" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="totalCurrency" optional="YES" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_68FA7D37-B900-4D63-AE45-133F36637805/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
@@ -679,7 +680,7 @@
         </userInfo>
     </entity>
     <entity name="Service" representedClassName="Service" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class">
-        <attribute name="currency" attributeType="String" maxValueString="3">
+        <attribute name="currency" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_1705B15D-A920-4517-8AAB-81A7227A7864"/>
             </userInfo>
@@ -700,7 +701,7 @@
                 <entry key="ormkit.source" value="_FE4B2061-6F87-4F91-8389-8A7BA30B8DEA/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="moneyCurrency" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="moneyCurrency" optional="YES" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_FE4B2061-6F87-4F91-8389-8A7BA30B8DEA/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
@@ -738,7 +739,7 @@
                 <entry key="ormkit.source" value="_B82A332D-1340-4474-A60D-C90A2B4E4E65/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="chargedCurrency" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="chargedCurrency" optional="YES" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_B82A332D-1340-4474-A60D-C90A2B4E4E65/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
@@ -749,7 +750,7 @@
                 <entry key="ormkit.source" value="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="costCurrency" attributeType="String" maxValueString="3">
+        <attribute name="costCurrency" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
@@ -900,7 +901,7 @@
         </userInfo>
     </entity>
     <entity name="User" representedClassName="User" syncable="YES" codeGenerationType="class">
-        <attribute name="currency" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="currency" optional="YES" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_6C0C5EDB-89DA-4DDE-AA0D-8366EF8CF338"/>
             </userInfo>
@@ -978,7 +979,7 @@
                 <entry key="ormkit.source" value="_00E2B4DD-D1B9-42D8-B170-ED0107452DC6/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="expectedSalePriceCurrency" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="expectedSalePriceCurrency" optional="YES" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_00E2B4DD-D1B9-42D8-B170-ED0107452DC6/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
@@ -1042,7 +1043,7 @@
                 <entry key="ormkit.source" value="_166811E8-260A-41A0-8F2D-4A02009AF641/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="purchasePriceCurrency" optional="YES" attributeType="String" maxValueString="3">
+        <attribute name="purchasePriceCurrency" optional="YES" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_166811E8-260A-41A0-8F2D-4A02009AF641/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>
@@ -1057,7 +1058,7 @@
                 <entry key="ormkit.source" value="_5E18F64C-A928-4EC4-B229-FF6185B78827"/>
             </userInfo>
         </attribute>
-        <attribute name="vin" optional="YES" attributeType="String" maxValueString="17">
+        <attribute name="vin" optional="YES" attributeType="String" maxValueString="17" regularExpressionString="^(?:[A-HJ-NPR-Z0-9]{17})$">
             <userInfo>
                 <entry key="ormkit.source" value="_12C08D54-3C2B-474F-962F-175F9AA5B8C9"/>
             </userInfo>
@@ -1146,7 +1147,7 @@
                 <entry key="ormkit.source" value="_800B696C-9534-4E42-B669-AD254FC6536A/_7AC633A0-DF28-4732-B77D-A55A82EF6A84"/>
             </userInfo>
         </attribute>
-        <attribute name="valuationCurrency" attributeType="String" maxValueString="3">
+        <attribute name="valuationCurrency" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_800B696C-9534-4E42-B669-AD254FC6536A/_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9"/>
             </userInfo>

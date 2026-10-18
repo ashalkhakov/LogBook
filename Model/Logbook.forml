@@ -38,7 +38,7 @@ Portable data type: Numeric: Unsigned Small Integer
 Vehicle (as OwnedVehicle) is owned by User (as Owner)
 Each Vehicle is owned by exactly one User.
 VehicleDriver is where User drives Vehicle.
-+ The vehicle's owner drives it; the users it is shared with are stored.
+++ The vehicle's owner drives it; the users it is shared with are entered.
 User has PersonName
 Each User has at most one PersonName.
 Vehicle has VehicleName
@@ -53,6 +53,8 @@ Vehicle uses Fuel
 Each Vehicle uses exactly one Fuel.
 Vehicle has VIN
 Each Vehicle has at most one VIN.
+// Seventeen letters and digits, no I, O or Q.
+The possible values of VIN match the pattern '[A-HJ-NPR-Z0-9]{17}'.
 Vehicle has RegistrationNumber
 Each Vehicle has at most one RegistrationNumber.
 
@@ -113,8 +115,8 @@ The possible values of Quantity are at least 0.
 The possible values of Factor are above 0.
 The possible values of DistanceUnit are 'km', 'mi'.
 The possible values of VolumeUnit are 'L', 'gal (US)', 'gal (imp)'.
-// A currency is three capital letters (ISO 4217): a pattern, which NORMA
-// has no constraint for; a rule, later.
+// A currency code is ISO 4217's: three capital letters.
+The possible values of Currency match the pattern '[A-Z]{3}'.
 
 # What a vehicle cost, and is worth
 
@@ -158,7 +160,7 @@ CostKind is an entity type.
 Reference Mode: .name
 
 Record is of Vehicle
-+ A reminder from a schedule is of the schedule's vehicle.
+++ A reminder from a schedule is of the schedule's vehicle.
 Each Record is of exactly one Vehicle.
 Record was entered by User (as EnteredBy) / User entered Record
 Each Record was entered by exactly one User.
@@ -179,7 +181,7 @@ MeteredEvent was at Distance (as Mileage)
 Each MeteredEvent was at exactly one Distance.
 
 Record cost Money (as Total)
-+ A service's: the sum of its items' costs, less its discount, in its currency.
+++ A service's: the sum of its items' costs, less its discount, in its currency.
 Each Record cost at most one Money.
 Each Cost is by definition a Record that cost some Money.
 Cost was charged Money (as Charged)
@@ -190,6 +192,24 @@ Each Cost is of exactly one CostKind.
 
 If some Event had driver some User and that Event is of some Vehicle then that User drives that Vehicle.
 If some Record was entered by some User and that Record is of some Vehicle then that User drives that Vehicle.
+
+// The meter goes up: a vehicle's later reading, in the same unit, ought
+// not to be lower. Ought: the owner may enter history out of order.
+Query MeterGoesUp:
+It is forbidden that:
+✓MeteredEvent1
+  + was at Moment1
+  + was at Distance1
+    + has Quantity1
+    + is in DistanceUnit1
+  + is of Vehicle
+    + Record is of that Vehicle
+      + is Event
+        + is MeteredEvent2
+          + was at Moment2 > Moment1
+          + was at Distance2
+            + has Quantity2 < Quantity1
+            + is in DistanceUnit1
 
 # Meter readings and trips
 
@@ -415,6 +435,7 @@ For each Question and Position, at most one Option is in that Question and is at
 Each Inspection is a MeteredEvent.
 Inspection went through Checklist
 Each Inspection went through exactly one Checklist.
+If some Inspection went through some Checklist then some Question is in that Checklist.
 If some Inspection went through some Checklist and that Inspection is of some Vehicle that is owned by some User then that Checklist is kept by that User.
 
 Answer is where Inspection answered Question.
@@ -426,7 +447,33 @@ In each population of Answer chose Option, each Answer, Option combination occur
 Answer has Note
 Each Answer has at most one Note.
 // An answer's options are of its question; a yes-or-no question's answers
-// say yes or no and choose nothing: rules over the answer's question, later.
+// say yes or no and choose nothing; only an any-of question has options.
+Query AnswerOptionsOfItsQuestion:
+It is impossible that:
+✓Answer
+  + involves Question1
+  + chose Option
+    + is in Question2 <> Question1
+
+Query YesOrNoAnswers:
+It is impossible that:
+✓Answer
+  + says YesNo
+  + involves Question
+    + is answered by AnswerKind = 'Any of'
+
+Query AnyOfAnswers:
+It is impossible that:
+✓Answer
+  + chose Option
+  + involves Question
+    + is answered by AnswerKind = 'Yes or no'
+
+Query OptionsOfAnyOfQuestions:
+It is impossible that:
+✓Question
+  + is answered by AnswerKind = 'Yes or no'
+  + Option is in that Question
 
 The possible values of AnswerKind are 'Yes or no', 'Any of'.
 The possible values of YesNo are 'Yes', 'No'.
@@ -478,5 +525,10 @@ Reminder was done by Event
 Each Reminder was done by at most one Event.
 If some Reminder was done by some Event then that Reminder was done at some Moment.
 If some Reminder was done by some Event and that Reminder is of some Vehicle then that Event is of that Vehicle.
-// A schedule has at most one reminder not yet done: a uniqueness over
-// the reminders not done, a subtype's, later.
+// A schedule has at most one reminder not yet done.
+Query OneOpenReminder:
+It is impossible that:
+✓Schedule
+  + Reminder comes from that Schedule
+    + not was done at Moment
+    + count(Reminder) for Schedule > 1
