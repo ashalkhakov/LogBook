@@ -22,6 +22,11 @@
     return model;
 }
 
+- (instancetype)init {
+    [self doesNotRecognizeSelector:_cmd];
+    return nil;
+}
+
 - (instancetype)initWithServiceRoot:(NSURL *)serviceRoot signIn:(ODataSignIn *)signIn {
     if ((self = [super init])) {
         _serviceRoot = [serviceRoot copy];

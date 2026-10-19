@@ -28,9 +28,10 @@
 - (IBAction)save:(id)sender {
     if (![self commitEdits]) return;
     NSArray<NSError *> *warnings = [_store warnings];
-    if (warnings.count && ![self proceedDespite:warnings]) return;
+    if (warnings.count && !_quiet && ![self proceedDespite:warnings]) return;
     NSError *error = nil;
-    if (![_store save:&error]) [self presentError:error];
+    _lastError = [_store save:&error] ? nil : [self willPresentError:error];
+    if (_lastError && !_quiet) [self presentError:error];
 }
 
 /* The deontic rules a change breaks: what ought not to be, but may. */

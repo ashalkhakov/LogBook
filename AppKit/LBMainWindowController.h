@@ -4,6 +4,7 @@
 // before closing on changes not saved.
 
 #import <AppKit/AppKit.h>
+#import "LBEntityController.h"
 
 @class LBStore;
 
@@ -16,6 +17,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;
 @property (nonatomic, strong) IBOutlet NSArrayController *vehicles;
 
+// Why the last save was refused (nil: it was not).
+@property (nonatomic, readonly, strong, nullable) NSError *lastError;
+// Said in no alert, kept in lastError: a self-test has no one to answer one.
+@property (nonatomic) BOOL quiet;
 // The changes sent; the rules' refusals and the warnings said.
 - (IBAction)save:(nullable id)sender;
 - (IBAction)revertChanges:(nullable id)sender;
@@ -24,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 // The vehicles' controller: a new one is the signed-in user's.
-@interface LBVehicleController : NSArrayController
+@interface LBVehicleController : LBEntityController
 @property (nonatomic, weak) IBOutlet LBMainWindowController *windowController;
 @end
 

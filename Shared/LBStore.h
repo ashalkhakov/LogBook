@@ -23,6 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable NSManagedObjectModel *)model;
 
 - (instancetype)initWithServiceRoot:(NSURL *)serviceRoot signIn:(nullable ODataSignIn *)signIn NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
 @property (nonatomic, readonly, copy) NSURL *serviceRoot;
 @property (nonatomic, readonly, strong, nullable) ODataSignIn *signIn;
 

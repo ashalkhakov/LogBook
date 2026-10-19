@@ -54,10 +54,16 @@ static void LBClick(NSWindow *window, NSString *identifier) {
     LBSpin();
 }
 
-/* What the server has: read through a store of its own. */
+/* What the server has: read through a store of its own, kept while its
+   objects are looked at. */
+static LBStore *LBServerSide;
+
 static Vehicle *LBVehicleNamed(NSString *name) {
-    LBStore *other = [[LBStore alloc] initWithServiceRoot:LBSelfTestRoot signIn:nil];
-    if (![other open:NULL]) return nil;
+    if (!LBServerSide) {
+        LBServerSide = [[LBStore alloc] initWithServiceRoot:LBSelfTestRoot signIn:nil];
+        if (![LBServerSide open:NULL]) return nil;
+    }
+    LBStore *other = LBServerSide;
     NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Vehicle class])];
     fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(vehicleName)), name];
     return [[other.context executeFetchRequest:fetch error:NULL] firstObject];
@@ -65,10 +71,15 @@ static Vehicle *LBVehicleNamed(NSString *name) {
 
 static void LBSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
+    controller.quiet = YES;
     [NSApp activateIgnoringOtherApps:YES];
     [window makeKeyAndOrderFront:nil];
     LBCheck(@"the window", window.isVisible, nil);
     NSUInteger before = [controller.vehicles.arrangedObjects count];
+    LBEntityController *vehicles = (LBEntityController *)controller.vehicles;
+    LBCheck(@"the vehicles' controller has its entity and context", vehicles.modelEntityName && vehicles.context,
+            [NSString stringWithFormat:@"%@ %@ canAdd %d content %@", vehicles.modelEntityName, vehicles.context, vehicles.canAdd,
+                                       [vehicles.content class]]);
 
     LBClick(window, @"addVehicle");
     LBCheck(@"a new vehicle, chosen", [controller.vehicles.arrangedObjects count] == before + 1
@@ -82,7 +93,8 @@ static void LBSteps(LBMainWindowController *controller) {
     LBCheck(@"what was typed is the vehicle's", [chosen.vehicleName isEqualToString:@"Self-test Golf"] && chosen.manufactureYear == 2016,
             chosen.vehicleName);
     LBClick(window, @"save");
-    LBCheck(@"saved", !controller.store.context.hasChanges, controller.store.context.insertedObjects);
+    LBCheck(@"saved", !controller.store.context.hasChanges && !controller.lastError,
+            controller.lastError.localizedRecoverySuggestion ?: controller.store.context.insertedObjects);
     Vehicle *kept = LBVehicleNamed(@"Self-test Golf");
     LBCheck(@"the server has it", [kept.make isEqualToString:@"Volkswagen"] && [kept.carModel isEqualToString:@"Golf VII"], kept);
     LBCheck(@"its owner the user", [kept.owner.email isEqualToString:controller.store.user.email], kept.owner.email);
