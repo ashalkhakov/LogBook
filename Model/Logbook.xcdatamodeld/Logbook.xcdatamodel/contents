@@ -1138,6 +1138,11 @@
                 <entry key="ormkit.source" value="_5FFD9E35-EFA3-4333-ABC0-D322729071D5"/>
             </userInfo>
         </attribute>
+        <attribute name="saleDate" optional="YES" attributeType="Date" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_59F74FAC-6A81-4639-9615-6377FAF96626"/>
+            </userInfo>
+        </attribute>
         <attribute name="vehicleName" attributeType="String">
             <userInfo>
                 <entry key="ormkit.source" value="_5E18F64C-A928-4EC4-B229-FF6185B78827"/>

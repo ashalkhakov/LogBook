@@ -150,7 +150,7 @@ Each Vehicle is expected to sell for at most one Money.
 Vehicle was valued on Date at Money (as Valuation)
 For each Vehicle and Date, that Vehicle was valued on that Date at at most one Money.
 Vehicle was sold on Date (as SaleDate)
-* The date of the moment of the vehicle's CarSale.
+** The date of the moment of the vehicle's CarSale.
 Each Vehicle was sold on at most one Date.
 Vehicle was sold for Money (as SellingPrice)
 * What the vehicle's CarSale earned.
@@ -214,8 +214,9 @@ Each Cost is of exactly one CostKind.
 If some Event had driver some User and that Event is of some Vehicle then that User drives that Vehicle.
 
 // Events fall while the vehicle is kept: not before the day it was
-// acquired. Ought: the owner may log what came before. (Not after it was
-// sold: its sale date is derived by words alone, which queries cannot run.)
+// acquired, nor after the day it was sold (its sale date derived from its
+// car sale, and stored). Ought: the owner may log what came before or
+// after.
 Query EventsWhileKept:
 It is forbidden that:
 ✓Event
@@ -223,6 +224,14 @@ It is forbidden that:
   + is of Vehicle
     + was acquired on Date1
   Day: Date = date(Moment) < Date1
+
+Query EventsBeforeSale:
+It is forbidden that:
+✓Event
+  + was at Moment
+  + is of Vehicle
+    + was sold on Date2
+  Day: Date = date(Moment) > Date2
 
 If some Record was entered by some User and that Record is of some Vehicle then that User drives that Vehicle.
 
@@ -438,6 +447,11 @@ Reference Mode: .id
 Portable data type: Other: Object ID
 
 Each ServiceKind is by definition a CostKind that is 'Maintenance' or 'Repair'.
+
+Query ServiceKindRule:
+Derivation of ServiceKind:
+✓CostKind in ('Maintenance', 'Repair')
+
 Each ExpenseKind is a CostKind.
 Each Service is a MeteredEvent.
 Each Service is a Cost.
@@ -545,6 +559,15 @@ Derivation of "TyreChange removed TyreSet":
   Previous = max(Moment2) for TyreChange1
 
 If some TyreChange fitted some TyreSet and that TyreChange is of some Vehicle then that TyreSet is of that Vehicle.
+
+// A tyre set is bought no later than the day it is first fitted.
+Query TyresBoughtBeforeFitted:
+It is impossible that:
+✓TyreChange
+  + was at Moment
+  + fitted TyreSet
+    + was bought on Date1
+  Day: Date = date(Moment) < Date1
 
 The possible values of Season are 'Summer', 'Winter', 'All-season'.
 The possible values of Tread are 0 to 20.

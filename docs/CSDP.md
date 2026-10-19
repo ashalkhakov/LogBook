@@ -1347,10 +1347,9 @@ the vehicle's side: a vehicle is sold at most once. The vehicle's sale
 
 ### For ORMKit
 
-- **Subtypes defined by a rule** (Cost, CarSale, the kinds):
-  ORMKit reads NORMA's subtype derivation rules but doesn't run them yet
-  ([DERIVATION.md](../../NativeORM2/docs/DERIVATION.md), for later). The
-  same query kind as a fact type's derivation would do.
+- **Subtypes defined by a rule** (Cost, CarSale, the kinds): each is
+  run by a derivation query of the subtype, as a fact type's is
+  ([DERIVATION.md](../../NativeORM2/docs/DERIVATION.md#subtypes)).
 - **Patterns** (a currency code, a VIN) are not value constraints NORMA
   has; they're a data type's facet. They can be checked by code generated
   from a constraint written as a rule.
@@ -1512,7 +1511,10 @@ in the schema as its outline:
 - a trip ends no nearer than it started, in kilometres whatever its units
   (`TripEndsNoNearer`);
 - events fall while the vehicle is kept, on or after the day it was
-  acquired (`EventsWhileKept`, deontic).
+  acquired and on or before the day it was sold (`EventsWhileKept`,
+  `EventsBeforeSale`, deontic);
+- a tyre set is bought no later than the day it is fitted
+  (`TyresBoughtBeforeFitted`).
 
 Some of what is worked out is computed by queries, with value nodes
 ([EXPRESSIONS.md](../../NativeORM2/docs/EXPRESSIONS.md)): a trip's
@@ -1535,23 +1537,22 @@ stored, so the generated code sets a service's cost at save, and any other
 record keeps the cost entered for it.
 
 A vehicle's one car sale is kept by its derived sale date, unique for the
-vehicle. Three partly derived fact types are stored (a record's vehicle,
-its cost, who drives a vehicle), so that queries go through them.
-
-What it cannot say yet, it says in comments, for later:
-- that a trip ends no nearer than it started, and the meter rule across
-  units (distances compared after converting);
-- that events fall while the vehicle is kept, and a tyre set is bought
-  before it is fitted (a date compared with a moment).
+vehicle: the date of its car sale's moment (`SaleDate`, derived and
+stored), and what the sale earned (`SellingPrice`). The tyre set a change
+removed is the one the vehicle's change before it fitted (`RemovedSet`,
+the one before, derived and stored), so that no change fitting and
+removing the same set is checked on it. Three partly derived fact types
+are stored as well (a record's vehicle, its cost, who drives a vehicle),
+so that queries go through them. Every constraint is checked: 57, by the
+generated code.
 
 The subtypes defined by a rule keep it as NORMA keeps a subtype's
-derivation rule, and two of them run it as a query: a Cost is a record
-that cost some money (`CostRule`), a CarSale an income of kind 'Car sale'
-(`CarSaleRule`). ServiceKind's, a cost kind that is 'Maintenance' or
-'Repair', is words alone for now: a query cannot yet ask that its root is
-one of a list. A derived subtype is no entity of its own in Core Data: its
-fact types are its supertype's, so every record has what a cost is
-charged, whichever entity it is.
+derivation rule, and run it as a query: a Cost is a record that cost
+some money (`CostRule`), a CarSale an income of kind 'Car sale'
+(`CarSaleRule`), a ServiceKind a cost kind that is 'Maintenance' or
+'Repair' (`ServiceKindRule`, one of a list). A derived subtype is no
+entity of its own in Core Data: its fact types are its supertype's, so
+every record has what a cost is charged, whichever entity it is.
 
 ## Next
 

@@ -662,6 +662,20 @@
 				</orm:PlayedRoles>
 				<orm:SubtypeDerivationRule>
 					<orm:SubtypeDerivationPath id="_66052D14-8E53-4D84-BC2F-9204565F7C6B">
+						<orm:PathComponents>
+							<orm:RolePath id="_5FC49374-C631-4270-FE06-1C2B66F6FDFD">
+								<orm:RootObjectType id="_2E70D4B0-9DA0-11E8-CE9D-6FE7EE057817" ref="_D3D9EF81-F055-4F1A-A33A-E5C495D7B619">
+									<orm:ValueRestriction>
+										<orm:PathRootConditionValueConstraint id="_7745160D-B539-69FB-EC65-C10B0E7F32FE">
+											<orm:ValueRanges>
+												<orm:ValueRange id="_F59CE251-0120-32E6-47E5-3B1EABE69797" MinValue="Maintenance" MaxValue="Maintenance" MinInclusion="NotSet" MaxInclusion="NotSet" />
+												<orm:ValueRange id="_F59CE351-0120-3499-47E5-3A1EABE695E4" MinValue="Repair" MaxValue="Repair" MinInclusion="NotSet" MaxInclusion="NotSet" />
+											</orm:ValueRanges>
+										</orm:PathRootConditionValueConstraint>
+									</orm:ValueRestriction>
+								</orm:RootObjectType>
+							</orm:RolePath>
+						</orm:PathComponents>
 						<orm:InformalRule>
 							<orm:DerivationNote id="_0BFB7F1B-0F1B-4CCB-81B2-FC059DAD527A">
 								<orm:Body>a CostKind that is 'Maintenance' or 'Repair'</orm:Body>
@@ -2281,7 +2295,7 @@
 					<orm:UniquenessConstraint ref="_8283BC42-F142-4F7F-B903-2A8B0BF10AB0" />
 				</orm:InternalConstraints>
 				<orm:DerivationRule>
-					<orm:FactTypeDerivationPath id="_CC82EADE-2CB1-42B8-B3E3-2C20E31A50B9">
+					<orm:FactTypeDerivationPath id="_CC82EADE-2CB1-42B8-B3E3-2C20E31A50B9" DerivationStorage="Stored">
 						<orm:PathComponents>
 							<orm:RolePath id="_CC6F1F39-3E5C-D364-E5A4-68BDEDE67691">
 								<orm:RootObjectType id="_5E9B96E3-AF1E-B915-2D71-B67A6B2C4E5A" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
@@ -13426,6 +13440,39 @@
 					</ormq:Node>
 				</ormq:Step>
 				<ormq:Value id="_26BFDE9E-86BD-48BF-BE33-706362811A91" ref="_64C7769B-046B-495E-B2CD-AD0522B51F56" Name="Previous" Expression="max(#_D420686D-6949-403C-9C2B-3A2B9AAA070A) for #_A104A86F-3920-4DED-80D8-7D0B67EAC919" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_38899324-B0F5-4CBD-A02A-3B7538CD9E01" Name="ServiceKindRule" Kind="Derivation" Of="_E2A6BACB-870C-4087-AC76-629EFE2BFAC4">
+			<ormq:Node id="_D6EF703D-D68F-43BF-963E-D1569E53FDB5" ref="_D3D9EF81-F055-4F1A-A33A-E5C495D7B619" Projected="true" Comparison="in" Value="'Maintenance', 'Repair'" />
+		</ormq:Query>
+		<ormq:Query id="_2678FEAA-5C67-405D-AB6A-392CCEFE49A4" Name="EventsBeforeSale" Kind="Constraint" Modality="Deontic">
+			<ormq:Node id="_25058C22-EC05-4BAF-8AE5-2D059AEBD731" ref="_890D546C-1996-4726-98DB-4A4151CA6089" Projected="true">
+				<ormq:Step id="_C008C5C5-7DDC-4F02-BE8A-5BCE46785D92" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+					<ormq:Node id="_31A318FA-F081-4EC1-8CB1-5A6FA9193605" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
+				</ormq:Step>
+				<ormq:Step id="_C082EC19-E8E3-4149-8D53-BB4F18ABEC80" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+					<ormq:Node id="_3BF13E94-158C-400C-850E-1EE8070DF229" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+						<ormq:Step id="_D0B6D3C8-E28C-4DC2-92FD-59C30C386ABB" ref="_93972F6B-A0E6-4399-A219-C842BF2153B0" Role="_2A73B8AF-BF83-4744-9DAF-37268BC21B98">
+							<ormq:Node id="_8C58D11F-3DE8-47C6-9C8E-FA8993370051" Role="_59F74FAC-6A81-4639-9615-6377FAF96626" Label="2" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_7A6ADE57-A5BB-4F7C-A4BC-69E8AF0E507E" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="date(#_31A318FA-F081-4EC1-8CB1-5A6FA9193605)" Comparison="&gt;" CompareTo="_8C58D11F-3DE8-47C6-9C8E-FA8993370051" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_C7537146-ACC6-4674-AB5C-035E814BAE85" Name="TyresBoughtBeforeFitted" Kind="Constraint">
+			<ormq:Node id="_EC17D5E4-2B0B-40EC-994A-2B485302E602" ref="_BE6F548A-112F-49F9-B626-C776869E9ABE" Projected="true">
+				<ormq:Step id="_8630D795-4904-4307-A1D1-3DD2C9A82630" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+					<ormq:Node id="_4C0AF631-429D-4550-8973-2112980DAAD4" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
+				</ormq:Step>
+				<ormq:Step id="_968BB1F5-B241-4322-9FCB-557274FC86F2" ref="_1F0001DF-E039-4787-A53B-9E52C1A33F63" Role="_137C339E-A19E-49CB-9AE9-6E74F9438577">
+					<ormq:Node id="_037CC9E5-31B3-4707-8B4D-F4DB7A1F5FBD" Role="_C254ACAC-A996-46CB-B77F-A33CE3EC77D7">
+						<ormq:Step id="_48049DD4-89F3-44E8-82B5-944CF190B7B7" ref="_F9172140-0AC1-44C1-A983-079D8E7DCE98" Role="_E65F024B-0200-4C81-A476-7585C3F61D92">
+							<ormq:Node id="_3BBEC9D3-D8A6-4852-9005-77F65092F17E" Role="_69985A53-5D64-4E8D-8A26-91CC079C7823" Label="1" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_FD1CD007-E307-4356-9441-680FD1BF4B5F" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="date(#_4C0AF631-429D-4550-8973-2112980DAAD4)" Comparison="&lt;" CompareTo="_3BBEC9D3-D8A6-4852-9005-77F65092F17E" />
 			</ormq:Node>
 		</ormq:Query>
 	</ormq:Queries>
