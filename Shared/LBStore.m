@@ -46,10 +46,7 @@
     _coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
     /* New objects' keys are ours (LBIdentified): a save's inserts go in its
        change set, which the server checks whole. */
-    NSMutableDictionary *options = [@{ ODataIncrementalStorePostOnObtainPermanentIDsOption: @NO,
-                                       /* Users('anna@example.org'), not Users/anna@example.org, which the
-                                          service reads otherwise (ODataKit#47). */
-                                       ODataIncrementalStoreKeyAsSegmentOption: @NO } mutableCopy];
+    NSMutableDictionary *options = [@{ ODataIncrementalStorePostOnObtainPermanentIDsOption: @NO } mutableCopy];
     if (_signIn) options[ODataIncrementalStoreCredentialProviderOption] = _signIn;
     if (![_coordinator addPersistentStoreWithType:[ODataIncrementalStore storeType] configuration:nil URL:_serviceRoot
                                           options:options error:error]) {

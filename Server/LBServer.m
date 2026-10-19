@@ -127,16 +127,14 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
 - (BOOL)makeService:(NSError **)error {
     HSConfiguration *c = self.configuration;
     NSURL *modelURL = LBBeside(c, @"Model", @"Logbook.momd");
-    /* A copy: the model Apple's Core Data loads takes no more entities,
-       and ODataSync's bookkeeping adds some. The one loaded kept: a copy
-       of this compiled model points into it, and crashes once it is gone
-       (ODataKit#46). So two models claim the generated classes, and
-       +entity cannot tell them apart: name entities by class. */
-    static NSManagedObjectModel *loaded;
-    loaded = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
-    NSManagedObjectModel *model = [loaded copy];
+    /* Read from its file with the service's part of ODataSync added
+       (tombstones), before the store opens: a model Apple's Core Data
+       loads takes no more entities. */
+    NSError *unread = nil;
+    NSManagedObjectModel *model = [ODataSyncService modelWithBookkeepingAtURL:modelURL configuration:nil error:&unread];
     if (!model.entities.count) {
-        if (error) *error = LBError(NSFileReadNoSuchFileError, [NSString stringWithFormat:@"no model at %@ (-Model)", modelURL.path]);
+        if (error) *error = LBDetailed(unread ?: LBError(NSFileReadNoSuchFileError, @""),
+                                       [NSString stringWithFormat:@"no model at %@ (-Model)", modelURL.path]);
         return NO;
     }
     /* The model's tables, as the generated code asks for them by name. */
@@ -149,8 +147,6 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
         return NO;
     }
     [ORMTables registerTables:tables named:@"Logbook"];
-    /* The service's part of ODataSync: tombstones, before the store opens. */
-    [ODataSyncService addBookkeepingToModel:model configuration:nil];
     NSPersistentStoreCoordinator *coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:model];
     NSString *type = LBStoreType([c setting:@"StoreType"]);
     BOOL sqlite = [type isEqual:NSSQLiteStoreType];
