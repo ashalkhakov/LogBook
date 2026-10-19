@@ -127,10 +127,11 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
 - (BOOL)makeService:(NSError **)error {
     HSConfiguration *c = self.configuration;
     NSURL *modelURL = LBBeside(c, @"Model", @"Logbook.momd");
-    /* A copy: Apple's Core Data hands the same model to every load of a
-       URL, and one a coordinator has used takes no more entities. The one
-       loaded kept: a copy's derived attributes (Core Data's own
-       derivations) still point into it. */
+    /* A copy: the model Apple's Core Data loads takes no more entities,
+       and ODataSync's bookkeeping adds some. The one loaded kept: a copy
+       of this compiled model points into it, and crashes once it is gone
+       (ODataKit#46). So two models claim the generated classes, and
+       +entity cannot tell them apart: name entities by class. */
     static NSManagedObjectModel *loaded;
     loaded = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
     NSManagedObjectModel *model = [loaded copy];
