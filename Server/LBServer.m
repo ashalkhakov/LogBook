@@ -26,10 +26,16 @@
 //                (HSApplication.h)
 //   AllowAnonymous  NO: a request that names no one is refused (default
 //                YES, for trying it out)
+//
+// Once a sign-in is set (TrustedUserHeader, JWTIssuer or
+// IntrospectionEndpoint), who may see and change what is kept as the model
+// says (LBPermissions.h): a user sees the vehicles they drive, and only a
+// vehicle's owner changes what is recorded of it.
 
 #import <ODataService/ODataServer.h>
 #import <ODataSync/ODataSyncService.h>
 #import "LogbookValidation.h"
+#import "LBPermissions.h"
 #include <dlfcn.h>
 #include <stdlib.h>
 
@@ -197,6 +203,11 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
         if (refused) *refused = why;
         return NO;
     };
+    /* Who may see and change what, once someone is signed in: before
+       ODataSync's, which keeps the handlers (they are its kind). */
+    if ([c setting:@"TrustedUserHeader"] || [c setting:@"JWTIssuer"] || [c setting:@"IntrospectionEndpoint"]) {
+        LBServePermissions(_service);
+    }
     _histories = [[ODataSyncService alloc] initWithService:_service];
     return YES;
 }

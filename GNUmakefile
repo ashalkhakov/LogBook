@@ -24,7 +24,7 @@ OBJC = clang
 ORMKIT ?= $(CURDIR)/../NativeORM2
 
 TOOL_NAME = logbook-server
-logbook-server_OBJC_FILES = Server/LBServer.m Model/Constraints/LogbookValidation.m
+logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Model/Constraints/LogbookValidation.m
 logbook-server_XCDATAMODELD_FILES = Model/Logbook.xcdatamodeld
 # Vehicle+CoreDataClass and the rest, generated from the model as it builds,
 # as Xcode does (Codegen: Class Definition).

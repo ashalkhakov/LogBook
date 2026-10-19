@@ -50,8 +50,10 @@ $(BUILD)/Logbook.ormplans: Model/Constraints/Logbook.ormplans
 	@mkdir -p $(BUILD)
 	cp $< $@
 
-$(BUILD)/logbook-server: Server/LBServer.m Model/Constraints/LogbookValidation.m $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
-	$(CC) $(FLAGS) $(INC) Server/LBServer.m Model/Constraints/LogbookValidation.m $(GENERATED)/*.m $(LIBS) -o $@
+SERVER = Server/LBServer.m Server/LBPermissions.m Model/Constraints/LogbookValidation.m
+
+$(BUILD)/logbook-server: $(SERVER) Server/LBPermissions.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	$(CC) $(FLAGS) $(INC) $(SERVER) $(GENERATED)/*.m $(LIBS) -o $@
 
 check: all
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
