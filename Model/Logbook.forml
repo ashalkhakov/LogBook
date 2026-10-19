@@ -518,11 +518,32 @@ Each TyreChange is a MeteredEvent.
 TyreChange fitted TyreSet
 Each TyreChange fitted exactly one TyreSet.
 TyreChange removed TyreSet
-* The set the vehicle's tyre change before it fitted; none for the first change recorded.
+** The set the vehicle's tyre change before it fitted; none for the first change recorded.
 Each TyreChange removed at most one TyreSet.
 TyreChange measured Tread
 Each TyreChange measured exactly one Tread.
 No TyreChange fitted and removed the same TyreSet.
+
+// The set a tyre change removed: what the vehicle's tyre change before it
+// fitted.
+Query RemovedSet:
+Derivation of "TyreChange removed TyreSet":
+✓TyreChange1
+  + was at Moment1
+  + is of Vehicle
+    + Record is of that Vehicle
+      + is Event
+        + is MeteredEvent
+          + is TyreChange2
+            + was at Moment2 < Moment1
+    + Record is of that Vehicle
+      + is Event
+        + is MeteredEvent
+          + is TyreChange3
+            + was at Moment3 = Previous
+            + fitted ✓TyreSet
+  Previous = max(Moment2) for TyreChange1
+
 If some TyreChange fitted some TyreSet and that TyreChange is of some Vehicle then that TyreSet is of that Vehicle.
 
 The possible values of Season are 'Summer', 'Winter', 'All-season'.
@@ -582,6 +603,24 @@ Derivation of CarSale:
 
 // A vehicle is sold at most once: "Vehicle was sold on Date" is unique
 // for the vehicle, and derived from its car sales.
+Query SaleDate:
+Derivation of "Vehicle was sold on Date":
+✓Vehicle
+  + Record is of that Vehicle
+    + is Event
+      + was at Moment
+      + is Income
+        + is CarSale
+      ✓Day: Date = date(Moment)
+
+Query SellingPrice:
+Derivation of "Vehicle was sold for Money":
+✓Vehicle
+  + Record is of that Vehicle
+    + is Event
+      + is Income
+        + is CarSale
+        + earned ✓Money
 
 # Checklists and inspections
 

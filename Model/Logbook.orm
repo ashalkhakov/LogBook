@@ -2282,9 +2282,63 @@
 				</orm:InternalConstraints>
 				<orm:DerivationRule>
 					<orm:FactTypeDerivationPath id="_CC82EADE-2CB1-42B8-B3E3-2C20E31A50B9">
+						<orm:PathComponents>
+							<orm:RolePath id="_CC6F1F39-3E5C-D364-E5A4-68BDEDE67691">
+								<orm:RootObjectType id="_5E9B96E3-AF1E-B915-2D71-B67A6B2C4E5A" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
+								<orm:PathedRoles>
+									<orm:PathedRole id="_3A58F8EF-2258-B898-408B-5FA04421B84F" ref="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2" Purpose="PostInnerJoin" />
+									<orm:PathedRole id="_D4B54E32-6385-460F-FE24-56E009F08DBC" ref="_9E39171D-A1A8-4494-9AEF-2FBC80042310" Purpose="SameFactType" />
+									<orm:PathedRole id="_BBF95E01-A2D6-0474-2306-1404566023E7" ref="_A9366C8F-304C-4984-A137-0D71A63310AD" Purpose="PostInnerJoin" />
+									<orm:PathedRole id="_B9849D50-F282-F98A-881D-EB0AF1D6E251" ref="_9EE052E5-C881-4AE1-A581-371DF6DF6907" Purpose="SameFactType" />
+								</orm:PathedRoles>
+								<orm:SubPaths>
+									<orm:SubPath id="_ED607F75-8DD3-2522-D054-F05686DB22B5">
+										<orm:PathedRoles>
+											<orm:PathedRole id="_7E8A9916-1FCE-55CF-42C8-64F5B9C6F828" ref="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_35FF9324-39C9-471D-86ED-DE4EE987969A" ref="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Purpose="SameFactType" />
+										</orm:PathedRoles>
+									</orm:SubPath>
+									<orm:SubPath id="_711469EE-B87F-16DD-A8A7-F0E90945704E">
+										<orm:PathedRoles>
+											<orm:PathedRole id="_1DB2B1EA-24D1-7E60-9EE1-A78E4FD9DF3B" ref="_E3089AC0-3754-4FC8-8E86-D4CFF836E2FD" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_0E48DAB0-466C-0FF6-391E-242C45039799" ref="_6AE7639E-4244-4C19-976D-FA8DB15BC246" Purpose="SameFactType" />
+											<orm:PathedRole id="_0D31F38F-630E-FD73-1D98-2EDB95C1F5B0" ref="_7843B3E4-CC98-4724-987D-EF6E7C5C93D4" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_8875393E-4AB3-3128-7F23-AEE4173DF6AF" ref="_DB2DDF9F-925C-4AE7-BF17-9D2895B458FB" Purpose="SameFactType" />
+										</orm:PathedRoles>
+									</orm:SubPath>
+								</orm:SubPaths>
+								<orm:CalculatedValues>
+									<orm:CalculatedValue id="_432DD0D4-9E02-72CC-923A-75311450A7DB">
+										<orm:Function ref="_920E0B14-DE1A-36E9-8745-F5ABBFC8A6CC" />
+										<orm:Inputs>
+											<orm:Input id="_3D9C1D68-26D2-E637-DF0C-78D62AFFBD4E">
+												<orm:Parameter ref="_EF655B33-5A89-9ABA-7FEE-1D8ED7CCD129" />
+												<orm:Source>
+													<orm:PathedRole ref="_35FF9324-39C9-471D-86ED-DE4EE987969A" />
+												</orm:Source>
+											</orm:Input>
+										</orm:Inputs>
+									</orm:CalculatedValue>
+								</orm:CalculatedValues>
+							</orm:RolePath>
+						</orm:PathComponents>
+						<orm:DerivationProjections>
+							<orm:DerivationProjection id="_A61E812B-F84C-EE46-D749-A4A15920A827" ref="_CC6F1F39-3E5C-D364-E5A4-68BDEDE67691">
+								<orm:RoleProjection id="_6637DA49-5933-1561-2568-25EF6094F684" ref="_2A73B8AF-BF83-4744-9DAF-37268BC21B98">
+									<orm:DerivationSource>
+										<orm:PathRoot ref="_5E9B96E3-AF1E-B915-2D71-B67A6B2C4E5A" />
+									</orm:DerivationSource>
+								</orm:RoleProjection>
+								<orm:RoleProjection id="_05AC1E82-222F-0179-1165-5248F8B4F90C" ref="_59F74FAC-6A81-4639-9615-6377FAF96626">
+									<orm:DerivationSource>
+										<orm:CalculatedValue ref="_432DD0D4-9E02-72CC-923A-75311450A7DB" />
+									</orm:DerivationSource>
+								</orm:RoleProjection>
+							</orm:DerivationProjection>
+						</orm:DerivationProjections>
 						<orm:InformalRule>
 							<orm:DerivationNote id="_97C8F89F-9AFD-4B6E-9CA6-498F02C1FCBF">
-								<orm:Body>The date of the moment of the vehicle's CarSale.</orm:Body>
+								<orm:Body>For each Vehicle and Day, that Vehicle was sold on Day if and only if some Record is of that Vehicle and that Record is an Event that was at some Moment and that Event is an Income that is a CarSale and Day is the date of that Moment.</orm:Body>
 							</orm:DerivationNote>
 						</orm:InformalRule>
 					</orm:FactTypeDerivationPath>
@@ -2320,9 +2374,50 @@
 				</orm:InternalConstraints>
 				<orm:DerivationRule>
 					<orm:FactTypeDerivationPath id="_D0AFB160-7781-4E12-800D-8B06BF172139">
+						<orm:PathComponents>
+							<orm:RolePath id="_9AD3868A-4667-6B42-9EDC-098E5FBE143B">
+								<orm:RootObjectType id="_749F0CF1-3250-37B3-0200-6D434949A48C" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
+								<orm:PathedRoles>
+									<orm:PathedRole id="_5902B015-BAE4-C558-9EFD-FE46D6BAC46F" ref="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2" Purpose="PostInnerJoin" />
+									<orm:PathedRole id="_A8EEA6B5-B431-E699-4955-5B1BB2274A3E" ref="_9E39171D-A1A8-4494-9AEF-2FBC80042310" Purpose="SameFactType" />
+									<orm:PathedRole id="_C75FBDD4-323E-1D68-5D00-A1E5202A8603" ref="_A9366C8F-304C-4984-A137-0D71A63310AD" Purpose="PostInnerJoin" />
+									<orm:PathedRole id="_DC829D1C-E337-755C-DD4B-D0AD169CA303" ref="_9EE052E5-C881-4AE1-A581-371DF6DF6907" Purpose="SameFactType" />
+									<orm:PathedRole id="_DFCB1A18-871D-46BC-B649-7CB9C2D91BEB" ref="_E3089AC0-3754-4FC8-8E86-D4CFF836E2FD" Purpose="PostInnerJoin" />
+									<orm:PathedRole id="_7F1F31F1-D980-8975-D614-B71E7DF56A4A" ref="_6AE7639E-4244-4C19-976D-FA8DB15BC246" Purpose="SameFactType" />
+								</orm:PathedRoles>
+								<orm:SubPaths>
+									<orm:SubPath id="_D5DA8A42-CBD1-525D-9BA9-102A319E7CC6">
+										<orm:PathedRoles>
+											<orm:PathedRole id="_BDD3A148-004B-C1E0-1E56-B59E443CE943" ref="_7843B3E4-CC98-4724-987D-EF6E7C5C93D4" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_86CE4C1B-CEDB-2E79-7C0C-F812F70C6CFA" ref="_DB2DDF9F-925C-4AE7-BF17-9D2895B458FB" Purpose="SameFactType" />
+										</orm:PathedRoles>
+									</orm:SubPath>
+									<orm:SubPath id="_2962A0CA-F350-5748-97C2-6964A7FD62E7">
+										<orm:PathedRoles>
+											<orm:PathedRole id="_0F0812FE-7A77-BB51-17B3-295BDA7C8D9E" ref="_5C590B36-9C30-4EB4-83E2-D60671217551" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_545CA907-5F25-99DF-E6C3-C32B070D5F7C" ref="_13D0D1CF-3099-4872-8281-029DCDFD4601" Purpose="SameFactType" />
+										</orm:PathedRoles>
+									</orm:SubPath>
+								</orm:SubPaths>
+							</orm:RolePath>
+						</orm:PathComponents>
+						<orm:DerivationProjections>
+							<orm:DerivationProjection id="_1F9E9507-3776-468C-31F3-77C956AB5551" ref="_9AD3868A-4667-6B42-9EDC-098E5FBE143B">
+								<orm:RoleProjection id="_1B58BDEA-EEA4-91B9-CC9D-2EF5C9151CA4" ref="_EBCBA483-AA41-4C6B-95B4-52947B2C4733">
+									<orm:DerivationSource>
+										<orm:PathRoot ref="_749F0CF1-3250-37B3-0200-6D434949A48C" />
+									</orm:DerivationSource>
+								</orm:RoleProjection>
+								<orm:RoleProjection id="_875F1E03-D893-AE42-E958-CDB72364D4E3" ref="_1EB0CF8E-7CF6-4769-8ABE-02940EEDFEF4">
+									<orm:DerivationSource>
+										<orm:PathedRole ref="_545CA907-5F25-99DF-E6C3-C32B070D5F7C" />
+									</orm:DerivationSource>
+								</orm:RoleProjection>
+							</orm:DerivationProjection>
+						</orm:DerivationProjections>
 						<orm:InformalRule>
 							<orm:DerivationNote id="_5EF85501-EA8F-40C0-91BD-8DCA87CF403F">
-								<orm:Body>What the vehicle's CarSale earned.</orm:Body>
+								<orm:Body>For each Vehicle and Money, that Vehicle was sold for that Money if and only if some Record is of that Vehicle and that Record is an Event that is an Income that is a CarSale and that Income earned that Money.</orm:Body>
 							</orm:DerivationNote>
 						</orm:InformalRule>
 					</orm:FactTypeDerivationPath>
@@ -4258,10 +4353,139 @@
 					<orm:UniquenessConstraint ref="_8FC0BD52-CEE4-45DE-B246-40594DD50ECE" />
 				</orm:InternalConstraints>
 				<orm:DerivationRule>
-					<orm:FactTypeDerivationPath id="_3C100098-2E03-4B6E-B755-E5126D1748A4">
+					<orm:FactTypeDerivationPath id="_3C100098-2E03-4B6E-B755-E5126D1748A4" DerivationStorage="Stored">
+						<orm:PathComponents>
+							<orm:RolePath id="_E1473D2A-CB78-7F0D-3A10-C7D38C34332C">
+								<orm:RootObjectType id="_930447DB-16C5-0725-8617-D113FA9E6CBE" ref="_BE6F548A-112F-49F9-B626-C776869E9ABE" />
+								<orm:SubPaths>
+									<orm:SubPath id="_47564776-7EB0-2C71-4C24-E6EB2D553672">
+										<orm:PathedRoles>
+											<orm:PathedRole id="_68ADF48E-F51A-87C4-D9B6-D1B6E309F41F" ref="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_4FB12D6A-9774-EE59-B5B3-C0F93D7F6606" ref="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Purpose="SameFactType" />
+										</orm:PathedRoles>
+									</orm:SubPath>
+									<orm:SubPath id="_0C00AD7C-BC3A-735B-16BC-0EA728C9DA88">
+										<orm:PathedRoles>
+											<orm:PathedRole id="_2993FEF2-9219-6282-A90E-AFDF4417DA11" ref="_9E39171D-A1A8-4494-9AEF-2FBC80042310" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_0EA9AF24-072B-5EDD-C986-FEF1A7BCCF4A" ref="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2" Purpose="SameFactType" />
+										</orm:PathedRoles>
+										<orm:SubPaths>
+											<orm:SubPath id="_B3C0A027-B506-1233-5F5B-0189C38D8A84">
+												<orm:PathedRoles>
+													<orm:PathedRole id="_87D717EF-2477-272A-8976-DBC68C9F99CD" ref="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_0ACF2037-E4B7-A3BE-7906-EF71BA79EBB9" ref="_9E39171D-A1A8-4494-9AEF-2FBC80042310" Purpose="SameFactType" />
+													<orm:PathedRole id="_251A84FE-4494-ADED-F315-18305D3A82FA" ref="_A9366C8F-304C-4984-A137-0D71A63310AD" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_67FDDA94-32D9-FEF9-3387-52636F0C20A6" ref="_9EE052E5-C881-4AE1-A581-371DF6DF6907" Purpose="SameFactType" />
+													<orm:PathedRole id="_3578E926-D09C-9076-B13D-96C37355DDB5" ref="_4B437DD5-94F9-478D-BC03-D26586384E89" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_7474CBEE-2C23-62DB-88A6-DB4BBF157D54" ref="_F6771E34-B105-43BF-9E9C-72B00BE6CD0F" Purpose="SameFactType" />
+													<orm:PathedRole id="_643129B8-3464-9E66-3367-A0DE2E41C521" ref="_5B41CC89-22F3-4176-A53B-5C794F3DA8CE" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_E15D3F2E-70E9-DB70-A9BD-8CE44CF7807F" ref="_2D8318FF-4AD6-4FE8-BF80-622A25A1E5EF" Purpose="SameFactType" />
+													<orm:PathedRole id="_DA149956-1912-587E-665B-CE369F5D245D" ref="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_5C83E79C-7F15-918F-CD5F-08EB1802051C" ref="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Purpose="SameFactType" />
+												</orm:PathedRoles>
+											</orm:SubPath>
+											<orm:SubPath id="_BC4BB806-0393-8CD3-8D92-ABD753482584">
+												<orm:PathedRoles>
+													<orm:PathedRole id="_CBF56AED-CBFC-D64A-3AC0-C765A4EA04CD" ref="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_53D014DE-5417-6B52-EEEE-378E157CD3D9" ref="_9E39171D-A1A8-4494-9AEF-2FBC80042310" Purpose="SameFactType" />
+													<orm:PathedRole id="_A8D320E8-483D-E188-DC15-66BCB9A603EF" ref="_A9366C8F-304C-4984-A137-0D71A63310AD" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_3E825131-6EB5-894E-55EF-0159A2A71CF1" ref="_9EE052E5-C881-4AE1-A581-371DF6DF6907" Purpose="SameFactType" />
+													<orm:PathedRole id="_BB4499FC-0295-D322-6F81-8F38171501B9" ref="_4B437DD5-94F9-478D-BC03-D26586384E89" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_CE4F1BFF-A866-8E36-C626-3F6B7A7A0965" ref="_F6771E34-B105-43BF-9E9C-72B00BE6CD0F" Purpose="SameFactType" />
+													<orm:PathedRole id="_D690B801-D9D1-6167-D77E-65B45D9D6CA8" ref="_5B41CC89-22F3-4176-A53B-5C794F3DA8CE" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_10DC18EF-86F0-E1B4-0E1E-61071754FF2F" ref="_2D8318FF-4AD6-4FE8-BF80-622A25A1E5EF" Purpose="SameFactType" />
+												</orm:PathedRoles>
+												<orm:SubPaths>
+													<orm:SubPath id="_FD922F96-F8C5-A9E8-28A4-1BC616EBA2C7">
+														<orm:PathedRoles>
+															<orm:PathedRole id="_564D4E24-D849-3DF1-D8FC-4FCB5CA8B5FE" ref="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A" Purpose="PostInnerJoin" />
+															<orm:PathedRole id="_875BE434-8127-5254-6877-6D270A185753" ref="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Purpose="SameFactType" />
+														</orm:PathedRoles>
+													</orm:SubPath>
+													<orm:SubPath id="_5A91DA0D-38C5-7EEA-1237-0F2D181EEA81">
+														<orm:PathedRoles>
+															<orm:PathedRole id="_335EC916-1C7C-EC87-C2C8-9FA71A9E6614" ref="_137C339E-A19E-49CB-9AE9-6E74F9438577" Purpose="PostInnerJoin" />
+															<orm:PathedRole id="_1EDBE4CD-F4F7-A3F7-E97A-F223A6590170" ref="_C254ACAC-A996-46CB-B77F-A33CE3EC77D7" Purpose="SameFactType" />
+														</orm:PathedRoles>
+													</orm:SubPath>
+												</orm:SubPaths>
+											</orm:SubPath>
+										</orm:SubPaths>
+									</orm:SubPath>
+								</orm:SubPaths>
+								<orm:CalculatedValues>
+									<orm:CalculatedValue id="_451CCA45-511C-08C7-542D-E3BD545279DA">
+										<orm:Function ref="_982CB3E7-9699-8653-A7FB-7258FC0B0C96" />
+										<orm:Inputs>
+											<orm:Input id="_0F935BDB-E240-A51A-E3A6-80A47C0B4675">
+												<orm:Parameter ref="_3827AE95-15AE-5AC5-9C78-66D0681A4326" />
+												<orm:Source>
+													<orm:PathedRole ref="_5C83E79C-7F15-918F-CD5F-08EB1802051C" />
+												</orm:Source>
+											</orm:Input>
+											<orm:Input id="_0F935CDB-E240-A6CD-E3A6-7FA47C0B44C2">
+												<orm:Parameter ref="_54BD17DB-5A14-275E-ED8B-DBBE2B3E657B" />
+												<orm:Source>
+													<orm:PathedRole ref="_4FB12D6A-9774-EE59-B5B3-C0F93D7F6606" />
+												</orm:Source>
+											</orm:Input>
+										</orm:Inputs>
+									</orm:CalculatedValue>
+									<orm:CalculatedValue id="_5AF1B5C7-807D-B11E-C490-C87A9DAF5129">
+										<orm:Function ref="_89C3CE3C-153A-EA2C-14C7-6C83E911542B" />
+										<orm:AggregationContext>
+											<orm:PathRoot ref="_930447DB-16C5-0725-8617-D113FA9E6CBE" />
+										</orm:AggregationContext>
+										<orm:Inputs>
+											<orm:Input id="_76F1101D-C1A2-3319-BA3D-F479E82997BC">
+												<orm:Parameter ref="_0D06598A-1662-C1D7-A85A-70CE55900AD2" />
+												<orm:Source>
+													<orm:PathedRole ref="_5C83E79C-7F15-918F-CD5F-08EB1802051C" />
+												</orm:Source>
+											</orm:Input>
+										</orm:Inputs>
+									</orm:CalculatedValue>
+									<orm:CalculatedValue id="_DDD47823-62A5-5F32-B060-792D2DA06113">
+										<orm:Function ref="_2828F264-8D8C-0B84-B955-51B7B46AE479" />
+										<orm:Inputs>
+											<orm:Input id="_B54CF166-FA88-9B2D-AFD7-C6C2EDD45CA6">
+												<orm:Parameter ref="_BBDA5C80-912E-8D04-31A8-19EE9C6884C3" />
+												<orm:Source>
+													<orm:PathedRole ref="_875BE434-8127-5254-6877-6D270A185753" />
+												</orm:Source>
+											</orm:Input>
+											<orm:Input id="_B54CF066-FA88-997A-AFD7-C7C2EDD45E59">
+												<orm:Parameter ref="_9467AB82-FB45-4051-ACCA-5FFD8692874C" />
+												<orm:Source>
+													<orm:CalculatedValue ref="_5AF1B5C7-807D-B11E-C490-C87A9DAF5129" />
+												</orm:Source>
+											</orm:Input>
+										</orm:Inputs>
+									</orm:CalculatedValue>
+								</orm:CalculatedValues>
+								<orm:Conditions>
+									<orm:CalculatedCondition ref="_451CCA45-511C-08C7-542D-E3BD545279DA" />
+									<orm:CalculatedCondition ref="_DDD47823-62A5-5F32-B060-792D2DA06113" />
+								</orm:Conditions>
+							</orm:RolePath>
+						</orm:PathComponents>
+						<orm:DerivationProjections>
+							<orm:DerivationProjection id="_65847802-BBB7-9473-F127-EC915A66882E" ref="_E1473D2A-CB78-7F0D-3A10-C7D38C34332C">
+								<orm:RoleProjection id="_34FABA23-23C1-8AED-75F5-9C88D653E974" ref="_4DF19FE3-7E14-4BCB-9768-0020BEFC8523">
+									<orm:DerivationSource>
+										<orm:PathRoot ref="_930447DB-16C5-0725-8617-D113FA9E6CBE" />
+									</orm:DerivationSource>
+								</orm:RoleProjection>
+								<orm:RoleProjection id="_7176D4CE-51B9-11D7-742B-39EAEEA71376" ref="_06A47C0C-EFC1-4017-ADDD-962B7061B957">
+									<orm:DerivationSource>
+										<orm:PathedRole ref="_1EDBE4CD-F4F7-A3F7-E97A-F223A6590170" />
+									</orm:DerivationSource>
+								</orm:RoleProjection>
+							</orm:DerivationProjection>
+						</orm:DerivationProjections>
 						<orm:InformalRule>
 							<orm:DerivationNote id="_F86D3E04-3DC3-4ECE-9092-8C36BCA26EBA">
-								<orm:Body>The set the vehicle's tyre change before it fitted; none for the first change recorded.</orm:Body>
+								<orm:Body>For each TyreChange1 and TyreSet, TyreChange1 removed that TyreSet if and only if TyreChange1 was at some Moment1 and is of some Vehicle and some Record1 is of that Vehicle and Record1 is an Event1 that is a MeteredEvent1 that is a TyreChange2 that was at some Moment2 and some Record2 is of that Vehicle and Record2 is an Event2 that is a MeteredEvent2 that is a TyreChange3 that was at some Moment3 and TyreChange3 fitted that TyreSet and Moment2 is less than Moment1 and Moment3 is Previous and Previous is the maximum of Moment2 for TyreChange1.</orm:Body>
 							</orm:DerivationNote>
 						</orm:InformalRule>
 					</orm:FactTypeDerivationPath>
@@ -8991,6 +9215,28 @@
 					<orm:Parameter id="_5F8C491D-BF67-8F22-046A-2E234C0B5CAB" Name="to" />
 				</orm:Parameters>
 			</orm:Function>
+			<orm:Function id="_920E0B14-DE1A-36E9-8745-F5ABBFC8A6CC" Name="date">
+				<orm:Parameters>
+					<orm:Parameter id="_EF655B33-5A89-9ABA-7FEE-1D8ED7CCD129" Name="moment" />
+				</orm:Parameters>
+			</orm:Function>
+			<orm:Function id="_982CB3E7-9699-8653-A7FB-7258FC0B0C96" Name="lessThan" IsBoolean="true" OperatorSymbol="&lt;">
+				<orm:Parameters>
+					<orm:Parameter id="_3827AE95-15AE-5AC5-9C78-66D0681A4326" Name="left" />
+					<orm:Parameter id="_54BD17DB-5A14-275E-ED8B-DBBE2B3E657B" Name="right" />
+				</orm:Parameters>
+			</orm:Function>
+			<orm:Function id="_89C3CE3C-153A-EA2C-14C7-6C83E911542B" Name="max">
+				<orm:Parameters>
+					<orm:Parameter id="_0D06598A-1662-C1D7-A85A-70CE55900AD2" Name="values" BagInput="true" />
+				</orm:Parameters>
+			</orm:Function>
+			<orm:Function id="_2828F264-8D8C-0B84-B955-51B7B46AE479" Name="equals" IsBoolean="true" OperatorSymbol="=">
+				<orm:Parameters>
+					<orm:Parameter id="_BBDA5C80-912E-8D04-31A8-19EE9C6884C3" Name="left" />
+					<orm:Parameter id="_9467AB82-FB45-4051-ACCA-5FFD8692874C" Name="right" />
+				</orm:Parameters>
+			</orm:Function>
 		</orm:Functions>
 		<orm:ReferenceModeKinds>
 			<orm:ReferenceModeKind id="_4E5357F6-9496-4719-949C-E5516006F2BC" FormatString="{1}" ReferenceModeType="General" />
@@ -13082,6 +13328,104 @@
 				</ormq:Step>
 				<ormq:Value id="_680293E5-CEA5-4730-9E9A-D70258FC5706" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Items" Expression="total(#_334B0311-A15F-409E-8163-1BE55D1C9285) for #_BBF62D85-7AFC-4308-85B1-C97210CA4567" />
 				<ormq:Value id="_0D75A298-E55C-43A9-87A7-3663AA8E857F" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Amount" Expression="subtract(#_680293E5-CEA5-4730-9E9A-D70258FC5706, coalesce(#_B783FAB9-D2E9-4C2D-AE75-06A5A664EADF, 0))" Projected="true" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_183FF8F7-5471-4AAB-A248-C5B7FF0EC68B" Name="SaleDate" Kind="Derivation" Of="_93972F6B-A0E6-4399-A219-C842BF2153B0">
+			<ormq:Node id="_68A67803-87A1-4ADB-BE9D-C4F4EAEC73F7" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" Projected="true">
+				<ormq:Step id="_8765A289-6810-4DC1-A4A8-DAEDF06328BF" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+					<ormq:Node id="_FD6F13C3-EADF-4096-9BFA-05C6E11E121B" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+						<ormq:Step id="_21D05FD3-9E4E-428D-9F90-A38410DFA842" ref="_91438FE4-8D6B-46B9-88B0-108182FCF9FE" Role="_A9366C8F-304C-4984-A137-0D71A63310AD">
+							<ormq:Node id="_ABD853D1-2AB8-46C1-A6DD-FF852FFA3937" Role="_9EE052E5-C881-4AE1-A581-371DF6DF6907">
+								<ormq:Step id="_8CEDF60B-1957-41F3-AEB0-ACBCA1BCB557" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+									<ormq:Node id="_8331A3E8-84AB-4775-ACA7-0F07FAE61AC7" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
+								</ormq:Step>
+								<ormq:Step id="_92AB448F-6A75-48BD-82EC-4DE5C0FEA897" ref="_17F76D56-3B42-45BB-B565-5025CF583DA5" Role="_E3089AC0-3754-4FC8-8E86-D4CFF836E2FD">
+									<ormq:Node id="_B10E7E44-B4DB-454C-B235-1024473939C5" Role="_6AE7639E-4244-4C19-976D-FA8DB15BC246">
+										<ormq:Step id="_7A075A38-2EE1-4AC6-9FB4-7E0B7B74D9DD" ref="_F2DE22FA-0ACC-41C5-982F-AF13480BEBDD" Role="_7843B3E4-CC98-4724-987D-EF6E7C5C93D4">
+											<ormq:Node id="_291AF067-4AC1-47AD-8825-7C4A966AFB45" Role="_DB2DDF9F-925C-4AE7-BF17-9D2895B458FB" />
+										</ormq:Step>
+									</ormq:Node>
+								</ormq:Step>
+								<ormq:Value id="_D6F402CD-4A18-4C1D-BE16-6CD4F2410319" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="date(#_8331A3E8-84AB-4775-ACA7-0F07FAE61AC7)" Projected="true" />
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_0581876F-007A-44EC-B6C6-A21B1473D922" Name="SellingPrice" Kind="Derivation" Of="_B32EE5C4-7724-40D2-A321-5C0C1A5CCECF">
+			<ormq:Node id="_54D431EF-18DC-43B9-8ACF-38889EB4D419" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" Projected="true">
+				<ormq:Step id="_8DDE856D-89EC-4CF8-801A-663A44D4ECCE" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+					<ormq:Node id="_3A6DAB49-7DFA-470E-844A-B99E703F254D" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+						<ormq:Step id="_7DDE7E6C-D299-44E0-A2E9-BE1A8C738ABF" ref="_91438FE4-8D6B-46B9-88B0-108182FCF9FE" Role="_A9366C8F-304C-4984-A137-0D71A63310AD">
+							<ormq:Node id="_245ADC56-1D00-4E09-8087-F863A167210C" Role="_9EE052E5-C881-4AE1-A581-371DF6DF6907">
+								<ormq:Step id="_AE0E3ABB-CDA8-4C28-87F7-4D6DD9CAA81C" ref="_17F76D56-3B42-45BB-B565-5025CF583DA5" Role="_E3089AC0-3754-4FC8-8E86-D4CFF836E2FD">
+									<ormq:Node id="_7FF15DBF-6E02-40CD-86A5-1A14766D44A7" Role="_6AE7639E-4244-4C19-976D-FA8DB15BC246">
+										<ormq:Step id="_CF644484-1A23-44CC-9F90-6D478E6CFC99" ref="_F2DE22FA-0ACC-41C5-982F-AF13480BEBDD" Role="_7843B3E4-CC98-4724-987D-EF6E7C5C93D4">
+											<ormq:Node id="_00C0B659-9D9D-4985-B378-F666DBAB8F6E" Role="_DB2DDF9F-925C-4AE7-BF17-9D2895B458FB" />
+										</ormq:Step>
+										<ormq:Step id="_FC68156F-A522-4433-911E-5406C73F636C" ref="_F469AA5F-A771-4C07-A3CC-79621E3E928C" Role="_5C590B36-9C30-4EB4-83E2-D60671217551">
+											<ormq:Node id="_11B85210-760B-4761-98A2-6D989BF03490" Role="_13D0D1CF-3099-4872-8281-029DCDFD4601" Projected="true" />
+										</ormq:Step>
+									</ormq:Node>
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_900AE4B5-87BC-4201-99EA-0A6A1A6D3A26" Name="RemovedSet" Kind="Derivation" Of="_CC3A73A1-5E86-4773-B41C-A6F3DBF6992B">
+			<ormq:Node id="_A104A86F-3920-4DED-80D8-7D0B67EAC919" ref="_BE6F548A-112F-49F9-B626-C776869E9ABE" Projected="true" Label="1">
+				<ormq:Step id="_A9441409-DF9D-422A-8EF0-B61C0131430D" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+					<ormq:Node id="_78F2DFF2-177C-46EB-A130-51D631B10FB2" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Label="1" />
+				</ormq:Step>
+				<ormq:Step id="_0337BBAE-ABB4-49E6-B6AC-C43E802C5D1A" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+					<ormq:Node id="_A17CB848-6CDA-45C6-A6D7-EA2ED66BC88F" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+						<ormq:Step id="_51B17B39-6898-4A09-93A6-E775ABCFC3C8" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+							<ormq:Node id="_93CDBA1E-C4D4-4FF3-B613-05673FE476C5" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+								<ormq:Step id="_01FD56DE-5A92-439E-A499-827CC354C730" ref="_91438FE4-8D6B-46B9-88B0-108182FCF9FE" Role="_A9366C8F-304C-4984-A137-0D71A63310AD">
+									<ormq:Node id="_F9E14F36-A8D5-424C-89BA-E9F34E7B4482" Role="_9EE052E5-C881-4AE1-A581-371DF6DF6907">
+										<ormq:Step id="_F0870810-9271-4C32-823E-1DE9E0D3AC09" ref="_29537824-9554-462F-B419-EABD70DBFF9D" Role="_4B437DD5-94F9-478D-BC03-D26586384E89">
+											<ormq:Node id="_81C17439-B1AC-4B49-8C40-23F9368B7913" Role="_F6771E34-B105-43BF-9E9C-72B00BE6CD0F">
+												<ormq:Step id="_58F81594-503B-453C-BCA2-35142331C252" ref="_270B5084-FCEE-468E-8D32-1196C85BC0E8" Role="_5B41CC89-22F3-4176-A53B-5C794F3DA8CE">
+													<ormq:Node id="_29085F29-0D58-47AF-A539-B4E9F3EC125B" Role="_2D8318FF-4AD6-4FE8-BF80-622A25A1E5EF" Label="2">
+														<ormq:Step id="_5664207B-3628-4AB4-B23D-1F575D3181F7" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+															<ormq:Node id="_D420686D-6949-403C-9C2B-3A2B9AAA070A" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Label="2" Comparison="&lt;" CompareTo="_78F2DFF2-177C-46EB-A130-51D631B10FB2" />
+														</ormq:Step>
+													</ormq:Node>
+												</ormq:Step>
+											</ormq:Node>
+										</ormq:Step>
+									</ormq:Node>
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+						<ormq:Step id="_D899DDB0-53D7-48B0-9E34-C771E3340442" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+							<ormq:Node id="_A03107E2-A04A-4907-A50D-DB2546C7D89B" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+								<ormq:Step id="_09520BA0-532E-45C9-B2E2-54C7374BAC95" ref="_91438FE4-8D6B-46B9-88B0-108182FCF9FE" Role="_A9366C8F-304C-4984-A137-0D71A63310AD">
+									<ormq:Node id="_13114EF6-5907-4AF9-80B6-25E3A238AB61" Role="_9EE052E5-C881-4AE1-A581-371DF6DF6907">
+										<ormq:Step id="_42BBCEC9-5AB8-4456-AAEE-CFD0C6951A57" ref="_29537824-9554-462F-B419-EABD70DBFF9D" Role="_4B437DD5-94F9-478D-BC03-D26586384E89">
+											<ormq:Node id="_997EFD98-7252-44C3-80F2-E8AD3FF6085D" Role="_F6771E34-B105-43BF-9E9C-72B00BE6CD0F">
+												<ormq:Step id="_2700278F-3605-4EDD-BEFC-00E82F722E4D" ref="_270B5084-FCEE-468E-8D32-1196C85BC0E8" Role="_5B41CC89-22F3-4176-A53B-5C794F3DA8CE">
+													<ormq:Node id="_733EEEF9-14B1-4062-B0F7-F7D9F211D940" Role="_2D8318FF-4AD6-4FE8-BF80-622A25A1E5EF" Label="3">
+														<ormq:Step id="_1A02A67E-EED6-47DB-9A31-D8F18B9F2E47" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+															<ormq:Node id="_F53E1F7E-8B68-466A-977A-0E944C7B87C6" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Label="3" Comparison="=" CompareTo="_26BFDE9E-86BD-48BF-BE33-706362811A91" />
+														</ormq:Step>
+														<ormq:Step id="_DFAADE88-4F89-40EF-A163-373797F4E522" ref="_1F0001DF-E039-4787-A53B-9E52C1A33F63" Role="_137C339E-A19E-49CB-9AE9-6E74F9438577">
+															<ormq:Node id="_494BE56D-DBE7-4425-8B45-EF90C0563817" Role="_C254ACAC-A996-46CB-B77F-A33CE3EC77D7" Projected="true" />
+														</ormq:Step>
+													</ormq:Node>
+												</ormq:Step>
+											</ormq:Node>
+										</ormq:Step>
+									</ormq:Node>
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_26BFDE9E-86BD-48BF-BE33-706362811A91" ref="_64C7769B-046B-495E-B2CD-AD0522B51F56" Name="Previous" Expression="max(#_D420686D-6949-403C-9C2B-3A2B9AAA070A) for #_A104A86F-3920-4DED-80D8-7D0B67EAC919" />
 			</ormq:Node>
 		</ormq:Query>
 	</ormq:Queries>

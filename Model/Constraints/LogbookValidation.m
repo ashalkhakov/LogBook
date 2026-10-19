@@ -3,11 +3,6 @@
 
 #import "LogbookValidation.h"
 
-/* Not checked here:
- *   ValueComparisonConstraint1: For each Vehicle, if that Vehicle was acquired on some Date1 and that Vehicle was sold on some Date2 then Date1 is less than or equal to Date2.
- *   ExclusionConstraint1: No TyreChange fitted and removed the same TyreSet.
- */
-
 
 @implementation LogbookQueries
 

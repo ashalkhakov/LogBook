@@ -36,6 +36,10 @@
                 <entry key="ormkit.source" value="_32EBDD0A-18A7-4BE4-B49E-F2BDD7F147F7"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byInspectionQuestionIndex">
+            <fetchIndexElement property="inspection" type="Binary" order="ascending"/>
+            <fetchIndexElement property="question" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="inspection"/>
@@ -67,6 +71,9 @@
                 <entry key="ormkit.source" value="_D423D326-24E2-44BB-8D1A-8BF0FC4C2DB2"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>
@@ -116,6 +123,9 @@
                 <entry key="ormkit.source" value="_1A7914F4-A252-4E35-8311-53F7A2A49589"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>
@@ -141,6 +151,9 @@
                 <entry key="ormkit.source" value="_08176891-075D-473E-B357-A6F844F0AE04"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byNameIndex">
+            <fetchIndexElement property="name" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="name"/>
@@ -211,6 +224,9 @@
                 <entry key="ormkit.source" value="_54B699BF-0BE5-4234-A84C-1854D89B7701/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byCodeIndex">
+            <fetchIndexElement property="code" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="code"/>
@@ -307,6 +323,11 @@
                 <entry key="ormkit.source" value="_99FC0383-55CE-4596-8C30-B323ED480337"/>
             </userInfo>
         </attribute>
+        <fetchIndex name="byBaseCurrencyQuoteCurrencyDateIndex">
+            <fetchIndexElement property="baseCurrency" type="Binary" order="ascending"/>
+            <fetchIndexElement property="quoteCurrency" type="Binary" order="ascending"/>
+            <fetchIndexElement property="date" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="baseCurrency"/>
@@ -496,6 +517,13 @@
                 <entry key="ormkit.source" value="_51ABA202-E720-44FF-B91A-CFC1C6004FD5"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byQuestionPositionIndex">
+            <fetchIndexElement property="question" type="Binary" order="ascending"/>
+            <fetchIndexElement property="position" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>
@@ -550,6 +578,13 @@
                 <entry key="ormkit.source" value="_59FDD1FD-9177-41F6-B336-8539EDE57FF4"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <fetchIndex name="byChecklistPositionIndex">
+            <fetchIndexElement property="checklist" type="Binary" order="ascending"/>
+            <fetchIndexElement property="position" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>
@@ -616,6 +651,9 @@
                 <entry key="ormkit.source" value="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>
@@ -834,6 +872,9 @@
                 <entry key="ormkit.source" value="_174E22D7-F26D-4DCB-A62D-1A6CEF83E075"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>
@@ -894,6 +935,11 @@
                 <entry key="ormkit.source" value="_CD977102-0F92-4D88-9A4C-F2BFF33C474E"/>
             </userInfo>
         </attribute>
+        <relationship name="removedTyreSet" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TyreSet" inverseName="tyreChangeRemoveds" inverseEntity="TyreSet">
+            <userInfo>
+                <entry key="ormkit.source" value="_06A47C0C-EFC1-4017-ADDD-962B7061B957"/>
+            </userInfo>
+        </relationship>
         <relationship name="tyreSet" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="TyreSet" inverseName="tyreChanges" inverseEntity="TyreSet">
             <userInfo>
                 <entry key="ormkit.mandatory" value="YES"/>
@@ -933,6 +979,11 @@
                 <entry key="ormkit.source" value="_EAFAB7F3-8BED-4F69-9328-9331D10DAB64"/>
             </userInfo>
         </attribute>
+        <relationship name="tyreChangeRemoveds" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="TyreChange" inverseName="removedTyreSet" inverseEntity="TyreChange">
+            <userInfo>
+                <entry key="ormkit.source" value="_4DF19FE3-7E14-4BCB-9768-0020BEFC8523"/>
+            </userInfo>
+        </relationship>
         <relationship name="tyreChanges" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="TyreChange" inverseName="tyreSet" inverseEntity="TyreChange">
             <userInfo>
                 <entry key="ormkit.source" value="_137C339E-A19E-49CB-9AE9-6E74F9438577"/>
@@ -997,6 +1048,9 @@
                 <entry key="ormkit.source" value="_668073F9-295A-4EB4-874A-4E2EA746F819"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byEmailIndex">
+            <fetchIndexElement property="email" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="email"/>
@@ -1125,6 +1179,9 @@
                 <entry key="ormkit.source" value="_35D1CBBA-D05A-4076-A003-27A870F24210._B1E102E2-6C0D-4A65-BE9B-F86098E0B262"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="id"/>
@@ -1157,6 +1214,10 @@
                 <entry key="ormkit.source" value="_6663B9CB-74F2-43B7-8EBD-FDF256E5F3B2"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byUserVehicleIndex">
+            <fetchIndexElement property="user" type="Binary" order="ascending"/>
+            <fetchIndexElement property="vehicle" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="user"/>
@@ -1199,6 +1260,10 @@
                 <entry key="ormkit.source" value="_B1E102E2-6C0D-4A65-BE9B-F86098E0B262"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byVehicleDateIndex">
+            <fetchIndexElement property="vehicle" type="Binary" order="ascending"/>
+            <fetchIndexElement property="date" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="vehicle"/>
@@ -1235,6 +1300,9 @@
                 <entry key="ormkit.source" value="_832C0151-D064-4606-AF7A-1AB3ECDD5384"/>
             </userInfo>
         </relationship>
+        <fetchIndex name="byCodeIndex">
+            <fetchIndexElement property="code" type="Binary" order="ascending"/>
+        </fetchIndex>
         <uniquenessConstraints>
             <uniquenessConstraint>
                 <constraint value="code"/>
