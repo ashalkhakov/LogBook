@@ -696,7 +696,7 @@
 								</dict>
 							</array>
 							<key>variable</key>
-							<string>x4</string>
+							<string>x1</string>
 						</dict>
 						<key>title</key>
 						<string>TyreSet</string>
@@ -729,131 +729,61 @@
 							</dict>
 						</dict>
 						<dict>
+							<key>comparison</key>
+							<string>&gt;</string>
 							<key>kind</key>
-							<string>exists</string>
-							<key>operand</key>
+							<string>compare</string>
+							<key>left</key>
 							<dict>
-								<key>kind</key>
-								<string>all</string>
-								<key>operands</key>
-								<array>
-									<dict>
-										<key>entity</key>
-										<string>Event</string>
-										<key>kind</key>
-										<string>isOf</string>
-										<key>path</key>
+								<key>aggregate</key>
+								<string>count</string>
+								<key>in</key>
+								<string>bag1</string>
+								<key>is</key>
+								<dict>
+									<key>steps</key>
+									<array>
 										<dict>
-											<key>steps</key>
-											<array/>
-											<key>variable</key>
-											<string>x3</string>
+											<key>key</key>
+											<string>vehicle</string>
 										</dict>
-									</dict>
-									<dict>
-										<key>entity</key>
-										<string>MeteredEvent</string>
-										<key>kind</key>
-										<string>isOf</string>
-										<key>path</key>
 										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>as</key>
-													<string>Event</string>
-												</dict>
-											</array>
-											<key>variable</key>
-											<string>x3</string>
+											<key>key</key>
+											<string>id</string>
 										</dict>
-									</dict>
+									</array>
+								</dict>
+								<key>members</key>
+								<string>records</string>
+								<key>of</key>
+								<string>_93CDBA1E-C4D4-4FF3-B613-05673FE476C5</string>
+								<key>than</key>
+								<dict>
+									<key>path</key>
 									<dict>
-										<key>entity</key>
-										<string>TyreChange</string>
-										<key>kind</key>
-										<string>isOf</string>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>as</key>
-													<string>Event</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>MeteredEvent</string>
-												</dict>
-											</array>
-											<key>variable</key>
-											<string>x3</string>
-										</dict>
-									</dict>
-									<dict>
-										<key>comparison</key>
-										<string>&lt;</string>
-										<key>kind</key>
-										<string>compare</string>
-										<key>left</key>
-										<dict>
-											<key>path</key>
+										<key>steps</key>
+										<array>
 											<dict>
-												<key>steps</key>
-												<array>
-													<dict>
-														<key>as</key>
-														<string>Event</string>
-													</dict>
-													<dict>
-														<key>as</key>
-														<string>MeteredEvent</string>
-													</dict>
-													<dict>
-														<key>as</key>
-														<string>TyreChange</string>
-													</dict>
-													<dict>
-														<key>key</key>
-														<string>timestamp</string>
-													</dict>
-												</array>
-												<key>variable</key>
-												<string>x3</string>
+												<key>key</key>
+												<string>timestamp</string>
 											</dict>
-										</dict>
-										<key>right</key>
-										<dict>
-											<key>path</key>
-											<dict>
-												<key>steps</key>
-												<array>
-													<dict>
-														<key>key</key>
-														<string>timestamp</string>
-													</dict>
-												</array>
-											</dict>
-										</dict>
+										</array>
 									</dict>
-								</array>
+								</dict>
+								<key>where</key>
+								<string>_A17CB848-6CDA-45C6-A6D7-EA2ED66BC88F</string>
+								<key>window</key>
+								<string>_D420686D-6949-403C-9C2B-3A2B9AAA070A</string>
+								<key>windowIs</key>
+								<string>&lt;</string>
 							</dict>
-							<key>path</key>
+							<key>right</key>
 							<dict>
-								<key>steps</key>
-								<array>
-									<dict>
-										<key>key</key>
-										<string>vehicle</string>
-									</dict>
-									<dict>
-										<key>key</key>
-										<string>records</string>
-									</dict>
-								</array>
+								<key>constant</key>
+								<string>0</string>
+								<key>type</key>
+								<string>Integer 64</string>
 							</dict>
-							<key>variable</key>
-							<string>x3</string>
 						</dict>
 						<dict>
 							<key>kind</key>
@@ -874,7 +804,7 @@
 											<key>steps</key>
 											<array/>
 											<key>variable</key>
-											<string>x4</string>
+											<string>x1</string>
 										</dict>
 									</dict>
 									<dict>
@@ -892,7 +822,7 @@
 												</dict>
 											</array>
 											<key>variable</key>
-											<string>x4</string>
+											<string>x1</string>
 										</dict>
 									</dict>
 									<dict>
@@ -914,7 +844,7 @@
 												</dict>
 											</array>
 											<key>variable</key>
-											<string>x4</string>
+											<string>x1</string>
 										</dict>
 									</dict>
 									<dict>
@@ -946,7 +876,7 @@
 													</dict>
 												</array>
 												<key>variable</key>
-												<string>x4</string>
+												<string>x1</string>
 											</dict>
 										</dict>
 										<key>right</key>
@@ -961,14 +891,37 @@
 												<array>
 													<dict>
 														<key>key</key>
+														<string>vehicle</string>
+													</dict>
+													<dict>
+														<key>key</key>
 														<string>id</string>
 													</dict>
 												</array>
 											</dict>
+											<key>members</key>
+											<string>records</string>
 											<key>of</key>
 											<string>_D420686D-6949-403C-9C2B-3A2B9AAA070A</string>
+											<key>than</key>
+											<dict>
+												<key>path</key>
+												<dict>
+													<key>steps</key>
+													<array>
+														<dict>
+															<key>key</key>
+															<string>timestamp</string>
+														</dict>
+													</array>
+												</dict>
+											</dict>
 											<key>where</key>
-											<string>_A104A86F-3920-4DED-80D8-7D0B67EAC919</string>
+											<string>_A17CB848-6CDA-45C6-A6D7-EA2ED66BC88F</string>
+											<key>window</key>
+											<string>_D420686D-6949-403C-9C2B-3A2B9AAA070A</string>
+											<key>windowIs</key>
+											<string>&lt;</string>
 										</dict>
 									</dict>
 									<dict>
@@ -996,7 +949,7 @@
 												</dict>
 											</array>
 											<key>variable</key>
-											<string>x4</string>
+											<string>x1</string>
 										</dict>
 									</dict>
 								</array>
@@ -1016,7 +969,7 @@
 								</array>
 							</dict>
 							<key>variable</key>
-							<string>x4</string>
+							<string>x1</string>
 						</dict>
 					</array>
 				</dict>
@@ -1029,21 +982,6 @@
 						<dict>
 							<key>columns</key>
 							<array>
-								<dict>
-									<key>identifier</key>
-									<string>id</string>
-									<key>node</key>
-									<string>_A104A86F-3920-4DED-80D8-7D0B67EAC919</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array/>
-									</dict>
-									<key>title</key>
-									<string>TyreChange1</string>
-									<key>trail</key>
-									<array/>
-								</dict>
 								<dict>
 									<key>identifier</key>
 									<string>id</string>
@@ -1075,103 +1013,11 @@
 									<dict>
 										<key>steps</key>
 										<array/>
-										<key>variable</key>
-										<string>x1</string>
 									</dict>
 									<key>title</key>
 									<string>Record</string>
 									<key>trail</key>
-									<array>
-										<string>vehicle</string>
-										<string>records</string>
-									</array>
-								</dict>
-								<dict>
-									<key>identifier</key>
-									<string>id</string>
-									<key>node</key>
-									<string>_F9E14F36-A8D5-424C-89BA-E9F34E7B4482</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-										</array>
-										<key>variable</key>
-										<string>x1</string>
-									</dict>
-									<key>title</key>
-									<string>Event</string>
-									<key>trail</key>
-									<array>
-										<string>vehicle</string>
-										<string>records</string>
-									</array>
-								</dict>
-								<dict>
-									<key>identifier</key>
-									<string>id</string>
-									<key>node</key>
-									<string>_81C17439-B1AC-4B49-8C40-23F9368B7913</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>MeteredEvent</string>
-											</dict>
-										</array>
-										<key>variable</key>
-										<string>x1</string>
-									</dict>
-									<key>title</key>
-									<string>MeteredEvent</string>
-									<key>trail</key>
-									<array>
-										<string>vehicle</string>
-										<string>records</string>
-									</array>
-								</dict>
-								<dict>
-									<key>identifier</key>
-									<string>id</string>
-									<key>node</key>
-									<string>_29085F29-0D58-47AF-A539-B4E9F3EC125B</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>MeteredEvent</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>TyreChange</string>
-											</dict>
-										</array>
-										<key>variable</key>
-										<string>x1</string>
-									</dict>
-									<key>title</key>
-									<string>TyreChange2</string>
-									<key>trail</key>
-									<array>
-										<string>vehicle</string>
-										<string>records</string>
-									</array>
+									<array/>
 								</dict>
 								<dict>
 									<key>node</key>
@@ -1181,321 +1027,19 @@
 										<key>steps</key>
 										<array>
 											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>MeteredEvent</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>TyreChange</string>
-											</dict>
-											<dict>
 												<key>key</key>
 												<string>timestamp</string>
 											</dict>
 										</array>
-										<key>variable</key>
-										<string>x1</string>
 									</dict>
 									<key>title</key>
 									<string>Moment2</string>
 									<key>trail</key>
 									<array>
-										<string>vehicle</string>
-										<string>records</string>
 										<string>timestamp</string>
 									</array>
 								</dict>
 							</array>
-							<key>condition</key>
-							<dict>
-								<key>kind</key>
-								<string>all</string>
-								<key>operands</key>
-								<array>
-									<dict>
-										<key>kind</key>
-										<string>notNull</string>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>key</key>
-													<string>timestamp</string>
-												</dict>
-											</array>
-										</dict>
-									</dict>
-									<dict>
-										<key>kind</key>
-										<string>exists</string>
-										<key>operand</key>
-										<dict>
-											<key>kind</key>
-											<string>all</string>
-											<key>operands</key>
-											<array>
-												<dict>
-													<key>entity</key>
-													<string>Event</string>
-													<key>kind</key>
-													<string>isOf</string>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array/>
-														<key>variable</key>
-														<string>x1</string>
-													</dict>
-												</dict>
-												<dict>
-													<key>entity</key>
-													<string>MeteredEvent</string>
-													<key>kind</key>
-													<string>isOf</string>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x1</string>
-													</dict>
-												</dict>
-												<dict>
-													<key>entity</key>
-													<string>TyreChange</string>
-													<key>kind</key>
-													<string>isOf</string>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x1</string>
-													</dict>
-												</dict>
-												<dict>
-													<key>comparison</key>
-													<string>&lt;</string>
-													<key>kind</key>
-													<string>compare</string>
-													<key>left</key>
-													<dict>
-														<key>path</key>
-														<dict>
-															<key>steps</key>
-															<array>
-																<dict>
-																	<key>as</key>
-																	<string>Event</string>
-																</dict>
-																<dict>
-																	<key>as</key>
-																	<string>MeteredEvent</string>
-																</dict>
-																<dict>
-																	<key>as</key>
-																	<string>TyreChange</string>
-																</dict>
-																<dict>
-																	<key>key</key>
-																	<string>timestamp</string>
-																</dict>
-															</array>
-															<key>variable</key>
-															<string>x1</string>
-														</dict>
-													</dict>
-													<key>right</key>
-													<dict>
-														<key>path</key>
-														<dict>
-															<key>steps</key>
-															<array>
-																<dict>
-																	<key>key</key>
-																	<string>timestamp</string>
-																</dict>
-															</array>
-														</dict>
-													</dict>
-												</dict>
-											</array>
-										</dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>key</key>
-													<string>vehicle</string>
-												</dict>
-												<dict>
-													<key>key</key>
-													<string>records</string>
-												</dict>
-											</array>
-										</dict>
-										<key>variable</key>
-										<string>x1</string>
-									</dict>
-									<dict>
-										<key>kind</key>
-										<string>exists</string>
-										<key>operand</key>
-										<dict>
-											<key>kind</key>
-											<string>all</string>
-											<key>operands</key>
-											<array>
-												<dict>
-													<key>entity</key>
-													<string>Event</string>
-													<key>kind</key>
-													<string>isOf</string>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array/>
-														<key>variable</key>
-														<string>x2</string>
-													</dict>
-												</dict>
-												<dict>
-													<key>entity</key>
-													<string>MeteredEvent</string>
-													<key>kind</key>
-													<string>isOf</string>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x2</string>
-													</dict>
-												</dict>
-												<dict>
-													<key>entity</key>
-													<string>TyreChange</string>
-													<key>kind</key>
-													<string>isOf</string>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x2</string>
-													</dict>
-												</dict>
-												<dict>
-													<key>kind</key>
-													<string>notNull</string>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>TyreChange</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>timestamp</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x2</string>
-													</dict>
-												</dict>
-												<dict>
-													<key>kind</key>
-													<string>notNull</string>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>TyreChange</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>tyreSet</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x2</string>
-													</dict>
-												</dict>
-											</array>
-										</dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>key</key>
-													<string>vehicle</string>
-												</dict>
-												<dict>
-													<key>key</key>
-													<string>records</string>
-												</dict>
-											</array>
-										</dict>
-										<key>variable</key>
-										<string>x2</string>
-									</dict>
-								</array>
-							</dict>
 							<key>entity</key>
 							<string>TyreChange</string>
 							<key>notes</key>
@@ -3617,7 +3161,7 @@
 							</dict>
 						</array>
 						<key>variable</key>
-						<string>x4</string>
+						<string>x1</string>
 					</dict>
 					<key>title</key>
 					<string>FillUp3</string>
@@ -3649,131 +3193,61 @@
 						</dict>
 					</dict>
 					<dict>
+						<key>comparison</key>
+						<string>&gt;</string>
 						<key>kind</key>
-						<string>exists</string>
-						<key>operand</key>
+						<string>compare</string>
+						<key>left</key>
 						<dict>
-							<key>kind</key>
-							<string>all</string>
-							<key>operands</key>
-							<array>
-								<dict>
-									<key>entity</key>
-									<string>Event</string>
-									<key>kind</key>
-									<string>isOf</string>
-									<key>path</key>
+							<key>aggregate</key>
+							<string>count</string>
+							<key>in</key>
+							<string>bag1</string>
+							<key>is</key>
+							<dict>
+								<key>steps</key>
+								<array>
 									<dict>
-										<key>steps</key>
-										<array/>
-										<key>variable</key>
-										<string>x3</string>
+										<key>key</key>
+										<string>vehicle</string>
 									</dict>
-								</dict>
-								<dict>
-									<key>entity</key>
-									<string>MeteredEvent</string>
-									<key>kind</key>
-									<string>isOf</string>
-									<key>path</key>
 									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-										</array>
-										<key>variable</key>
-										<string>x3</string>
+										<key>key</key>
+										<string>id</string>
 									</dict>
-								</dict>
+								</array>
+							</dict>
+							<key>members</key>
+							<string>records</string>
+							<key>of</key>
+							<string>_622FAD79-83F7-40F2-830E-6F1C69174B80</string>
+							<key>than</key>
+							<dict>
+								<key>path</key>
 								<dict>
-									<key>entity</key>
-									<string>FillUp</string>
-									<key>kind</key>
-									<string>isOf</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>MeteredEvent</string>
-											</dict>
-										</array>
-										<key>variable</key>
-										<string>x3</string>
-									</dict>
-								</dict>
-								<dict>
-									<key>comparison</key>
-									<string>&lt;</string>
-									<key>kind</key>
-									<string>compare</string>
-									<key>left</key>
-									<dict>
-										<key>path</key>
+									<key>steps</key>
+									<array>
 										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>as</key>
-													<string>Event</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>MeteredEvent</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>FillUp</string>
-												</dict>
-												<dict>
-													<key>key</key>
-													<string>timestamp</string>
-												</dict>
-											</array>
-											<key>variable</key>
-											<string>x3</string>
+											<key>key</key>
+											<string>timestamp</string>
 										</dict>
-									</dict>
-									<key>right</key>
-									<dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>key</key>
-													<string>timestamp</string>
-												</dict>
-											</array>
-										</dict>
-									</dict>
+									</array>
 								</dict>
-							</array>
+							</dict>
+							<key>where</key>
+							<string>_5AD8F09D-41A9-4C67-A922-6F861A76CE8D</string>
+							<key>window</key>
+							<string>_59E4CD81-8B50-4F3F-BA55-1F63BC8B9954</string>
+							<key>windowIs</key>
+							<string>&lt;</string>
 						</dict>
-						<key>path</key>
+						<key>right</key>
 						<dict>
-							<key>steps</key>
-							<array>
-								<dict>
-									<key>key</key>
-									<string>vehicle</string>
-								</dict>
-								<dict>
-									<key>key</key>
-									<string>records</string>
-								</dict>
-							</array>
+							<key>constant</key>
+							<string>0</string>
+							<key>type</key>
+							<string>Integer 64</string>
 						</dict>
-						<key>variable</key>
-						<string>x3</string>
 					</dict>
 					<dict>
 						<key>kind</key>
@@ -3794,7 +3268,7 @@
 										<key>steps</key>
 										<array/>
 										<key>variable</key>
-										<string>x4</string>
+										<string>x1</string>
 									</dict>
 								</dict>
 								<dict>
@@ -3812,7 +3286,7 @@
 											</dict>
 										</array>
 										<key>variable</key>
-										<string>x4</string>
+										<string>x1</string>
 									</dict>
 								</dict>
 								<dict>
@@ -3834,7 +3308,7 @@
 											</dict>
 										</array>
 										<key>variable</key>
-										<string>x4</string>
+										<string>x1</string>
 									</dict>
 								</dict>
 								<dict>
@@ -3866,7 +3340,7 @@
 												</dict>
 											</array>
 											<key>variable</key>
-											<string>x4</string>
+											<string>x1</string>
 										</dict>
 									</dict>
 									<key>right</key>
@@ -3881,14 +3355,37 @@
 											<array>
 												<dict>
 													<key>key</key>
+													<string>vehicle</string>
+												</dict>
+												<dict>
+													<key>key</key>
 													<string>id</string>
 												</dict>
 											</array>
 										</dict>
+										<key>members</key>
+										<string>records</string>
 										<key>of</key>
 										<string>_59E4CD81-8B50-4F3F-BA55-1F63BC8B9954</string>
+										<key>than</key>
+										<dict>
+											<key>path</key>
+											<dict>
+												<key>steps</key>
+												<array>
+													<dict>
+														<key>key</key>
+														<string>timestamp</string>
+													</dict>
+												</array>
+											</dict>
+										</dict>
 										<key>where</key>
-										<string>_C011D0C8-CE2E-43F0-856D-E546A8C3E190</string>
+										<string>_5AD8F09D-41A9-4C67-A922-6F861A76CE8D</string>
+										<key>window</key>
+										<string>_59E4CD81-8B50-4F3F-BA55-1F63BC8B9954</string>
+										<key>windowIs</key>
+										<string>&lt;</string>
 									</dict>
 								</dict>
 							</array>
@@ -3908,7 +3405,7 @@
 							</array>
 						</dict>
 						<key>variable</key>
-						<string>x4</string>
+						<string>x1</string>
 					</dict>
 				</array>
 			</dict>
@@ -3921,21 +3418,6 @@
 					<dict>
 						<key>columns</key>
 						<array>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_C011D0C8-CE2E-43F0-856D-E546A8C3E190</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array/>
-								</dict>
-								<key>title</key>
-								<string>FillUp1</string>
-								<key>trail</key>
-								<array/>
-							</dict>
 							<dict>
 								<key>identifier</key>
 								<string>id</string>
@@ -3967,103 +3449,11 @@
 								<dict>
 									<key>steps</key>
 									<array/>
-									<key>variable</key>
-									<string>x1</string>
 								</dict>
 								<key>title</key>
 								<string>Record</string>
 								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
-							</dict>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_5B7FCF7D-CBD7-4767-8E6D-31C98EF06C31</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array>
-										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-									</array>
-									<key>variable</key>
-									<string>x1</string>
-								</dict>
-								<key>title</key>
-								<string>Event</string>
-								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
-							</dict>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_0FCBD9E9-DD0B-40BE-B0CC-E6ABC20A3E2D</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array>
-										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>MeteredEvent</string>
-										</dict>
-									</array>
-									<key>variable</key>
-									<string>x1</string>
-								</dict>
-								<key>title</key>
-								<string>MeteredEvent</string>
-								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
-							</dict>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_A7FF4017-6987-47C2-81BB-4500FCB0E333</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array>
-										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>MeteredEvent</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>FillUp</string>
-										</dict>
-									</array>
-									<key>variable</key>
-									<string>x1</string>
-								</dict>
-								<key>title</key>
-								<string>FillUp2</string>
-								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
+								<array/>
 							</dict>
 							<dict>
 								<key>node</key>
@@ -4073,293 +3463,19 @@
 									<key>steps</key>
 									<array>
 										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>MeteredEvent</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>FillUp</string>
-										</dict>
-										<dict>
 											<key>key</key>
 											<string>timestamp</string>
 										</dict>
 									</array>
-									<key>variable</key>
-									<string>x1</string>
 								</dict>
 								<key>title</key>
 								<string>Moment2</string>
 								<key>trail</key>
 								<array>
-									<string>vehicle</string>
-									<string>records</string>
 									<string>timestamp</string>
 								</array>
 							</dict>
 						</array>
-						<key>condition</key>
-						<dict>
-							<key>kind</key>
-							<string>all</string>
-							<key>operands</key>
-							<array>
-								<dict>
-									<key>kind</key>
-									<string>notNull</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>timestamp</string>
-											</dict>
-										</array>
-									</dict>
-								</dict>
-								<dict>
-									<key>kind</key>
-									<string>exists</string>
-									<key>operand</key>
-									<dict>
-										<key>kind</key>
-										<string>all</string>
-										<key>operands</key>
-										<array>
-											<dict>
-												<key>entity</key>
-												<string>Event</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array/>
-													<key>variable</key>
-													<string>x1</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>MeteredEvent</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x1</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>FillUp</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x1</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>comparison</key>
-												<string>&lt;</string>
-												<key>kind</key>
-												<string>compare</string>
-												<key>left</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>timestamp</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x1</string>
-													</dict>
-												</dict>
-												<key>right</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>key</key>
-																<string>timestamp</string>
-															</dict>
-														</array>
-													</dict>
-												</dict>
-											</dict>
-										</array>
-									</dict>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>vehicle</string>
-											</dict>
-											<dict>
-												<key>key</key>
-												<string>records</string>
-											</dict>
-										</array>
-									</dict>
-									<key>variable</key>
-									<string>x1</string>
-								</dict>
-								<dict>
-									<key>kind</key>
-									<string>exists</string>
-									<key>operand</key>
-									<dict>
-										<key>kind</key>
-										<string>all</string>
-										<key>operands</key>
-										<array>
-											<dict>
-												<key>entity</key>
-												<string>Event</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array/>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>MeteredEvent</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>FillUp</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>kind</key>
-												<string>notNull</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>FillUp</string>
-														</dict>
-														<dict>
-															<key>key</key>
-															<string>timestamp</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-										</array>
-									</dict>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>vehicle</string>
-											</dict>
-											<dict>
-												<key>key</key>
-												<string>records</string>
-											</dict>
-										</array>
-									</dict>
-									<key>variable</key>
-									<string>x2</string>
-								</dict>
-							</array>
-						</dict>
 						<key>entity</key>
 						<string>FillUp</string>
 						<key>notes</key>
@@ -4463,6 +3579,59 @@
 											<dict>
 												<key>aggregate</key>
 												<string>sum</string>
+												<key>alsoAre</key>
+												<array>
+													<dict>
+														<key>path</key>
+														<dict>
+															<key>steps</key>
+															<array>
+																<dict>
+																	<key>key</key>
+																	<string>mileageDistanceUnit</string>
+																</dict>
+																<dict>
+																	<key>key</key>
+																	<string>code</string>
+																</dict>
+															</array>
+														</dict>
+													</dict>
+													<dict>
+														<key>path</key>
+														<dict>
+															<key>steps</key>
+															<array>
+																<dict>
+																	<key>key</key>
+																	<string>volumeVolumeUnit</string>
+																</dict>
+																<dict>
+																	<key>key</key>
+																	<string>code</string>
+																</dict>
+															</array>
+														</dict>
+													</dict>
+												</array>
+												<key>alsoThan</key>
+												<dict>
+													<key>path</key>
+													<dict>
+														<key>steps</key>
+														<array>
+															<dict>
+																<key>key</key>
+																<string>mileageQuantity</string>
+															</dict>
+														</array>
+													</dict>
+												</dict>
+												<key>alsoWhere</key>
+												<array>
+													<string>_DC2209CA-B1CF-4924-AC9A-66B1CD27543E</string>
+													<string>_B665B666-FC13-40A0-B7F9-C203C40E67AC</string>
+												</array>
 												<key>in</key>
 												<string>bag2</string>
 												<key>is</key>
@@ -4471,14 +3640,93 @@
 													<array>
 														<dict>
 															<key>key</key>
+															<string>vehicle</string>
+														</dict>
+														<dict>
+															<key>key</key>
 															<string>id</string>
 														</dict>
 													</array>
 												</dict>
+												<key>members</key>
+												<string>records</string>
 												<key>of</key>
 												<string>_4C95DE6E-9749-4D72-9C97-4FCC24B901DB</string>
+												<key>than</key>
+												<dict>
+													<key>aggregate</key>
+													<string>max</string>
+													<key>alsoAre</key>
+													<array>
+														<dict>
+															<key>path</key>
+															<dict>
+																<key>steps</key>
+																<array>
+																	<dict>
+																		<key>key</key>
+																		<string>mileageDistanceUnit</string>
+																	</dict>
+																	<dict>
+																		<key>key</key>
+																		<string>code</string>
+																	</dict>
+																</array>
+															</dict>
+														</dict>
+													</array>
+													<key>alsoWhere</key>
+													<array>
+														<string>_BE4B2E7C-402C-43ED-BE4A-32E4500880B0</string>
+													</array>
+													<key>in</key>
+													<string>bag1</string>
+													<key>is</key>
+													<dict>
+														<key>steps</key>
+														<array>
+															<dict>
+																<key>key</key>
+																<string>vehicle</string>
+															</dict>
+															<dict>
+																<key>key</key>
+																<string>id</string>
+															</dict>
+														</array>
+													</dict>
+													<key>members</key>
+													<string>records</string>
+													<key>of</key>
+													<string>_5FAF96AB-5F88-4AF7-86EA-1BFA1314AAB2</string>
+													<key>than</key>
+													<dict>
+														<key>path</key>
+														<dict>
+															<key>steps</key>
+															<array>
+																<dict>
+																	<key>key</key>
+																	<string>mileageQuantity</string>
+																</dict>
+															</array>
+														</dict>
+													</dict>
+													<key>where</key>
+													<string>_214C4494-F085-4C8A-9A5F-EA7157B583BD</string>
+													<key>window</key>
+													<string>_5FAF96AB-5F88-4AF7-86EA-1BFA1314AAB2</string>
+													<key>windowIs</key>
+													<string>&lt;</string>
+												</dict>
 												<key>where</key>
-												<string>_CA57C0D4-F976-4F56-910A-29F0E51E13AE</string>
+												<string>_214C4494-F085-4C8A-9A5F-EA7157B583BD</string>
+												<key>window</key>
+												<string>_1A321995-070D-4691-AC3A-684F621B6943</string>
+												<key>windowAlsoIs</key>
+												<string>&lt;=</string>
+												<key>windowIs</key>
+												<string>&gt;</string>
 											</dict>
 											<dict>
 												<key>apply</key>
@@ -4500,6 +3748,29 @@
 													<dict>
 														<key>aggregate</key>
 														<string>max</string>
+														<key>alsoAre</key>
+														<array>
+															<dict>
+																<key>path</key>
+																<dict>
+																	<key>steps</key>
+																	<array>
+																		<dict>
+																			<key>key</key>
+																			<string>mileageDistanceUnit</string>
+																		</dict>
+																		<dict>
+																			<key>key</key>
+																			<string>code</string>
+																		</dict>
+																	</array>
+																</dict>
+															</dict>
+														</array>
+														<key>alsoWhere</key>
+														<array>
+															<string>_BE4B2E7C-402C-43ED-BE4A-32E4500880B0</string>
+														</array>
 														<key>in</key>
 														<string>bag1</string>
 														<key>is</key>
@@ -4508,14 +3779,37 @@
 															<array>
 																<dict>
 																	<key>key</key>
+																	<string>vehicle</string>
+																</dict>
+																<dict>
+																	<key>key</key>
 																	<string>id</string>
 																</dict>
 															</array>
 														</dict>
+														<key>members</key>
+														<string>records</string>
 														<key>of</key>
 														<string>_5FAF96AB-5F88-4AF7-86EA-1BFA1314AAB2</string>
+														<key>than</key>
+														<dict>
+															<key>path</key>
+															<dict>
+																<key>steps</key>
+																<array>
+																	<dict>
+																		<key>key</key>
+																		<string>mileageQuantity</string>
+																	</dict>
+																</array>
+															</dict>
+														</dict>
 														<key>where</key>
-														<string>_CA57C0D4-F976-4F56-910A-29F0E51E13AE</string>
+														<string>_214C4494-F085-4C8A-9A5F-EA7157B583BD</string>
+														<key>window</key>
+														<string>_5FAF96AB-5F88-4AF7-86EA-1BFA1314AAB2</string>
+														<key>windowIs</key>
+														<string>&lt;</string>
 													</dict>
 												</array>
 											</dict>
@@ -4614,157 +3908,18 @@
 						</dict>
 					</dict>
 					<dict>
+						<key>comparison</key>
+						<string>&gt;</string>
 						<key>kind</key>
-						<string>exists</string>
-						<key>operand</key>
+						<string>compare</string>
+						<key>left</key>
 						<dict>
-							<key>kind</key>
-							<string>all</string>
-							<key>operands</key>
+							<key>aggregate</key>
+							<string>count</string>
+							<key>alsoAre</key>
 							<array>
 								<dict>
-									<key>entity</key>
-									<string>Event</string>
-									<key>kind</key>
-									<string>isOf</string>
 									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array/>
-										<key>variable</key>
-										<string>x5</string>
-									</dict>
-								</dict>
-								<dict>
-									<key>entity</key>
-									<string>MeteredEvent</string>
-									<key>kind</key>
-									<string>isOf</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-										</array>
-										<key>variable</key>
-										<string>x5</string>
-									</dict>
-								</dict>
-								<dict>
-									<key>entity</key>
-									<string>FillUp</string>
-									<key>kind</key>
-									<string>isOf</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>MeteredEvent</string>
-											</dict>
-										</array>
-										<key>variable</key>
-										<string>x5</string>
-									</dict>
-								</dict>
-								<dict>
-									<key>comparison</key>
-									<string>=</string>
-									<key>kind</key>
-									<string>compare</string>
-									<key>left</key>
-									<dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>as</key>
-													<string>Event</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>MeteredEvent</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>FillUp</string>
-												</dict>
-												<dict>
-													<key>key</key>
-													<string>filledTheTank</string>
-												</dict>
-											</array>
-											<key>variable</key>
-											<string>x5</string>
-										</dict>
-									</dict>
-									<key>right</key>
-									<dict>
-										<key>constant</key>
-										<string>true</string>
-										<key>type</key>
-										<string>Boolean</string>
-									</dict>
-								</dict>
-								<dict>
-									<key>comparison</key>
-									<string>&lt;</string>
-									<key>kind</key>
-									<string>compare</string>
-									<key>left</key>
-									<dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>as</key>
-													<string>Event</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>MeteredEvent</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>FillUp</string>
-												</dict>
-												<dict>
-													<key>key</key>
-													<string>mileageQuantity</string>
-												</dict>
-											</array>
-											<key>variable</key>
-											<string>x5</string>
-										</dict>
-									</dict>
-									<key>right</key>
-									<dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>key</key>
-													<string>mileageQuantity</string>
-												</dict>
-											</array>
-										</dict>
-									</dict>
-								</dict>
-								<dict>
-									<key>kind</key>
-									<string>same</string>
-									<key>otherPath</key>
 									<dict>
 										<key>steps</key>
 										<array>
@@ -4772,278 +3927,79 @@
 												<key>key</key>
 												<string>mileageDistanceUnit</string>
 											</dict>
-										</array>
-									</dict>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>MeteredEvent</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>FillUp</string>
-											</dict>
 											<dict>
 												<key>key</key>
-												<string>mileageDistanceUnit</string>
+												<string>code</string>
 											</dict>
 										</array>
-										<key>variable</key>
-										<string>x5</string>
 									</dict>
 								</dict>
 							</array>
-						</dict>
-						<key>path</key>
-						<dict>
-							<key>steps</key>
+							<key>alsoWhere</key>
 							<array>
-								<dict>
-									<key>key</key>
-									<string>vehicle</string>
-								</dict>
-								<dict>
-									<key>key</key>
-									<string>records</string>
-								</dict>
+								<string>_BE4B2E7C-402C-43ED-BE4A-32E4500880B0</string>
 							</array>
+							<key>in</key>
+							<string>bag1</string>
+							<key>is</key>
+							<dict>
+								<key>steps</key>
+								<array>
+									<dict>
+										<key>key</key>
+										<string>vehicle</string>
+									</dict>
+									<dict>
+										<key>key</key>
+										<string>id</string>
+									</dict>
+								</array>
+							</dict>
+							<key>members</key>
+							<string>records</string>
+							<key>of</key>
+							<string>_9652578A-D49A-4608-85ED-ECD0BABE8D63</string>
+							<key>than</key>
+							<dict>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>mileageQuantity</string>
+										</dict>
+									</array>
+								</dict>
+							</dict>
+							<key>where</key>
+							<string>_214C4494-F085-4C8A-9A5F-EA7157B583BD</string>
+							<key>window</key>
+							<string>_5FAF96AB-5F88-4AF7-86EA-1BFA1314AAB2</string>
+							<key>windowIs</key>
+							<string>&lt;</string>
 						</dict>
-						<key>variable</key>
-						<string>x5</string>
+						<key>right</key>
+						<dict>
+							<key>constant</key>
+							<string>0</string>
+							<key>type</key>
+							<string>Integer 64</string>
+						</dict>
 					</dict>
 					<dict>
+						<key>comparison</key>
+						<string>&gt;</string>
 						<key>kind</key>
-						<string>exists</string>
-						<key>operand</key>
+						<string>compare</string>
+						<key>left</key>
 						<dict>
-							<key>kind</key>
-							<string>all</string>
-							<key>operands</key>
+							<key>aggregate</key>
+							<string>count</string>
+							<key>alsoAre</key>
 							<array>
 								<dict>
-									<key>entity</key>
-									<string>Event</string>
-									<key>kind</key>
-									<string>isOf</string>
 									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array/>
-										<key>variable</key>
-										<string>x6</string>
-									</dict>
-								</dict>
-								<dict>
-									<key>entity</key>
-									<string>MeteredEvent</string>
-									<key>kind</key>
-									<string>isOf</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-										</array>
-										<key>variable</key>
-										<string>x6</string>
-									</dict>
-								</dict>
-								<dict>
-									<key>entity</key>
-									<string>FillUp</string>
-									<key>kind</key>
-									<string>isOf</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>MeteredEvent</string>
-											</dict>
-										</array>
-										<key>variable</key>
-										<string>x6</string>
-									</dict>
-								</dict>
-								<dict>
-									<key>comparison</key>
-									<string>&gt;</string>
-									<key>kind</key>
-									<string>compare</string>
-									<key>left</key>
-									<dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>as</key>
-													<string>Event</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>MeteredEvent</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>FillUp</string>
-												</dict>
-												<dict>
-													<key>key</key>
-													<string>mileageQuantity</string>
-												</dict>
-											</array>
-											<key>variable</key>
-											<string>x6</string>
-										</dict>
-									</dict>
-									<key>right</key>
-									<dict>
-										<key>aggregate</key>
-										<string>max</string>
-										<key>in</key>
-										<string>bag1</string>
-										<key>is</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>key</key>
-													<string>id</string>
-												</dict>
-											</array>
-										</dict>
-										<key>of</key>
-										<string>_5FAF96AB-5F88-4AF7-86EA-1BFA1314AAB2</string>
-										<key>where</key>
-										<string>_CA57C0D4-F976-4F56-910A-29F0E51E13AE</string>
-									</dict>
-								</dict>
-								<dict>
-									<key>comparison</key>
-									<string>=</string>
-									<key>kind</key>
-									<string>compare</string>
-									<key>left</key>
-									<dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>as</key>
-													<string>Event</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>MeteredEvent</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>FillUp</string>
-												</dict>
-												<dict>
-													<key>key</key>
-													<string>mileageQuantity</string>
-												</dict>
-											</array>
-											<key>variable</key>
-											<string>x6</string>
-										</dict>
-									</dict>
-									<key>right</key>
-									<dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>as</key>
-													<string>Event</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>MeteredEvent</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>FillUp</string>
-												</dict>
-												<dict>
-													<key>key</key>
-													<string>mileageQuantity</string>
-												</dict>
-											</array>
-											<key>variable</key>
-											<string>x6</string>
-										</dict>
-									</dict>
-								</dict>
-								<dict>
-									<key>comparison</key>
-									<string>&lt;=</string>
-									<key>kind</key>
-									<string>compare</string>
-									<key>left</key>
-									<dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>as</key>
-													<string>Event</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>MeteredEvent</string>
-												</dict>
-												<dict>
-													<key>as</key>
-													<string>FillUp</string>
-												</dict>
-												<dict>
-													<key>key</key>
-													<string>mileageQuantity</string>
-												</dict>
-											</array>
-											<key>variable</key>
-											<string>x6</string>
-										</dict>
-									</dict>
-									<key>right</key>
-									<dict>
-										<key>path</key>
-										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>key</key>
-													<string>mileageQuantity</string>
-												</dict>
-											</array>
-										</dict>
-									</dict>
-								</dict>
-								<dict>
-									<key>kind</key>
-									<string>same</string>
-									<key>otherPath</key>
 									<dict>
 										<key>steps</key>
 										<array>
@@ -5051,65 +4007,15 @@
 												<key>key</key>
 												<string>mileageDistanceUnit</string>
 											</dict>
-										</array>
-									</dict>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>MeteredEvent</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>FillUp</string>
-											</dict>
 											<dict>
 												<key>key</key>
-												<string>mileageDistanceUnit</string>
+												<string>code</string>
 											</dict>
 										</array>
-										<key>variable</key>
-										<string>x6</string>
 									</dict>
 								</dict>
 								<dict>
-									<key>kind</key>
-									<string>notNull</string>
 									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>MeteredEvent</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>FillUp</string>
-											</dict>
-											<dict>
-												<key>key</key>
-												<string>volumeQuantity</string>
-											</dict>
-										</array>
-										<key>variable</key>
-										<string>x6</string>
-									</dict>
-								</dict>
-								<dict>
-									<key>kind</key>
-									<string>same</string>
-									<key>otherPath</key>
 									<dict>
 										<key>steps</key>
 										<array>
@@ -5117,51 +4023,135 @@
 												<key>key</key>
 												<string>volumeVolumeUnit</string>
 											</dict>
-										</array>
-									</dict>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>as</key>
-												<string>Event</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>MeteredEvent</string>
-											</dict>
-											<dict>
-												<key>as</key>
-												<string>FillUp</string>
-											</dict>
 											<dict>
 												<key>key</key>
-												<string>volumeVolumeUnit</string>
+												<string>code</string>
 											</dict>
 										</array>
-										<key>variable</key>
-										<string>x6</string>
 									</dict>
 								</dict>
 							</array>
-						</dict>
-						<key>path</key>
-						<dict>
-							<key>steps</key>
+							<key>alsoThan</key>
+							<dict>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>mileageQuantity</string>
+										</dict>
+									</array>
+								</dict>
+							</dict>
+							<key>alsoWhere</key>
 							<array>
-								<dict>
-									<key>key</key>
-									<string>vehicle</string>
-								</dict>
-								<dict>
-									<key>key</key>
-									<string>records</string>
-								</dict>
+								<string>_DC2209CA-B1CF-4924-AC9A-66B1CD27543E</string>
+								<string>_B665B666-FC13-40A0-B7F9-C203C40E67AC</string>
 							</array>
+							<key>in</key>
+							<string>bag3</string>
+							<key>is</key>
+							<dict>
+								<key>steps</key>
+								<array>
+									<dict>
+										<key>key</key>
+										<string>vehicle</string>
+									</dict>
+									<dict>
+										<key>key</key>
+										<string>id</string>
+									</dict>
+								</array>
+							</dict>
+							<key>members</key>
+							<string>records</string>
+							<key>of</key>
+							<string>_9F5D7046-C958-4B1D-8B9E-CC6EBBDB80C6</string>
+							<key>than</key>
+							<dict>
+								<key>aggregate</key>
+								<string>max</string>
+								<key>alsoAre</key>
+								<array>
+									<dict>
+										<key>path</key>
+										<dict>
+											<key>steps</key>
+											<array>
+												<dict>
+													<key>key</key>
+													<string>mileageDistanceUnit</string>
+												</dict>
+												<dict>
+													<key>key</key>
+													<string>code</string>
+												</dict>
+											</array>
+										</dict>
+									</dict>
+								</array>
+								<key>alsoWhere</key>
+								<array>
+									<string>_BE4B2E7C-402C-43ED-BE4A-32E4500880B0</string>
+								</array>
+								<key>in</key>
+								<string>bag1</string>
+								<key>is</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>vehicle</string>
+										</dict>
+										<dict>
+											<key>key</key>
+											<string>id</string>
+										</dict>
+									</array>
+								</dict>
+								<key>members</key>
+								<string>records</string>
+								<key>of</key>
+								<string>_5FAF96AB-5F88-4AF7-86EA-1BFA1314AAB2</string>
+								<key>than</key>
+								<dict>
+									<key>path</key>
+									<dict>
+										<key>steps</key>
+										<array>
+											<dict>
+												<key>key</key>
+												<string>mileageQuantity</string>
+											</dict>
+										</array>
+									</dict>
+								</dict>
+								<key>where</key>
+								<string>_214C4494-F085-4C8A-9A5F-EA7157B583BD</string>
+								<key>window</key>
+								<string>_5FAF96AB-5F88-4AF7-86EA-1BFA1314AAB2</string>
+								<key>windowIs</key>
+								<string>&lt;</string>
+							</dict>
+							<key>where</key>
+							<string>_214C4494-F085-4C8A-9A5F-EA7157B583BD</string>
+							<key>window</key>
+							<string>_1A321995-070D-4691-AC3A-684F621B6943</string>
+							<key>windowAlsoIs</key>
+							<string>&lt;=</string>
+							<key>windowIs</key>
+							<string>&gt;</string>
 						</dict>
-						<key>variable</key>
-						<string>x6</string>
+						<key>right</key>
+						<dict>
+							<key>constant</key>
+							<string>0</string>
+							<key>type</key>
+							<string>Integer 64</string>
+						</dict>
 					</dict>
 				</array>
 			</dict>
@@ -5174,21 +4164,6 @@
 					<dict>
 						<key>columns</key>
 						<array>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_CA57C0D4-F976-4F56-910A-29F0E51E13AE</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array/>
-								</dict>
-								<key>title</key>
-								<string>FillUp1</string>
-								<key>trail</key>
-								<array/>
-							</dict>
 							<dict>
 								<key>identifier</key>
 								<string>id</string>
@@ -5220,103 +4195,11 @@
 								<dict>
 									<key>steps</key>
 									<array/>
-									<key>variable</key>
-									<string>x1</string>
 								</dict>
 								<key>title</key>
 								<string>Record</string>
 								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
-							</dict>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_CE22EAA5-3E68-4FBA-AFF7-8C9D2E770550</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array>
-										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-									</array>
-									<key>variable</key>
-									<string>x1</string>
-								</dict>
-								<key>title</key>
-								<string>Event</string>
-								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
-							</dict>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_4E9E81C1-72FE-4D16-8DB5-7FEE52EF53FF</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array>
-										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>MeteredEvent</string>
-										</dict>
-									</array>
-									<key>variable</key>
-									<string>x1</string>
-								</dict>
-								<key>title</key>
-								<string>MeteredEvent</string>
-								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
-							</dict>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_D7852780-0D54-48BE-A2F3-D2CB0DA7A90D</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array>
-										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>MeteredEvent</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>FillUp</string>
-										</dict>
-									</array>
-									<key>variable</key>
-									<string>x1</string>
-								</dict>
-								<key>title</key>
-								<string>FillUp2</string>
-								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
+								<array/>
 							</dict>
 							<dict>
 								<key>node</key>
@@ -5326,634 +4209,67 @@
 									<key>steps</key>
 									<array>
 										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>MeteredEvent</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>FillUp</string>
-										</dict>
-										<dict>
 											<key>key</key>
 											<string>mileageQuantity</string>
 										</dict>
 									</array>
-									<key>variable</key>
-									<string>x1</string>
 								</dict>
 								<key>title</key>
 								<string>Quantity2</string>
 								<key>trail</key>
 								<array>
-									<string>vehicle</string>
-									<string>records</string>
 									<string>mileageQuantity</string>
+								</array>
+							</dict>
+							<dict>
+								<key>identifier</key>
+								<string>code</string>
+								<key>node</key>
+								<string>_BE4B2E7C-402C-43ED-BE4A-32E4500880B0</string>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>mileageDistanceUnit</string>
+										</dict>
+									</array>
+								</dict>
+								<key>title</key>
+								<string>DistanceUnit1</string>
+								<key>trail</key>
+								<array>
+									<string>mileageDistanceUnit</string>
 								</array>
 							</dict>
 						</array>
 						<key>condition</key>
 						<dict>
+							<key>comparison</key>
+							<string>=</string>
 							<key>kind</key>
-							<string>all</string>
-							<key>operands</key>
-							<array>
+							<string>compare</string>
+							<key>left</key>
+							<dict>
+								<key>path</key>
 								<dict>
-									<key>comparison</key>
-									<string>=</string>
-									<key>kind</key>
-									<string>compare</string>
-									<key>left</key>
-									<dict>
-										<key>path</key>
+									<key>steps</key>
+									<array>
 										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>key</key>
-													<string>filledTheTank</string>
-												</dict>
-											</array>
+											<key>key</key>
+											<string>filledTheTank</string>
 										</dict>
-									</dict>
-									<key>right</key>
-									<dict>
-										<key>constant</key>
-										<string>true</string>
-										<key>type</key>
-										<string>Boolean</string>
-									</dict>
+									</array>
 								</dict>
-								<dict>
-									<key>kind</key>
-									<string>notNull</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>mileageQuantity</string>
-											</dict>
-										</array>
-									</dict>
-								</dict>
-								<dict>
-									<key>kind</key>
-									<string>notNull</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>mileageDistanceUnit</string>
-											</dict>
-										</array>
-									</dict>
-								</dict>
-								<dict>
-									<key>kind</key>
-									<string>notNull</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>volumeVolumeUnit</string>
-											</dict>
-										</array>
-									</dict>
-								</dict>
-								<dict>
-									<key>kind</key>
-									<string>exists</string>
-									<key>operand</key>
-									<dict>
-										<key>kind</key>
-										<string>all</string>
-										<key>operands</key>
-										<array>
-											<dict>
-												<key>entity</key>
-												<string>Event</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array/>
-													<key>variable</key>
-													<string>x1</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>MeteredEvent</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x1</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>FillUp</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x1</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>comparison</key>
-												<string>=</string>
-												<key>kind</key>
-												<string>compare</string>
-												<key>left</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>filledTheTank</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x1</string>
-													</dict>
-												</dict>
-												<key>right</key>
-												<dict>
-													<key>constant</key>
-													<string>true</string>
-													<key>type</key>
-													<string>Boolean</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>comparison</key>
-												<string>&lt;</string>
-												<key>kind</key>
-												<string>compare</string>
-												<key>left</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x1</string>
-													</dict>
-												</dict>
-												<key>right</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-													</dict>
-												</dict>
-											</dict>
-											<dict>
-												<key>kind</key>
-												<string>same</string>
-												<key>otherPath</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>key</key>
-															<string>mileageDistanceUnit</string>
-														</dict>
-													</array>
-												</dict>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>FillUp</string>
-														</dict>
-														<dict>
-															<key>key</key>
-															<string>mileageDistanceUnit</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x1</string>
-												</dict>
-											</dict>
-										</array>
-									</dict>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>vehicle</string>
-											</dict>
-											<dict>
-												<key>key</key>
-												<string>records</string>
-											</dict>
-										</array>
-									</dict>
-									<key>variable</key>
-									<string>x1</string>
-								</dict>
-								<dict>
-									<key>kind</key>
-									<string>exists</string>
-									<key>operand</key>
-									<dict>
-										<key>kind</key>
-										<string>all</string>
-										<key>operands</key>
-										<array>
-											<dict>
-												<key>entity</key>
-												<string>Event</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array/>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>MeteredEvent</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>FillUp</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>kind</key>
-												<string>notNull</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>FillUp</string>
-														</dict>
-														<dict>
-															<key>key</key>
-															<string>mileageQuantity</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>comparison</key>
-												<string>=</string>
-												<key>kind</key>
-												<string>compare</string>
-												<key>left</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x2</string>
-													</dict>
-												</dict>
-												<key>right</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x2</string>
-													</dict>
-												</dict>
-											</dict>
-											<dict>
-												<key>comparison</key>
-												<string>&lt;=</string>
-												<key>kind</key>
-												<string>compare</string>
-												<key>left</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x2</string>
-													</dict>
-												</dict>
-												<key>right</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-													</dict>
-												</dict>
-											</dict>
-											<dict>
-												<key>kind</key>
-												<string>same</string>
-												<key>otherPath</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>key</key>
-															<string>mileageDistanceUnit</string>
-														</dict>
-													</array>
-												</dict>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>FillUp</string>
-														</dict>
-														<dict>
-															<key>key</key>
-															<string>mileageDistanceUnit</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>kind</key>
-												<string>notNull</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>FillUp</string>
-														</dict>
-														<dict>
-															<key>key</key>
-															<string>volumeQuantity</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>kind</key>
-												<string>same</string>
-												<key>otherPath</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>key</key>
-															<string>volumeVolumeUnit</string>
-														</dict>
-													</array>
-												</dict>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>FillUp</string>
-														</dict>
-														<dict>
-															<key>key</key>
-															<string>volumeVolumeUnit</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x2</string>
-												</dict>
-											</dict>
-										</array>
-									</dict>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>vehicle</string>
-											</dict>
-											<dict>
-												<key>key</key>
-												<string>records</string>
-											</dict>
-										</array>
-									</dict>
-									<key>variable</key>
-									<string>x2</string>
-								</dict>
-							</array>
+							</dict>
+							<key>right</key>
+							<dict>
+								<key>constant</key>
+								<string>true</string>
+								<key>type</key>
+								<string>Boolean</string>
+							</dict>
 						</dict>
 						<key>entity</key>
 						<string>FillUp</string>
@@ -5970,21 +4286,6 @@
 					<dict>
 						<key>columns</key>
 						<array>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_CA57C0D4-F976-4F56-910A-29F0E51E13AE</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array/>
-								</dict>
-								<key>title</key>
-								<string>FillUp1</string>
-								<key>trail</key>
-								<array/>
-							</dict>
 							<dict>
 								<key>identifier</key>
 								<string>id</string>
@@ -6016,102 +4317,30 @@
 								<dict>
 									<key>steps</key>
 									<array/>
-									<key>variable</key>
-									<string>x4</string>
 								</dict>
 								<key>title</key>
 								<string>Record</string>
 								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
+								<array/>
 							</dict>
 							<dict>
-								<key>identifier</key>
-								<string>id</string>
 								<key>node</key>
-								<string>_B15F2F83-79F3-420E-A7E7-2B383B03E628</string>
+								<string>_1A321995-070D-4691-AC3A-684F621B6943</string>
 								<key>path</key>
 								<dict>
 									<key>steps</key>
 									<array>
 										<dict>
-											<key>as</key>
-											<string>Event</string>
+											<key>key</key>
+											<string>mileageQuantity</string>
 										</dict>
 									</array>
-									<key>variable</key>
-									<string>x4</string>
 								</dict>
 								<key>title</key>
-								<string>Event</string>
+								<string>Quantity3</string>
 								<key>trail</key>
 								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
-							</dict>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_46A4DC5B-2127-4854-881A-991F8FF55895</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array>
-										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>MeteredEvent</string>
-										</dict>
-									</array>
-									<key>variable</key>
-									<string>x4</string>
-								</dict>
-								<key>title</key>
-								<string>MeteredEvent</string>
-								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
-								</array>
-							</dict>
-							<dict>
-								<key>identifier</key>
-								<string>id</string>
-								<key>node</key>
-								<string>_AED6C93B-BDCB-4713-96ED-A6390407ED39</string>
-								<key>path</key>
-								<dict>
-									<key>steps</key>
-									<array>
-										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>MeteredEvent</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>FillUp</string>
-										</dict>
-									</array>
-									<key>variable</key>
-									<string>x4</string>
-								</dict>
-								<key>title</key>
-								<string>FillUp3</string>
-								<key>trail</key>
-								<array>
-									<string>vehicle</string>
-									<string>records</string>
+									<string>mileageQuantity</string>
 								</array>
 							</dict>
 							<dict>
@@ -6122,660 +4351,209 @@
 									<key>steps</key>
 									<array>
 										<dict>
-											<key>as</key>
-											<string>Event</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>MeteredEvent</string>
-										</dict>
-										<dict>
-											<key>as</key>
-											<string>FillUp</string>
-										</dict>
-										<dict>
 											<key>key</key>
 											<string>volumeQuantity</string>
 										</dict>
 									</array>
-									<key>variable</key>
-									<string>x4</string>
 								</dict>
 								<key>title</key>
 								<string>Quantity4</string>
 								<key>trail</key>
 								<array>
-									<string>vehicle</string>
-									<string>records</string>
 									<string>volumeQuantity</string>
+								</array>
+							</dict>
+							<dict>
+								<key>identifier</key>
+								<string>code</string>
+								<key>node</key>
+								<string>_DC2209CA-B1CF-4924-AC9A-66B1CD27543E</string>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>mileageDistanceUnit</string>
+										</dict>
+									</array>
+								</dict>
+								<key>title</key>
+								<string>DistanceUnit1</string>
+								<key>trail</key>
+								<array>
+									<string>mileageDistanceUnit</string>
+								</array>
+							</dict>
+							<dict>
+								<key>identifier</key>
+								<string>code</string>
+								<key>node</key>
+								<string>_B665B666-FC13-40A0-B7F9-C203C40E67AC</string>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>volumeVolumeUnit</string>
+										</dict>
+									</array>
+								</dict>
+								<key>title</key>
+								<string>VolumeUnit1</string>
+								<key>trail</key>
+								<array>
+									<string>volumeVolumeUnit</string>
 								</array>
 							</dict>
 						</array>
 						<key>condition</key>
 						<dict>
 							<key>kind</key>
-							<string>all</string>
-							<key>operands</key>
-							<array>
-								<dict>
-									<key>comparison</key>
-									<string>=</string>
-									<key>kind</key>
-									<string>compare</string>
-									<key>left</key>
+							<string>notNull</string>
+							<key>path</key>
+							<dict>
+								<key>steps</key>
+								<array>
 									<dict>
-										<key>path</key>
+										<key>key</key>
+										<string>volumeQuantity</string>
+									</dict>
+								</array>
+							</dict>
+						</dict>
+						<key>entity</key>
+						<string>FillUp</string>
+						<key>notes</key>
+						<array/>
+						<key>sorts</key>
+						<array/>
+					</dict>
+				</dict>
+				<dict>
+					<key>name</key>
+					<string>bag3</string>
+					<key>plan</key>
+					<dict>
+						<key>columns</key>
+						<array>
+							<dict>
+								<key>identifier</key>
+								<string>id</string>
+								<key>node</key>
+								<string>_214C4494-F085-4C8A-9A5F-EA7157B583BD</string>
+								<key>path</key>
+								<dict>
+									<key>steps</key>
+									<array>
 										<dict>
-											<key>steps</key>
-											<array>
-												<dict>
-													<key>key</key>
-													<string>filledTheTank</string>
-												</dict>
-											</array>
+											<key>key</key>
+											<string>vehicle</string>
 										</dict>
-									</dict>
-									<key>right</key>
-									<dict>
-										<key>constant</key>
-										<string>true</string>
-										<key>type</key>
-										<string>Boolean</string>
-									</dict>
+									</array>
 								</dict>
+								<key>title</key>
+								<string>Vehicle</string>
+								<key>trail</key>
+								<array>
+									<string>vehicle</string>
+								</array>
+							</dict>
+							<dict>
+								<key>identifier</key>
+								<string>id</string>
+								<key>node</key>
+								<string>_9F5D7046-C958-4B1D-8B9E-CC6EBBDB80C6</string>
+								<key>path</key>
 								<dict>
-									<key>kind</key>
-									<string>notNull</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>mileageQuantity</string>
-											</dict>
-										</array>
-									</dict>
+									<key>steps</key>
+									<array/>
 								</dict>
+								<key>title</key>
+								<string>Record</string>
+								<key>trail</key>
+								<array/>
+							</dict>
+							<dict>
+								<key>node</key>
+								<string>_1A321995-070D-4691-AC3A-684F621B6943</string>
+								<key>path</key>
 								<dict>
-									<key>kind</key>
-									<string>notNull</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>mileageDistanceUnit</string>
-											</dict>
-										</array>
-									</dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>mileageQuantity</string>
+										</dict>
+									</array>
 								</dict>
+								<key>title</key>
+								<string>Quantity3</string>
+								<key>trail</key>
+								<array>
+									<string>mileageQuantity</string>
+								</array>
+							</dict>
+							<dict>
+								<key>identifier</key>
+								<string>code</string>
+								<key>node</key>
+								<string>_DC2209CA-B1CF-4924-AC9A-66B1CD27543E</string>
+								<key>path</key>
 								<dict>
-									<key>kind</key>
-									<string>notNull</string>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>volumeVolumeUnit</string>
-											</dict>
-										</array>
-									</dict>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>mileageDistanceUnit</string>
+										</dict>
+									</array>
 								</dict>
+								<key>title</key>
+								<string>DistanceUnit1</string>
+								<key>trail</key>
+								<array>
+									<string>mileageDistanceUnit</string>
+								</array>
+							</dict>
+							<dict>
+								<key>identifier</key>
+								<string>code</string>
+								<key>node</key>
+								<string>_B665B666-FC13-40A0-B7F9-C203C40E67AC</string>
+								<key>path</key>
 								<dict>
-									<key>kind</key>
-									<string>exists</string>
-									<key>operand</key>
-									<dict>
-										<key>kind</key>
-										<string>all</string>
-										<key>operands</key>
-										<array>
-											<dict>
-												<key>entity</key>
-												<string>Event</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array/>
-													<key>variable</key>
-													<string>x3</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>MeteredEvent</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x3</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>FillUp</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x3</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>comparison</key>
-												<string>=</string>
-												<key>kind</key>
-												<string>compare</string>
-												<key>left</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>filledTheTank</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x3</string>
-													</dict>
-												</dict>
-												<key>right</key>
-												<dict>
-													<key>constant</key>
-													<string>true</string>
-													<key>type</key>
-													<string>Boolean</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>comparison</key>
-												<string>&lt;</string>
-												<key>kind</key>
-												<string>compare</string>
-												<key>left</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x3</string>
-													</dict>
-												</dict>
-												<key>right</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-													</dict>
-												</dict>
-											</dict>
-											<dict>
-												<key>kind</key>
-												<string>same</string>
-												<key>otherPath</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>key</key>
-															<string>mileageDistanceUnit</string>
-														</dict>
-													</array>
-												</dict>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>FillUp</string>
-														</dict>
-														<dict>
-															<key>key</key>
-															<string>mileageDistanceUnit</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x3</string>
-												</dict>
-											</dict>
-										</array>
-									</dict>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>vehicle</string>
-											</dict>
-											<dict>
-												<key>key</key>
-												<string>records</string>
-											</dict>
-										</array>
-									</dict>
-									<key>variable</key>
-									<string>x3</string>
+									<key>steps</key>
+									<array>
+										<dict>
+											<key>key</key>
+											<string>volumeVolumeUnit</string>
+										</dict>
+									</array>
 								</dict>
-								<dict>
-									<key>kind</key>
-									<string>exists</string>
-									<key>operand</key>
+								<key>title</key>
+								<string>VolumeUnit1</string>
+								<key>trail</key>
+								<array>
+									<string>volumeVolumeUnit</string>
+								</array>
+							</dict>
+						</array>
+						<key>condition</key>
+						<dict>
+							<key>kind</key>
+							<string>notNull</string>
+							<key>path</key>
+							<dict>
+								<key>steps</key>
+								<array>
 									<dict>
-										<key>kind</key>
-										<string>all</string>
-										<key>operands</key>
-										<array>
-											<dict>
-												<key>entity</key>
-												<string>Event</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array/>
-													<key>variable</key>
-													<string>x4</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>MeteredEvent</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x4</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>entity</key>
-												<string>FillUp</string>
-												<key>kind</key>
-												<string>isOf</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x4</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>comparison</key>
-												<string>&gt;</string>
-												<key>kind</key>
-												<string>compare</string>
-												<key>left</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x4</string>
-													</dict>
-												</dict>
-												<key>right</key>
-												<dict>
-													<key>aggregate</key>
-													<string>max</string>
-													<key>in</key>
-													<string>bag1</string>
-													<key>is</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>key</key>
-																<string>id</string>
-															</dict>
-														</array>
-													</dict>
-													<key>of</key>
-													<string>_5FAF96AB-5F88-4AF7-86EA-1BFA1314AAB2</string>
-													<key>where</key>
-													<string>_CA57C0D4-F976-4F56-910A-29F0E51E13AE</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>comparison</key>
-												<string>=</string>
-												<key>kind</key>
-												<string>compare</string>
-												<key>left</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x4</string>
-													</dict>
-												</dict>
-												<key>right</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x4</string>
-													</dict>
-												</dict>
-											</dict>
-											<dict>
-												<key>comparison</key>
-												<string>&lt;=</string>
-												<key>kind</key>
-												<string>compare</string>
-												<key>left</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>as</key>
-																<string>Event</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>MeteredEvent</string>
-															</dict>
-															<dict>
-																<key>as</key>
-																<string>FillUp</string>
-															</dict>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-														<key>variable</key>
-														<string>x4</string>
-													</dict>
-												</dict>
-												<key>right</key>
-												<dict>
-													<key>path</key>
-													<dict>
-														<key>steps</key>
-														<array>
-															<dict>
-																<key>key</key>
-																<string>mileageQuantity</string>
-															</dict>
-														</array>
-													</dict>
-												</dict>
-											</dict>
-											<dict>
-												<key>kind</key>
-												<string>same</string>
-												<key>otherPath</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>key</key>
-															<string>mileageDistanceUnit</string>
-														</dict>
-													</array>
-												</dict>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>FillUp</string>
-														</dict>
-														<dict>
-															<key>key</key>
-															<string>mileageDistanceUnit</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x4</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>kind</key>
-												<string>notNull</string>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>FillUp</string>
-														</dict>
-														<dict>
-															<key>key</key>
-															<string>volumeQuantity</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x4</string>
-												</dict>
-											</dict>
-											<dict>
-												<key>kind</key>
-												<string>same</string>
-												<key>otherPath</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>key</key>
-															<string>volumeVolumeUnit</string>
-														</dict>
-													</array>
-												</dict>
-												<key>path</key>
-												<dict>
-													<key>steps</key>
-													<array>
-														<dict>
-															<key>as</key>
-															<string>Event</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>MeteredEvent</string>
-														</dict>
-														<dict>
-															<key>as</key>
-															<string>FillUp</string>
-														</dict>
-														<dict>
-															<key>key</key>
-															<string>volumeVolumeUnit</string>
-														</dict>
-													</array>
-													<key>variable</key>
-													<string>x4</string>
-												</dict>
-											</dict>
-										</array>
+										<key>key</key>
+										<string>volumeQuantity</string>
 									</dict>
-									<key>path</key>
-									<dict>
-										<key>steps</key>
-										<array>
-											<dict>
-												<key>key</key>
-												<string>vehicle</string>
-											</dict>
-											<dict>
-												<key>key</key>
-												<string>records</string>
-											</dict>
-										</array>
-									</dict>
-									<key>variable</key>
-									<string>x4</string>
-								</dict>
-							</array>
+								</array>
+							</dict>
 						</dict>
 						<key>entity</key>
 						<string>FillUp</string>
