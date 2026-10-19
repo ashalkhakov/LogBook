@@ -1541,10 +1541,12 @@ vehicle: the date of its car sale's moment (`SaleDate`, derived and
 stored), and what the sale earned (`SellingPrice`). The tyre set a change
 removed is the one the vehicle's change before it fitted (`RemovedSet`,
 the one before, derived and stored), so that no change fitting and
-removing the same set is checked on it. Three partly derived fact types
-are stored as well (a record's vehicle, its cost, who drives a vehicle),
-so that queries go through them. Every constraint is checked: 57, by the
-generated code.
+removing the same set is checked on it. Two partly derived fact types
+are stored as well (a record's vehicle, its cost). Who drives a vehicle is
+partly derived and not stored: the users it is shared with are entered,
+and its owner drives it by a rule (`OwnerDrives`), which queries and the
+rules about drivers go through beside what is entered. Every constraint is
+checked: 57, by the generated code.
 
 The subtypes defined by a rule keep it as NORMA keeps a subtype's
 derivation rule, and run it as a query: a Cost is a record that cost

@@ -5308,6 +5308,13 @@
 				</array>
 			</array>
 			<array>
+				<string>Vehicle</string>
+				<array>
+					<string>owner</string>
+					<string>eventsAsDriver</string>
+				</array>
+			</array>
+			<array>
 				<string>VehicleDriver</string>
 				<array>
 					<string>user</string>
@@ -5456,6 +5463,13 @@
 			<array>
 				<string>User</string>
 				<array>
+					<string>recordsAsEnteredBy</string>
+				</array>
+			</array>
+			<array>
+				<string>Vehicle</string>
+				<array>
+					<string>owner</string>
 					<string>recordsAsEnteredBy</string>
 				</array>
 			</array>
@@ -6209,6 +6223,53 @@
 											</dict>
 											<key>variable</key>
 											<string>x1</string>
+										</dict>
+									</dict>
+									<dict>
+										<key>kind</key>
+										<string>not</string>
+										<key>operand</key>
+										<dict>
+											<key>kind</key>
+											<string>exists</string>
+											<key>operand</key>
+											<dict>
+												<key>kind</key>
+												<string>same</string>
+												<key>otherPath</key>
+												<dict>
+													<key>steps</key>
+													<array>
+														<dict>
+															<key>key</key>
+															<string>vehicle</string>
+														</dict>
+													</array>
+												</dict>
+												<key>path</key>
+												<dict>
+													<key>steps</key>
+													<array/>
+													<key>variable</key>
+													<string>x2</string>
+												</dict>
+											</dict>
+											<key>path</key>
+											<dict>
+												<key>steps</key>
+												<array>
+													<dict>
+														<key>key</key>
+														<string>driver</string>
+													</dict>
+													<dict>
+														<key>key</key>
+														<string>ownedVehicles</string>
+													</dict>
+												</array>
+											</dict>
+											<key>variable</key>
+											<string>x2</string>
 										</dict>
 									</dict>
 								</array>
@@ -7736,6 +7797,53 @@
 											</dict>
 											<key>variable</key>
 											<string>x1</string>
+										</dict>
+									</dict>
+									<dict>
+										<key>kind</key>
+										<string>not</string>
+										<key>operand</key>
+										<dict>
+											<key>kind</key>
+											<string>exists</string>
+											<key>operand</key>
+											<dict>
+												<key>kind</key>
+												<string>same</string>
+												<key>otherPath</key>
+												<dict>
+													<key>steps</key>
+													<array>
+														<dict>
+															<key>key</key>
+															<string>vehicle</string>
+														</dict>
+													</array>
+												</dict>
+												<key>path</key>
+												<dict>
+													<key>steps</key>
+													<array/>
+													<key>variable</key>
+													<string>x2</string>
+												</dict>
+											</dict>
+											<key>path</key>
+											<dict>
+												<key>steps</key>
+												<array>
+													<dict>
+														<key>key</key>
+														<string>enteredBy</string>
+													</dict>
+													<dict>
+														<key>key</key>
+														<string>ownedVehicles</string>
+													</dict>
+												</array>
+											</dict>
+											<key>variable</key>
+											<string>x2</string>
 										</dict>
 									</dict>
 								</array>

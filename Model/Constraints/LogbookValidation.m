@@ -287,22 +287,9 @@
 
 - (BOOL)orm_prepareForSave:(NSError **)error
 {
-	NSMutableSet *changed = [NSMutableSet setWithSet:[self insertedObjects]];
-	[changed unionSet:[self updatedObjects]];
-	[changed unionSet:[self deletedObjects]];
 	/* The model's tables (Logbook.ormplans), by the driver. */
 	ORMTables *tables = [ORMTables tablesNamed:@"Logbook" error:error];
-	if (tables == nil) {
-		return NO;
-	}
-	ORMSaveHook *hook = [[ORMSaveHook alloc] initWithTables:tables];
-	if (![hook deriveInContext:self changed:changed error:error]) {
-		return NO;
-	}
-	NSMutableArray<NSError *> *violations = [NSMutableArray array];
-	[hook prepareJoinedInContext:self changed:changed violations:violations];
-	[hook checkInContext:self changed:changed violations:violations];
-	return [ORMValidator report:violations error:error];
+	return tables != nil && [[[ORMSaveHook alloc] initWithTables:tables] prepareForSaveInContext:self error:error];
 }
 
 @end

@@ -1352,10 +1352,33 @@
 					<orm:UniquenessConstraint ref="_38D1853C-1627-45CA-A761-A4A66586F61E" />
 				</orm:InternalConstraints>
 				<orm:DerivationRule>
-					<orm:FactTypeDerivationPath id="_451A0FDA-F7E4-4E60-81BE-ECA43A280B3D" DerivationCompleteness="PartiallyDerived" DerivationStorage="Stored">
+					<orm:FactTypeDerivationPath id="_451A0FDA-F7E4-4E60-81BE-ECA43A280B3D" DerivationCompleteness="PartiallyDerived">
+						<orm:PathComponents>
+							<orm:RolePath id="_A9215B26-8997-0985-AD9E-AABA28AD4704">
+								<orm:RootObjectType id="_4F96FF65-C4F8-3360-EC80-15E0B319E077" ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" />
+								<orm:PathedRoles>
+									<orm:PathedRole id="_186F6DA9-B5D0-F444-74FB-F795A075E57F" ref="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E" Purpose="PostInnerJoin" />
+									<orm:PathedRole id="_97867E7B-F1AD-622D-ABF9-873ED1EC87C6" ref="_A887735F-F812-4607-9B18-891CD9B47891" Purpose="SameFactType" />
+								</orm:PathedRoles>
+							</orm:RolePath>
+						</orm:PathComponents>
+						<orm:DerivationProjections>
+							<orm:DerivationProjection id="_20C8857B-9146-EA2B-E31E-87AA3452FDE6" ref="_A9215B26-8997-0985-AD9E-AABA28AD4704">
+								<orm:RoleProjection id="_87E2DDBC-8676-FEA1-F90D-19B8F0A46274" ref="_7C7024F3-ABFD-412A-B3F6-1026A5247ACF">
+									<orm:DerivationSource>
+										<orm:PathRoot ref="_4F96FF65-C4F8-3360-EC80-15E0B319E077" />
+									</orm:DerivationSource>
+								</orm:RoleProjection>
+								<orm:RoleProjection id="_537EF225-0D3C-E32E-4FF8-17410EEBFC0F" ref="_6663B9CB-74F2-43B7-8EBD-FDF256E5F3B2">
+									<orm:DerivationSource>
+										<orm:PathedRole ref="_97867E7B-F1AD-622D-ABF9-873ED1EC87C6" />
+									</orm:DerivationSource>
+								</orm:RoleProjection>
+							</orm:DerivationProjection>
+						</orm:DerivationProjections>
 						<orm:InformalRule>
 							<orm:DerivationNote id="_D7AAF951-8FA9-4C75-924F-248CFA8DB007">
-								<orm:Body>The vehicle's owner drives it; the users it is shared with are entered.</orm:Body>
+								<orm:Body>For each User and Vehicle, that User drives that Vehicle if that Vehicle is owned by that User.</orm:Body>
 							</orm:DerivationNote>
 						</orm:InformalRule>
 					</orm:FactTypeDerivationPath>
@@ -13473,6 +13496,13 @@
 					</ormq:Node>
 				</ormq:Step>
 				<ormq:Value id="_FD1CD007-E307-4356-9441-680FD1BF4B5F" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="date(#_4C0AF631-429D-4550-8973-2112980DAAD4)" Comparison="&lt;" CompareTo="_3BBEC9D3-D8A6-4852-9005-77F65092F17E" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_1A071E76-29E6-4056-B975-25A586844941" Name="OwnerDrives" Kind="Derivation" Of="_EBBE620E-37E7-49D4-9C21-A2CE7D5AEDF5">
+			<ormq:Node id="_59C0F5EC-8A46-47D9-B3A7-3E27A93F1E47" ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" Projected="true">
+				<ormq:Step id="_9D490639-CE47-43A5-92CE-0867EAF6079E" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
+					<ormq:Node id="_B5A13B10-8E2D-4E2A-96C9-5132A7790C16" Role="_A887735F-F812-4607-9B18-891CD9B47891" Projected="true" />
+				</ormq:Step>
 			</ormq:Node>
 		</ormq:Query>
 	</ormq:Queries>

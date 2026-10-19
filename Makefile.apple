@@ -1,0 +1,60 @@
+# Logbook on macOS: the server and its check, with clang and Xcode's momc,
+# over ORMKit's runtime (built from ../NativeORM2) and ODataKit's frameworks
+# (its XCFrameworks in ../NativeORM2/.deps, by the versions its
+# .github/pins.env names).
+#
+#   make -f Makefile.apple          build/logbook-server, Logbook.momd and
+#                                   Logbook.ormplans beside it
+#   make -f Makefile.apple check    the server run, and asked over HTTP
+#                                   (Tests/serve-and-check.py)
+
+ORMKIT = ../NativeORM2
+comma = ,
+BUILD ?= build
+ODATAKIT = ODataKit OTelKit ODataIncrementalStore HTTPServerKit ODataService ODataSync
+ODATAKIT_DIRS = $(foreach f,$(ODATAKIT),$(abspath $(ORMKIT)/.deps/$(f).xcframework/macos-arm64_x86_64))
+# ORMRuntime.framework, built by ORMKit's project.
+ORMKIT_PRODUCTS = $(abspath $(BUILD)/ORMKit/Build/Products/Debug)
+CC = clang
+FLAGS = -fobjc-arc -fblocks -g -Wall -Wno-unused-parameter -mmacosx-version-min=14.0
+# The model's classes, generated as Xcode generates them.
+GENERATED = $(BUILD)/Generated
+# ODataKit's frameworks first: Xcode copies the ones ORMRuntime was built
+# against beside it, which a pin moved since would make stale.
+INC = -IModel/Constraints -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
+LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(ODATAKIT_DIRS)) \
+	-F$(ORMKIT_PRODUCTS) -Wl,-rpath,$(ORMKIT_PRODUCTS) \
+	-framework ORMRuntime -framework ODataSync -framework ODataService -framework HTTPServerKit \
+	-framework ODataIncrementalStore -framework OTelKit -framework ODataKit -framework CoreData -framework Foundation
+MODEL_FILES := $(shell find Model/Logbook.xcdatamodeld -type f)
+
+.PHONY: all check clean runtime
+all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
+
+runtime $(ORMKIT_PRODUCTS)/ORMRuntime.framework:
+	@test -d $(ORMKIT)/.deps/ODataKit.xcframework \
+	  || { echo "no ODataKit in $(ORMKIT)/.deps: gnustep-release-actions' scripts/deps.sh apple, there"; exit 1; }
+	xcodebuild -workspace $(ORMKIT)/ORMKit.xcworkspace -scheme ORMRuntime -configuration Debug \
+	  -destination 'platform=macOS' -derivedDataPath $(abspath $(BUILD)/ORMKit) build -quiet
+
+$(BUILD)/Logbook.momd: $(MODEL_FILES)
+	@mkdir -p $(BUILD)
+	rm -rf $@ && xcrun momc Model/Logbook.xcdatamodeld $(abspath $@) >/dev/null
+
+$(GENERATED)/.made: $(MODEL_FILES)
+	rm -rf $(GENERATED) && mkdir -p $(GENERATED)
+	xcrun momc --action generate Model/Logbook.xcdatamodeld $(abspath $(GENERATED)) >/dev/null
+	touch $@
+
+$(BUILD)/Logbook.ormplans: Model/Constraints/Logbook.ormplans
+	@mkdir -p $(BUILD)
+	cp $< $@
+
+$(BUILD)/logbook-server: Server/LBServer.m Model/Constraints/LogbookValidation.m $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	$(CC) $(FLAGS) $(INC) Server/LBServer.m Model/Constraints/LogbookValidation.m $(GENERATED)/*.m $(LIBS) -o $@
+
+check: all
+	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
+
+clean:
+	rm -rf $(BUILD)

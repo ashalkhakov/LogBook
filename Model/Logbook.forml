@@ -40,7 +40,13 @@ Portable data type: Numeric: Unsigned Integer
 Vehicle (as OwnedVehicle) is owned by User (as Owner)
 Each Vehicle is owned by exactly one User.
 VehicleDriver is where User drives Vehicle.
-++ The vehicle's owner drives it; the users it is shared with are entered.
++ The vehicle's owner drives it; the users it is shared with are entered.
+
+Query OwnerDrives:
+Derivation of "User drives Vehicle":
+✓User
+  + ✓Vehicle is owned by that User
+
 User has PersonName
 Each User has at most one PersonName.
 Vehicle has VehicleName
