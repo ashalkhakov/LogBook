@@ -13,10 +13,11 @@
     [self showPanelWithServer:LBSelfTestRoot.absoluteString];
 }
 
-/* The logbook's window closed by the user: the app done. Not the
-   connect panel's closing, nor the window's when connecting elsewhere. */
-- (void)windowWillClose:(NSNotification *)notification {
-    if (_window && notification.object == _window.window) [NSApp terminate:nil];
+/* The last window closed by the user: the app done. Connecting
+   elsewhere closes one and opens the other in the same event, which is
+   not the last closing. */
+- (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {
+    return YES;
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
@@ -46,7 +47,6 @@
     LBMainWindowController *window = _window;
     _window = nil;
     _store = nil;
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowWillCloseNotification object:window.window];
     [window close];
 }
 
@@ -62,8 +62,6 @@
     _store = store;
     _window = [[LBMainWindowController alloc] initWithStore:store];
     [_window showWindow:nil];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(windowWillClose:)
-                                                 name:NSWindowWillCloseNotification object:_window.window];
     if (LBSelfTestRoot) LBRunSelfTest(_window);
 }
 

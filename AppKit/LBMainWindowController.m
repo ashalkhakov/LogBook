@@ -18,60 +18,6 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @property (nonatomic, readwrite, copy) NSArray<TyreSet *> *tyreSets;
 @end
 
-#ifdef GNUSTEP
-/* gnustep-base parses no decimal number (its generatesDecimalNumbers
-   fails every string): a number parsed, then the string read as one. */
-@interface LBDecimalFormatter : NSNumberFormatter
-@end
-
-@implementation LBDecimalFormatter
-- (BOOL)getObjectValue:(id *)object forString:(NSString *)string errorDescription:(NSString **)error {
-    id number = nil;
-    if (![super getObjectValue:&number forString:string errorDescription:error]) return NO;
-    NSString *plain = [[string stringByReplacingOccurrencesOfString:self.groupingSeparator withString:@""]
-        stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-    NSDecimalNumber *decimal = [NSDecimalNumber decimalNumberWithString:plain locale:@{ NSLocaleDecimalSeparator: self.decimalSeparator }];
-    if (object) *object = number && ![decimal isEqual:[NSDecimalNumber notANumber]] ? decimal : number;
-    return YES;
-}
-@end
-
-/* gnustep-gui reads a XIB's formatters without their settings (a decimal
-   number style, decimals generated, a date's style): set from the
-   attribute the field shows, until the stack reads them. */
-static void LBSetUpFormatter(NSTextField *field, NSManagedObjectModel *model) {
-    NSDictionary *info = [field infoForBinding:NSValueBinding];
-    NSObjectController *controller = info[NSObservedObjectKey];
-    NSString *key = [[info[NSObservedKeyPathKey] componentsSeparatedByString:@"."] lastObject];
-    if (![controller isKindOfClass:[NSObjectController class]] || !key) return;
-    NSEntityDescription *entity = [model.entitiesByName objectForKey:NSStringFromClass(controller.objectClass)];
-    NSAttributeDescription *attribute = [entity.attributesByName objectForKey:key];
-    if ([field.formatter isKindOfClass:[NSNumberFormatter class]]) {
-        BOOL decimal = attribute.attributeType == NSDecimalAttributeType;
-        NSNumberFormatter *number = decimal ? [[LBDecimalFormatter alloc] init] : field.formatter;
-        number.numberStyle = decimal ? NSNumberFormatterDecimalStyle : NSNumberFormatterNoStyle;
-        number.usesGroupingSeparator = NO;
-        number.maximumFractionDigits = decimal ? 3 : 0;
-        field.formatter = number;
-    }
-    if ([field.formatter isKindOfClass:[NSDateFormatter class]]) {
-        NSDateFormatter *date = field.formatter;
-        date.dateStyle = NSDateFormatterShortStyle;
-        date.timeStyle = [key.lowercaseString hasSuffix:@"date"] ? NSDateFormatterNoStyle : NSDateFormatterShortStyle;
-    }
-}
-
-/* Every field's, those of tabs not shown too. */
-static void LBSetUpFormatters(NSView *view, NSManagedObjectModel *model) {
-    if ([view isKindOfClass:[NSTextField class]]) LBSetUpFormatter((NSTextField *)view, model);
-    if ([view isKindOfClass:[NSTabView class]]) {
-        for (NSTabViewItem *item in ((NSTabView *)view).tabViewItems) LBSetUpFormatters(item.view, model);
-        return;
-    }
-    for (NSView *each in view.subviews) LBSetUpFormatters(each, model);
-}
-#endif
-
 @implementation LBMainWindowController
 
 - (instancetype)initWithStore:(LBStore *)store {
@@ -109,10 +55,6 @@ static void LBSetUpFormatters(NSView *view, NSManagedObjectModel *model) {
     if (now.width < drawn.width || now.height < drawn.height) {
         [self.window setContentSize:NSMakeSize(MAX(now.width, drawn.width), MAX(now.height, drawn.height))];
     }
-#ifdef GNUSTEP
-    LBSetUpFormatters(self.window.contentView, self.context.persistentStoreCoordinator.managedObjectModel);
-#endif
-    _records.parentKey = NSStringFromSelector(@selector(records));
     _records.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(lbDate)) ascending:NO] ];
     NSArray<NSString *> *kinds = [Record lbKinds];
     for (NSUInteger i = 0; i < kinds.count; i++) {
@@ -140,16 +82,20 @@ static void LBSetUpFormatters(NSView *view, NSManagedObjectModel *model) {
     return chosen.count == 1 ? chosen[0] : nil;
 }
 
-/* Its records listed, its drivers to choose from. */
+- (NSArray<NSSortDescriptor *> *)byTitle {
+    return @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(lbTitle)) ascending:YES
+                                             selector:@selector(localizedCaseInsensitiveCompare:)] ];
+}
+
+/* Its drivers to choose from (its records the XIB binds). */
 - (void)vehicleChosen {
     Vehicle *vehicle = [self chosenVehicle];
-    _records.parentObject = vehicle;
     NSMutableArray<User *> *drivers = [NSMutableArray array];
     if (vehicle.owner) [drivers addObject:vehicle.owner];
     for (VehicleDriver *shared in vehicle.vehicleDrivers) {
         if (shared.user && ![drivers containsObject:shared.user]) [drivers addObject:shared.user];
     }
-    self.drivers = drivers;
+    self.drivers = [drivers sortedArrayUsingDescriptors:[self byTitle]];
 }
 
 /* The chosen record's form shown, given the record. */
@@ -167,6 +113,7 @@ static void LBSetUpFormatters(NSView *view, NSManagedObjectModel *model) {
     for (Record *record in _records.arrangedObjects) {
         if ([record isKindOfClass:[TyreSet class]]) [tyreSets addObject:(TyreSet *)record];
     }
+    [tyreSets sortUsingDescriptors:[self byTitle]];
     if (![tyreSets isEqualToArray:_tyreSets]) self.tyreSets = tyreSets;
 }
 
@@ -176,10 +123,17 @@ static void LBSetUpFormatters(NSView *view, NSManagedObjectModel *model) {
     Vehicle *vehicle = [self chosenVehicle];
     if (kind < 0 || kind >= (NSInteger)kinds.count || !vehicle || ![self commitEdits]) return;
     Record *record = [NSEntityDescription insertNewObjectForEntityForName:kinds[(NSUInteger)kind] inManagedObjectContext:self.context];
-    record.vehicle = vehicle;
     record.enteredBy = _store.user;
     [self fillIn:record];
+    /* Into the vehicle's records, which the controller's content is: its
+       vehicle set with it, and it chosen. */
     [_records addObject:record];
+}
+
+/* The records chosen gone from the logbook, not only from the vehicle. */
+- (IBAction)removeRecord:(id)sender {
+    if (![self commitEdits]) return;
+    for (Record *record in [_records.selectedObjects copy]) [self.context deleteObject:record];
 }
 
 /* What a new record most likely is: now, by whoever is signed in, in
@@ -254,7 +208,7 @@ static void LBSetUpFormatters(NSView *view, NSManagedObjectModel *model) {
 
 /* A save's refusal, each violation said: Core Data's message names none. */
 - (NSError *)willPresentError:(NSError *)error {
-    NSArray *each = error.userInfo[NSDetailedErrorsKey] ?: error.userInfo[@"NSDetailedErrors"] ?: error.userInfo[@"NSDetailedErrorsKey"];
+    NSArray *each = error.userInfo[NSDetailedErrorsKey];
     if (!each.count) return error;
     NSString *said = [[each valueForKey:NSStringFromSelector(@selector(localizedDescription))] componentsJoinedByString:@"\n"];
     return [NSError errorWithDomain:error.domain code:error.code

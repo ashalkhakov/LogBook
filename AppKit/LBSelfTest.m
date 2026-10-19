@@ -5,7 +5,6 @@
 #import "User+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "LBDisplay.h"
-#import "LBObjectPopUpButton.h"
 
 NSURL *LBSelfTestRoot;
 
@@ -41,11 +40,7 @@ static void LBType(NSWindow *window, NSString *identifier, NSString *text) {
     [window makeFirstResponder:field];
     NSTextView *editor = (NSTextView *)[window fieldEditor:NO forObject:field];
     [editor selectAll:nil];
-#ifdef GNUSTEP
-    [editor insertText:text];
-#else
     [editor insertText:text replacementRange:NSMakeRange(NSNotFound, 0)];
-#endif
     [window makeFirstResponder:nil];
     LBSpin();
 }
@@ -74,7 +69,7 @@ static Vehicle *LBVehicleNamed(NSString *name) {
 
 /* The pop-up's item of the object titled so, chosen as a user does. */
 static void LBChoose(NSWindow *window, NSString *identifier, NSString *title) {
-    LBObjectPopUpButton *popUp = (LBObjectPopUpButton *)LBControl(window.contentView, identifier);
+    NSPopUpButton *popUp = (NSPopUpButton *)LBControl(window.contentView, identifier);
     NSInteger index = [popUp indexOfItemWithTitle:title];
     LBCheck([NSString stringWithFormat:@"%@ offers %@", identifier, title], index >= 0, [popUp itemTitles]);
     if (index < 0) return;
@@ -98,6 +93,7 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
     [NSApp sendAction:fillUpItem.action to:fillUpItem.target from:fillUpItem];
     LBSpin();
     FillUp *fillUp = controller.records.selectedObjects.firstObject;
+    LBCheck(@"listed once", [controller.records.arrangedObjects count] == 1, controller.records.arrangedObjects);
     LBCheck(@"a new fill-up, chosen, its form shown",
             [fillUp isKindOfClass:[FillUp class]] && [controller.recordForms.selectedTabViewItem.identifier isEqual:@"FillUp"],
             controller.recordForms.selectedTabViewItem.identifier);
@@ -106,7 +102,7 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
                 && [fillUp.volumeVolumeUnit.code isEqualToString:@"L"] && fillUp.vehicle && fillUp.enteredBy == user,
             [NSString stringWithFormat:@"%@ %@ %@ %@", fillUp.timestamp, fillUp.driver.email, fillUp.mileageDistanceUnit.code,
                                        fillUp.volumeVolumeUnit.code]);
-    LBObjectPopUpButton *driver = (LBObjectPopUpButton *)LBControl(window.contentView, @"FillUpDriver");
+    NSPopUpButton *driver = (NSPopUpButton *)LBControl(window.contentView, @"FillUpDriver");
     LBCheck(@"the driver's pop-up shows the user", driver.selectedItem.representedObject == user, driver.titleOfSelectedItem);
     NSTextField *date = (NSTextField *)LBControl(window.contentView, @"FillUpTimestamp");
     LBCheck(@"its date shown", date.stringValue.length > 0 && [date.formatter isKindOfClass:[NSDateFormatter class]], date.stringValue);
@@ -148,10 +144,10 @@ static void LBSteps(LBMainWindowController *controller) {
     [window makeKeyAndOrderFront:nil];
     LBCheck(@"the window", window.isVisible, nil);
     NSUInteger before = [controller.vehicles.arrangedObjects count];
-    LBEntityController *vehicles = (LBEntityController *)controller.vehicles;
-    LBCheck(@"the vehicles' controller has its entity and context", vehicles.modelEntityName && vehicles.context,
-            [NSString stringWithFormat:@"%@ %@ canAdd %d content %@", vehicles.modelEntityName, vehicles.context, vehicles.canAdd,
-                                       [vehicles.content class]]);
+    NSArrayController *vehicles = controller.vehicles;
+    LBCheck(@"the vehicles' controller is in entity mode, over the context", [vehicles.entityName isEqualToString:@"Vehicle"]
+                                                                                 && vehicles.managedObjectContext == controller.context,
+            [NSString stringWithFormat:@"%@ %@ canAdd %d", vehicles.entityName, vehicles.managedObjectContext, vehicles.canAdd]);
 
     LBClick(window, @"addVehicle");
     LBCheck(@"a new vehicle, chosen", [controller.vehicles.arrangedObjects count] == before + 1

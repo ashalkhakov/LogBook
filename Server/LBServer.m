@@ -91,7 +91,7 @@ static NSString *LBStoreType(NSString *name) {
 /* A save's failure, each of its errors said: Core Data's own message
    names none. */
 static void LBFlatten(NSError *error, NSMutableArray *into) {
-    NSArray *each = error.userInfo[NSDetailedErrorsKey] ?: error.userInfo[@"NSDetailedErrors"] ?: error.userInfo[@"NSDetailedErrorsKey"];
+    NSArray *each = error.userInfo[NSDetailedErrorsKey];
     if (!each.count) {
         [into addObject:error];
         return;

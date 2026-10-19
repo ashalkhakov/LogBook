@@ -1,13 +1,13 @@
 // The owner's window (MainWindow.xib): the vehicles, and of the one chosen
 // its details and what is recorded of it, each record in a form of its
 // kind. What it shows and edits is bound in the XIB to array controllers
-// over the store's context (LBEntityController.h); this keeps what the
-// forms choose from (the vehicle's drivers and tyre sets), shows the form
-// of the record chosen, makes a record of the kind asked, saves, reverts,
-// and asks before closing on changes not saved.
+// of the model's entities over the store's context (entity mode); this
+// keeps what the forms choose from (the vehicle's drivers and tyre sets),
+// shows the form of the record chosen, makes a record of the kind asked,
+// saves, reverts, and asks before closing on changes not saved.
 
 #import <AppKit/AppKit.h>
-#import "LBEntityController.h"
+#import <CoreData/CoreData.h>
 
 @class LBStore, User, TyreSet;
 
@@ -20,7 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;
 @property (nonatomic, strong) IBOutlet NSArrayController *vehicles;
 // The chosen vehicle's records.
-@property (nonatomic, strong) IBOutlet LBEntityController *records;
+@property (nonatomic, strong) IBOutlet NSArrayController *records;
 // A form for each kind of record, each tab's identifier its entity's name
 // ("none": no record chosen).
 @property (nonatomic, strong) IBOutlet NSTabView *recordForms;
@@ -30,6 +30,8 @@ NS_ASSUME_NONNULL_BEGIN
 // The chosen record under its entity's name (none when there is no one
 // record chosen): what each form's controller binds its content to.
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> *chosenRecords;
+// What the pick lists are ordered by: their objects' titles.
+@property (nonatomic, readonly, copy) NSArray<NSSortDescriptor *> *byTitle;
 // Who drives the chosen vehicle (its owner, and those it is shared with),
 // and its tyre sets: what a record's form chooses from.
 @property (nonatomic, readonly, copy) NSArray<User *> *drivers;
@@ -38,6 +40,8 @@ NS_ASSUME_NONNULL_BEGIN
 // A new record of the chosen vehicle, of the kind of the sender's tag (an
 // index in +[Record lbKinds]), filled in as far as it can be and chosen.
 - (IBAction)addRecord:(nullable id)sender;
+// The records chosen deleted (Remove unlinks a relationship's otherwise).
+- (IBAction)removeRecord:(nullable id)sender;
 
 // Why the last save was refused (nil: it was not).
 @property (nonatomic, readonly, strong, nullable) NSError *lastError;
@@ -51,7 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 
 // The vehicles' controller: a new one is the signed-in user's.
-@interface LBVehicleController : LBEntityController
+@interface LBVehicleController : NSArrayController
 @property (nonatomic, weak) IBOutlet LBMainWindowController *windowController;
 @end
 
