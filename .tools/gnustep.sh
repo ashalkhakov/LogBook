@@ -17,4 +17,4 @@ docker image inspect "$image" >/dev/null 2>&1 || {
   exit 1
 }
 exec docker run --rm -t -v "$here":/src/LogBook -v "$ormkit":/src/NativeORM2 $GNUSTEP_MOUNTS -w /src/LogBook "$image" \
-  sh -c '. /opt/gnustep/System/Library/Makefiles/GNUstep.sh; "$@"' -- "$@"
+  sh -c '. /opt/gnustep/System/Library/Makefiles/GNUstep.sh; xvfb-run -a "$@"' -- "$@"

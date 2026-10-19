@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24127" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24127"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="NSApplication">
+            <connections>
+                <outlet property="delegate" destination="appController" id="applicationDelegate"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <customObject id="appController" customClass="LBAppController"/>
+        <menu title="Main Menu" systemMenu="main" id="mainMenu">
+            <items>
+                <menuItem title="Logbook" id="appMenuItem">
+                    <menu key="submenu" title="Logbook" systemMenu="apple" id="appMenu">
+                        <items>
+                            <menuItem title="About Logbook" id="about">
+                                <connections>
+                                    <action selector="orderFrontStandardAboutPanel:" target="-1" id="aboutAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator1"/>
+                            <menuItem title="Hide Logbook" keyEquivalent="h" id="hide">
+                                <connections>
+                                    <action selector="hide:" target="-1" id="hideAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Quit Logbook" keyEquivalent="q" id="quit">
+                                <connections>
+                                    <action selector="terminate:" target="-1" id="quitAction"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="File" id="fileMenuItem">
+                    <menu key="submenu" title="File" id="fileMenu">
+                        <items>
+                            <menuItem title="Connect to a Server…" id="connect">
+                                <connections>
+                                    <action selector="connect:" target="appController" id="connectAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Sign Out" id="signOut">
+                                <connections>
+                                    <action selector="signOut:" target="appController" id="signOutAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator2"/>
+                            <menuItem title="Save" keyEquivalent="s" id="saveItem">
+                                <connections>
+                                    <action selector="save:" target="-1" id="saveItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Revert to Saved" id="revertItem">
+                                <connections>
+                                    <action selector="revertChanges:" target="-1" id="revertItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator3"/>
+                            <menuItem title="Close" keyEquivalent="w" id="close">
+                                <connections>
+                                    <action selector="performClose:" target="-1" id="closeAction"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Edit" id="editMenuItem">
+                    <menu key="submenu" title="Edit" id="editMenu">
+                        <items>
+                            <menuItem title="Undo" keyEquivalent="z" id="undo">
+                                <connections>
+                                    <action selector="undo:" target="-1" id="undoAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Redo" keyEquivalent="z" id="redo">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="redo:" target="-1" id="redoAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator4"/>
+                            <menuItem title="Cut" keyEquivalent="x" id="cut">
+                                <connections>
+                                    <action selector="cut:" target="-1" id="cutAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Copy" keyEquivalent="c" id="copy">
+                                <connections>
+                                    <action selector="copy:" target="-1" id="copyAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Paste" keyEquivalent="v" id="paste">
+                                <connections>
+                                    <action selector="paste:" target="-1" id="pasteAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Select All" keyEquivalent="a" id="selectAll">
+                                <connections>
+                                    <action selector="selectAll:" target="-1" id="selectAllAction"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Window" id="windowMenuItem">
+                    <menu key="submenu" title="Window" systemMenu="window" id="windowMenu">
+                        <items>
+                            <menuItem title="Minimize" keyEquivalent="m" id="minimize">
+                                <connections>
+                                    <action selector="performMiniaturize:" target="-1" id="minimizeAction"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+            </items>
+        </menu>
+    </objects>
+</document>

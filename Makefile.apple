@@ -3,10 +3,13 @@
 # (its XCFrameworks in ../NativeORM2/.deps, by the versions its
 # .github/pins.env names).
 #
-#   make -f Makefile.apple          build/logbook-server, Logbook.momd and
-#                                   Logbook.ormplans beside it
+#   make -f Makefile.apple          build/logbook-server (Logbook.momd and
+#                                   Logbook.ormplans beside it), and
+#                                   build/Logbook.app, the desktop app
 #   make -f Makefile.apple check    the server run, and asked over HTTP
-#                                   (Tests/serve-and-check.py)
+#                                   (Tests/serve-and-check.py); the app
+#                                   driven from within against one
+#                                   (Tests/app-check.sh)
 
 ORMKIT = ../NativeORM2
 comma = ,
@@ -21,7 +24,7 @@ FLAGS = -fobjc-arc -fblocks -g -Wall -Wno-unused-parameter -mmacosx-version-min=
 GENERATED = $(BUILD)/Generated
 # ODataKit's frameworks first: Xcode copies the ones ORMRuntime was built
 # against beside it, which a pin moved since would make stale.
-INC = -IModel/Constraints -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
+INC = -IModel/Constraints -IShared -IAppKit -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
 LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(ODATAKIT_DIRS)) \
 	-F$(ORMKIT_PRODUCTS) -Wl,-rpath,$(ORMKIT_PRODUCTS) \
 	-framework ORMRuntime -framework ODataSync -framework ODataService -framework HTTPServerKit \
@@ -29,7 +32,8 @@ LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(
 MODEL_FILES := $(shell find Model/Logbook.xcdatamodeld -type f)
 
 .PHONY: all check clean runtime
-all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
+APP = $(BUILD)/Logbook.app
+all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(APP)
 
 runtime $(ORMKIT_PRODUCTS)/ORMRuntime.framework:
 	@test -d $(ORMKIT)/.deps/ODataKit.xcframework \
@@ -55,8 +59,21 @@ SERVER = Server/LBServer.m Server/LBPermissions.m Model/Constraints/LogbookValid
 $(BUILD)/logbook-server: $(SERVER) Server/LBPermissions.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) $(SERVER) $(GENERATED)/*.m $(LIBS) -o $@
 
+# The desktop app: its code, its windows (the XIBs compiled), the model and
+# its tables in its resources.
+APP_SOURCES = $(wildcard AppKit/*.m) $(wildcard Shared/*.m) Model/Constraints/LogbookValidation.m
+XIBS = $(wildcard AppKit/*.xib)
+$(APP): $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h) $(XIBS) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
+		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	rm -rf $@ && mkdir -p $@/Contents/MacOS $@/Contents/Resources
+	cp AppKit/Info.plist $@/Contents/
+	$(CC) $(FLAGS) $(INC) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) -framework AppKit -o $@/Contents/MacOS/Logbook
+	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null || exit 1; done
+	cp -R $(BUILD)/Logbook.momd Model/Constraints/Logbook.ormplans $@/Contents/Resources/
+
 check: all
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
+	Tests/app-check.sh $(BUILD)/logbook-server $(APP)/Contents/MacOS/Logbook
 
 clean:
 	rm -rf $(BUILD)

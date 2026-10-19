@@ -6,8 +6,12 @@
 #
 #   . /path/to/GNUstep.sh
 #   make                     obj/logbook-server, Logbook.momd and
-#                            Logbook.ormplans beside it
-#   make check               the server run, and asked over HTTP
+#                            Logbook.ormplans beside it; Logbook.app, the
+#                            desktop app
+#   make check               the server run, and asked over HTTP; the app
+#                            driven from within against one (under X:
+#                            xvfb-run -a make check)
+#   make LB_SERVER_ONLY=yes  the server alone, on Foundation only
 #
 # In docker, on ORMKit's image: .tools/gnustep.sh make check
 # macOS: Makefile.apple.
@@ -23,6 +27,19 @@ OBJC = clang
 
 ORMKIT ?= $(CURDIR)/../NativeORM2
 
+ifneq ($(LB_SERVER_ONLY),yes)
+APP_NAME = Logbook
+endif
+Logbook_OBJC_FILES = $(wildcard AppKit/*.m) $(wildcard Shared/*.m) Model/Constraints/LogbookValidation.m
+Logbook_XCDATAMODELD_FILES = Model/Logbook.xcdatamodeld
+Logbook_COREDATA_CODEGEN = yes
+Logbook_INCLUDE_DIRS = -IModel/Constraints -IShared -IAppKit -I$(ORMKIT) $(ODATASYNC_INCLUDE_DIRS)
+Logbook_LIB_DIRS = -L$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)
+Logbook_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
+Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
+Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib Model/Constraints/Logbook.ormplans
+Logbook_MAIN_MODEL_FILE = MainMenu.xib
+
 TOOL_NAME = logbook-server
 logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Model/Constraints/LogbookValidation.m
 logbook-server_XCDATAMODELD_FILES = Model/Logbook.xcdatamodeld
@@ -36,6 +53,9 @@ logbook-server_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 
 include $(GNUSTEP_MAKEFILES)/coredata-model.make
 -include GNUmakefile.preamble
+ifneq ($(LB_SERVER_ONLY),yes)
+include $(GNUSTEP_MAKEFILES)/application.make
+endif
 include $(GNUSTEP_MAKEFILES)/tool.make
 -include GNUmakefile.postamble
 
@@ -47,6 +67,10 @@ after-all::
 	rm -rf obj/Logbook.momd && momc Model/Logbook.xcdatamodeld obj/Logbook.momd
 	cp Model/Constraints/Logbook.ormplans obj/
 
+LB_RUN = LD_LIBRARY_PATH="$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}"
+
 check:: all
-	LD_LIBRARY_PATH="$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}" \
-	  python3 Tests/serve-and-check.py obj/logbook-server
+	$(LB_RUN) python3 Tests/serve-and-check.py obj/logbook-server
+ifneq ($(LB_SERVER_ONLY),yes)
+	$(LB_RUN) Tests/app-check.sh obj/logbook-server Logbook.app/Logbook
+endif
