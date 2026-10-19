@@ -27,7 +27,8 @@ Anna owns a vehicle and shares it with Ben; Cid is no one to it.
   shares it;
 - Ben adds a record, entered by him whatever the request says, and
   changes or removes none; Anna, the owner, changes his; Cid adds none;
-- the units are the app's.
+- the units are the app's; a kind of cost or of expense anyone adds, and
+  no one removes.
 
 LB_SERVICE_ROOT, when set, is a server already running (a store it can
 fill), asked instead of one started here: the first part only.
@@ -226,6 +227,9 @@ def the_rules():
     status, removed = request("GET", "Records(%s)/Default.TyreChange/RemovedTyreSet" % november["Id"])
     check("the second change removed the set the first fitted (derived at save)",
           status == 200 and removed.get("Id", "").lower() == summer["Id"], (status, removed))
+    status, unit = request("GET", "Records(%s)/Default.TyreChange/MileageDistanceUnit" % april["Id"])
+    check("a change keeps its odometer's unit (a supertype's relationship)", status == 200 and unit.get("Code") == "km",
+          (status, unit))
     status, removed = request("GET", "Records(%s)/Default.TyreChange/RemovedTyreSet" % april["Id"])
     check("the first removed none", status in (204, 404) or removed.get("value") is None, (status, removed))
 
@@ -289,6 +293,12 @@ def who_may():
     check("Cid adds none", status in (400, 403, 404), (status, body))
     status, body = request("POST", "DistanceUnits", {"Code": "nmi", "Factor": 1.852}, user=anna)
     check("the units are the app's", status == 403, (status, body))
+    status, body = request("POST", "CostKinds", {"Name": "Parking"}, user=ben)
+    check("Ben adds a kind of cost", status == 201, (status, body))
+    status, body = request("POST", "CostKinds", {"@odata.type": "#Default.ExpenseKind", "Name": "Tolls"}, user=cid)
+    check("Cid a kind of expense", status == 201, (status, body))
+    status, body = request("DELETE", "CostKinds('Parking')", user=ben)
+    check("which no one removes, nor changes (its name is all it has)", status == 403, (status, body))
 
 
 try:

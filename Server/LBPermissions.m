@@ -345,30 +345,31 @@ static Checklist *LBChecklistOf(id object) {
 
 @end
 
-/* The app's (units, kinds of cost): read only. */
+/* The app's (units): read only. */
 @interface LBReferenceHandler : LBPermissionHandler
 @end
 
 @implementation LBReferenceHandler
 
 - (NSString *)whyNotAdd:(NSDictionary<NSString *, id> *)values email:(NSString *)email {
-    return @"Units and kinds of cost are the app's";
+    return @"Units are the app's";
 }
 
 - (NSString *)whyNotChange:(NSManagedObject *)object values:(NSDictionary<NSString *, id> *)values email:(NSString *)email {
-    return @"Units and kinds of cost are the app's";
+    return @"Units are the app's";
 }
 
 @end
 
-/* An exchange rate: added by anyone, changed by no one. */
+/* An exchange rate, a kind of cost or of expense: added by anyone signed
+   in, changed by no one (others' records are of it). */
 @interface LBAddOnlyHandler : LBPermissionHandler
 @end
 
 @implementation LBAddOnlyHandler
 
 - (NSString *)whyNotChange:(NSManagedObject *)object values:(NSDictionary<NSString *, id> *)values email:(NSString *)email {
-    return @"An exchange rate is added, not changed";
+    return @"Exchange rates and kinds of cost are added, not changed";
 }
 
 @end
@@ -389,7 +390,7 @@ void LBServePermissions(ODataService *service) {
         LBEntity(Option): [LBChecklistHandler class],
         @"DistanceUnit": [LBReferenceHandler class],
         @"VolumeUnit": [LBReferenceHandler class],
-        @"CostKind": [LBReferenceHandler class],
+        @"CostKind": [LBAddOnlyHandler class],
         @"ExchangeRate": [LBAddOnlyHandler class],
     };
     for (NSEntityDescription *entity in service.model.entities) {

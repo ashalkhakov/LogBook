@@ -6,12 +6,12 @@
 // (context). Neither is AppKit's entity mode (entityName,
 // managedObjectContext), which GNUstep has not and which would take an
 // Apple controller over. Then
-// either its content is the entity's objects, fetched once the context
-// comes and kept as the context changes (what is inserted added, what is
-// deleted dropped, what is changed asked the predicate again), or its
-// content is bound (contentSet to a vehicle's records) and the binding
-// keeps it. Either way add: makes a new object of the entity in the
-// context, and remove: deletes what it removes.
+// its content is the entity's objects, fetched once the context comes, or
+// those of an object's to-many (parentKey of parentObject: a vehicle's
+// records), and kept as the context changes (what is inserted added, what
+// is deleted dropped, what is changed asked again). Either way add: makes
+// a new object of the entity in the context, and remove: deletes what it
+// removes.
 
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
@@ -24,10 +24,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *modelEntityName;
 // Where they are: bound in the XIB.
 @property (nonatomic, strong, nullable) NSManagedObjectContext *context;
-// Of the entity's objects, those it controls (nil: all); content fetched
-// only.
+// Of the entity's objects, those it controls (nil: all).
 @property (nonatomic, copy, nullable) NSPredicate *contentPredicate;
-// The entity's objects fetched again (content fetched only).
+// When set, its content is not fetched: it is parentObject's objects of
+// its to-many parentKey (none while there is no parent object).
+@property (nonatomic, copy, nullable) NSString *parentKey;
+@property (nonatomic, strong, nullable) NSManagedObject *parentObject;
+// Its content again: the entity's objects fetched, or the parent's.
 - (void)refetch;
 @end
 

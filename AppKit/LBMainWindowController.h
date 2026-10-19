@@ -1,12 +1,15 @@
-// The owner's window (MainWindow.xib): the vehicles, and what is recorded
-// of the one chosen. What it shows and edits is bound in the XIB to array
-// controllers over the store's context; this saves, reverts, and asks
-// before closing on changes not saved.
+// The owner's window (MainWindow.xib): the vehicles, and of the one chosen
+// its details and what is recorded of it, each record in a form of its
+// kind. What it shows and edits is bound in the XIB to array controllers
+// over the store's context (LBEntityController.h); this keeps what the
+// forms choose from (the vehicle's drivers and tyre sets), shows the form
+// of the record chosen, makes a record of the kind asked, saves, reverts,
+// and asks before closing on changes not saved.
 
 #import <AppKit/AppKit.h>
 #import "LBEntityController.h"
 
-@class LBStore;
+@class LBStore, User, TyreSet;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,6 +19,25 @@ NS_ASSUME_NONNULL_BEGIN
 // What the XIB's controllers bind to.
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;
 @property (nonatomic, strong) IBOutlet NSArrayController *vehicles;
+// The chosen vehicle's records.
+@property (nonatomic, strong) IBOutlet LBEntityController *records;
+// A form for each kind of record, each tab's identifier its entity's name
+// ("none": no record chosen).
+@property (nonatomic, strong) IBOutlet NSTabView *recordForms;
+// Add's pull-down: an item for each kind of record.
+@property (nonatomic, strong) IBOutlet NSPopUpButton *addRecordButton;
+
+// The chosen record under its entity's name (none when there is no one
+// record chosen): what each form's controller binds its content to.
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, id> *chosenRecords;
+// Who drives the chosen vehicle (its owner, and those it is shared with),
+// and its tyre sets: what a record's form chooses from.
+@property (nonatomic, readonly, copy) NSArray<User *> *drivers;
+@property (nonatomic, readonly, copy) NSArray<TyreSet *> *tyreSets;
+
+// A new record of the chosen vehicle, of the kind of the sender's tag (an
+// index in +[Record lbKinds]), filled in as far as it can be and chosen.
+- (IBAction)addRecord:(nullable id)sender;
 
 // Why the last save was refused (nil: it was not).
 @property (nonatomic, readonly, strong, nullable) NSError *lastError;

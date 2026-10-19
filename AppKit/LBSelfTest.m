@@ -3,6 +3,9 @@
 #import "LBStore.h"
 #import "Vehicle+CoreDataClass.h"
 #import "User+CoreDataClass.h"
+#import "FillUp+CoreDataClass.h"
+#import "LBDisplay.h"
+#import "LBObjectPopUpButton.h"
 
 NSURL *LBSelfTestRoot;
 
@@ -69,6 +72,75 @@ static Vehicle *LBVehicleNamed(NSString *name) {
     return [[other.context executeFetchRequest:fetch error:NULL] firstObject];
 }
 
+/* The pop-up's item of the object titled so, chosen as a user does. */
+static void LBChoose(NSWindow *window, NSString *identifier, NSString *title) {
+    LBObjectPopUpButton *popUp = (LBObjectPopUpButton *)LBControl(window.contentView, identifier);
+    NSInteger index = [popUp indexOfItemWithTitle:title];
+    LBCheck([NSString stringWithFormat:@"%@ offers %@", identifier, title], index >= 0, [popUp itemTitles]);
+    if (index < 0) return;
+    [popUp selectItemAtIndex:index];
+    [popUp sendAction:popUp.action to:popUp.target];
+    LBSpin();
+}
+
+/* A fill-up of the vehicle saved: a record of the Add menu's kind, filled
+   in, its form typed into. */
+static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
+    NSWindow *window = controller.window;
+    User *user = controller.store.user;
+    NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
+    [tabs selectTabViewItemWithIdentifier:@"records"];
+    LBSpin();
+    NSPopUpButton *add = (NSPopUpButton *)LBControl(window.contentView, @"addRecord");
+    NSArray<NSString *> *kinds = [Record lbKinds];
+    LBCheck(@"Add offers each kind of record", add.numberOfItems == (NSInteger)kinds.count + 1, add.itemTitles);
+    NSMenuItem *fillUpItem = [add itemAtIndex:(NSInteger)[kinds indexOfObject:NSStringFromClass([FillUp class])] + 1];
+    [NSApp sendAction:fillUpItem.action to:fillUpItem.target from:fillUpItem];
+    LBSpin();
+    FillUp *fillUp = controller.records.selectedObjects.firstObject;
+    LBCheck(@"a new fill-up, chosen, its form shown",
+            [fillUp isKindOfClass:[FillUp class]] && [controller.recordForms.selectedTabViewItem.identifier isEqual:@"FillUp"],
+            controller.recordForms.selectedTabViewItem.identifier);
+    LBCheck(@"filled in: now, its driver the user, in km and litres",
+            fillUp.timestamp && fillUp.driver == user && [fillUp.mileageDistanceUnit.code isEqualToString:@"km"]
+                && [fillUp.volumeVolumeUnit.code isEqualToString:@"L"] && fillUp.vehicle && fillUp.enteredBy == user,
+            [NSString stringWithFormat:@"%@ %@ %@ %@", fillUp.timestamp, fillUp.driver.email, fillUp.mileageDistanceUnit.code,
+                                       fillUp.volumeVolumeUnit.code]);
+    LBObjectPopUpButton *driver = (LBObjectPopUpButton *)LBControl(window.contentView, @"FillUpDriver");
+    LBCheck(@"the driver's pop-up shows the user", driver.selectedItem.representedObject == user, driver.titleOfSelectedItem);
+    NSTextField *date = (NSTextField *)LBControl(window.contentView, @"FillUpTimestamp");
+    LBCheck(@"its date shown", date.stringValue.length > 0 && [date.formatter isKindOfClass:[NSDateFormatter class]], date.stringValue);
+    LBType(window, @"FillUpMileage", @"12345");
+    LBType(window, @"FillUpVolume", @"40");
+    LBType(window, @"FillUpFuel", @"Petrol 95");
+    LBType(window, @"FillUpTotal", @"60");
+    LBType(window, @"FillUpStation", @"Shell");
+    LBCheck(@"numbers typed are decimals of the fill-up",
+            [fillUp.mileageQuantity isKindOfClass:[NSDecimalNumber class]] && fillUp.mileageQuantity.integerValue == 12345
+                && fillUp.volumeQuantity.integerValue == 40 && fillUp.totalAmount.integerValue == 60,
+            [NSString stringWithFormat:@"%@ (%@) %@ %@", fillUp.mileageQuantity, [fillUp.mileageQuantity class], fillUp.volumeQuantity,
+                                       fillUp.totalAmount]);
+    LBChoose(window, @"FillUpMileageUnit", @"mi");
+    LBCheck(@"a unit chosen is the fill-up's", [fillUp.mileageDistanceUnit.code isEqualToString:@"mi"], fillUp.mileageDistanceUnit.code);
+    LBChoose(window, @"FillUpMileageUnit", @"km");
+    LBCheck(@"and another", [fillUp.mileageDistanceUnit.code isEqualToString:@"km"], fillUp.mileageDistanceUnit.code);
+    LBCheck(@"listed with its cost", [fillUp.lbCost hasPrefix:@"60"], fillUp.lbCost);
+    /* LB_SCREENSHOT=file.png: the window as it is now, to look at (macOS). */
+    if (getenv("LB_SCREENSHOT")) system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%s'", (long)window.windowNumber, getenv("LB_SCREENSHOT")].UTF8String);
+    LBClick(window, @"save");
+    LBCheck(@"the fill-up saved", !controller.store.context.hasChanges && !controller.lastError,
+            controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
+    [LBServerSide.context refreshObject:kept mergeChanges:NO];
+    FillUp *sent = nil;
+    for (Record *record in kept.records) {
+        if ([record isKindOfClass:[FillUp class]]) sent = (FillUp *)record;
+    }
+    LBCheck(@"the server has the fill-up",
+            sent && sent.volumeQuantity.integerValue == 40 && [sent.station isEqualToString:@"Shell"] && sent.filledTheTank
+                && [sent.driver.email isEqualToString:user.email] && [sent.mileageDistanceUnit.code isEqualToString:@"km"],
+            [NSString stringWithFormat:@"%@ %@ %@ %@", sent, sent.volumeQuantity, sent.station, sent.mileageDistanceUnit.code]);
+}
+
 static void LBSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
     controller.quiet = YES;
@@ -98,6 +170,7 @@ static void LBSteps(LBMainWindowController *controller) {
     Vehicle *kept = LBVehicleNamed(@"Self-test Golf");
     LBCheck(@"the server has it", [kept.make isEqualToString:@"Volkswagen"] && [kept.carModel isEqualToString:@"Golf VII"], kept);
     LBCheck(@"its owner the user", [kept.owner.email isEqualToString:controller.store.user.email], kept.owner.email);
+    LBRecordSteps(controller, kept);
 }
 
 void LBRunSelfTest(LBMainWindowController *window) {

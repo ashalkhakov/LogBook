@@ -31,9 +31,25 @@ static NSString * const LBContextBinding = @"context";
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-/* Whether its content is a binding's (a relationship's), not fetched. */
+/* Whether its content is a binding's, which keeps it. */
 - (BOOL)contentIsBound {
     return [self infoForBinding:NSContentSetBinding] != nil || [self infoForBinding:NSContentArrayBinding] != nil;
+}
+
+- (void)setParentKey:(NSString *)parentKey {
+    _parentKey = [parentKey copy];
+    [self refetch];
+}
+
+- (void)setParentObject:(NSManagedObject *)parentObject {
+    if (parentObject == _parentObject) return;
+    _parentObject = parentObject;
+    [self refetch];
+}
+
+/* The relationship from one of the parent's objects back to it. */
+- (NSString *)inverseKey {
+    return [[_parentObject.entity.relationshipsByName[_parentKey] inverseRelationship] name];
 }
 
 - (void)setContext:(NSManagedObjectContext *)context {
@@ -78,6 +94,10 @@ static NSString * const LBContextBinding = @"context";
 
 - (void)refetch {
     if ([self contentIsBound]) return;
+    if (_parentKey) {
+        [self setContent:[self parentsObjects]];
+        return;
+    }
     NSEntityDescription *entity = [self entity];
     if (!entity) {
         [self setContent:[NSMutableArray array]];
@@ -92,11 +112,22 @@ static NSString * const LBContextBinding = @"context";
     [self setContent:[NSMutableArray arrayWithArray:found ?: @[]]];
 }
 
-/* Whether an object is one it controls: of the entity, and the predicate's. */
+- (NSMutableArray *)parentsObjects {
+    NSMutableArray *objects = [NSMutableArray array];
+    if (!_parentObject) return objects;
+    for (NSManagedObject *object in [_parentObject valueForKey:_parentKey]) {
+        if ([self controls:object]) [objects addObject:object];
+    }
+    return objects;
+}
+
+/* Whether an object is one it controls: of the entity, the parent's when
+   it has one, and the predicate's. */
 - (BOOL)controls:(NSManagedObject *)object {
     NSEntityDescription *entity = [self entity];
-    return entity && [object.entity isKindOfEntity:entity] && !object.isDeleted
-        && (!_contentPredicate || [_contentPredicate evaluateWithObject:object]);
+    if (!entity || ![object.entity isKindOfEntity:entity] || object.isDeleted) return NO;
+    if (_parentKey && (!_parentObject || [object valueForKey:[self inverseKey]] != _parentObject)) return NO;
+    return !_contentPredicate || [_contentPredicate evaluateWithObject:object];
 }
 
 - (void)contextDidChange:(NSNotification *)notification {
