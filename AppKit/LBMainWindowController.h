@@ -28,6 +28,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSPopUpButton *addRecordButton;
 // The Reports tab's.
 @property (nonatomic, strong) IBOutlet LBReportsController *reports;
+// Whom the chosen vehicle is shared with (its VehicleDrivers).
+@property (nonatomic, strong) IBOutlet NSArrayController *vehicleDrivers;
+// The email the vehicle is to be shared with next.
+@property (nonatomic, copy, nullable) NSString *shareEmail;
 
 // The chosen record under its entity's name (none when there is no one
 // record chosen): what each form's controller binds its content to.
@@ -44,6 +48,11 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)addRecord:(nullable id)sender;
 // The records chosen deleted (Remove unlinks a relationship's otherwise).
 - (IBAction)removeRecord:(nullable id)sender;
+// The chosen vehicle shared with the user of shareEmail: one of the
+// logbook's, or one added by their email alone, who can then drive it.
+- (IBAction)share:(nullable id)sender;
+// The sharings chosen ended.
+- (IBAction)unshare:(nullable id)sender;
 
 // Why the last save was refused (nil: it was not).
 @property (nonatomic, readonly, strong, nullable) NSError *lastError;

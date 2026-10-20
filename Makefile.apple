@@ -74,7 +74,8 @@ $(APP): $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h) $(XIBS) $(wildcard Repo
 	cp AppKit/Info.plist $@/Contents/
 	@test -d $(firstword $(RDLKIT_DIRS)) || { echo "no RDLKit in .deps: gnustep-release-actions' scripts/deps.sh apple, here"; exit 1; }
 	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(RDLKIT_DIRS)) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) $(APP_LIBS) -o $@/Contents/MacOS/Logbook
-	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null || exit 1; done
+	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null \
+	  || { echo "$$x does not compile (ibtool --errors --compile)"; rm -rf $@; exit 1; }; done
 	cp -R $(BUILD)/Logbook.momd Model/Constraints/Logbook.ormplans Reports/*.rdl $@/Contents/Resources/
 
 check: all

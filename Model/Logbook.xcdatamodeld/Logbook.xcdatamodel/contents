@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" minimumToolsVersion="Automatic" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="Answer" representedClassName="Answer" syncable="YES" codeGenerationType="class">
-        <attribute name="id" attributeType="Integer 64" usesScalarValueType="YES">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO">
             <userInfo>
-                <entry key="OData.computed" value="YES"/>
                 <entry key="OData.key" value="YES"/>
                 <entry key="ormkit.source" value="_7026E947-A0DF-48B6-A00C-E4BA722AF64E.key"/>
+                <entry key="ormkit.surrogate" value="YES"/>
             </userInfo>
         </attribute>
         <attribute name="note" optional="YES" attributeType="String">
@@ -311,11 +311,11 @@
                 <entry key="ormkit.source" value="_70558562-29FC-41A0-89BD-D2172CB60696"/>
             </userInfo>
         </attribute>
-        <attribute name="id" attributeType="Integer 64" usesScalarValueType="YES">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO">
             <userInfo>
-                <entry key="OData.computed" value="YES"/>
                 <entry key="OData.key" value="YES"/>
                 <entry key="ormkit.source" value="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915.key"/>
+                <entry key="ormkit.surrogate" value="YES"/>
             </userInfo>
         </attribute>
         <attribute name="quoteCurrency" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
@@ -1200,11 +1200,11 @@
         </userInfo>
     </entity>
     <entity name="VehicleDriver" representedClassName="VehicleDriver" syncable="YES" codeGenerationType="class">
-        <attribute name="id" attributeType="Integer 64" usesScalarValueType="YES">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO">
             <userInfo>
-                <entry key="OData.computed" value="YES"/>
                 <entry key="OData.key" value="YES"/>
                 <entry key="ormkit.source" value="_DAB21F33-2484-478F-9871-110A32001FD6.key"/>
+                <entry key="ormkit.surrogate" value="YES"/>
             </userInfo>
         </attribute>
         <relationship name="user" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="vehicleDrivers" inverseEntity="User">
@@ -1241,11 +1241,11 @@
                 <entry key="ormkit.source" value="_21BA079D-4F83-40E4-93C3-7DF3747E48AA"/>
             </userInfo>
         </attribute>
-        <attribute name="id" attributeType="Integer 64" usesScalarValueType="YES">
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO">
             <userInfo>
-                <entry key="OData.computed" value="YES"/>
                 <entry key="OData.key" value="YES"/>
                 <entry key="ormkit.source" value="_35D1CBBA-D05A-4076-A003-27A870F24210.key"/>
+                <entry key="ormkit.surrogate" value="YES"/>
             </userInfo>
         </attribute>
         <attribute name="valuationAmount" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">

@@ -70,6 +70,11 @@
     LBStore *store = [[LBStore alloc] initWithServiceRoot:signIn.serviceRoot signIn:signIn.kind == ODataSignInOpenID ? signIn : nil];
     NSError *error = nil;
     if (![store open:&error]) {
+        /* A self-test has no one to answer the alert: it fails, and says why. */
+        if (LBSelfTestRoot) {
+            printf("FAIL the store opened: %s\nself-test done: 1 failed\n", error.localizedDescription.UTF8String ?: "");
+            exit(1);
+        }
         [[NSAlert alertWithError:error] runModal];
         [self showPanelWithServer:nil];
         return;

@@ -95,7 +95,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     NSMutableArray<User *> *drivers = [NSMutableArray array];
     if (vehicle.owner) [drivers addObject:vehicle.owner];
     for (VehicleDriver *shared in vehicle.vehicleDrivers) {
-        if (shared.user && ![drivers containsObject:shared.user]) [drivers addObject:shared.user];
+        if (shared.user && !shared.isDeleted && ![drivers containsObject:shared.user]) [drivers addObject:shared.user];
     }
     self.drivers = [drivers sortedArrayUsingDescriptors:[self byTitle]];
     [_reports vehicleChosen];
@@ -131,6 +131,47 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     /* Into the vehicle's records, which the controller's content is: its
        vehicle set with it, and it chosen. */
     [_records addObject:record];
+}
+
+- (IBAction)share:(id)sender {
+    Vehicle *vehicle = [self chosenVehicle];
+    if (![self commitEdits] || !vehicle) return;
+    NSString *email = [[_shareEmail stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]] lowercaseString];
+    if (![email containsString:@"@"]) {
+        NSBeep();
+        return;
+    }
+    User *user = [self userWithEmail:email];
+    if (user == vehicle.owner) {
+        NSBeep();
+        return;
+    }
+    for (VehicleDriver *shared in vehicle.vehicleDrivers) {
+        if (shared.user == user) return;
+    }
+    VehicleDriver *sharing = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([VehicleDriver class])
+                                                           inManagedObjectContext:self.context];
+    sharing.user = user;
+    [_vehicleDrivers addObject:sharing];
+    self.shareEmail = nil;
+    [self vehicleChosen];
+}
+
+/* The logbook's user of an email, or one made of it. */
+- (User *)userWithEmail:(NSString *)email {
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([User class])];
+    fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(email)), email];
+    User *user = [[self.context executeFetchRequest:fetch error:NULL] firstObject];
+    if (user) return user;
+    user = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([User class]) inManagedObjectContext:self.context];
+    user.email = email;
+    return user;
+}
+
+- (IBAction)unshare:(id)sender {
+    if (![self commitEdits]) return;
+    for (VehicleDriver *sharing in [_vehicleDrivers.selectedObjects copy]) [self.context deleteObject:sharing];
+    [self vehicleChosen];
 }
 
 /* The records chosen gone from the logbook, not only from the vehicle. */

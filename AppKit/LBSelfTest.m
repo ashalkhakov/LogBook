@@ -4,6 +4,7 @@
 #import "Vehicle+CoreDataClass.h"
 #import "User+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
+#import "VehicleDriver+CoreDataClass.h"
 #import "LBDisplay.h"
 #import "LBAppController.h"
 #import "LBReportData.h"
@@ -68,6 +69,36 @@ static Vehicle *LBVehicleNamed(NSString *name) {
     NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Vehicle class])];
     fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(vehicleName)), name];
     return [[other.context executeFetchRequest:fetch error:NULL] firstObject];
+}
+
+/* Who the server says drives a vehicle besides its owner. */
+static NSArray<NSString *> *LBSharedWith(Vehicle *kept) {
+    [LBServerSide.context refreshObject:kept mergeChanges:NO];
+    NSMutableArray *emails = [NSMutableArray array];
+    for (VehicleDriver *sharing in kept.vehicleDrivers) {
+        if (sharing.user.email) [emails addObject:sharing.user.email];
+    }
+    return emails;
+}
+
+/* The vehicle shared with Ben, who is not yet in the logbook, and the
+   sharing ended: each saved, each on the server. */
+static void LBSharingSteps(LBMainWindowController *controller, Vehicle *kept) {
+    NSWindow *window = controller.window;
+    LBType(window, @"shareEmail", @"Ben@Example.org");
+    LBClick(window, @"share");
+    LBCheck(@"shared, the email as a user of the logbook", [controller.vehicleDrivers.arrangedObjects count] == 1
+                && [[controller.drivers valueForKey:NSStringFromSelector(@selector(email))] containsObject:@"ben@example.org"],
+            controller.drivers);
+    LBClick(window, @"save");
+    LBCheck(@"the sharing saved", !controller.store.context.hasChanges && !controller.lastError,
+            controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
+    LBCheck(@"the server has Ben driving it", [LBSharedWith(kept) isEqualToArray:@[ @"ben@example.org" ]], LBSharedWith(kept));
+    [controller.vehicleDrivers setSelectionIndex:0];
+    LBClick(window, @"unshare");
+    LBClick(window, @"save");
+    LBCheck(@"the sharing ended, on the server too", [controller.vehicleDrivers.arrangedObjects count] == 0
+                && LBSharedWith(kept).count == 0 && controller.drivers.count == 1, LBSharedWith(kept));
 }
 
 /* The pop-up's item of the object titled so, chosen as a user does. */
@@ -250,6 +281,7 @@ static void LBSteps(LBMainWindowController *controller) {
     Vehicle *kept = LBVehicleNamed(@"Self-test Golf");
     LBCheck(@"the server has it", [kept.make isEqualToString:@"Volkswagen"] && [kept.carModel isEqualToString:@"Golf VII"], kept);
     LBCheck(@"its owner the user", [kept.owner.email isEqualToString:controller.store.user.email], kept.owner.email);
+    LBSharingSteps(controller, kept);
     LBRecordSteps(controller, kept);
     LBPreferenceSteps(controller);
     LBReportDataSteps(controller, @"Self-test Golf");

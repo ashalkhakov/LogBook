@@ -13,6 +13,7 @@
                 <outlet property="recordForms" destination="recordForms" id="recordFormsOutlet"/>
                 <outlet property="addRecordButton" destination="addRecord" id="addRecordOutlet"/>
                 <outlet property="reports" destination="reportsController" id="reportsOutlet"/>
+                <outlet property="vehicleDrivers" destination="vehicleDrivers" id="vehicleDriversOutlet"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
@@ -21,6 +22,12 @@
             <connections>
                 <binding destination="-2" name="managedObjectContext" keyPath="context" id="vehiclesContext"/>
                 <outlet property="windowController" destination="-2" id="vehiclesWindowController"/>
+            </connections>
+        </arrayController>
+        <arrayController mode="entity" entityName="VehicleDriver" userLabel="Vehicle Drivers" id="vehicleDrivers">
+            <connections>
+                <binding destination="-2" name="managedObjectContext" keyPath="context" id="vehicleDriversContext"/>
+                <binding destination="vehicles" name="contentSet" keyPath="selection.vehicleDrivers" id="vehicleDriversContent"/>
             </connections>
         </arrayController>
         <arrayController mode="entity" entityName="Record" userLabel="Records" id="records">
@@ -399,6 +406,114 @@
                                                 </binding>
                                             </connections>
                                         </textField>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="driversLabel">
+                                            <rect key="frame" x="12" y="293" width="112" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Shared with:" id="driversLabelCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="driversTableScroll">
+                                            <rect key="frame" x="132" y="140" width="580" height="170"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <clipView key="contentView" id="driversTableClip">
+                                                <rect key="frame" x="1" y="1" width="578" height="168"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="driversTableHeader" identifier="driversTable" id="driversTable">
+                                                        <rect key="frame" x="0" y="0" width="578" height="145"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <size key="intercellSpacing" width="3" height="2"/>
+                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                        <tableColumns>
+                                        <tableColumn identifier="user.email" width="260" minWidth="40" maxWidth="1000" id="driversTableUseremailColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Email">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="driversTableUseremailCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="vehicleDrivers" name="value" keyPath="arrangedObjects.user.email" id="driversTableUseremailValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                        <tableColumn identifier="user.personName" width="220" minWidth="40" maxWidth="1000" id="driversTableUserpersonNameColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Name">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="driversTableUserpersonNameCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="vehicleDrivers" name="value" keyPath="arrangedObjects.user.personName" id="driversTableUserpersonNameValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                                        </tableColumns>
+                                                    </tableView>
+                                                </subviews>
+                                            </clipView>
+                                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="driversTableHScroller">
+                                                <rect key="frame" x="1" y="154" width="578" height="15"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            </scroller>
+                                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="driversTableVScroller">
+                                                <rect key="frame" x="564" y="1" width="15" height="168"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                            </scroller>
+                                            <tableHeaderView key="headerView" id="driversTableHeader">
+                                                <rect key="frame" x="0" y="0" width="578" height="23"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                            </tableHeaderView>
+                                        </scrollView>
+                                        <textField verticalHuggingPriority="750" identifier="shareEmail" id="shareEmail">
+                                            <rect key="frame" x="132" y="104" width="260" height="22"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Their email" drawsBackground="YES" id="shareEmailCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="-2" name="value" keyPath="shareEmail" id="shareEmailValue">
+                                                    <dictionary key="options">
+                                                        <bool key="NSContinuouslyUpdatesValue" value="YES"/>
+                                                    </dictionary>
+                                                </binding>
+                                            </connections>
+                                        </textField>
+                                        <button verticalHuggingPriority="750" identifier="share" id="share">
+                                            <rect key="frame" x="396" y="99" width="90" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Share" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="shareCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="share:" target="-2" id="shareAction"/>
+                                                <binding destination="vehicles" name="enabled" keyPath="canRemove" id="shareEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="unshare" id="unshare">
+                                            <rect key="frame" x="486" y="99" width="100" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="unshareCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="unshare:" target="-2" id="unshareAction"/>
+                                                <binding destination="vehicleDrivers" name="enabled" keyPath="canRemove" id="unshareEnabled"/>
+                                            </connections>
+                                        </button>
                                     </subviews>
                                 </view>
                             </tabViewItem>
