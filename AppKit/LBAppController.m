@@ -2,11 +2,13 @@
 #import "LBStore.h"
 #import "LBMainWindowController.h"
 #import "LBSelfTest.h"
+#import "LBPreferencesController.h"
 
 @implementation LBAppController {
     LBConnectPanel *_panel;
     ODataSignIn *_signIn;
     LBMainWindowController *_window;
+    LBPreferencesController *_preferences;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
@@ -43,7 +45,20 @@
     [self showPanelWithServer:nil];
 }
 
+- (IBAction)showPreferences:(id)sender {
+    if (!_window) return;
+    if (!_preferences) _preferences = [[LBPreferencesController alloc] initWithLogbook:_window];
+    [_preferences showWindow:sender];
+}
+
+/* Preferences only while there is a logbook, whose user they are. */
+- (BOOL)validateMenuItem:(NSMenuItem *)item {
+    return item.action != @selector(showPreferences:) || _window != nil;
+}
+
 - (void)closeLogbook {
+    [_preferences close];
+    _preferences = nil;
     LBMainWindowController *window = _window;
     _window = nil;
     _store = nil;

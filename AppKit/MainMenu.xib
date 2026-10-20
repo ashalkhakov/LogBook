@@ -24,6 +24,12 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="separator1"/>
+                            <menuItem title="Preferences…" keyEquivalent="," id="preferences">
+                                <connections>
+                                    <action selector="showPreferences:" target="appController" id="preferencesAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator2"/>
                             <menuItem title="Hide Logbook" keyEquivalent="h" id="hide">
                                 <connections>
                                     <action selector="hide:" target="-1" id="hideAction"/>
@@ -50,7 +56,7 @@
                                     <action selector="signOut:" target="appController" id="signOutAction"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="separator2"/>
+                            <menuItem isSeparatorItem="YES" id="separator3"/>
                             <menuItem title="Save" keyEquivalent="s" id="saveItem">
                                 <connections>
                                     <action selector="save:" target="-1" id="saveItemAction"/>
@@ -61,7 +67,7 @@
                                     <action selector="revertChanges:" target="-1" id="revertItemAction"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="separator3"/>
+                            <menuItem isSeparatorItem="YES" id="separator4"/>
                             <menuItem title="Close" keyEquivalent="w" id="close">
                                 <connections>
                                     <action selector="performClose:" target="-1" id="closeAction"/>
@@ -84,7 +90,7 @@
                                     <action selector="redo:" target="-1" id="redoAction"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="separator4"/>
+                            <menuItem isSeparatorItem="YES" id="separator5"/>
                             <menuItem title="Cut" keyEquivalent="x" id="cut">
                                 <connections>
                                     <action selector="cut:" target="-1" id="cutAction"/>

@@ -5,6 +5,8 @@
 #import "User+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "LBDisplay.h"
+#import "LBAppController.h"
+#import "LBReportData.h"
 
 NSURL *LBSelfTestRoot;
 
@@ -137,6 +139,46 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
             [NSString stringWithFormat:@"%@ %@ %@ %@", sent, sent.volumeQuantity, sent.station, sent.mileageDistanceUnit.code]);
 }
 
+/* The user's currency set in the Preferences window, as a user does. */
+static void LBPreferenceSteps(LBMainWindowController *controller) {
+    [NSApp sendAction:@selector(showPreferences:) to:nil from:nil];
+    LBSpin();
+    NSWindow *preferences = nil;
+    for (NSWindow *window in NSApp.windows) {
+        if (window.isVisible && [window.windowController isKindOfClass:NSClassFromString(@"LBPreferencesController")]) preferences = window;
+    }
+    LBCheck(@"the Preferences window", preferences != nil, nil);
+    if (!preferences) return;
+    LBType(preferences, @"currency", @"EUR");
+    LBClick(preferences, @"done");
+    LBCheck(@"saved and closed", !preferences.isVisible && !controller.lastError && !controller.store.context.hasChanges,
+            controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
+    LBCheck(@"the user's currency", [controller.store.user.currency isEqualToString:@"EUR"], controller.store.user.currency);
+}
+
+/* What each report would show, from the logbook as it is now. */
+static void LBReportDataSteps(LBMainWindowController *controller, NSString *vehicleName) {
+    LBReportData *data = [[LBReportData alloc] initWithContext:controller.context];
+    Vehicle *vehicle = controller.vehicles.selectedObjects.firstObject;
+    NSError *error = nil;
+    NSArray *costs = [data costsByMonth:&error];
+    NSDictionary *mine = nil;
+    for (NSDictionary *row in costs) {
+        if ([row[@"Vehicle"] isEqual:vehicleName]) mine = row;
+    }
+    LBCheck(@"costs by month: the vehicle's month, in the owner's currency", [mine[@"Currency"] isEqual:@"EUR"]
+                && [mine[@"Total"] doubleValue] > 0, error ?: costs);
+    NSArray *fillUps = [data fillUpsOfVehicle:vehicle error:&error];
+    LBCheck(@"fuel: the fill-up, its unit's price", fillUps.count == 1 && [fillUps[0][@"Price"] doubleValue] == 1.5
+                && [fillUps[0][@"Volume"] integerValue] == 40, error ?: fillUps);
+    NSArray *records = [data recordsOfVehicle:vehicle from:[NSDate dateWithTimeIntervalSinceNow:-86400] to:[NSDate date]];
+    LBCheck(@"logbook: today's records", records.count == 1 && [records[0][@"Kind"] isEqual:@"Fill-up"], records);
+    LBCheck(@"none before", [data recordsOfVehicle:vehicle from:nil to:[NSDate dateWithTimeIntervalSinceNow:-86400 * 2]].count == 0,
+            nil);
+    NSString *json = [LBReportData JSONOfRows:fillUps];
+    LBCheck(@"rows as JSON", [json hasPrefix:@"[{"] && [json containsString:@"\"Price\":1.5"], json);
+}
+
 static void LBSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
     controller.quiet = YES;
@@ -167,6 +209,8 @@ static void LBSteps(LBMainWindowController *controller) {
     LBCheck(@"the server has it", [kept.make isEqualToString:@"Volkswagen"] && [kept.carModel isEqualToString:@"Golf VII"], kept);
     LBCheck(@"its owner the user", [kept.owner.email isEqualToString:controller.store.user.email], kept.owner.email);
     LBRecordSteps(controller, kept);
+    LBPreferenceSteps(controller);
+    LBReportDataSteps(controller, @"Self-test Golf");
 }
 
 void LBRunSelfTest(LBMainWindowController *window) {

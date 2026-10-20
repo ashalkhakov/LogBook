@@ -19,6 +19,8 @@ NS_ASSUME_NONNULL_BEGIN
 // Another server, asked for.
 - (IBAction)connect:(nullable id)sender;
 - (IBAction)signOut:(nullable id)sender;
+// The signed-in user's preferences (LBPreferencesController.h).
+- (IBAction)showPreferences:(nullable id)sender;
 @end
 
 NS_ASSUME_NONNULL_END

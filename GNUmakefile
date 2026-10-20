@@ -37,7 +37,8 @@ Logbook_INCLUDE_DIRS = -IModel/Constraints -IShared -IAppKit -I$(ORMKIT) $(ODATA
 Logbook_LIB_DIRS = -L$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)
 Logbook_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
 Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
-Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib Model/Constraints/Logbook.ormplans
+Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib AppKit/Preferences.xib \
+	Model/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl)
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 
 TOOL_NAME = logbook-server

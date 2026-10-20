@@ -63,13 +63,13 @@ $(BUILD)/logbook-server: $(SERVER) Server/LBPermissions.h $(GENERATED)/.made $(O
 # its tables in its resources.
 APP_SOURCES = $(wildcard AppKit/*.m) $(wildcard Shared/*.m) Model/Constraints/LogbookValidation.m
 XIBS = $(wildcard AppKit/*.xib)
-$(APP): $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h) $(XIBS) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
+$(APP): $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h) $(XIBS) $(wildcard Reports/*.rdl) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	rm -rf $@ && mkdir -p $@/Contents/MacOS $@/Contents/Resources
 	cp AppKit/Info.plist $@/Contents/
 	$(CC) $(FLAGS) $(INC) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) -framework AppKit -o $@/Contents/MacOS/Logbook
 	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null || exit 1; done
-	cp -R $(BUILD)/Logbook.momd Model/Constraints/Logbook.ormplans $@/Contents/Resources/
+	cp -R $(BUILD)/Logbook.momd Model/Constraints/Logbook.ormplans Reports/*.rdl $@/Contents/Resources/
 
 check: all
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
