@@ -154,19 +154,30 @@ chain of them comes back to itself.
 ## 9. A record entered in error is discarded
 
 The owner deletes a service entered by mistake. In the same change, the
-service layer first reopens what it closed, then deletes it:
-- for each reminder done by it: its Reminder was done by Event, was done
-  at Moment and was done at Distance taken away, so it is open again;
+service layer first undoes what the record closed, then deletes it. For
+each reminder done by it:
+- where closing it made the schedule's next reminder (5), and that next
+  one has not been touched since it was made, the next one goes with the
+  record: deleted, so the schedule is left with the one reopened as its
+  open reminder (`OneOpenReminder`). Untouched is: not rescheduled (no
+  Rescheduling is of it), neither done nor cancelled, replacing and
+  replaced by none, with no note and no attachment, and due on and at
+  just what (5) worked out from the reminder now reopened;
+- the reminder is reopened: its Reminder was done by Event, was done at
+  Moment and was done at Distance taken away, as before the record was
+  entered;
 - then the record itself is deleted.
 
-Not settled yet: a schedule's reminder reopened so, while the next one
-made when it closed (5) is still open, would leave the schedule two open
-reminders, which `OneOpenReminder` refuses. Whether that next one goes
-with the record, or the reopened one is cancelled, or the owner is asked,
-is to be decided.
+Where the next one has been touched (the owner moved it, closed it,
+noted something on it), the procedure stops before changing anything,
+and the app asks the owner what to do: nothing is deleted or reopened
+until they say. Deleting the next one would lose what they did to it,
+and keeping it beside the reopened one would leave the schedule two open
+reminders.
 
 The same for an event changed so that it no longer does the work (a
-service whose oil change item is removed).
+service whose oil change item is removed): what it closed is undone as
+above, and the event is kept.
 
 ## 10. Two devices, offline, both make the next reminder
 
