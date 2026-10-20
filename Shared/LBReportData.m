@@ -77,17 +77,10 @@ static NSString *LBDateText(NSDate *date) {
     return rows;
 }
 
-/* The day a moment is in, here: its first moment and its length. */
-static NSDate *LBDayOf(NSDate *date, NSTimeInterval *length) {
-    NSDate *start = nil;
-    [[NSCalendar currentCalendar] rangeOfUnit:NSCalendarUnitDay startDate:&start interval:length forDate:date];
-    return start;
-}
-
 - (NSArray *)recordsOfVehicle:(Vehicle *)vehicle from:(NSDate *)from to:(NSDate *)to {
-    NSDate *start = from ? LBDayOf(from, NULL) : nil;
-    NSTimeInterval length = 0;
-    NSDate *end = to ? [LBDayOf(to, &length) dateByAddingTimeInterval:length] : nil;
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDate *start = from ? [calendar startOfDayForDate:from] : nil;
+    NSDate *end = to ? [calendar dateByAddingUnit:NSCalendarUnitDay value:1 toDate:[calendar startOfDayForDate:to] options:0] : nil;
     NSMutableArray<Record *> *records = [NSMutableArray array];
     for (Record *record in vehicle.records) {
         NSDate *when = record.lbDate;
