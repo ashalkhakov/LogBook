@@ -11,7 +11,7 @@
 set -e
 here=$(cd "$(dirname "$0")/.." && pwd)
 ormkit=$(cd "$here/../NativeORM2" && pwd)
-image=logbook-gnustep
+image=logbook-gnustep:latest
 docker image inspect "$image" >/dev/null 2>&1 || {
   echo "$image has not been built: in ../NativeORM2, docker build -f .tools/gnustep.Dockerfile -t ormkit-gnustep ." >&2
   echo "then here, docker build -f .tools/gnustep.Dockerfile -t $image ." >&2

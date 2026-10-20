@@ -184,9 +184,7 @@ static BOOL LBDoesWork(Event *event, NSString *task, ExpenseKind *kind, Checklis
 static NSArray<Event *> *LBEventsOf(Vehicle *vehicle) {
     NSMutableArray *events = [NSMutableArray array];
     for (Record *record in vehicle.records) {
-        /* Of it now: one moved to another vehicle may still be among its
-           records until the save (FreeCoreData keeps inverses so). */
-        if ([record isKindOfClass:[Event class]] && !record.isDeleted && record.vehicle == vehicle && ((Event *)record).timestamp) {
+        if ([record isKindOfClass:[Event class]] && !record.isDeleted && ((Event *)record).timestamp) {
             [events addObject:record];
         }
     }
@@ -515,23 +513,11 @@ static void LBDoneBy(Reminder *reminder, Event *event) {
 
 #pragma mark Settling: what a vehicle's events close
 
-/* A reminder deleted, with what is of it (its moves, its attachments),
-   taken out of its schedule and vehicle first: the rules, checked before
-   the save propagates a deletion, see the schedule without it. */
+/* A reminder deleted, with what is of it (its moves, its attachments). */
 static void LBDeleteReminder(Reminder *reminder) {
     NSManagedObjectContext *context = reminder.managedObjectContext;
-    for (Rescheduling *moved in [reminder.reschedulings copy]) {
-        moved.reminder = nil;
-        [context deleteObject:moved];
-    }
-    for (Attachment *attached in [reminder.attachments copy]) {
-        attached.record = nil;
-        [context deleteObject:attached];
-    }
-    reminder.schedule = nil;
-    reminder.vehicle = nil;
-    reminder.replaced = nil;
-    reminder.replacement = nil;
+    for (Rescheduling *moved in [reminder.reschedulings copy]) [context deleteObject:moved];
+    for (Attachment *attached in [reminder.attachments copy]) [context deleteObject:attached];
     [context deleteObject:reminder];
 }
 
