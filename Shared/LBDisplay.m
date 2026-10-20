@@ -188,8 +188,8 @@ static NSSet<NSUUID *> *LBOverdue;
         NSDateFormatter *said = [[NSDateFormatter alloc] init];
         said.dateStyle = NSDateFormatterShortStyle;
         said.timeStyle = NSDateFormatterNoStyle;
-        return [NSString stringWithFormat:@"Done %@ %@", [said stringFromDate:self.doneAt],
-                                          self.event ? [@"by " stringByAppendingString:self.event.lbKind] : @"by hand"];
+        NSString *done = [@"Done " stringByAppendingString:[said stringFromDate:self.doneAt]];
+        return self.event ? [NSString stringWithFormat:@"%@ by %@", done, self.event.lbKind] : done;
     }
     return self.id && [LBOverdue containsObject:self.id] ? @"Overdue" : @"Open";
 }

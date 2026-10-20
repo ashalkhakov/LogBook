@@ -52,8 +52,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)addRecord:(nullable id)sender;
 // The records chosen deleted (Remove unlinks a relationship's otherwise).
 // An event saved that closed reminders is discarded on the server
-// (Discard): what it closed reopened with it, the owner asked when the next
-// reminder it made has been changed since.
+// (Discard): what it closed closed by the next event or reopened, the owner
+// asked when a next reminder it made has been changed since.
 - (IBAction)removeRecord:(nullable id)sender;
 // The chosen vehicle shared with the user of shareEmail: one of the
 // logbook's, or one added by their email alone, who can then drive it.
@@ -80,6 +80,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)saveChanges;
 // An error said: kept in lastError, and shown unless quiet.
 - (void)reportError:(NSError *)error;
+// Warnings before saving: an event at no distance that would close a
+// reminder of a schedule that recurs after a distance (its next would not
+// be made). Said with the rules' warnings; the owner may save anyway.
+- (NSArray<NSError *> *)reminderWarnings;
 
 // Why the last save was refused (nil: it was not).
 @property (nonatomic, readonly, strong, nullable) NSError *lastError;

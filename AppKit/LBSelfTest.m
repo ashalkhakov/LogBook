@@ -291,9 +291,10 @@ static void LBChooseReminder(LBMainWindowController *controller, Reminder *remin
 }
 
 /* The Reminders tab, as a user: an oil change scheduled, and started; a
-   service of it logged in the Records tab, which closes the reminder on
-   the server and makes the next; the next moved, then cancelled for a
-   replacement, which is marked done by hand. */
+   service of it logged in the Records tab (warned while it has no
+   odometer reading), which closes the reminder on the server and makes the
+   next; the next moved, then cancelled for a replacement; a one-off set
+   after the service, marked done by it. */
 static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     NSWindow *window = controller.window;
     LBRemindersController *tab = controller.remindersController;
@@ -334,7 +335,6 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     Service *service = controller.records.selectedObjects.firstObject;
     LBCheck(@"a new service, its form shown", [service isKindOfClass:[Service class]]
                 && [controller.recordForms.selectedTabViewItem.identifier isEqual:@"Service"], service);
-    LBType(window, @"ServiceMileage", @"13000");
     LBType(window, @"ServiceGarage", @"Garage Müller");
     LBChoose(window, @"ServiceKind", @"Maintenance");
     LBClick(window, @"addServiceItem");
@@ -344,6 +344,10 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBType(window, @"ServiceItemTask", @"Oil change");
     LBType(window, @"ServiceItemCost", @"50");
     LBCheck(@"its task and cost typed", [item.task isEqualToString:@"Oil change"] && item.costAmount.integerValue == 50, item.task);
+    LBCheck(@"with no odometer reading yet, a warning that no next reminder would be made",
+            [controller reminderWarnings].count == 1 && [[controller reminderWarnings].firstObject.localizedDescription containsString:@"Oil change"],
+            [controller reminderWarnings]);
+    LBType(window, @"ServiceMileage", @"13000");
     LBClick(window, @"save");
     LBCheck(@"the service saved", !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
@@ -388,18 +392,28 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
                 && replacement.schedule == schedule && [replacement.dueDate isEqualToDate:replacementDue],
             controller.lastError ?: next.lbStatus);
 
-    /* Marked done by hand. */
-    LBChooseReminder(controller, replacement);
+    LBCheck(@"the reminder's warning gone once read", [controller reminderWarnings].count == 0, [controller reminderWarnings]);
+
+    /* A one-off, set after the service, marked done by it. */
+    LBClick(window, @"newReminder");
+    LBType(window, @"reminderTask", @"Oil change");
+    LBTypeDay(window, @"reminderDate", LBAddMonths(LBDay([NSDate date]), 1));
+    LBClick(window, @"reminderSave");
+    Reminder *oneOff = nil;
+    for (Reminder *reminder in tab.reminders.arrangedObjects) {
+        if (!reminder.schedule) oneOff = reminder;
+    }
+    LBCheck(@"a one-off saved, open", oneOff.lb_isOpen && !controller.lastError, controller.lastError ?: tab.reminders.arrangedObjects);
+    LBChooseReminder(controller, oneOff);
     LBClick(window, @"markDone");
-    LBChoose(window, @"doneEvent", @"By hand");
-    LBType(window, @"doneMileage", @"13100");
+    NSPopUpButton *events = (NSPopUpButton *)LBControl(window.contentView, @"doneEvent");
+    LBCheck(@"Mark Done offers the service, and no by hand", events.numberOfItems == 1 && [tab.form.event.id isEqual:service.id],
+            events.itemTitles);
     LBClick(window, @"doneSave");
-    LBCheck(@"marked done by hand, its next made", [replacement.lbStatus hasSuffix:@"by hand"]
-                && replacement.doneMileageQuantity.integerValue == 13100
-                && LBListed(controller, LBNamedUUID([@"next of " stringByAppendingString:replacementID.UUIDString.lowercaseString])),
-            controller.lastError ?: replacement.lbStatus);
-    Reminder *onServer = LBServerReminder(replacementID);
-    LBCheck(@"the server has it done", onServer.doneAt && !onServer.event, onServer);
+    LBCheck(@"marked done by the service", [oneOff.lbStatus hasPrefix:@"Done"] && [oneOff.event.id isEqual:service.id] && !controller.lastError,
+            controller.lastError ?: oneOff.lbStatus);
+    Reminder *onServer = LBServerReminder(oneOff.id);
+    LBCheck(@"the server has it done by the service", onServer.doneAt && [onServer.event.id isEqual:service.id], onServer);
     if (getenv("LB_SCREENSHOT")) {
         NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-reminders.png"];
         system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);

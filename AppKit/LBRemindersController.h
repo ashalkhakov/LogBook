@@ -7,7 +7,7 @@
 // (Server/LBActions.h), the desktop app being online: a new schedule is
 // saved and started (Start), a one-off reminder saved, a reminder moved
 // (Reschedule), cancelled and maybe replaced (Cancel), or closed by an
-// event or by hand (Complete). What the server made is read back after.
+// event of its work (Complete): a reminder is done only by an event. What the server made is read back after.
 
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
@@ -26,9 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSDecimalNumber *every;
 @property (nonatomic, strong, nullable) DistanceUnit *everyUnit;
 @property (nonatomic, copy, nullable) NSNumber *months;
-// Last done on, due on, cancelled on, done on: a day of the calendar here.
+// Last done on, due on, cancelled on: a day of the calendar here.
 @property (nonatomic, copy, nullable) NSDate *date;
-// Last done at, due at, done at.
+// Last done at, due at.
 @property (nonatomic, copy, nullable) NSDecimalNumber *mileage;
 @property (nonatomic, strong, nullable) DistanceUnit *unit;
 @property (nonatomic, copy, nullable) NSString *note;
@@ -37,7 +37,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSDate *replacementDate;
 @property (nonatomic, copy, nullable) NSDecimalNumber *replacementMileage;
 @property (nonatomic, strong, nullable) DistanceUnit *replacementUnit;
-// What closed a reminder; nil: by hand.
+// The event that closed a reminder.
 @property (nonatomic, strong, nullable) Event *event;
 @end
 

@@ -31,10 +31,6 @@ static NSDate *LBLocalDateOf(NSDate *day) {
     return [[NSCalendar currentCalendar] dateFromComponents:parts];
 }
 
-static BOOL LBIsToday(NSDate *local) {
-    return [LBModelDayOf(local) isEqualToDate:LBModelDayOf([NSDate date])];
-}
-
 /* Events latest first. */
 static NSInteger LBLatestFirst(id a, id b, void *context) {
     return [(Event *)b lb_isBeforeEvent:(Event *)a] ? NSOrderedAscending : [(Event *)a lb_isBeforeEvent:(Event *)b] ? NSOrderedDescending
@@ -173,7 +169,6 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
     self.doneEvents = events;
     LBReminderForm *form = [self newForm];
     form.event = events.firstObject;
-    form.date = [NSDate date];
     [self show:@"done" form:form about:reminder];
 }
 
@@ -318,16 +313,8 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
 - (BOOL)saveDone {
     Reminder *reminder = _formFor;
     if (!reminder) return NO;
-    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
-    if (_form.event) {
-        parameters[@"Event"] = _form.event;
-    } else {
-        /* By hand: now, when it was today; else the day. */
-        NSDate *day = _form.date ?: [NSDate date];
-        parameters[@"DoneAt"] = LBIsToday(day) ? [NSDate date] : LBModelDayOf(day);
-        [self distance:_form.mileage unit:_form.unit into:parameters named:@"DoneMileage"];
-    }
-    return [_windowController performAction:@"Complete" on:reminder parameters:parameters] != nil;
+    if (!_form.event) return [self refuse:@"A reminder is done by an event: choose the one that did its work"];
+    return [_windowController performAction:@"Complete" on:reminder parameters:@{ @"Event": _form.event }] != nil;
 }
 
 @end

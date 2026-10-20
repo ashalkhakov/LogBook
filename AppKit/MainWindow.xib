@@ -4266,94 +4266,13 @@
                                                                     <menu key="menu" id="doneEventMenu"/>
                                                                 </popUpButtonCell>
                                                                 <connections>
-                                                                    <binding destination="remindersController" name="content" keyPath="doneEvents" id="doneEventContent">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">By hand</string>
-                                                                        </dictionary>
-                                                                    </binding>
+                                                                    <binding destination="remindersController" name="content" keyPath="doneEvents" id="doneEventContent"/>
                                                                     <binding destination="remindersController" name="contentValues" keyPath="doneEvents.lbTitle" previousBinding="doneEventContent" id="doneEventValues"/>
-                                                                    <binding destination="DoneFormController" name="selectedObject" keyPath="selection.event" previousBinding="doneEventValues" id="doneEventChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">By hand</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
-                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="doneDateLabel">
-                                                                <rect key="frame" x="0" y="395" width="90" height="17"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Or on:" id="doneDateLabelCell">
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="doneDate" id="doneDate">
-                                                                <rect key="frame" x="96" y="392" width="176" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="doneDateCell">
-                                                                    <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" timeStyle="none" id="doneDateFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="DoneFormController" name="value" keyPath="selection.date" id="doneDateValue">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSValidatesImmediately" value="YES"/>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="doneMileageLabel">
-                                                                <rect key="frame" x="0" y="365" width="90" height="17"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At:" id="doneMileageLabelCell">
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="doneMileage" id="doneMileage">
-                                                                <rect key="frame" x="96" y="362" width="80" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="doneMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="doneMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="DoneFormController" name="value" keyPath="selection.mileage" id="doneMileageValue">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSValidatesImmediately" value="YES"/>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="doneMileageUnit" id="doneMileageUnit">
-                                                                <rect key="frame" x="180" y="360" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="doneMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="doneMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="doneMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="doneMileageUnitContent" id="doneMileageUnitValues"/>
-                                                                    <binding destination="DoneFormController" name="selectedObject" keyPath="selection.unit" previousBinding="doneMileageUnitValues" id="doneMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
+                                                                    <binding destination="DoneFormController" name="selectedObject" keyPath="selection.event" previousBinding="doneEventValues" id="doneEventChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="doneSave" id="doneSave">
-                                                                <rect key="frame" x="168" y="324" width="104" height="32"/>
+                                                                <rect key="frame" x="168" y="384" width="104" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <buttonCell key="cell" type="push" title="Mark Done" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="doneSaveCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -4365,7 +4284,7 @@
                                                                 </connections>
                                                             </button>
                                                             <button verticalHuggingPriority="750" identifier="doneClose" id="doneClose">
-                                                                <rect key="frame" x="84" y="324" width="84" height="32"/>
+                                                                <rect key="frame" x="84" y="384" width="84" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <buttonCell key="cell" type="push" title="Back" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="doneCloseCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>

@@ -23,13 +23,14 @@ The same code runs wherever the logbook is kept:
   | Action | Bound to | Parameters | Answers | Who may |
   |---|---|---|---|---|
   | `Start` | a schedule | `LastDoneAt`, `LastDoneMileage`, `LastDoneMileageUnit` | its first reminder | the owner |
-  | `Complete` | a reminder | `Event`, or `DoneAt`, `DoneMileage`, `DoneMileageUnit` | the next reminder, or none | whoever drives the vehicle |
+  | `Complete` | a reminder | `Event` | the next reminder, or none | whoever drives the vehicle |
   | `Reschedule` | a reminder | `DueDate`, `DueMileage`, `DueMileageUnit`, `Note` | the rescheduling | whoever drives the vehicle |
   | `Cancel` | a reminder | `CancelDate`, `ReplacementDueDate`, `ReplacementDueMileage`, `ReplacementDueMileageUnit` | the replacement, or none | the owner |
   | `Discard` | a record | `KeepNextReminder` | nothing | the owner |
 
-  (`POST Records(<id>)/Default.Complete`, and so on; every parameter may
-  be left out; a unit is its code, an event a reference.) A refusal is a
+  (`POST Records(<id>)/Default.Complete`, and so on; a unit is its code,
+  an event a reference; every parameter but `Complete`'s `Event` may be
+  left out.) A refusal is a
   `400`; `Discard` of an event whose next reminder was touched since is a
   `409`, its code `NextReminderTouched`, its target that reminder's id
   (9). And whenever the server saves events, whichever device sent them
@@ -148,38 +149,49 @@ event's moment (`ReminderDoneAtItsEventsMoment`) and at its distance where
 it has one (`ReminderDoneAtItsEventsMileage`); done by an event of its
 vehicle; done at a distance only with a moment.
 
-The owner may close a reminder by hand too, with no event: done at a
-moment, and at a distance if they say one; or by an event they choose,
-one that may close it (below).
+A reminder is done only by an event: there is no closing by hand. The
+owner may say which event closed one (Mark Done, `Complete`): one that may
+close it (below); what then closes it is what settling says, the earliest
+that may.
 
 For a schedule's reminder, the service layer then makes the next (5).
 
-**Automatic completion, exactly.** Before the server saves, for each event
-in the save that is new, or changed in its moment, vehicle, distance,
-kind, checklist or items (a service's item added, or changed to another
-task), earliest first (by moment, then id):
+**Settling, exactly: automatic completion.** Before the server saves, the
+vehicles of the events in the save that are new, or changed in their
+moment, vehicle, distance, kind, checklist or items (a service's item
+added, or changed to another task) are settled, and a vehicle an event
+moved from too: their reminders are made what entering all their events
+afresh would make them, in order (by moment, then id). So the outcome
+never depends on the order events were entered, or changed, or synced:
+an event moved earlier or later, to another vehicle, or no longer of the
+work, leaves what entering the events as they now are gives.
 
-1. What it closed and can no longer close (it is no longer of the work,
-   or of the reminder's vehicle, or now falls before the day the reminder
-   was set) is undone as in 9, the event kept; a touched next reminder
-   refuses the save. What it closed and still can follows it: done at its
-   moment and distance now, the untouched next due from them.
-2. It may close a reminder that is of its vehicle, for work it does, not
-   cancelled, and set on or before the event's day (the UTC days of the
-   two moments). For each schedule of its work, and each one-off reminder
-   of it, it closes one, unless it closes one of it already: of those it
-   may close that are open, or done by a later event, the one set first.
-   One done by a later event is taken from it (the earliest event wins),
-   where its next is untouched, the next then due from this event; that
-   later event then closes what it may in turn (the next, open now). One
-   done by hand is left as the owner said; one whose next was touched
-   stays with the later event.
+- An event may close a reminder that is of its vehicle, for work it does
+  (its schedule's, or its own), not cancelled, and set on or before the
+  event's day (the UTC days of the two moments).
+- A schedule's run: from its first reminder, each event of its work, in
+  order, closes the reminder open then, if it may, and the next is made
+  due from it (5); the next event then meets that one. Past a cancelled
+  reminder the run goes on to its replacement; past one done with no event
+  (as a plain `DELETE` of its event leaves it) to its next, both as they
+  are; where a run ends (no next made), at the schedule's next first
+  reminder, when it was started again.
+- A one-off reminder: the first event that may close it.
+- A reminder the run closes otherwise than it is now is closed so, or
+  reopened; a next reminder the run no longer reaches is deleted; one
+  whose reminder before is now closed by another event, or at another
+  moment or distance, is due anew from it.
+- A next reminder the owner has touched (moved, noted, given an
+  attachment, cancelled, replacing or replaced) is not changed or deleted
+  so: the save is refused (`409`, `NextReminderTouched`), nothing changed,
+  for the owner to undo the move or the touch. Discarding a record is the
+  one place they may say to go ahead (9).
 
 So two events of the same work close one reminder each, the earlier the
 earlier, whichever was saved first: the second closes the next reminder
-the first made. A reminder that cannot be closed so (its next would be
-due at nothing: a distance-only schedule, an event with no distance, and
-none recorded before) stays open for the owner to close by hand.
+the first made. Day-granular as it is, an event the same day a schedule
+was started may close its first reminder at once, even the event it was
+counted from; the next is then due as the first was.
 
 ## 5. The schedule's next reminder
 
@@ -189,10 +201,15 @@ the same change: due its intervals after when and where the last was done.
   schedule's, as in 2); Reminder was entered by User;
 - Reminder is due on Date: the date of the done moment plus the
   schedule's months (`ReminderNextDue`);
-- Reminder is due at Distance: the done distance plus the schedule's
-  interval, where it was done at a distance; where it was not (an
-  expense with no distance), the vehicle's latest distance at the done
-  moment plus the interval.
+- Reminder is due at Distance: the event's distance plus the schedule's
+  interval, in the event's unit.
+
+For a schedule that recurs after a distance, the event's distance is
+needed: closed by an event at none (an expense with no odometer reading),
+the reminder is closed all the same, and no next is made; the schedule is
+left with none open, to start again. The desktop app warns before saving
+an event at no distance that would close such a reminder (the owner may
+save it anyway).
 
 ## 6. Postpone or move a reminder
 
@@ -244,41 +261,29 @@ one.
 ## 9. A record entered in error is discarded
 
 The owner deletes a service entered by mistake. In the same change, the
-service layer first undoes what the record closed, then deletes it. For
-each reminder done by it:
-- where closing it made the schedule's next reminder (5), and that next
-  one has not been touched since it was made, the next one goes with the
-  record: deleted, so the schedule is left with the one reopened as its
-  open reminder (`OneOpenReminder`). Untouched is: not rescheduled (no
-  Rescheduling is of it), neither done nor cancelled, replacing and
-  replaced by none, with no note and no attachment, and due on and at
-  just what (5) worked out from the reminder now reopened;
-- the reminder is reopened: its Reminder was done by Event, was done at
-  Moment and was done at Distance taken away, as before the record was
-  entered;
-- then the record itself is deleted.
+service layer settles the record's vehicle without it (4), then deletes
+it: what it closed is closed by the next event that may, or reopened, and
+a next reminder its closing made is deleted, or made due anew from the
+event that now closes the one before it.
 
-Where the next one has been touched (the owner moved it, closed it,
-noted something on it), the procedure stops before changing anything,
-and the app asks the owner what to do: nothing is deleted or reopened
-until they say. Deleting the next one would lose what they did to it,
-and keeping it beside the reopened one would leave the schedule two open
-reminders. So the owner chooses (`Discard` again, with
-`KeepNextReminder`):
-- keep it: the next stays as it is, and the reminder the record closed
-  stays done, by hand, at the moment and distance it was (no longer by
-  the record);
-- delete it too: the next goes, with its moves and attachments, and the
-  reminder is reopened.
+Where such a next one has been touched (the owner moved it, noted
+something on it, cancelled it), the procedure stops before changing
+anything, and the app asks the owner what to do: nothing is deleted or
+reopened until they say. Deleting it, or making it due anew, would lose
+what they did to it. So the owner chooses (`Discard` again, with
+`KeepNextReminder` false): delete it too (or make it due anew), with its
+moves and attachments; or keep the record. Keeping the next reminder and
+discarding the record (`KeepNextReminder` true) is refused: a reminder is
+done only by an event, and the one the record closed would be left done
+by nothing, or open beside the kept one.
 
 The desktop app removes an event that closed reminders so (Remove, in the
 Records tab), and asks the owner on the `409`; any other record it
 deletes as before. A plain `DELETE` of an event leaves what it closed done,
-by hand.
+with no event, as it is.
 
-The same for an event changed so that it no longer does the work (a
-service whose oil change item is removed): what it closed is undone as
-above, and the event is kept.
+An event changed so that it no longer does the work (a service whose oil
+change item is removed) is settled the same way (4), the event kept.
 
 ## 10. Two devices, offline, both make the next reminder
 
@@ -286,6 +291,13 @@ Anna and Ben both log the oil change offline, on two phones; each phone
 closes the reminder and makes the schedule's next (4, 5). Both make the
 same next reminder: its id is named by the reminder it follows ("next of
 …"), so what the second phone sends is the same object, not a second open
-one beside it. The server, saving each event as it arrives, closes the
-reminder by the earlier of the two and the next by the later (4); two
-records of the same work are then the owner's to keep or discard (9).
+one beside it. The server, saving each event as it arrives, settles the
+vehicle (4): the reminder closed by the earlier of the two, the next by
+the later, whichever came first; two records of the same work are then
+the owner's to keep or discard (9).
+
+Where the two phones made the same object with different values (the
+next reminder due from each one's event), the sync meets a conflict. The
+iOS app, when it is built, leaves it to the user: take the latest, giving
+up what this phone made, or spell out by hand what the object is to be.
+Nothing of this is built yet.

@@ -75,7 +75,7 @@ FOUNDATION_EXPORT NSString *_Nullable LBDistanceText(NSDecimalNumber *_Nullable 
 @property (nonatomic, readonly) NSString *lbWork;
 // "6/1/27 or 163000 km".
 @property (nonatomic, readonly) NSString *lbDue;
-// "Open", "Overdue", "Done 5/20/27 by Service", "Done 5/20/27 by hand",
+// "Open", "Overdue", "Done 5/20/27 by Service", "Done 5/20/27" (its event deleted),
 // "Cancelled 5/25/27": overdue as the model's queries said last
 // (+lbSetOverdue:).
 @property (nonatomic, readonly) NSString *lbStatus;

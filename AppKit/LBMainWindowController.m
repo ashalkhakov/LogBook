@@ -8,6 +8,7 @@
 #import "Schedule+CoreDataClass.h"
 #import "Reminder+CoreDataClass.h"
 #import "Rescheduling+CoreDataClass.h"
+#import "LBProcedures.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
@@ -202,24 +203,46 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     }
 }
 
-/* Discarded: what the owner says when the next reminder it made has been
-   changed since (keep it, the reminder staying done; or delete it too). */
+/* Discarded: when a next reminder it made has been changed since, the
+   owner asked whether to delete it too (a reminder is done only by an
+   event, so it cannot stay done once the record goes). */
 - (void)discard:(Record *)record {
     NSError *error = nil;
     if ([self call:@"Discard" on:record parameters:@{} error:&error]) return;
     if ([error.userInfo[ODataErrorCodeKey] isEqual:@"NextReminderTouched"] && !_quiet) {
         NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"The reminder it made next has been changed since it was made";
-        alert.informativeText = @"Keep that reminder (the one it closed stays done), or delete it too (the one it closed is open again)?";
-        [alert addButtonWithTitle:@"Keep It"];
+        alert.messageText = @"A reminder it made next has been changed since it was made";
+        alert.informativeText = @"Discarding the record deletes that reminder too, and what you changed of it.";
         [alert addButtonWithTitle:@"Delete It Too"];
         [alert addButtonWithTitle:@"Cancel"];
-        NSModalResponse answer = [alert runModal];
-        if (answer == NSAlertThirdButtonReturn) return;
+        if ([alert runModal] != NSAlertFirstButtonReturn) return;
         error = nil;
-        if ([self call:@"Discard" on:record parameters:@{ @"KeepNextReminder": @(answer == NSAlertFirstButtonReturn) } error:&error]) return;
+        if ([self call:@"Discard" on:record parameters:@{ @"KeepNextReminder": @NO } error:&error]) return;
     }
     [self reportError:error];
+}
+
+- (NSArray<NSError *> *)reminderWarnings {
+    NSMutableArray *warnings = [NSMutableArray array];
+    NSMutableSet *changed = [NSMutableSet setWithSet:self.context.insertedObjects];
+    [changed unionSet:self.context.updatedObjects];
+    for (NSManagedObject *object in changed) {
+        if (![object isKindOfClass:[Event class]] || object.isDeleted) continue;
+        Event *event = (Event *)object;
+        if (event.mileageQuantity && event.mileageDistanceUnit) continue;
+        for (Record *record in event.vehicle.records) {
+            if (![record isKindOfClass:[Reminder class]]) continue;
+            Reminder *reminder = (Reminder *)record;
+            if (!reminder.schedule.intervalQuantity || !reminder.lb_isOpen || ![event lb_mayCloseReminder:reminder]) continue;
+            NSString *said = [NSString stringWithFormat:@"This %@ closes the reminder for %@, which recurs every %@: without its odometer "
+                                                        @"reading, no next reminder is made.",
+                                                        event.lbKind.lowercaseString, reminder.lbWork,
+                                                        LBDistanceText(reminder.schedule.intervalQuantity, reminder.schedule.intervalDistanceUnit)];
+            [warnings addObject:[NSError errorWithDomain:LBProceduresErrorDomain code:LBProceduresErrorRefused
+                                                userInfo:@{ NSLocalizedDescriptionKey: said }]];
+        }
+    }
+    return warnings;
 }
 
 - (id)performAction:(NSString *)name on:(NSManagedObject *)object parameters:(NSDictionary *)parameters {
@@ -343,7 +366,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 - (IBAction)save:(id)sender {
     if (![self commitEdits]) return;
-    NSArray<NSError *> *warnings = [_store warnings];
+    NSArray<NSError *> *warnings = [[_store warnings] arrayByAddingObjectsFromArray:[self reminderWarnings]];
     if (warnings.count && !_quiet && ![self proceedDespite:warnings]) return;
     /* Saved, and what the server did as it saved read again: an event
        closes the reminders it does the work of. */
