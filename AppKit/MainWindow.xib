@@ -14,6 +14,8 @@
                 <outlet property="addRecordButton" destination="addRecord" id="addRecordOutlet"/>
                 <outlet property="reports" destination="reportsController" id="reportsOutlet"/>
                 <outlet property="vehicleDrivers" destination="vehicleDrivers" id="vehicleDriversOutlet"/>
+                <outlet property="remindersController" destination="remindersController" id="remindersControllerOutlet"/>
+                <outlet property="serviceItems" destination="serviceItems" id="serviceItemsOutlet"/>
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
@@ -73,6 +75,65 @@
                 <outlet property="reportArea" destination="reportArea" id="reportsArea"/>
             </connections>
         </customObject>
+        <arrayController mode="entity" entityName="Schedule" userLabel="Schedules" id="schedules">
+            <connections>
+                <binding destination="-2" name="managedObjectContext" keyPath="context" id="schedulesContext"/>
+                <binding destination="vehicles" name="contentSet" keyPath="selection.records" id="schedulesContent"/>
+            </connections>
+        </arrayController>
+        <arrayController mode="entity" entityName="Reminder" userLabel="Reminders" id="reminders">
+            <connections>
+                <binding destination="-2" name="managedObjectContext" keyPath="context" id="remindersContext"/>
+                <binding destination="vehicles" name="contentSet" keyPath="selection.records" id="remindersContent"/>
+            </connections>
+        </arrayController>
+        <arrayController mode="entity" entityName="Rescheduling" userLabel="Reschedulings" id="reschedulings">
+            <connections>
+                <binding destination="-2" name="managedObjectContext" keyPath="context" id="reschedulingsContext"/>
+                <binding destination="reminders" name="contentSet" keyPath="selection.reschedulings" id="reschedulingsContent"/>
+            </connections>
+        </arrayController>
+        <arrayController mode="entity" entityName="ServiceItem" customClass="LBServiceItemController" userLabel="Service Items" id="serviceItems">
+            <connections>
+                <outlet property="windowController" destination="-2" id="serviceItemsWindowController"/>
+                <binding destination="-2" name="managedObjectContext" keyPath="context" id="serviceItemsContext"/>
+                <binding destination="ServiceForm" name="contentSet" keyPath="selection.serviceItems" id="serviceItemsContent"/>
+            </connections>
+        </arrayController>
+        <customObject customClass="LBRemindersController" userLabel="Reminders Controller" id="remindersController">
+            <connections>
+                <outlet property="windowController" destination="-2" id="remindersWindowController"/>
+                <outlet property="schedules" destination="schedules" id="remindersSchedules"/>
+                <outlet property="reminders" destination="reminders" id="remindersReminders"/>
+                <outlet property="reschedulings" destination="reschedulings" id="remindersReschedulings"/>
+                <outlet property="forms" destination="reminderForms" id="remindersForms"/>
+            </connections>
+        </customObject>
+        <objectController objectClassName="LBReminderForm" userLabel="Schedule Form" id="ScheduleFormController">
+            <connections>
+                <binding destination="remindersController" name="contentObject" keyPath="form" id="ScheduleFormControllerContent"/>
+            </connections>
+        </objectController>
+        <objectController objectClassName="LBReminderForm" userLabel="Reminder Form" id="ReminderFormController">
+            <connections>
+                <binding destination="remindersController" name="contentObject" keyPath="form" id="ReminderFormControllerContent"/>
+            </connections>
+        </objectController>
+        <objectController objectClassName="LBReminderForm" userLabel="Reschedule Form" id="RescheduleFormController">
+            <connections>
+                <binding destination="remindersController" name="contentObject" keyPath="form" id="RescheduleFormControllerContent"/>
+            </connections>
+        </objectController>
+        <objectController objectClassName="LBReminderForm" userLabel="Cancel Form" id="CancelFormController">
+            <connections>
+                <binding destination="remindersController" name="contentObject" keyPath="form" id="CancelFormControllerContent"/>
+            </connections>
+        </objectController>
+        <objectController objectClassName="LBReminderForm" userLabel="Done Form" id="DoneFormController">
+            <connections>
+                <binding destination="remindersController" name="contentObject" keyPath="form" id="DoneFormControllerContent"/>
+            </connections>
+        </objectController>
         <objectController objectClassName="FillUp" userLabel="FillUp Form" id="FillUpForm">
             <connections>
                 <binding destination="-2" name="contentObject" keyPath="chosenRecords.FillUp" id="FillUpFormContent"/>
@@ -1302,6 +1363,181 @@
                                                                 </textFieldCell>
                                                                 <connections>
                                                                     <binding destination="ServiceForm" name="value" keyPath="selection.note" id="ServiceNoteValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceItemsLabel">
+                                                                <rect key="frame" x="8" y="109" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Items:" id="ServiceItemsLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="ServiceItemsTableScroll">
+                                                                <rect key="frame" x="128" y="40" width="300" height="88"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <clipView key="contentView" id="ServiceItemsTableClip">
+                                                                    <rect key="frame" x="1" y="1" width="298" height="86"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                    <subviews>
+                                                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="ServiceItemsTableHeader" identifier="ServiceItemsTable" id="ServiceItemsTable">
+                                                                            <rect key="frame" x="0" y="0" width="298" height="63"/>
+                                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                            <size key="intercellSpacing" width="3" height="2"/>
+                                                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                            <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                                            <tableColumns>
+                                                            <tableColumn identifier="task" width="150" minWidth="40" maxWidth="1000" id="ServiceItemsTableTaskColumn">
+                                                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Task">
+                                                                    <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                                </tableHeaderCell>
+                                                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="ServiceItemsTableTaskCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="serviceItems" name="value" keyPath="arrangedObjects.task" id="ServiceItemsTableTaskValue"/>
+                                                                </connections>
+                                                            </tableColumn>
+                                                            <tableColumn identifier="costAmount" width="70" minWidth="40" maxWidth="1000" id="ServiceItemsTableCostAmountColumn">
+                                                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Cost">
+                                                                    <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                                </tableHeaderCell>
+                                                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="ServiceItemsTableCostAmountCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="serviceItems" name="value" keyPath="arrangedObjects.costAmount" id="ServiceItemsTableCostAmountValue"/>
+                                                                </connections>
+                                                            </tableColumn>
+                                                            <tableColumn identifier="costCurrency" width="50" minWidth="40" maxWidth="1000" id="ServiceItemsTableCostCurrencyColumn">
+                                                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="">
+                                                                    <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                                </tableHeaderCell>
+                                                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="ServiceItemsTableCostCurrencyCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="serviceItems" name="value" keyPath="arrangedObjects.costCurrency" id="ServiceItemsTableCostCurrencyValue"/>
+                                                                </connections>
+                                                            </tableColumn>
+                                                                            </tableColumns>
+                                                                        </tableView>
+                                                                    </subviews>
+                                                                </clipView>
+                                                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="ServiceItemsTableHScroller">
+                                                                    <rect key="frame" x="1" y="72" width="298" height="15"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                                </scroller>
+                                                                <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="ServiceItemsTableVScroller">
+                                                                    <rect key="frame" x="284" y="1" width="15" height="86"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                                                </scroller>
+                                                                <tableHeaderView key="headerView" id="ServiceItemsTableHeader">
+                                                                    <rect key="frame" x="0" y="0" width="298" height="23"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                                                </tableHeaderView>
+                                                            </scrollView>
+                                                            <button verticalHuggingPriority="750" identifier="addServiceItem" id="addServiceItem">
+                                                                <rect key="frame" x="122" y="4" width="80" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addServiceItemCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="add:" target="serviceItems" id="addServiceItemAction"/>
+                                                                    <binding destination="serviceItems" name="enabled" keyPath="canAdd" id="addServiceItemEnabled"/>
+                                                                </connections>
+                                                            </button>
+                                                            <button verticalHuggingPriority="750" identifier="removeServiceItem" id="removeServiceItem">
+                                                                <rect key="frame" x="202" y="4" width="96" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeServiceItemCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="remove:" target="serviceItems" id="removeServiceItemAction"/>
+                                                                    <binding destination="serviceItems" name="enabled" keyPath="canRemove" id="removeServiceItemEnabled"/>
+                                                                </connections>
+                                                            </button>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceItemTaskLabel">
+                                                                <rect key="frame" x="436" y="109" width="58" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Task:" id="ServiceItemTaskLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="ServiceItemTask" id="ServiceItemTask">
+                                                                <rect key="frame" x="500" y="106" width="220" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ServiceItemTaskCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="serviceItems" name="value" keyPath="selection.task" id="ServiceItemTaskValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceItemCostLabel">
+                                                                <rect key="frame" x="436" y="79" width="58" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Cost:" id="ServiceItemCostLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="ServiceItemCost" id="ServiceItemCost">
+                                                                <rect key="frame" x="500" y="76" width="120" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ServiceItemCostCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="ServiceItemCostFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="serviceItems" name="value" keyPath="selection.costAmount" id="ServiceItemCostValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="ServiceItemCurrency" id="ServiceItemCurrency">
+                                                                <rect key="frame" x="626" y="76" width="56" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ServiceItemCurrencyCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="serviceItems" name="value" keyPath="selection.costCurrency" id="ServiceItemCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -2898,6 +3134,1248 @@
                                                                     </binding>
                                                                 </connections>
                                                             </textField>
+                                                        </subviews>
+                                                    </view>
+                                                </tabViewItem>
+                                            </tabViewItems>
+                                        </tabView>
+                                    </subviews>
+                                </view>
+                            </tabViewItem>
+                            <tabViewItem label="Reminders" identifier="reminders" id="remindersItem">
+                                <view key="view" id="remindersItemView">
+                                    <rect key="frame" x="10" y="33" width="732" height="574"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="schedulesHeading">
+                                            <rect key="frame" x="12" y="552" width="200" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="Schedules" id="schedulesHeadingCell">
+                                                <font key="font" metaFont="systemBold"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="schedulesTableScroll">
+                                            <rect key="frame" x="12" y="430" width="420" height="118"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <clipView key="contentView" id="schedulesTableClip">
+                                                <rect key="frame" x="1" y="1" width="418" height="116"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="schedulesTableHeader" identifier="schedulesTable" id="schedulesTable">
+                                                        <rect key="frame" x="0" y="0" width="418" height="93"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <size key="intercellSpacing" width="3" height="2"/>
+                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                        <tableColumns>
+                                        <tableColumn identifier="lbWork" width="110" minWidth="40" maxWidth="1000" id="schedulesTableLbWorkColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Work">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="schedulesTableLbWorkCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="schedules" name="value" keyPath="arrangedObjects.lbWork" id="schedulesTableLbWorkValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                        <tableColumn identifier="lbEvery" width="160" minWidth="40" maxWidth="1000" id="schedulesTableLbEveryColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Every">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="schedulesTableLbEveryCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="schedules" name="value" keyPath="arrangedObjects.lbEvery" id="schedulesTableLbEveryValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                        <tableColumn identifier="lbNextDue" width="140" minWidth="40" maxWidth="1000" id="schedulesTableLbNextDueColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Next due">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="schedulesTableLbNextDueCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="schedules" name="value" keyPath="arrangedObjects.lbNextDue" id="schedulesTableLbNextDueValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                                        </tableColumns>
+                                                    </tableView>
+                                                </subviews>
+                                            </clipView>
+                                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="schedulesTableHScroller">
+                                                <rect key="frame" x="1" y="102" width="418" height="15"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            </scroller>
+                                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="schedulesTableVScroller">
+                                                <rect key="frame" x="404" y="1" width="15" height="116"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                            </scroller>
+                                            <tableHeaderView key="headerView" id="schedulesTableHeader">
+                                                <rect key="frame" x="0" y="0" width="418" height="23"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                            </tableHeaderView>
+                                        </scrollView>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="remindersHeading">
+                                            <rect key="frame" x="12" y="404" width="200" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="Reminders" id="remindersHeadingCell">
+                                                <font key="font" metaFont="systemBold"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="remindersTableScroll">
+                                            <rect key="frame" x="12" y="176" width="420" height="224"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <clipView key="contentView" id="remindersTableClip">
+                                                <rect key="frame" x="1" y="1" width="418" height="222"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="remindersTableHeader" identifier="remindersTable" id="remindersTable">
+                                                        <rect key="frame" x="0" y="0" width="418" height="199"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <size key="intercellSpacing" width="3" height="2"/>
+                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                        <tableColumns>
+                                        <tableColumn identifier="lbWork" width="100" minWidth="40" maxWidth="1000" id="remindersTableLbWorkColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Work">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="remindersTableLbWorkCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="reminders" name="value" keyPath="arrangedObjects.lbWork" id="remindersTableLbWorkValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                        <tableColumn identifier="lbDue" width="150" minWidth="40" maxWidth="1000" id="remindersTableLbDueColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Due">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="remindersTableLbDueCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="reminders" name="value" keyPath="arrangedObjects.lbDue" id="remindersTableLbDueValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                        <tableColumn identifier="lbStatus" width="160" minWidth="40" maxWidth="1000" id="remindersTableLbStatusColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Status">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="remindersTableLbStatusCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="reminders" name="value" keyPath="arrangedObjects.lbStatus" id="remindersTableLbStatusValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                                        </tableColumns>
+                                                    </tableView>
+                                                </subviews>
+                                            </clipView>
+                                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="remindersTableHScroller">
+                                                <rect key="frame" x="1" y="208" width="418" height="15"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            </scroller>
+                                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="remindersTableVScroller">
+                                                <rect key="frame" x="404" y="1" width="15" height="222"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                            </scroller>
+                                            <tableHeaderView key="headerView" id="remindersTableHeader">
+                                                <rect key="frame" x="0" y="0" width="418" height="23"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                            </tableHeaderView>
+                                        </scrollView>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reschedulingsHeading">
+                                            <rect key="frame" x="12" y="150" width="200" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="Moved before" id="reschedulingsHeadingCell">
+                                                <font key="font" metaFont="systemBold"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="reschedulingsTableScroll">
+                                            <rect key="frame" x="12" y="12" width="420" height="134"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
+                                            <clipView key="contentView" id="reschedulingsTableClip">
+                                                <rect key="frame" x="1" y="1" width="418" height="132"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="reschedulingsTableHeader" identifier="reschedulingsTable" id="reschedulingsTable">
+                                                        <rect key="frame" x="0" y="0" width="418" height="109"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <size key="intercellSpacing" width="3" height="2"/>
+                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                        <tableColumns>
+                                        <tableColumn identifier="lbWhen" width="120" minWidth="40" maxWidth="1000" id="reschedulingsTableLbWhenColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Moved on">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="reschedulingsTableLbWhenCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="reschedulings" name="value" keyPath="arrangedObjects.lbWhen" id="reschedulingsTableLbWhenValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                        <tableColumn identifier="lbFrom" width="150" minWidth="40" maxWidth="1000" id="reschedulingsTableLbFromColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="From">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="reschedulingsTableLbFromCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="reschedulings" name="value" keyPath="arrangedObjects.lbFrom" id="reschedulingsTableLbFromValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                        <tableColumn identifier="lbBy" width="70" minWidth="40" maxWidth="1000" id="reschedulingsTableLbByColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="By">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="reschedulingsTableLbByCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="reschedulings" name="value" keyPath="arrangedObjects.lbBy" id="reschedulingsTableLbByValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                        <tableColumn identifier="note" width="70" minWidth="40" maxWidth="1000" id="reschedulingsTableNoteColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Why">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="reschedulingsTableNoteCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="reschedulings" name="value" keyPath="arrangedObjects.note" id="reschedulingsTableNoteValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                                        </tableColumns>
+                                                    </tableView>
+                                                </subviews>
+                                            </clipView>
+                                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="reschedulingsTableHScroller">
+                                                <rect key="frame" x="1" y="118" width="418" height="15"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            </scroller>
+                                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="reschedulingsTableVScroller">
+                                                <rect key="frame" x="404" y="1" width="15" height="132"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                            </scroller>
+                                            <tableHeaderView key="headerView" id="reschedulingsTableHeader">
+                                                <rect key="frame" x="0" y="0" width="418" height="23"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                            </tableHeaderView>
+                                        </scrollView>
+                                        <button verticalHuggingPriority="750" identifier="newSchedule" id="newSchedule">
+                                            <rect key="frame" x="438" y="540" width="142" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="New Schedule…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="newScheduleCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="newSchedule:" target="remindersController" id="newScheduleAction"/>
+                                                <binding destination="remindersController" name="enabled" keyPath="hasVehicle" id="newScheduleEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="newReminder" id="newReminder">
+                                            <rect key="frame" x="582" y="540" width="146" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="New Reminder…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="newReminderCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="newReminder:" target="remindersController" id="newReminderAction"/>
+                                                <binding destination="remindersController" name="enabled" keyPath="hasVehicle" id="newReminderEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="reschedule" id="reschedule">
+                                            <rect key="frame" x="438" y="508" width="142" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Reschedule…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="rescheduleCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="reschedule:" target="remindersController" id="rescheduleAction"/>
+                                                <binding destination="remindersController" name="enabled" keyPath="chosenOpen" id="rescheduleEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="cancelReminder" id="cancelReminder">
+                                            <rect key="frame" x="582" y="508" width="146" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Cancel…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelReminderCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="cancelReminder:" target="remindersController" id="cancelReminderAction"/>
+                                                <binding destination="remindersController" name="enabled" keyPath="chosenOpen" id="cancelReminderEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="markDone" id="markDone">
+                                            <rect key="frame" x="438" y="476" width="142" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Mark Done…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="markDoneCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="markDone:" target="remindersController" id="markDoneAction"/>
+                                                <binding destination="remindersController" name="enabled" keyPath="chosenOpen" id="markDoneEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <tabView type="noTabsNoBorder" identifier="reminderForms" id="reminderForms">
+                                            <rect key="frame" x="444" y="12" width="276" height="456"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                            <tabViewItems>
+                                                <tabViewItem label="None" identifier="none" id="reminderFormNoneItem">
+                                                    <view key="view" id="reminderFormNoneItemView">
+                                                        <rect key="frame" x="0" y="0" width="276" height="456"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <subviews>
+
+                                                        </subviews>
+                                                    </view>
+                                                </tabViewItem>
+                                                <tabViewItem label="schedule" identifier="schedule" id="reminderFormScheduleItem">
+                                                    <view key="view" id="reminderFormScheduleItemView">
+                                                        <rect key="frame" x="0" y="0" width="276" height="456"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <subviews>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleTaskLabel">
+                                                                <rect key="frame" x="0" y="425" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Task:" id="scheduleTaskLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="scheduleTask" id="scheduleTask">
+                                                                <rect key="frame" x="96" y="422" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="scheduleTaskCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.task" id="scheduleTaskValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleExpenseKindLabel">
+                                                                <rect key="frame" x="0" y="395" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Expense:" id="scheduleExpenseKindLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="scheduleExpenseKind" id="scheduleExpenseKind">
+                                                                <rect key="frame" x="94" y="390" width="180" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="scheduleExpenseKindCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="scheduleExpenseKindMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="expenseKinds" name="content" keyPath="arrangedObjects" id="scheduleExpenseKindContent"/>
+                                                                    <binding destination="expenseKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleExpenseKindContent" id="scheduleExpenseKindValues"/>
+                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.expenseKind" previousBinding="scheduleExpenseKindValues" id="scheduleExpenseKindChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleChecklistLabel">
+                                                                <rect key="frame" x="0" y="365" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Checklist:" id="scheduleChecklistLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="scheduleChecklist" id="scheduleChecklist">
+                                                                <rect key="frame" x="94" y="360" width="180" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="scheduleChecklistCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="scheduleChecklistMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="checklists" name="content" keyPath="arrangedObjects" id="scheduleChecklistContent"/>
+                                                                    <binding destination="checklists" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleChecklistContent" id="scheduleChecklistValues"/>
+                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.checklist" previousBinding="scheduleChecklistValues" id="scheduleChecklistChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleEveryLabel">
+                                                                <rect key="frame" x="0" y="335" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Every:" id="scheduleEveryLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="scheduleEvery" id="scheduleEvery">
+                                                                <rect key="frame" x="96" y="332" width="80" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="scheduleEveryCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="scheduleEveryFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.every" id="scheduleEveryValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="scheduleEveryUnit" id="scheduleEveryUnit">
+                                                                <rect key="frame" x="180" y="330" width="94" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="scheduleEveryUnitCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="scheduleEveryUnitMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="scheduleEveryUnitContent"/>
+                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleEveryUnitContent" id="scheduleEveryUnitValues"/>
+                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.everyUnit" previousBinding="scheduleEveryUnitValues" id="scheduleEveryUnitChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleMonthsLabel">
+                                                                <rect key="frame" x="0" y="305" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Or months:" id="scheduleMonthsLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="scheduleMonths" id="scheduleMonths">
+                                                                <rect key="frame" x="96" y="302" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="scheduleMonthsCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" id="scheduleMonthsFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.months" id="scheduleMonthsValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleDateLabel">
+                                                                <rect key="frame" x="0" y="275" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Last done on:" id="scheduleDateLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="scheduleDate" id="scheduleDate">
+                                                                <rect key="frame" x="96" y="272" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="scheduleDateCell">
+                                                                    <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" timeStyle="none" id="scheduleDateFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.date" id="scheduleDateValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleMileageLabel">
+                                                                <rect key="frame" x="0" y="245" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Last done at:" id="scheduleMileageLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="scheduleMileage" id="scheduleMileage">
+                                                                <rect key="frame" x="96" y="242" width="80" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="scheduleMileageCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="scheduleMileageFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.mileage" id="scheduleMileageValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="scheduleMileageUnit" id="scheduleMileageUnit">
+                                                                <rect key="frame" x="180" y="240" width="94" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="scheduleMileageUnitCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="scheduleMileageUnitMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="scheduleMileageUnitContent"/>
+                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleMileageUnitContent" id="scheduleMileageUnitValues"/>
+                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.unit" previousBinding="scheduleMileageUnitValues" id="scheduleMileageUnitChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleNoteLabel">
+                                                                <rect key="frame" x="0" y="215" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="scheduleNoteLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="scheduleNote" id="scheduleNote">
+                                                                <rect key="frame" x="96" y="212" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="scheduleNoteCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.note" id="scheduleNoteValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <button verticalHuggingPriority="750" identifier="scheduleSave" id="scheduleSave">
+                                                                <rect key="frame" x="184" y="174" width="88" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="scheduleSaveCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="saveForm:" target="remindersController" id="scheduleSaveAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                            <button verticalHuggingPriority="750" identifier="scheduleClose" id="scheduleClose">
+                                                                <rect key="frame" x="100" y="174" width="84" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="scheduleCloseCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="closeForm:" target="remindersController" id="scheduleCloseAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                    </view>
+                                                </tabViewItem>
+                                                <tabViewItem label="reminder" identifier="reminder" id="reminderFormReminderItem">
+                                                    <view key="view" id="reminderFormReminderItemView">
+                                                        <rect key="frame" x="0" y="0" width="276" height="456"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <subviews>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reminderTaskLabel">
+                                                                <rect key="frame" x="0" y="425" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Task:" id="reminderTaskLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="reminderTask" id="reminderTask">
+                                                                <rect key="frame" x="96" y="422" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="reminderTaskCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ReminderFormController" name="value" keyPath="selection.task" id="reminderTaskValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reminderExpenseKindLabel">
+                                                                <rect key="frame" x="0" y="395" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Expense:" id="reminderExpenseKindLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="reminderExpenseKind" id="reminderExpenseKind">
+                                                                <rect key="frame" x="94" y="390" width="180" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="reminderExpenseKindCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="reminderExpenseKindMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="expenseKinds" name="content" keyPath="arrangedObjects" id="reminderExpenseKindContent"/>
+                                                                    <binding destination="expenseKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="reminderExpenseKindContent" id="reminderExpenseKindValues"/>
+                                                                    <binding destination="ReminderFormController" name="selectedObject" keyPath="selection.expenseKind" previousBinding="reminderExpenseKindValues" id="reminderExpenseKindChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reminderChecklistLabel">
+                                                                <rect key="frame" x="0" y="365" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Checklist:" id="reminderChecklistLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="reminderChecklist" id="reminderChecklist">
+                                                                <rect key="frame" x="94" y="360" width="180" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="reminderChecklistCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="reminderChecklistMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="checklists" name="content" keyPath="arrangedObjects" id="reminderChecklistContent"/>
+                                                                    <binding destination="checklists" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="reminderChecklistContent" id="reminderChecklistValues"/>
+                                                                    <binding destination="ReminderFormController" name="selectedObject" keyPath="selection.checklist" previousBinding="reminderChecklistValues" id="reminderChecklistChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reminderDateLabel">
+                                                                <rect key="frame" x="0" y="335" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Due on:" id="reminderDateLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="reminderDate" id="reminderDate">
+                                                                <rect key="frame" x="96" y="332" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="reminderDateCell">
+                                                                    <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" timeStyle="none" id="reminderDateFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ReminderFormController" name="value" keyPath="selection.date" id="reminderDateValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reminderMileageLabel">
+                                                                <rect key="frame" x="0" y="305" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Due at:" id="reminderMileageLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="reminderMileage" id="reminderMileage">
+                                                                <rect key="frame" x="96" y="302" width="80" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="reminderMileageCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="reminderMileageFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ReminderFormController" name="value" keyPath="selection.mileage" id="reminderMileageValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="reminderMileageUnit" id="reminderMileageUnit">
+                                                                <rect key="frame" x="180" y="300" width="94" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="reminderMileageUnitCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="reminderMileageUnitMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="reminderMileageUnitContent"/>
+                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="reminderMileageUnitContent" id="reminderMileageUnitValues"/>
+                                                                    <binding destination="ReminderFormController" name="selectedObject" keyPath="selection.unit" previousBinding="reminderMileageUnitValues" id="reminderMileageUnitChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reminderNoteLabel">
+                                                                <rect key="frame" x="0" y="275" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="reminderNoteLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="reminderNote" id="reminderNote">
+                                                                <rect key="frame" x="96" y="272" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="reminderNoteCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ReminderFormController" name="value" keyPath="selection.note" id="reminderNoteValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <button verticalHuggingPriority="750" identifier="reminderSave" id="reminderSave">
+                                                                <rect key="frame" x="184" y="234" width="88" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="reminderSaveCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="saveForm:" target="remindersController" id="reminderSaveAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                            <button verticalHuggingPriority="750" identifier="reminderClose" id="reminderClose">
+                                                                <rect key="frame" x="100" y="234" width="84" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="reminderCloseCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="closeForm:" target="remindersController" id="reminderCloseAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                    </view>
+                                                </tabViewItem>
+                                                <tabViewItem label="reschedule" identifier="reschedule" id="reminderFormRescheduleItem">
+                                                    <view key="view" id="reminderFormRescheduleItemView">
+                                                        <rect key="frame" x="0" y="0" width="276" height="456"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <subviews>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="rescheduleDateLabel">
+                                                                <rect key="frame" x="0" y="425" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Due on:" id="rescheduleDateLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="rescheduleDate" id="rescheduleDate">
+                                                                <rect key="frame" x="96" y="422" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="rescheduleDateCell">
+                                                                    <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" timeStyle="none" id="rescheduleDateFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="RescheduleFormController" name="value" keyPath="selection.date" id="rescheduleDateValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="rescheduleMileageLabel">
+                                                                <rect key="frame" x="0" y="395" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Due at:" id="rescheduleMileageLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="rescheduleMileage" id="rescheduleMileage">
+                                                                <rect key="frame" x="96" y="392" width="80" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="rescheduleMileageCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="rescheduleMileageFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="RescheduleFormController" name="value" keyPath="selection.mileage" id="rescheduleMileageValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="rescheduleMileageUnit" id="rescheduleMileageUnit">
+                                                                <rect key="frame" x="180" y="390" width="94" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="rescheduleMileageUnitCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="rescheduleMileageUnitMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="rescheduleMileageUnitContent"/>
+                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="rescheduleMileageUnitContent" id="rescheduleMileageUnitValues"/>
+                                                                    <binding destination="RescheduleFormController" name="selectedObject" keyPath="selection.unit" previousBinding="rescheduleMileageUnitValues" id="rescheduleMileageUnitChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="rescheduleNoteLabel">
+                                                                <rect key="frame" x="0" y="365" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Why:" id="rescheduleNoteLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="rescheduleNote" id="rescheduleNote">
+                                                                <rect key="frame" x="96" y="362" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="rescheduleNoteCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="RescheduleFormController" name="value" keyPath="selection.note" id="rescheduleNoteValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <button verticalHuggingPriority="750" identifier="rescheduleSave" id="rescheduleSave">
+                                                                <rect key="frame" x="184" y="324" width="88" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Move" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="rescheduleSaveCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="saveForm:" target="remindersController" id="rescheduleSaveAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                            <button verticalHuggingPriority="750" identifier="rescheduleClose" id="rescheduleClose">
+                                                                <rect key="frame" x="100" y="324" width="84" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="rescheduleCloseCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="closeForm:" target="remindersController" id="rescheduleCloseAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                    </view>
+                                                </tabViewItem>
+                                                <tabViewItem label="cancel" identifier="cancel" id="reminderFormCancelItem">
+                                                    <view key="view" id="reminderFormCancelItemView">
+                                                        <rect key="frame" x="0" y="0" width="276" height="456"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <subviews>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="cancelDateLabel">
+                                                                <rect key="frame" x="0" y="425" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Cancelled on:" id="cancelDateLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="cancelDate" id="cancelDate">
+                                                                <rect key="frame" x="96" y="422" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="cancelDateCell">
+                                                                    <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" timeStyle="none" id="cancelDateFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="CancelFormController" name="value" keyPath="selection.date" id="cancelDateValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <button identifier="cancelReplace" id="cancelReplace">
+                                                                <rect key="frame" x="96" y="394" width="176" height="18"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="check" title="Replace it with one due" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="cancelReplaceCell">
+                                                                    <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <binding destination="CancelFormController" name="value" keyPath="selection.replace" id="cancelReplaceValue"/>
+                                                                </connections>
+                                                            </button>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="cancelReplacementDateLabel">
+                                                                <rect key="frame" x="0" y="365" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="On:" id="cancelReplacementDateLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="cancelReplacementDate" id="cancelReplacementDate">
+                                                                <rect key="frame" x="96" y="362" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="cancelReplacementDateCell">
+                                                                    <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" timeStyle="none" id="cancelReplacementDateFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="CancelFormController" name="value" keyPath="selection.replacementDate" id="cancelReplacementDateValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="cancelReplacementMileageLabel">
+                                                                <rect key="frame" x="0" y="335" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At:" id="cancelReplacementMileageLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="cancelReplacementMileage" id="cancelReplacementMileage">
+                                                                <rect key="frame" x="96" y="332" width="80" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="cancelReplacementMileageCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="cancelReplacementMileageFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="CancelFormController" name="value" keyPath="selection.replacementMileage" id="cancelReplacementMileageValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="cancelReplacementMileageUnit" id="cancelReplacementMileageUnit">
+                                                                <rect key="frame" x="180" y="330" width="94" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="cancelReplacementMileageUnitCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="cancelReplacementMileageUnitMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="cancelReplacementMileageUnitContent"/>
+                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="cancelReplacementMileageUnitContent" id="cancelReplacementMileageUnitValues"/>
+                                                                    <binding destination="CancelFormController" name="selectedObject" keyPath="selection.replacementUnit" previousBinding="cancelReplacementMileageUnitValues" id="cancelReplacementMileageUnitChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <button verticalHuggingPriority="750" identifier="cancelSave" id="cancelSave">
+                                                                <rect key="frame" x="176" y="294" width="96" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Cancel It" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelSaveCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="saveForm:" target="remindersController" id="cancelSaveAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                            <button verticalHuggingPriority="750" identifier="cancelClose" id="cancelClose">
+                                                                <rect key="frame" x="92" y="294" width="84" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Back" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelCloseCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="closeForm:" target="remindersController" id="cancelCloseAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                    </view>
+                                                </tabViewItem>
+                                                <tabViewItem label="done" identifier="done" id="reminderFormDoneItem">
+                                                    <view key="view" id="reminderFormDoneItemView">
+                                                        <rect key="frame" x="0" y="0" width="276" height="456"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <subviews>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="doneEventLabel">
+                                                                <rect key="frame" x="0" y="425" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Done by:" id="doneEventLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="doneEvent" id="doneEvent">
+                                                                <rect key="frame" x="94" y="420" width="180" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="doneEventCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="doneEventMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="remindersController" name="content" keyPath="doneEvents" id="doneEventContent">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">By hand</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                    <binding destination="remindersController" name="contentValues" keyPath="doneEvents.lbTitle" previousBinding="doneEventContent" id="doneEventValues"/>
+                                                                    <binding destination="DoneFormController" name="selectedObject" keyPath="selection.event" previousBinding="doneEventValues" id="doneEventChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">By hand</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="doneDateLabel">
+                                                                <rect key="frame" x="0" y="395" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Or on:" id="doneDateLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="doneDate" id="doneDate">
+                                                                <rect key="frame" x="96" y="392" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="doneDateCell">
+                                                                    <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" timeStyle="none" id="doneDateFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="DoneFormController" name="value" keyPath="selection.date" id="doneDateValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="doneMileageLabel">
+                                                                <rect key="frame" x="0" y="365" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At:" id="doneMileageLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="doneMileage" id="doneMileage">
+                                                                <rect key="frame" x="96" y="362" width="80" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="doneMileageCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="doneMileageFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="DoneFormController" name="value" keyPath="selection.mileage" id="doneMileageValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="doneMileageUnit" id="doneMileageUnit">
+                                                                <rect key="frame" x="180" y="360" width="94" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="doneMileageUnitCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="doneMileageUnitMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="doneMileageUnitContent"/>
+                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="doneMileageUnitContent" id="doneMileageUnitValues"/>
+                                                                    <binding destination="DoneFormController" name="selectedObject" keyPath="selection.unit" previousBinding="doneMileageUnitValues" id="doneMileageUnitChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <button verticalHuggingPriority="750" identifier="doneSave" id="doneSave">
+                                                                <rect key="frame" x="168" y="324" width="104" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Mark Done" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="doneSaveCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="saveForm:" target="remindersController" id="doneSaveAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                            <button verticalHuggingPriority="750" identifier="doneClose" id="doneClose">
+                                                                <rect key="frame" x="84" y="324" width="84" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Back" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="doneCloseCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="closeForm:" target="remindersController" id="doneCloseAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>

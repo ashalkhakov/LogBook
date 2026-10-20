@@ -9,6 +9,11 @@
 #import "LBAppController.h"
 #import "LBReportData.h"
 #import "LBReportsController.h"
+#import "LBRemindersController.h"
+#import "LBProcedures.h"
+#import "Service+CoreDataClass.h"
+#import "ServiceItem+CoreDataClass.h"
+#import "CostKind+CoreDataClass.h"
 
 NSURL *LBSelfTestRoot;
 
@@ -252,6 +257,155 @@ static void LBReportSteps(LBMainWindowController *controller) {
                 && [before containsString:@"By kind"], nil);
 }
 
+/* A day typed into a date field as its formatter says one: the model's
+   day (UTC) as the calendar here has it. */
+static void LBTypeDay(NSWindow *window, NSString *identifier, NSDate *day) {
+    NSTextField *field = (NSTextField *)LBControl(window.contentView, identifier);
+    NSCalendar *utc = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    utc.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    NSDate *local = [[NSCalendar currentCalendar]
+        dateFromComponents:[utc components:NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay fromDate:day]];
+    LBType(window, identifier, [field.formatter stringForObjectValue:local] ?: @"");
+}
+
+/* The reminder of the id among those the tab lists. */
+static Reminder *LBListed(LBMainWindowController *controller, NSUUID *uuid) {
+    for (Reminder *reminder in controller.remindersController.reminders.arrangedObjects) {
+        if ([reminder.id isEqual:uuid]) return reminder;
+    }
+    return nil;
+}
+
+/* What the server has of a reminder. */
+static Reminder *LBServerReminder(NSUUID *uuid) {
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Reminder class])];
+    fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)), uuid];
+    Reminder *reminder = [[LBServerSide.context executeFetchRequest:fetch error:NULL] firstObject];
+    if (reminder) [LBServerSide.context refreshObject:reminder mergeChanges:NO];
+    return reminder;
+}
+
+static void LBChooseReminder(LBMainWindowController *controller, Reminder *reminder) {
+    [controller.remindersController.reminders setSelectedObjects:reminder ? @[ reminder ] : @[]];
+    LBSpin();
+}
+
+/* The Reminders tab, as a user: an oil change scheduled, and started; a
+   service of it logged in the Records tab, which closes the reminder on
+   the server and makes the next; the next moved, then cancelled for a
+   replacement, which is marked done by hand. */
+static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
+    NSWindow *window = controller.window;
+    LBRemindersController *tab = controller.remindersController;
+    /* A kind of service to log one of: the app's, not the user's to add. */
+    CostKind *maintenance = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([CostKind class])
+                                                          inManagedObjectContext:controller.context];
+    maintenance.name = @"Maintenance";
+    LBCheck(@"a kind of service", [controller saveChanges], controller.lastError);
+    NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
+    [tabs selectTabViewItemWithIdentifier:@"reminders"];
+    LBSpin();
+    LBClick(window, @"newSchedule");
+    LBCheck(@"New Schedule shows its form", [tab.forms.selectedTabViewItem.identifier isEqual:@"schedule"], nil);
+    LBType(window, @"scheduleTask", @"Oil change");
+    LBType(window, @"scheduleEvery", @"15000");
+    LBType(window, @"scheduleMonths", @"12");
+    LBClick(window, @"scheduleSave");
+    Schedule *schedule = [tab.schedules.arrangedObjects firstObject];
+    LBCheck(@"the schedule saved and listed: 15000 km or 12 months",
+            [tab.schedules.arrangedObjects count] == 1 && [schedule.task isEqualToString:@"Oil change"] && !controller.lastError
+                && [tab.forms.selectedTabViewItem.identifier isEqual:@"none"],
+            controller.lastError ?: schedule.lbEvery);
+    NSUUID *firstID = schedule.id ? LBNamedUUID([@"start of " stringByAppendingString:schedule.id.UUIDString.lowercaseString]) : nil;
+    Reminder *first = LBListed(controller, firstID);
+    LBCheck(@"started on the server: its first reminder listed, due 12 months on and at the fill-up's distance plus 15000 km",
+            first && first.lb_isOpen && [first.dueDate isEqualToDate:LBAddMonths(LBDay([NSDate date]), 12)]
+                && first.dueMileageQuantity.integerValue == 27345 && [first.lbStatus isEqualToString:@"Open"],
+            first ? first.lbDue : tab.reminders.arrangedObjects);
+    LBCheck(@"the schedule's next due shown", [schedule.lbNextDue isEqualToString:first.lbDue], schedule.lbNextDue);
+
+    /* A service of the task, logged as any record. */
+    [tabs selectTabViewItemWithIdentifier:@"records"];
+    LBSpin();
+    NSPopUpButton *add = (NSPopUpButton *)LBControl(window.contentView, @"addRecord");
+    NSMenuItem *serviceItem = [add itemAtIndex:(NSInteger)[[Record lbKinds] indexOfObject:NSStringFromClass([Service class])] + 1];
+    [NSApp sendAction:serviceItem.action to:serviceItem.target from:serviceItem];
+    LBSpin();
+    Service *service = controller.records.selectedObjects.firstObject;
+    LBCheck(@"a new service, its form shown", [service isKindOfClass:[Service class]]
+                && [controller.recordForms.selectedTabViewItem.identifier isEqual:@"Service"], service);
+    LBType(window, @"ServiceMileage", @"13000");
+    LBType(window, @"ServiceGarage", @"Garage Müller");
+    LBChoose(window, @"ServiceKind", @"Maintenance");
+    LBClick(window, @"addServiceItem");
+    ServiceItem *item = controller.serviceItems.selectedObjects.firstObject;
+    LBCheck(@"an item of it, in its currency", item && item.service == service && [item.costCurrency isEqualToString:service.currency],
+            item);
+    LBType(window, @"ServiceItemTask", @"Oil change");
+    LBType(window, @"ServiceItemCost", @"50");
+    LBCheck(@"its task and cost typed", [item.task isEqualToString:@"Oil change"] && item.costAmount.integerValue == 50, item.task);
+    LBClick(window, @"save");
+    LBCheck(@"the service saved", !controller.store.context.hasChanges && !controller.lastError,
+            controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
+    [tabs selectTabViewItemWithIdentifier:@"reminders"];
+    LBSpin();
+    NSUUID *nextID = LBNamedUUID([@"next of " stringByAppendingString:firstID.UUIDString.lowercaseString]);
+    Reminder *next = LBListed(controller, nextID);
+    LBCheck(@"the reminder shows done by the service, closed on the server as it saved",
+            [first.lbStatus hasPrefix:@"Done"] && ![first.lbStatus hasSuffix:@"by hand"] && [first.event.id isEqual:service.id]
+                && first.doneMileageQuantity.integerValue == 13000,
+            first.lbStatus);
+    LBCheck(@"and the next appears, open, due from the service", next && next.lb_isOpen && next.dueMileageQuantity.integerValue == 28000
+                && [tab.reminders.arrangedObjects firstObject] == next,
+            next ? next.lbDue : tab.reminders.arrangedObjects);
+
+    /* Moved a month on. */
+    LBChooseReminder(controller, next);
+    LBClick(window, @"reschedule");
+    NSDate *was = next.dueDate;
+    NSDate *moved = LBAddMonths(was, 1);
+    LBTypeDay(window, @"rescheduleDate", moved);
+    LBType(window, @"rescheduleNote", @"away");
+    LBClick(window, @"rescheduleSave");
+    Rescheduling *move = [tab.reschedulings.arrangedObjects firstObject];
+    LBCheck(@"rescheduled: due a month on, the move listed with what it was due on", [next.dueDate isEqualToDate:moved]
+                && [tab.reschedulings.arrangedObjects count] == 1 && [move.fromDate isEqualToDate:was] && [move.note isEqualToString:@"away"]
+                && !controller.lastError,
+            controller.lastError ?: next.lbDue);
+    LBCheck(@"the server has the move", LBServerReminder(nextID).reschedulings.count == 1, nil);
+
+    /* Cancelled, replaced. */
+    LBChooseReminder(controller, next);
+    LBClick(window, @"cancelReminder");
+    LBClick(window, @"cancelReplace");
+    NSDate *replacementDue = LBAddMonths(LBDay([NSDate date]), 2);
+    LBTypeDay(window, @"cancelReplacementDate", replacementDue);
+    LBClick(window, @"cancelSave");
+    NSUUID *replacementID = LBNamedUUID([@"replacement of " stringByAppendingString:nextID.UUIDString.lowercaseString]);
+    Reminder *replacement = LBListed(controller, replacementID);
+    LBCheck(@"cancelled, and a replacement listed, open, from the schedule",
+            [next.lbStatus hasPrefix:@"Cancelled"] && replacement.lb_isOpen && replacement.replaced == next
+                && replacement.schedule == schedule && [replacement.dueDate isEqualToDate:replacementDue],
+            controller.lastError ?: next.lbStatus);
+
+    /* Marked done by hand. */
+    LBChooseReminder(controller, replacement);
+    LBClick(window, @"markDone");
+    LBChoose(window, @"doneEvent", @"By hand");
+    LBType(window, @"doneMileage", @"13100");
+    LBClick(window, @"doneSave");
+    LBCheck(@"marked done by hand, its next made", [replacement.lbStatus hasSuffix:@"by hand"]
+                && replacement.doneMileageQuantity.integerValue == 13100
+                && LBListed(controller, LBNamedUUID([@"next of " stringByAppendingString:replacementID.UUIDString.lowercaseString])),
+            controller.lastError ?: replacement.lbStatus);
+    Reminder *onServer = LBServerReminder(replacementID);
+    LBCheck(@"the server has it done", onServer.doneAt && !onServer.event, onServer);
+    if (getenv("LB_SCREENSHOT")) {
+        NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-reminders.png"];
+        system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);
+    }
+}
+
 static void LBSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
     controller.quiet = YES;
@@ -277,7 +431,8 @@ static void LBSteps(LBMainWindowController *controller) {
             chosen.vehicleName);
     LBClick(window, @"save");
     LBCheck(@"saved", !controller.store.context.hasChanges && !controller.lastError,
-            controller.lastError.localizedRecoverySuggestion ?: controller.store.context.insertedObjects);
+            [NSString stringWithFormat:@"%@ / %@ / %@", controller.lastError, controller.store.context.updatedObjects,
+                                       controller.store.context.insertedObjects]);
     Vehicle *kept = LBVehicleNamed(@"Self-test Golf");
     LBCheck(@"the server has it", [kept.make isEqualToString:@"Volkswagen"] && [kept.carModel isEqualToString:@"Golf VII"], kept);
     LBCheck(@"its owner the user", [kept.owner.email isEqualToString:controller.store.user.email], kept.owner.email);
@@ -286,6 +441,7 @@ static void LBSteps(LBMainWindowController *controller) {
     LBPreferenceSteps(controller);
     LBReportDataSteps(controller, @"Self-test Golf");
     LBReportSteps(controller);
+    LBReminderSteps(controller, kept);
 }
 
 void LBRunSelfTest(LBMainWindowController *window) {

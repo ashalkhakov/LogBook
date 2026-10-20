@@ -12,6 +12,9 @@
 #import "CostKind+CoreDataClass.h"
 #import "TyreSet+CoreDataClass.h"
 #import "Checklist+CoreDataClass.h"
+#import "Schedule+CoreDataClass.h"
+#import "Reminder+CoreDataClass.h"
+#import "Rescheduling+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -47,6 +50,48 @@ NS_ASSUME_NONNULL_BEGIN
 // The model's entities a record is of, in the order Add offers them.
 + (NSArray<NSString *> *)lbKinds;
 + (NSString *)lbKindOfEntityNamed:(NSString *)name;
+@end
+
+@interface Record (LBDisplayTitle) <LBTitled>
+// "Service, 10/20/26, 2:00 PM": its kind and when (what Mark Done offers).
+@end
+
+// A day of the model (a Date: due on, cancelled on), which is a UTC day,
+// said short: "6/1/27".
+FOUNDATION_EXPORT NSString *_Nullable LBDayText(NSDate *_Nullable day);
+// A distance said: "163000 km".
+FOUNDATION_EXPORT NSString *_Nullable LBDistanceText(NSDecimalNumber *_Nullable quantity, DistanceUnit *_Nullable unit);
+
+@interface Schedule (LBDisplay)
+// What it is for: the task, the kind of expense, the checklist.
+@property (nonatomic, readonly) NSString *lbWork;
+// "15000 km or 12 months".
+@property (nonatomic, readonly) NSString *lbEvery;
+// When its open reminder is due; nil when it has none open.
+@property (nonatomic, readonly, nullable) NSString *lbNextDue;
+@end
+
+@interface Reminder (LBDisplay)
+@property (nonatomic, readonly) NSString *lbWork;
+// "6/1/27 or 163000 km".
+@property (nonatomic, readonly) NSString *lbDue;
+// "Open", "Overdue", "Done 5/20/27 by Service", "Done 5/20/27 by hand",
+// "Cancelled 5/25/27": overdue as the model's queries said last
+// (+lbSetOverdue:).
+@property (nonatomic, readonly) NSString *lbStatus;
+// 0 open, 1 done or cancelled: what a list sorts the open first by.
+@property (nonatomic, readonly) NSInteger lbOrder;
+// The reminders overdue (OverdueReminders and OverdueByMileage, run by
+// whoever shows them), by id; those shown told their status changed.
++ (void)lbSetOverdue:(NSSet<NSUUID *> *)overdue shown:(NSArray<Reminder *> *)shown;
+@end
+
+@interface Rescheduling (LBDisplay)
+// When it was moved, local and short.
+@property (nonatomic, readonly, nullable) NSString *lbWhen;
+// What it was due at before: "6/1/27 or 163000 km".
+@property (nonatomic, readonly) NSString *lbFrom;
+@property (nonatomic, readonly) NSString *lbBy;
 @end
 
 NS_ASSUME_NONNULL_END

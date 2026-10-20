@@ -2,9 +2,16 @@
 #import "LBStore.h"
 #import "LBDisplay.h"
 #import "LBReportsController.h"
+#import "LBRemindersController.h"
+#import <ODataIncrementalStore/ODataOperationCall.h>
+#import <ODataKit/ODataError.h>
+#import "Schedule+CoreDataClass.h"
+#import "Reminder+CoreDataClass.h"
+#import "Rescheduling+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
+#import "ServiceItem+CoreDataClass.h"
 #import "Expense+CoreDataClass.h"
 #import "Income+CoreDataClass.h"
 #import "Trip+CoreDataClass.h"
@@ -60,6 +67,11 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         [self.window setContentSize:NSMakeSize(MAX(now.width, drawn.width), MAX(now.height, drawn.height))];
     }
     _records.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(lbDate)) ascending:NO] ];
+    /* A vehicle's schedules and reminders are the Reminders tab's. */
+    NSString *kind = [NSString stringWithFormat:@"%@.%@", NSStringFromSelector(@selector(entity)), NSStringFromSelector(@selector(name))];
+    _records.filterPredicate = [NSPredicate predicateWithFormat:@"NOT (%K IN %@)", kind,
+                                                                @[ NSStringFromClass([Schedule class]), NSStringFromClass([Reminder class]) ]];
+    _records.clearsFilterPredicateOnInsertion = NO;
     NSArray<NSString *> *kinds = [Record lbKinds];
     for (NSUInteger i = 0; i < kinds.count; i++) {
         NSMenuItem *item = [_addRecordButton.menu addItemWithTitle:[Record lbKindOfEntityNamed:kinds[i]] action:@selector(addRecord:)
@@ -102,6 +114,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     }
     self.drivers = [drivers sortedArrayUsingDescriptors:[self byTitle]];
     [_reports vehicleChosen];
+    [_remindersController refresh];
 }
 
 /* The chosen record's form shown, given the record. */
@@ -177,10 +190,99 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [self vehicleChosen];
 }
 
-/* The records chosen gone from the logbook, not only from the vehicle. */
+/* The records chosen gone from the logbook, not only from the vehicle; an
+   event that closed reminders discarded on the server, what it closed
+   reopened. */
 - (IBAction)removeRecord:(id)sender {
     if (![self commitEdits]) return;
-    for (Record *record in [_records.selectedObjects copy]) [self.context deleteObject:record];
+    for (Record *record in [_records.selectedObjects copy]) {
+        BOOL closed = [record isKindOfClass:[Event class]] && !record.objectID.isTemporaryID && ((Event *)record).reminders.count;
+        if (closed) [self discard:record];
+        else [self.context deleteObject:record];
+    }
+}
+
+/* Discarded: what the owner says when the next reminder it made has been
+   changed since (keep it, the reminder staying done; or delete it too). */
+- (void)discard:(Record *)record {
+    NSError *error = nil;
+    if ([self call:@"Discard" on:record parameters:@{} error:&error]) return;
+    if ([error.userInfo[ODataErrorCodeKey] isEqual:@"NextReminderTouched"] && !_quiet) {
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = @"The reminder it made next has been changed since it was made";
+        alert.informativeText = @"Keep that reminder (the one it closed stays done), or delete it too (the one it closed is open again)?";
+        [alert addButtonWithTitle:@"Keep It"];
+        [alert addButtonWithTitle:@"Delete It Too"];
+        [alert addButtonWithTitle:@"Cancel"];
+        NSModalResponse answer = [alert runModal];
+        if (answer == NSAlertThirdButtonReturn) return;
+        error = nil;
+        if ([self call:@"Discard" on:record parameters:@{ @"KeepNextReminder": @(answer == NSAlertFirstButtonReturn) } error:&error]) return;
+    }
+    [self reportError:error];
+}
+
+- (id)performAction:(NSString *)name on:(NSManagedObject *)object parameters:(NSDictionary *)parameters {
+    NSError *error = nil;
+    id result = [self call:name on:object parameters:parameters error:&error];
+    if (!result) [self reportError:error];
+    return result;
+}
+
+/* The action called, the changes saved before, what it changed read after. */
+- (id)call:(NSString *)name on:(NSManagedObject *)object parameters:(NSDictionary *)parameters error:(NSError **)error {
+    if (![self commitEdits]) return nil;
+    if (self.context.hasChanges && ![self saveChanges]) {
+        if (error) *error = _lastError;
+        return nil;
+    }
+    ODataOperationCall *call = [ODataOperationCall callOfOperation:name onObject:object];
+    call.parameters = parameters;
+    id result = [call invoke:error];
+    [self readAgain];
+    if (result) _lastError = nil;
+    return result;
+}
+
+- (void)readAgain {
+    NSManagedObjectContext *context = self.context;
+    Vehicle *vehicle = [self chosenVehicle];
+    if (vehicle) {
+        /* The server's rows of the vehicle's records, and of their moves,
+           for the objects to be read from. */
+        NSFetchRequest *records = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Record class])];
+        records.predicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(vehicle)), vehicle];
+        NSError *error = nil;
+        if (![context executeFetchRequest:records error:&error]) NSLog(@"Logbook: the records not read again: %@", error.localizedDescription);
+        NSFetchRequest *moves = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Rescheduling class])];
+        moves.predicate = [NSPredicate predicateWithFormat:@"%K.%K == %@", NSStringFromSelector(@selector(reminder)),
+                                                           NSStringFromSelector(@selector(vehicle)), vehicle];
+        if (![context executeFetchRequest:moves error:&error]) NSLog(@"Logbook: the moves not read again: %@", error.localizedDescription);
+    }
+    for (NSManagedObject *object in context.registeredObjects.allObjects) {
+        if (!object.hasChanges) [context refreshObject:object mergeChanges:NO];
+    }
+    /* What shows the chosen vehicle's records asks for them again (the
+       vehicle itself is not changed). */
+    NSString *selection = NSStringFromSelector(@selector(selection));
+    [_vehicles willChangeValueForKey:selection];
+    [_vehicles didChangeValueForKey:selection];
+    [_remindersController refresh];
+}
+
+- (BOOL)saveChanges {
+    NSError *error = nil;
+    if ([_store save:&error]) {
+        _lastError = nil;
+        return YES;
+    }
+    [self reportError:[self willPresentError:error]];
+    return NO;
+}
+
+- (void)reportError:(NSError *)error {
+    _lastError = error;
+    if (error && !_quiet) [self presentError:error];
 }
 
 /* What a new record most likely is: now, by whoever is signed in, in
@@ -243,9 +345,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     if (![self commitEdits]) return;
     NSArray<NSError *> *warnings = [_store warnings];
     if (warnings.count && !_quiet && ![self proceedDespite:warnings]) return;
-    NSError *error = nil;
-    _lastError = [_store save:&error] ? nil : [self willPresentError:error];
-    if (_lastError && !_quiet) [self presentError:error];
+    /* Saved, and what the server did as it saved read again: an event
+       closes the reminders it does the work of. */
+    if ([self saveChanges]) [self readAgain];
 }
 
 /* The deontic rules a change breaks: what ought not to be, but may. */
@@ -292,6 +394,17 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 - (BOOL)windowShouldClose:(NSWindow *)sender {
     return [self shouldClose];
+}
+
+@end
+
+@implementation LBServiceItemController
+
+- (id)newObject {
+    ServiceItem *item = [super newObject];
+    Service *service = _windowController.chosenRecords[NSStringFromClass([Service class])];
+    item.costCurrency = service.currency;
+    return item;
 }
 
 @end
