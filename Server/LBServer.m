@@ -31,11 +31,18 @@
 // IntrospectionEndpoint), who may see and change what is kept as the model
 // says (LBPermissions.h): a user sees the vehicles they drive, and only a
 // vehicle's owner changes what is recorded of it.
+//
+// The procedures on schedules and reminders are its actions (LBActions.h):
+// started, closed, moved, cancelled, discarded, each saved whole. An event
+// saved, whoever sent it, closes the reminders it does the work of
+// (automatic completion, LBProcedures.h), in the same save.
 
 #import <ODataService/ODataServer.h>
 #import <ODataSync/ODataSyncService.h>
 #import "LogbookValidation.h"
 #import "LBPermissions.h"
+#import "LBActions.h"
+#import "LBProcedures.h"
 #include <dlfcn.h>
 #include <stdlib.h>
 
@@ -190,9 +197,15 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
     _service = [[ODataService alloc] initWithPersistentStoreCoordinator:coordinator serviceRoot:root];
     _service.allowsAnonymousRequests = [c flag:@"AllowAnonymous" otherwise:YES];
     _service.allowsAnonymousMetadata = YES;
-    /* The model's rules, before each save of what clients write. */
+    /* Before each save of what clients write: the reminders the events in
+       it do the work of closed (automatic completion, LBProcedures.h),
+       whichever device sent them; then the model's rules. */
     _service.willSave = ^BOOL(NSManagedObjectContext *context, NSError **refused) {
         NSError *why = nil;
+        if (![context lb_completeRemindersOfChangedEvents:&why]) {
+            if (refused) *refused = why;
+            return NO;
+        }
         if ([context orm_prepareForSave:&why]) return YES;
         /* Each violation said, for whoever runs it: a batch's answer has
            the message alone. */
@@ -206,6 +219,13 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
         LBServePermissions(_service);
     }
     _histories = [[ODataSyncService alloc] initWithService:_service];
+    /* The procedures, as actions (LBActions.h): each declared, or the
+       server does not start. */
+    if (_service.operationProblems.count) {
+        if (error) *error = LBError(NSFeatureUnsupportedError, [NSString stringWithFormat:@"actions not declared: %@",
+                                                                                         [_service.operationProblems componentsJoinedByString:@"; "]]);
+        return NO;
+    }
     return YES;
 }
 

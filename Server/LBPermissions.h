@@ -21,6 +21,10 @@
 // - Units and kinds of cost are the app's: read only. An exchange rate is
 //   added by anyone, changed by no one.
 //
+// - The procedures (LBActions.h): a reminder is closed and moved by
+//   whoever drives its vehicle; a schedule started, a reminder cancelled
+//   and a record discarded by the vehicle's owner alone.
+//
 // An anonymous request (AllowAnonymous) is let do anything, as before a
 // sign-in is set.
 
@@ -28,6 +32,18 @@
 #import <ODataSync/ODataSyncService.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
+@class User, Vehicle;
+
+// The signed-in user's email: the principal's email claim, else its
+// subject; nil for no one (an anonymous request).
+FOUNDATION_EXPORT NSString *_Nullable LBEmailOf(ODataRequest *request);
+// The user of the email, made when there is none and make says so.
+FOUNDATION_EXPORT User *_Nullable LBUserNamed(NSManagedObjectContext *context, NSString *email, BOOL make);
+// Whether the user of the email owns the vehicle; owns it or is entered as
+// a driver of it.
+FOUNDATION_EXPORT BOOL LBOwns(Vehicle *_Nullable vehicle, NSString *email);
+FOUNDATION_EXPORT BOOL LBDrives(Vehicle *_Nullable vehicle, NSString *email);
 
 // Each entity set kept to the permissions; before ODataSyncService is made
 // (it keeps a handler that is already an ODataSyncSetHandler).

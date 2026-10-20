@@ -41,6 +41,18 @@ Anna owns a vehicle and shares it with Ben; Cid is no one to it.
   changes or removes none; Anna, the owner, changes his; Cid adds none;
 - the units are the app's; a kind of cost or of expense anyone adds, and
   no one removes.
+- the procedures: whoever drives the vehicle closes and moves its
+  reminders, its owner alone starts its schedules, cancels its reminders and
+  discards its records; Ben's oil change closes Anna's reminder.
+
+The procedures, as the server's actions (Server/LBActions.h), with no one
+signed in: a schedule started (its first reminder named by it, due from
+the last change); a service with an item of the task closes the reminder
+(automatic completion), one from before it was set, or of another task,
+does not; the next made, named by it; Complete of one done refused;
+Reschedule, Cancel with a replacement, Complete by hand; Discard of an
+event whose next was touched since refused, 409, until the owner says, and
+of one whose next is untouched, the next deleted with it.
 
 LB_SERVICE_ROOT, when set, is a server already running (a store it can
 fill), asked instead of one started here: the first part only.
@@ -51,6 +63,7 @@ drops DYLD_ variables on the way through a protected binary such as
 /usr/bin/python3, so they are passed under another name.)
 """
 import base64
+import datetime
 import http.server
 import json
 import os
@@ -152,11 +165,14 @@ def request(method, path, body=None, user=None):
         return e.code, json.loads(text) if text.startswith("{") else text
 
 
+BATCH_USER = None
+
+
 def batch(group, requests):
     """One atomicity group: its responses' statuses and bodies."""
     status, answer = request("POST", "$batch", {"requests": [
         dict(id=str(i), atomicityGroup=group, method=method, url=url, body=body)
-        for i, (method, url, body) in enumerate(requests)]})
+        for i, (method, url, body) in enumerate(requests)]}, user=BATCH_USER)
     if status != 200:
         return [status], [answer]
     return [r["status"] for r in answer["responses"]], [r.get("body") for r in answer["responses"]]
@@ -255,6 +271,7 @@ def the_rules():
     message = json.dumps(body)
     check("the refusal names the rule", "removed the same TyreSet" in message, message)
     mileage_and_reminders(anna, vehicle)
+    procedures(anna)
 
 
 def expense(vehicle, kind, moment, user, km=None):
@@ -366,6 +383,142 @@ def mileage_and_reminders(anna, vehicle):
     check("one that moved from nothing is refused", status == 400, (status, body))
 
 
+# The procedures' ids: name-based, in Logbook's namespace (LBProcedures.h).
+NAMESPACE = uuid.uuid5(uuid.NAMESPACE_URL, "https://github.com/ashalkhakov/LogBook/reminders")
+
+
+def named(name):
+    return str(uuid.uuid5(NAMESPACE, name))
+
+
+def now(hours=0):
+    """A moment from now, as OData writes one."""
+    moment = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=hours)
+    return moment.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def months_on(day, months):
+    """The day so many months on, as the model's addMonths has it."""
+    year, month = divmod(day.month - 1 + months, 12)
+    year += day.year
+    last = [31, 29 if year % 4 == 0 and (year % 100 or year % 400 == 0) else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][month]
+    return datetime.date(year, month + 1, min(day.day, last))
+
+
+def oil_schedule(vehicle, user):
+    return {"@odata.type": "#Default.Schedule", "Id": str(uuid.uuid4()), "Task": "Oil change", "IntervalQuantity": 15000,
+            "IntervalDistanceUnit@odata.bind": "DistanceUnits('km')", "Duration": 12,
+            "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+
+
+def oil_change(vehicle, user, moment, km, tasks=("Oil change",), as_user=None):
+    """A service and its items, in one change set: its statuses."""
+    service = {"@odata.type": "#Default.Service", "Id": str(uuid.uuid4()), "Timestamp": moment, "MileageQuantity": km,
+               "MileageDistanceUnit@odata.bind": "DistanceUnits('km')", "Garage": "Garage Müller",
+               "ServiceKind@odata.bind": "CostKinds('Maintenance')", "Currency": "EUR",
+               "Driver@odata.bind": "Users('%s')" % user, "EnteredBy@odata.bind": "Users('%s')" % user,
+               "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+    items = [("POST", "ServiceItems", {"Id": str(uuid.uuid4()), "Task": task, "CostAmount": 40, "CostCurrency": "EUR",
+                                       "Service@odata.bind": "Records(%s)" % service["Id"]}) for task in tasks]
+    global BATCH_USER
+    BATCH_USER = as_user
+    try:
+        statuses, bodies = batch("s" + service["Id"][:8], [("POST", "Records", service)] + items)
+    finally:
+        BATCH_USER = None
+    return service, statuses, bodies
+
+
+def action(path, name, body=None, user=None):
+    return request("POST", "%s/Default.%s" % (path, name), body or {}, user=user)
+
+
+def reminder_of(rid, user=None):
+    status, body = request("GET", "Records(%s)" % rid, user=user)
+    return body if status == 200 else None
+
+
+def procedures(anna):
+    """The procedures as the server's actions, and automatic completion,
+    with no one signed in (the vehicle's owner acts)."""
+    made = vehicle_body(anna)
+    check("a vehicle for the procedures", request("POST", "Vehicles", made)[0] == 201)
+    vehicle = made["Id"]
+    check("a kind of service", request("POST", "CostKinds", {"Name": "Maintenance"})[0] == 201)
+    schedule = oil_schedule(vehicle, anna)
+    status, body = request("POST", "Records", schedule)
+    check("a schedule of the oil", status == 201, (status, body))
+    sid = schedule["Id"]
+    status, first = action("Records(%s)" % sid, "Start", {"LastDoneAt": "2026-06-01T10:00:00Z", "LastDoneMileage": 148000,
+                                                          "LastDoneMileageUnit": "km"})
+    check("Start: the first reminder, named by its schedule, due 12 months and 15000 km after the last change",
+          status == 200 and first.get("Id", "").lower() == named("start of " + sid) and first.get("DueDate", "")[:10] == "2027-06-01"
+          and first.get("DueMileageQuantity") == 163000, (status, first))
+    status, body = action("Records(%s)" % sid, "Start")
+    check("Start again is refused: it has an open reminder", status == 400 and "open reminder" in json.dumps(body), (status, body))
+    first_id = named("start of " + sid)
+
+    status, body = request("POST", "Records", reminder(vehicle, anna, Schedule=sid, set=now()))
+    check("a second open reminder of the schedule is refused, as before", status == 400, (status, body))
+    _, statuses, bodies = oil_change(vehicle, anna, now(-24 * 30), 150000)
+    check("an oil change from before it was set saved", statuses == [201, 201], (statuses, bodies))
+    check("it closes nothing", reminder_of(first_id).get("DoneAt") is None, reminder_of(first_id))
+    _, statuses, bodies = oil_change(vehicle, anna, now(), 152000, tasks=("Brakes",))
+    check("a service of another task closes nothing", statuses == [201, 201] and reminder_of(first_id).get("DoneAt") is None,
+          (statuses, reminder_of(first_id)))
+    service, statuses, bodies = oil_change(vehicle, anna, now(1), 152500)
+    check("a service with an item of the task, saved", statuses == [201, 201], (statuses, bodies))
+    done = reminder_of(first_id)
+    status, by = request("GET", "Records(%s)/Default.Reminder/Event" % first_id)
+    check("automatic completion: the reminder done by it, at its moment and distance",
+          done.get("DoneAt", "")[:16] == service["Timestamp"][:16] and done.get("DoneMileageQuantity") == 152500
+          and status == 200 and by.get("Id", "").lower() == service["Id"], (done, status, by))
+    next_id = named("next of " + first_id)
+    after = reminder_of(next_id)
+    due = months_on(datetime.date.fromisoformat(service["Timestamp"][:10]), 12).isoformat()
+    check("and its next made, named by it, due from it", after is not None and after.get("DueMileageQuantity") == 167500
+          and after.get("DueDate", "")[:10] == due and after.get("DoneAt") is None, after)
+
+    status, body = action("Records(%s)" % first_id, "Complete")
+    check("Complete of one done is refused", status == 400 and "done already" in json.dumps(body), (status, body))
+    status, moved = action("Records(%s)" % next_id, "Reschedule", {"DueDate": "2028-01-15T00:00:00Z", "Note": "away"})
+    check("Reschedule: moved, what it was due on recorded, named by it",
+          status == 200 and moved.get("Id", "").lower() == named(next_id + " rescheduled 1") and moved.get("FromDate", "")[:10] == due
+          and moved.get("Note") == "away" and reminder_of(next_id).get("DueDate", "")[:10] == "2028-01-15", (status, moved))
+    status, replacement = action("Records(%s)" % next_id, "Cancel", {"ReplacementDueDate": "2028-03-01T00:00:00Z"})
+    check("Cancel: cancelled today, a replacement named by it", status == 200
+          and replacement.get("Id", "").lower() == named("replacement of " + next_id) and replacement.get("DueDate", "")[:10] == "2028-03-01"
+          and (reminder_of(next_id).get("CancelDate") or "")[:10] == now()[:10], (status, replacement))
+    replacement_id = named("replacement of " + next_id)
+    status, replaced = request("GET", "Records(%s)/Default.Reminder/Replaced" % replacement_id)
+    status2, of = request("GET", "Records(%s)/Default.Reminder/Schedule" % replacement_id)
+    check("it replaces the one cancelled, of the same schedule", replaced.get("Id", "").lower() == next_id
+          and of.get("Id", "").lower() == sid, (replaced, of))
+
+    service, statuses, bodies = oil_change(vehicle, anna, now(2), 153000)
+    later = named("next of " + replacement_id)
+    check("the replacement closed by the next oil change, its next made", reminder_of(replacement_id).get("DoneAt")
+          and reminder_of(later) is not None, reminder_of(replacement_id))
+    status, body = request("PATCH", "Records(%s)" % later, {"@odata.type": "#Default.Reminder", "Note": "5W-30"})
+    check("the next one noted", status in (200, 204), (status, body))
+    status, body = action("Records(%s)" % service["Id"], "Discard")
+    check("Discard: refused, 409, the next reminder touched since, named", status == 409
+          and body.get("error", {}).get("code") == "NextReminderTouched" and body["error"].get("target") == later, (status, body))
+    check("nothing of it done", reminder_of(service["Id"]) is not None and reminder_of(later) is not None)
+    status, body = action("Records(%s)" % service["Id"], "Discard", {"KeepNextReminder": False})
+    check("Discard, the next deleted all the same: the replacement reopened", status == 204 and reminder_of(service["Id"]) is None
+          and reminder_of(later) is None and reminder_of(replacement_id).get("DoneAt") is None, (status, body))
+    service, statuses, bodies = oil_change(vehicle, anna, now(3), 153100)
+    check("closed again", reminder_of(replacement_id).get("DoneAt") is not None and reminder_of(later) is not None)
+    status, body = action("Records(%s)" % service["Id"], "Discard")
+    check("Discard, the next untouched: deleted with it, the replacement reopened", status == 204
+          and reminder_of(later) is None and reminder_of(replacement_id).get("DoneAt") is None, (status, body))
+    status, next_one = action("Records(%s)" % replacement_id, "Complete", {"DoneAt": now(4), "DoneMileage": 153200,
+                                                                         "DoneMileageUnit": "km"})
+    check("Complete by hand: its next", status == 200 and next_one.get("Id", "").lower() == later
+          and next_one.get("DueMileageQuantity") == 168200, (status, next_one))
+
+
 def who_may():
     anna, ben, cid = "anna@example.org", "ben@example.org", "cid@example.org"
     status, body = request("GET", "Vehicles")
@@ -421,6 +574,51 @@ def who_may():
     check("Cid a kind of expense", status == 201, (status, body))
     status, body = request("DELETE", "CostKinds('Parking')", user=ben)
     check("which no one removes, nor changes (its name is all it has)", status == 403, (status, body))
+    procedures_who_may(anna, ben, cid, vehicle)
+
+
+def procedures_who_may(anna, ben, cid, vehicle):
+    """Who may call each action: whoever drives the vehicle closes and
+    moves its reminders; its owner starts, cancels and discards. A driver's
+    service closes the owner's reminder all the same."""
+    check("a kind of service", request("POST", "CostKinds", {"Name": "Maintenance"}, user=anna)[0] == 201)
+    schedule = oil_schedule(vehicle, anna)
+    status, body = request("POST", "Records", schedule, user=anna)
+    check("Anna's schedule", status == 201, (status, body))
+    sid = schedule["Id"]
+    status, body = action("Records(%s)" % sid, "Start", user=ben)
+    check("Ben starts none of Anna's schedules", status == 403, (status, body))
+    status, body = action("Records(%s)" % sid, "Start", user=cid)
+    check("nor Cid, who does not see it", status in (403, 404), (status, body))
+    status, first = action("Records(%s)" % sid, "Start", {"LastDoneMileage": 140000, "LastDoneMileageUnit": "km"}, user=anna)
+    check("Anna starts it", status == 200 and first.get("DueMileageQuantity") == 155000, (status, first))
+    first_id = named("start of " + sid)
+    service, statuses, bodies = oil_change(vehicle, ben, now(1), 141000, as_user=ben)
+    check("Ben's oil change saved", statuses == [201, 201], (statuses, bodies))
+    done = reminder_of(first_id, user=anna)
+    next_id = named("next of " + first_id)
+    check("it closes Anna's reminder, and makes the next", done.get("DoneMileageQuantity") == 141000
+          and reminder_of(next_id, user=anna) is not None, done)
+    status, moved = action("Records(%s)" % next_id, "Reschedule", {"DueMileage": 160000}, user=ben)
+    check("Ben moves the next", status == 200 and moved.get("FromMileageQuantity") == 156000, (status, moved))
+    status, by = request("GET", "Reschedulings(%s)/MadeBy" % named(next_id + " rescheduled 1"), user=anna)
+    check("moved by him", status == 200 and by.get("Email") == ben, (status, by))
+    status, body = action("Records(%s)" % next_id, "Reschedule", {"DueMileage": 161000}, user=cid)
+    check("Cid moves none", status in (403, 404), (status, body))
+    status, body = action("Records(%s)" % next_id, "Cancel", user=ben)
+    check("Ben cancels none", status == 403, (status, body))
+    status, body = action("Records(%s)" % service["Id"], "Discard", user=ben)
+    check("nor discards his own record", status == 403, (status, body))
+    status, body = action("Records(%s)" % service["Id"], "Discard", user=anna)
+    check("Anna discards it: refused while its next is moved", status == 409 and body["error"]["code"] == "NextReminderTouched",
+          (status, body))
+    status, body = action("Records(%s)" % service["Id"], "Discard", {"KeepNextReminder": True}, user=anna)
+    check("keeping the next: the first stays done, by hand", status == 204 and reminder_of(first_id, user=anna).get("DoneAt")
+          and reminder_of(next_id, user=anna) is not None, (status, body))
+    status, body = action("Records(%s)" % next_id, "Complete", {"DoneAt": now(2)}, user=ben)
+    check("Ben closes the next by hand", status == 200, (status, body))
+    status, body = action("Records(%s)" % next_id, "Cancel", user=anna)
+    check("a done one is not cancelled", status == 400, (status, body))
 
 
 try:

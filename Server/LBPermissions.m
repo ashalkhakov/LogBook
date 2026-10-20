@@ -25,7 +25,7 @@
 #define LBEntity(cls) NSStringFromClass([cls class])
 
 /* The signed-in user's email: nil for no one (an anonymous request). */
-static NSString *LBEmailOf(ODataRequest *request) {
+NSString *LBEmailOf(ODataRequest *request) {
     HSPrincipal *principal = request.principal;
     if (!principal) return nil;
     id email = principal.claims[@"email"];
@@ -33,7 +33,7 @@ static NSString *LBEmailOf(ODataRequest *request) {
 }
 
 /* The user of the email, made when there is none and make says so. */
-static User *LBUserNamed(NSManagedObjectContext *context, NSString *email, BOOL make) {
+User *LBUserNamed(NSManagedObjectContext *context, NSString *email, BOOL make) {
     NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:LBEntity(User)];
     fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", LBKey(email), email];
     User *user = [[context executeFetchRequest:fetch error:NULL] firstObject];
@@ -44,12 +44,12 @@ static User *LBUserNamed(NSManagedObjectContext *context, NSString *email, BOOL 
     return user;
 }
 
-static BOOL LBOwns(Vehicle *vehicle, NSString *email) {
+BOOL LBOwns(Vehicle *vehicle, NSString *email) {
     return [vehicle isKindOfClass:[Vehicle class]] && [vehicle.owner.email isEqualToString:email];
 }
 
 /* Owns it, or is entered as a driver of it (OwnerDrives, and the rows). */
-static BOOL LBDrives(Vehicle *vehicle, NSString *email) {
+BOOL LBDrives(Vehicle *vehicle, NSString *email) {
     if (LBOwns(vehicle, email)) return YES;
     for (VehicleDriver *driver in [vehicle isKindOfClass:[Vehicle class]] ? vehicle.vehicleDrivers : nil) {
         if ([driver.user.email isEqualToString:email]) return YES;
