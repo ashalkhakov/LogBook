@@ -10,13 +10,62 @@ carried out by the app's service layer, one change at a time; the model's
 rules are checked on what each change leaves (the generated code, at
 save). None of them is a derivation, and none is in the model.
 
-**Where they run.** The desktop app runs each as an OData action on the
-server, in one change set: the server carries out the procedure and saves
-it whole, or refuses it with the rule it breaks. The mobile app, offline,
-queues each as an intent (what the user asked for, with the ids it made)
-and sends it once online, where the server carries it out the same way.
-What the actions and intents look like is for later; this is what each
-one does.
+**What carries them out.** `Shared/LBProcedures.h`: categories on the
+model's generated classes, Foundation and Core Data only, each changing
+objects in a context and nothing else (no save, no request); the
+generated code checks what one leaves when it is saved, as for any change.
+The same code runs wherever the logbook is kept:
+
+- **The server** runs each as an OData action, bound to the entity it acts
+  on (`Server/LBActions.h`), carried out and saved whole in the request,
+  or refused with the rule it breaks and nothing of it saved:
+
+  | Action | Bound to | Parameters | Answers | Who may |
+  |---|---|---|---|---|
+  | `Start` | a schedule | `LastDoneAt`, `LastDoneMileage`, `LastDoneMileageUnit` | its first reminder | the owner |
+  | `Complete` | a reminder | `Event`, or `DoneAt`, `DoneMileage`, `DoneMileageUnit` | the next reminder, or none | whoever drives the vehicle |
+  | `Reschedule` | a reminder | `DueDate`, `DueMileage`, `DueMileageUnit`, `Note` | the rescheduling | whoever drives the vehicle |
+  | `Cancel` | a reminder | `CancelDate`, `ReplacementDueDate`, `ReplacementDueMileage`, `ReplacementDueMileageUnit` | the replacement, or none | the owner |
+  | `Discard` | a record | `KeepNextReminder` | nothing | the owner |
+
+  (`POST Records(<id>)/Default.Complete`, and so on; every parameter may
+  be left out; a unit is its code, an event a reference.) A refusal is a
+  `400`; `Discard` of an event whose next reminder was touched since is a
+  `409`, its code `NextReminderTouched`, its target that reminder's id
+  (9). And whenever the server saves events, whichever device sent them
+  and however (a POST, a change set, a sync), it first closes the
+  reminders they do the work of (automatic completion, 4), in the same
+  save, before the model's rules are checked.
+- **The desktop app** is online: its Reminders tab calls these actions
+  (ODataKit's `ODataOperationCall`) and reads back what they changed; an
+  event it saves in the Records tab closes reminders on the server as it
+  is saved.
+- **The mobile app**, later, is local-first: it keeps its own store, runs
+  the same procedures in it as the user acts, offline or not, and syncs
+  the objects they made and changed, as it syncs any record. It queues no
+  actions or intents: what a procedure does is in its objects, and since
+  they are named by what they are made of (below), another device that
+  did the same makes the same objects, which the sync meets as one.
+
+**Deterministic.** Whatever a procedure makes is named by what it is made
+of: its id is a name-based UUID (version 5: SHA-1 of Logbook's namespace,
+`3dfab34a-71f4-530a-98a1-5e6711f543a6`, and a name), the name saying the
+source object's id (in lower case) and the purpose:
+
+| What is made | Its name |
+|---|---|
+| a schedule's first reminder | `start of <schedule id>` (`... after <n>`, when the schedule had n reminders before) |
+| a reminder's next (5) | `next of <reminder id>` |
+| a cancelled reminder's replacement (8) | `replacement of <reminder id>` |
+| a reminder's nth rescheduling (6) | `<reminder id> rescheduled <n>` |
+
+So two devices that close the same reminder make the same next one, and
+whoever reads the id can tell what made it (Python's
+`uuid.uuid5(namespace, name)` gives the same). Where a procedure chooses
+among several (the latest event of the work, the reminder an event
+closes), it chooses by moment, then by id, never by the order objects
+were read in. A day of the model (due on, cancelled on) is a UTC day, as
+its queries' `date()` and `addMonths()` have it.
 
 The facts below are the model's, as the verbalizer says them.
 
@@ -52,6 +101,13 @@ to the date (as `ReminderNextDue` does for the date). It records:
   entered by User;
 - Reminder is due at Distance, where the schedule recurs after a distance;
 - Reminder is due on Date, where it recurs after a duration.
+
+It is set now ("Reminder was set at Moment"): an event closes a reminder
+only from the day it was set (4). Where a distance is to be counted from
+and none is known (no distance given, none recorded of the vehicle), the
+reminder is due on its date alone; a schedule that recurs after a distance
+only is then refused, until the owner says one. A schedule with an open
+reminder is not started again.
 
 A reminder from a schedule is of the schedule's vehicle: the service layer
 records it so, here and wherever it makes one (5), an entered fact like any
@@ -93,9 +149,37 @@ it has one (`ReminderDoneAtItsEventsMileage`); done by an event of its
 vehicle; done at a distance only with a moment.
 
 The owner may close a reminder by hand too, with no event: done at a
-moment, and at a distance if they say one.
+moment, and at a distance if they say one; or by an event they choose,
+one that may close it (below).
 
 For a schedule's reminder, the service layer then makes the next (5).
+
+**Automatic completion, exactly.** Before the server saves, for each event
+in the save that is new, or changed in its moment, vehicle, distance,
+kind, checklist or items (a service's item added, or changed to another
+task), earliest first (by moment, then id):
+
+1. What it closed and can no longer close (it is no longer of the work,
+   or of the reminder's vehicle, or now falls before the day the reminder
+   was set) is undone as in 9, the event kept; a touched next reminder
+   refuses the save. What it closed and still can follows it: done at its
+   moment and distance now, the untouched next due from them.
+2. It may close a reminder that is of its vehicle, for work it does, not
+   cancelled, and set on or before the event's day (the UTC days of the
+   two moments). For each schedule of its work, and each one-off reminder
+   of it, it closes one, unless it closes one of it already: of those it
+   may close that are open, or done by a later event, the one set first.
+   One done by a later event is taken from it (the earliest event wins),
+   where its next is untouched, the next then due from this event; that
+   later event then closes what it may in turn (the next, open now). One
+   done by hand is left as the owner said; one whose next was touched
+   stays with the later event.
+
+So two events of the same work close one reminder each, the earlier the
+earlier, whichever was saved first: the second closes the next reminder
+the first made. A reminder that cannot be closed so (its next would be
+due at nothing: a distance-only schedule, an event with no distance, and
+none recorded before) stays open for the owner to close by hand.
 
 ## 5. The schedule's next reminder
 
@@ -125,6 +209,10 @@ recorded with the move:
 - and the reminder's Reminder is due on Date / is due at Distance,
   changed.
 
+Only an open reminder is moved, and only to somewhere it is not due
+already. Where it gains a date (or a distance) it was not due at, what it
+was due at, the other, is what the move records it moved from.
+
 ## 7. Overdue and late
 
 Queries, not processes: the model has them, and the app runs them.
@@ -149,7 +237,9 @@ due when they say, which replaces the one cancelled:
 - Reminder replaces Reminder: the new replaces the cancelled.
 
 A reminder replaces at most one and is replaced by at most one, and no
-chain of them comes back to itself.
+chain of them comes back to itself. Only an open reminder is cancelled;
+its replacement is set now, for its work: from its schedule, where it has
+one.
 
 ## 9. A record entered in error is discarded
 
@@ -173,7 +263,18 @@ noted something on it), the procedure stops before changing anything,
 and the app asks the owner what to do: nothing is deleted or reopened
 until they say. Deleting the next one would lose what they did to it,
 and keeping it beside the reopened one would leave the schedule two open
-reminders.
+reminders. So the owner chooses (`Discard` again, with
+`KeepNextReminder`):
+- keep it: the next stays as it is, and the reminder the record closed
+  stays done, by hand, at the moment and distance it was (no longer by
+  the record);
+- delete it too: the next goes, with its moves and attachments, and the
+  reminder is reopened.
+
+The desktop app removes an event that closed reminders so (Remove, in the
+Records tab), and asks the owner on the `409`; any other record it
+deletes as before. A plain `DELETE` of an event leaves what it closed done,
+by hand.
 
 The same for an event changed so that it no longer does the work (a
 service whose oil change item is removed): what it closed is undone as
@@ -182,10 +283,9 @@ above, and the event is kept.
 ## 10. Two devices, offline, both make the next reminder
 
 Anna and Ben both log the oil change offline, on two phones; each phone
-closes the reminder and makes the schedule's next (4, 5). Online, the
-first to send is saved. The second would leave the schedule two open
-reminders: `OneOpenReminder` refuses it at the server, and its change is
-not saved. The sync then settles it: the second device fetches what the
-server has (the reminder done, the next one made) and gives up what it
-made in their place. Two records of the same work, one from each device,
-are the owner's to keep or discard (9).
+closes the reminder and makes the schedule's next (4, 5). Both make the
+same next reminder: its id is named by the reminder it follows ("next of
+…"), so what the second phone sends is the same object, not a second open
+one beside it. The server, saving each event as it arrives, closes the
+reminder by the earlier of the two and the next by the later (4); two
+records of the same work are then the owner's to keep or discard (9).

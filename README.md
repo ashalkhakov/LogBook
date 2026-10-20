@@ -17,7 +17,30 @@ It is built on [ORMKit](../NativeORM2):
   - an iOS app;
   - a server.
 
-Early days: the model is done, and the server runs it.
+Early days: the model is done, the server runs it, and the desktop app
+keeps a vehicle's records, its schedules and reminders, and its reports.
+
+## Schedules and reminders
+
+What happens to a reminder is procedure, not model: closed when an event
+does its work, the schedule's next made, moved, cancelled and replaced,
+reopened when the record that closed it is discarded
+([docs/PROCESSES.md](docs/PROCESSES.md)). `Shared/LBProcedures.h` carries
+each out on the model's generated classes, Foundation and Core Data
+only, and the model's rules check what it leaves at save. What a
+procedure makes is named by what it is made of (a name-based UUID: "next
+of" the reminder it follows), so two devices that do the same, offline,
+make the same objects.
+
+- The server runs them as OData actions bound to what they act on
+  (`Start`, `Complete`, `Reschedule`, `Cancel`, `Discard`:
+  `Server/LBActions.h`), and closes the reminders an event does the work
+  of whenever it saves one, whichever device sent it.
+- The desktop app, online, calls the actions from its Reminders tab: the
+  chosen vehicle's schedules and reminders, the open first, overdue as the
+  model's queries say, and how each was moved before.
+- The mobile app will run the same procedures in its own store, and sync
+  what they made.
 
 ## The model
 
@@ -63,9 +86,12 @@ build/logbook-server -StoreURL logbook.sqlite -Port 8080 -Localhost NO
 ```
 
 It builds on ORMKit's runtime from `../NativeORM2`, and on the ODataKit
-release ORMKit pins. `Tests/serve-and-check.py` runs it on a temporary
-store and checks it over HTTP: the reference data, a change set saved
-with what it derives, one a rule refuses, and who may do what, signed in.
+release ORMKit pins. `make check` checks the procedures over a store of
+their own (`Tests/LBProceduresCheck.m`), then `Tests/serve-and-check.py`
+runs the server on a temporary store and checks it over HTTP: the
+reference data, a change set saved with what it derives, one a rule
+refuses, the actions and automatic completion, and who may do what,
+signed in; then `Tests/app-check.sh` drives the desktop app against one.
 
 ### Signing in with Keycloak (or another OpenID Connect provider)
 
@@ -99,7 +125,9 @@ Once signed in, who may see and change what is the model's
 - a user is named by their email: a vehicle is shared with someone by it,
   before they first sign in too; what else is said of a user is theirs;
 - units and kinds of cost are the app's; an exchange rate is added, never
-  changed.
+  changed;
+- whoever drives a vehicle closes and moves its reminders; its owner
+  starts its schedules, cancels its reminders and discards its records.
 
 Without a sign-in (no `JWTIssuer`), anyone who can reach the server may do
 anything: for trying it out.
