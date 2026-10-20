@@ -546,6 +546,26 @@ static User *LBActorOf(Event *event) {
 
 #pragma mark Undoing what an event closed
 
+/* A reminder deleted, with what is of it (its moves, its attachments),
+   taken out of its schedule and vehicle first: the rules, checked before
+   the save propagates a deletion, see the schedule without it. */
+static void LBDeleteReminder(Reminder *reminder) {
+    NSManagedObjectContext *context = reminder.managedObjectContext;
+    for (Rescheduling *moved in [reminder.reschedulings copy]) {
+        moved.reminder = nil;
+        [context deleteObject:moved];
+    }
+    for (Attachment *attached in [reminder.attachments copy]) {
+        attached.record = nil;
+        [context deleteObject:attached];
+    }
+    reminder.schedule = nil;
+    reminder.vehicle = nil;
+    reminder.replaced = nil;
+    reminder.replacement = nil;
+    [context deleteObject:reminder];
+}
+
 /* Each reminder reopened, and the next its closing made deleted, where
    untouched; where touched, as keep says (nil: refused, before anything is
    changed). */
@@ -572,16 +592,9 @@ static BOOL LBUndoClosing(NSArray<Reminder *> *reminders, NSNumber *keep, NSErro
             reminder.event = nil;
             continue;
         }
-        if (next) {
-            for (Rescheduling *moved in [next.reschedulings copy]) [next.managedObjectContext deleteObject:moved];
-            for (Attachment *attached in [next.attachments copy]) [next.managedObjectContext deleteObject:attached];
-            [next.managedObjectContext deleteObject:next];
-        }
+        if (next) LBDeleteReminder(next);
         [reminder lb_reopen];
     }
-    /* What was deleted taken out of what it was in (its schedule's
-       reminders), as a save would: the rules are checked before it. */
-    [reminders.firstObject.managedObjectContext processPendingChanges];
     return YES;
 }
 
