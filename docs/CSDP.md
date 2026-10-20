@@ -375,6 +375,7 @@ unit they're stored in is for later.
 - Reminder 5 comes from Schedule 'Oil'.
 - Reminder 5 is due at Distance 163000 km.
 - Reminder 5 is due on Date 2027-06-01.
+- Reminder 5 was set at Moment 2026-06-01 10:00.
 - Reminder 6 is of Vehicle 'Blue Golf'.
 - Reminder 6 is for Task 'Air conditioning'.
 - Reminder 6 has Note 'It smells musty'.
@@ -801,6 +802,8 @@ Reminder has Note                               m6 | 'It smells musty'
 Reminder is due at Distance                     m5 | 163000 km
 Reminder is due on Date                         m5 | 2027-06-01
                                                 m6 | 2027-05-01
+Reminder was set at Moment                      m5 | 2026-06-01 10:00
+                                                m6 | 2026-10-02 18:30
 Reminder was done at Moment                     m5 | 2027-05-20 11:00
 Reminder was done at Distance                   m5 | 162400 km
 Reminder was done by Service                    m5 | s12

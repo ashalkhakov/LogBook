@@ -20,7 +20,8 @@ The rules, with no one signed in:
   event at some distance); half a mileage, its quantity without its unit
   or the unit without the quantity, is refused, added or changed (a
   Distance is whole or none);
-- reminders: one done by an expense with no mileage is saved, done at
+- reminders: one not said when it was set is refused; one done by an
+  expense with no mileage is saved, done at
   another moment than the expense's refused; done and cancelled refused;
   a replacement of another vehicle's reminder refused; two open reminders
   of one schedule refused, but open ones of other schedules and one-offs
@@ -270,7 +271,7 @@ def reminder(vehicle, user, **facts):
     """A reminder of the vehicle, due on a date, for what the facts say:
     Kind (an expense kind), Schedule (a schedule's id), else a task."""
     body = {"@odata.type": "#Default.Reminder", "Id": str(uuid.uuid4()), "DueDate": facts.pop("due", "2026-06-01"),
-            "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+            "SetAt": facts.pop("set", "2026-04-01T09:00:00Z"), "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
     kind, schedule = facts.pop("Kind", None), facts.pop("Schedule", None)
     if kind:
         body["ExpenseKind@odata.bind"] = "CostKinds('%s')" % kind
@@ -316,6 +317,10 @@ def mileage_and_reminders(anna, vehicle):
           (status, body))
     status, body = request("POST", "Records", reminder(vehicle, anna, DoneAt="2026-05-02T10:00:00Z", CancelDate="2026-05-02"))
     check("done and cancelled is refused", status == 400, (status, body))
+    unset = reminder(vehicle, anna)
+    del unset["SetAt"]
+    status, body = request("POST", "Records", unset)
+    check("a reminder not said when it was set is refused", status == 400, (status, body))
     cancelled = reminder(vehicle, anna, CancelDate="2026-05-02")
     check("cancelled", request("POST", "Records", cancelled)[0] == 201)
     status, body = request("POST", "Records", reminder(vehicle, anna, **{"Replaced@odata.bind": "Records(%s)" % cancelled["Id"]}))

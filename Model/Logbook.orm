@@ -391,6 +391,7 @@
 					<orm:Role ref="_C970184F-FE02-4AD1-988A-92466A076E72" />
 					<orm:Role ref="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
 					<orm:Role ref="_B4D0FDE1-5749-405B-9988-C4C274D20D64" />
+					<orm:Role ref="_61F128CD-BDB8-4DD0-B950-58FC7A367813" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_236E2994-0DC3-4D0D-A07B-C9E039D0FC97" ref="_0E0A13D2-1DAE-4FD1-977F-0BAC2E7EFBB8" Scale="0" Length="0" />
 			</orm:ValueType>
@@ -1092,6 +1093,7 @@ changes, meter readings and inspections are, so theirs is mandatory.</orm:Text>
 					<orm:Role ref="_5283B955-E104-42D6-859E-2A1C3708D229" />
 					<orm:Role ref="_E11A1DAA-75F6-4150-A125-C66C6C8B5EC1" />
 					<orm:Role ref="_03DD0D10-5BFF-481E-A042-DFEFA5612F53" />
+					<orm:Role ref="_B75D02E3-EEBF-45B0-86CB-BA978524D7FF" />
 				</orm:PlayedRoles>
 			</orm:EntityType>
 			<orm:ObjectifiedType id="_DAB21F33-2484-478F-9871-110A32001FD6" Name="VehicleDriver" IsIndependent="true" _ReferenceMode="">
@@ -6885,6 +6887,42 @@ whenever it is asked.</orm:Text>
 					<orm:UniquenessConstraint ref="_6D2AFA18-0178-44BB-A8DF-1B36C7ED10AE" />
 				</orm:InternalConstraints>
 			</orm:Fact>
+			<orm:Fact id="_962C15FE-E687-492C-9CE6-D1DCEBE8E5DB" _Name="ReminderWasSetAtMoment">
+				<orm:Notes>
+					<orm:Note id="_EB5D92AD-A706-4254-8E76-7784BD587B1C">
+						<orm:Text>When the reminder was set: an event of its work closes it from that day
+on, not one before (docs/PROCESSES.md).</orm:Text>
+					</orm:Note>
+				</orm:Notes>
+				<orm:FactRoles>
+					<orm:Role id="_B75D02E3-EEBF-45B0-86CB-BA978524D7FF" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+						<orm:RolePlayer ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" />
+					</orm:Role>
+					<orm:Role id="_61F128CD-BDB8-4DD0-B950-58FC7A367813" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="SetAt">
+						<orm:RolePlayer ref="_64C7769B-046B-495E-B2CD-AD0522B51F56" />
+					</orm:Role>
+				</orm:FactRoles>
+				<orm:ReadingOrders>
+					<orm:ReadingOrder id="_0485B697-62CA-4FCA-921D-81C2AE096F25">
+						<orm:Readings>
+							<orm:Reading id="_9C042A74-CA91-4D6A-B686-A5E475731192">
+								<orm:Data>{0} was set at {1}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" was set at " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_B75D02E3-EEBF-45B0-86CB-BA978524D7FF" />
+							<orm:Role ref="_61F128CD-BDB8-4DD0-B950-58FC7A367813" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+				</orm:ReadingOrders>
+				<orm:InternalConstraints>
+					<orm:UniquenessConstraint ref="_5279878D-C8EA-4B61-BD34-16E23EF8B478" />
+					<orm:MandatoryConstraint ref="_0EC30E40-388C-4083-80FF-52C5D78D88DC" />
+				</orm:InternalConstraints>
+			</orm:Fact>
 		</orm:Facts>
 		<orm:Constraints>
 			<orm:UniquenessConstraint id="_1FEF91CF-70BC-4EDF-9E47-39016ED2922D" Name="InternalUniquenessConstraint1" IsInternal="true">
@@ -7590,6 +7628,7 @@ whenever it is asked.</orm:Text>
 					<orm:Role id="_9396A886-6D98-4338-9EF3-AAB2FA5E4658" ref="_C970184F-FE02-4AD1-988A-92466A076E72" />
 					<orm:Role id="_6B76E023-8772-40FB-BBE6-8E17351C63E4" ref="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
 					<orm:Role id="_D47650DE-BC8B-4119-83F5-770ABC60020E" ref="_B4D0FDE1-5749-405B-9988-C4C274D20D64" />
+					<orm:Role id="_870AA410-93AA-4922-B125-0D483BC63C5E" ref="_61F128CD-BDB8-4DD0-B950-58FC7A367813" />
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_64C7769B-046B-495E-B2CD-AD0522B51F56" />
 			</orm:MandatoryConstraint>
@@ -9682,6 +9721,16 @@ whenever it is asked.</orm:Text>
 					<orm:Role id="_C6A7FCEF-B631-4F06-A7F0-A588B5B7E8A9" ref="_E876BBC2-439E-4D9E-847E-158553D86C01" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
+			<orm:UniquenessConstraint id="_5279878D-C8EA-4B61-BD34-16E23EF8B478" Name="InternalUniquenessConstraint224" IsInternal="true">
+				<orm:RoleSequence>
+					<orm:Role id="_F7CD30ED-0D97-4A5B-B210-3FD4B1E59F88" ref="_B75D02E3-EEBF-45B0-86CB-BA978524D7FF" />
+				</orm:RoleSequence>
+			</orm:UniquenessConstraint>
+			<orm:MandatoryConstraint id="_0EC30E40-388C-4083-80FF-52C5D78D88DC" Name="SimpleMandatoryConstraint113" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_2D47113E-CB42-4640-BA87-FCE8404839F0" ref="_B75D02E3-EEBF-45B0-86CB-BA978524D7FF" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:UnspecifiedDataType id="_75EA85C2-1A83-415B-A49C-FCBB218BCD3B" />
@@ -11702,6 +11751,21 @@ whenever it is asked.</orm:Text>
 				<ormDiagram:RoleDisplayOrder>
 					<ormDiagram:Role ref="_E876BBC2-439E-4D9E-847E-158553D86C01" />
 					<ormDiagram:Role ref="_2E25F2DC-4C8A-408E-A995-CEA2ADEB2D7C" />
+				</ormDiagram:RoleDisplayOrder>
+			</ormDiagram:FactTypeShape>
+			<ormDiagram:FactTypeShape id="_06CD1366-D2F4-419D-A457-4808355889FF" IsExpanded="true" AbsoluteBounds="2.875, 2.2777777777777777, 0.3838888889923692, 0.24388888899236916">
+				<ormDiagram:RelativeShapes>
+					<ormDiagram:ReadingShape id="_F0AF5F60-8216-4ACD-AE75-756B5A690B31" IsExpanded="true" AbsoluteBounds="2.875, 2.586366666770147, 1.3, 0.1295030266046524">
+						<ormDiagram:Subject ref="_0485B697-62CA-4FCA-921D-81C2AE096F25" />
+					</ormDiagram:ReadingShape>
+					<ormDiagram:RoleNameShape id="_D653109B-17AD-4475-B7A5-61795F1D39DE" IsExpanded="true" AbsoluteBounds="3.1069444444961842, 2.174722222273962, 0.05, 0.05">
+						<ormDiagram:Subject ref="_61F128CD-BDB8-4DD0-B950-58FC7A367813" />
+					</ormDiagram:RoleNameShape>
+				</ormDiagram:RelativeShapes>
+				<ormDiagram:Subject ref="_962C15FE-E687-492C-9CE6-D1DCEBE8E5DB" />
+				<ormDiagram:RoleDisplayOrder>
+					<ormDiagram:Role ref="_B75D02E3-EEBF-45B0-86CB-BA978524D7FF" />
+					<ormDiagram:Role ref="_61F128CD-BDB8-4DD0-B950-58FC7A367813" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
 		</ormDiagram:Shapes>
