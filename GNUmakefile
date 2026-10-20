@@ -9,7 +9,8 @@
 #   make                     obj/logbook-server, Logbook.momd and
 #                            Logbook.ormplans beside it; Logbook.app, the
 #                            desktop app
-#   make check               the server run, and asked over HTTP; the app
+#   make check               the procedures checked over a store of their
+#                            own; the server run, and asked over HTTP; the app
 #                            driven from within against one (under X:
 #                            xvfb-run -a make check)
 #   make LB_SERVER_ONLY=yes  the server alone, on Foundation only
@@ -51,16 +52,26 @@ Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/Connec
 	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl)
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 
-TOOL_NAME = logbook-server
-logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m $(LB_MODEL)/Constraints/LogbookValidation.m
+TOOL_NAME = logbook-server lb-procedures-check
+logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Shared/LBProcedures.m \
+	$(LB_MODEL)/Constraints/LogbookValidation.m
 logbook-server_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 # Vehicle+CoreDataClass and the rest, generated from the model as it builds,
 # as Xcode does (Codegen: Class Definition).
 logbook-server_COREDATA_CODEGEN = yes
-logbook-server_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -I$(ORMKIT) $(ODATASYNC_INCLUDE_DIRS)
+logbook-server_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared -I$(ORMKIT) $(ODATASYNC_INCLUDE_DIRS)
 logbook-server_LIB_DIRS = -L$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)
 logbook-server_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
 logbook-server_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
+
+# The procedures checked over a store of the model's own.
+lb-procedures-check_OBJC_FILES = Tests/LBProceduresCheck.m Shared/LBProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
+lb-procedures-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
+lb-procedures-check_COREDATA_CODEGEN = yes
+lb-procedures-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
+lb-procedures-check_LIB_DIRS = $(logbook-server_LIB_DIRS)
+lb-procedures-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
+lb-procedures-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 
 include $(GNUSTEP_MAKEFILES)/coredata-model.make
 -include GNUmakefile.preamble
@@ -111,6 +122,7 @@ after-all::
 LB_RUN = LD_LIBRARY_PATH="$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}"
 
 check:: all
+	$(LB_RUN) obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
 	$(LB_RUN) python3 Tests/serve-and-check.py obj/logbook-server
 ifneq ($(LB_SERVER_ONLY),yes)
 	$(LB_RUN) Tests/app-check.sh obj/logbook-server Logbook.app/Logbook

@@ -6,7 +6,9 @@
 #   make -f Makefile.apple          build/logbook-server (Logbook.momd and
 #                                   Logbook.ormplans beside it), and
 #                                   build/Logbook.app, the desktop app
-#   make -f Makefile.apple check    the server run, and asked over HTTP
+#   make -f Makefile.apple check    the procedures checked over a store of
+#                                   their own (Tests/LBProceduresCheck.m);
+#                                   the server run, and asked over HTTP
 #                                   (Tests/serve-and-check.py); the app
 #                                   driven from within against one
 #                                   (Tests/app-check.sh)
@@ -44,7 +46,7 @@ LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(
 
 .PHONY: all check clean runtime
 APP = $(BUILD)/Logbook.app
-all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(APP)
+all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(APP) $(BUILD)/lb-procedures-check
 
 # ORMKit's runtime, and its ormtool, which generates from the model.
 runtime $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(ORMTOOL):
@@ -76,10 +78,17 @@ $(GENERATED)/.made: $(MODEL)/.made
 $(BUILD)/Logbook.ormplans: $(MODEL)/.made
 	cp $(MODEL)/Constraints/Logbook.ormplans $@
 
-SERVER = Server/LBServer.m Server/LBPermissions.m $(MODEL)/Constraints/LogbookValidation.m
+SERVER = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
 
-$(BUILD)/logbook-server: $(MODEL)/.made $(SERVER) Server/LBPermissions.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+$(BUILD)/logbook-server: $(MODEL)/.made $(SERVER) Server/LBPermissions.h Server/LBActions.h Shared/LBProcedures.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) $(SERVER) $(GENERATED)/*.m $(LIBS) -o $@
+
+# The procedures checked over a store of the model's own.
+PROCEDURES = Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+
+$(BUILD)/lb-procedures-check: $(MODEL)/.made Tests/LBProceduresCheck.m $(PROCEDURES) Shared/LBProcedures.h $(GENERATED)/.made \
+		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	$(CC) $(FLAGS) $(INC) Tests/LBProceduresCheck.m $(PROCEDURES) $(GENERATED)/*.m $(LIBS) -o $@
 
 # The desktop app: its code, its windows (the XIBs compiled), the model and
 # its tables in its resources.
@@ -98,6 +107,7 @@ $(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h) $(XIBS) 
 	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $@/Contents/Resources/
 
 check: all
+	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
 	Tests/app-check.sh $(BUILD)/logbook-server $(APP)/Contents/MacOS/Logbook
 
