@@ -9,7 +9,7 @@
 //   POST Records(<schedule>)/Default.Start
 //        {LastDoneAt?, LastDoneMileage?, LastDoneMileageUnit?}  the first reminder
 //   POST Records(<reminder>)/Default.Complete
-//        {Event?, DoneAt?, DoneMileage?, DoneMileageUnit?}      the next, or null
+//        {Event}                                                the next, or null
 //   POST Records(<reminder>)/Default.Reschedule
 //        {DueDate?, DueMileage?, DueMileageUnit?, Note?}        the rescheduling
 //   POST Records(<reminder>)/Default.Cancel
@@ -24,8 +24,9 @@
 // discards its records (403 for anyone else). A procedure's refusal is a
 // 400; Discard of an event whose next reminder was touched since is a 409,
 // its code NextReminderTouched and its target the reminder's id, nothing
-// changed: called again with KeepNextReminder, true or false, it is done
-// as the owner chose.
+// changed: called again with KeepNextReminder false, the next reminders
+// are changed or deleted all the same. KeepNextReminder true is refused
+// (400): a reminder is done only by an event.
 
 #pragma once
 #import <ODataService/ODataService.h>
@@ -44,11 +45,7 @@ FOUNDATION_EXPORT NSString * const LBNextReminderTouchedCode;   // @"NextReminde
 @end
 
 @protocol LBReminderActions <ODataActions>
-- (nullable Reminder *)completeWithEvent:(nullable Event *)event
-                                  doneAt:(nullable NSDate *)doneAt
-                             doneMileage:(nullable NSDecimalNumber *)doneMileage
-                         doneMileageUnit:(nullable NSString *)doneMileageUnit
-                                   reply:(ODataReply *)reply;
+- (nullable Reminder *)completeWithEvent:(nullable Event *)event reply:(ODataReply *)reply;
 - (nullable Rescheduling *)rescheduleWithDueDate:(nullable NSDate *)dueDate
                                       dueMileage:(nullable NSDecimalNumber *)dueMileage
                                   dueMileageUnit:(nullable NSString *)dueMileageUnit

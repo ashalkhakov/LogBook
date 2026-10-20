@@ -357,7 +357,8 @@ static void LBComplete(void) {
     LBCheck(@"a service of another task closes nothing", first.lb_isOpen, nil);
     NSError *error = nil;
     Reminder *next = nil;
-    LBCheck(@"nor is it let", ![first lb_completeByEvent:service at:nil mileage:nil unit:nil by:world.anna next:&next error:&error], error);
+    LBCheck(@"nor is it let", ![first lb_completeByEvent:service next:&next error:&error], error);
+    LBCheck(@"nor with no event", ![first lb_completeByEvent:nil next:&next error:&error], error);
     ServiceItem *item = LBInsert([ServiceItem class], world.context);
     item.id = LBID(3099);
     item.task = @"Oil change";
@@ -374,7 +375,7 @@ static void LBComplete(void) {
             next && [next.dueDate isEqualToDate:LBMoment(@"2028-05-20")] && LBIs(next.dueMileageQuantity, @"177400")
                 && [next.setAt isEqualToDate:service.timestamp] && next.schedule == oil && next.vehicle == world.golf && next.lb_isOpen,
             LBDue(next));
-    LBCheck(@"untouched", first.lb_nextReminderUntouched, nil);
+    LBCheck(@"untouched", !next.lb_isTouched, nil);
     ORMQueryResult *nextDue = [LogbookQueries reminderNextDueInContext:world.context error:&error];
     NSDate *said = nil;
     for (NSArray *row in nextDue.rows) {
@@ -382,15 +383,49 @@ static void LBComplete(void) {
     }
     LBCheck(@"ReminderNextDue says the same day", [said isEqual:next.dueDate], error ?: LBText(said));
 
-    /* By hand, with no event. */
-    Reminder *done = nil;
-    LBCheck(@"closed by hand", [next lb_completeByEvent:nil at:LBMoment(@"2028-04-01 12:00") mileage:LBNumber(@"175000") unit:world.km
-                                                     by:world.anna next:&done error:&error] && !next.event && LBIs(next.doneMileageQuantity, @"175000"),
+    /* Closed by the event chosen: a one-off set before it, which saving the
+       reminder alone closes nothing of. */
+    Reminder *brakes = LBInsert([Reminder class], world.context);
+    brakes.id = LBID(50);
+    brakes.vehicle = world.golf;
+    brakes.enteredBy = world.anna;
+    brakes.task = @"Brakes";
+    brakes.dueDate = LBMoment(@"2027-06-01");
+    brakes.setAt = LBMoment(@"2027-05-01 09:00");
+    LBSave(world.context, @"a one-off for the brakes");
+    LBCheck(@"saved open", brakes.lb_isOpen, nil);
+    LBCheck(@"closed by the service chosen", [brakes lb_completeByEvent:service next:&next error:&error] && brakes.event == service && !next,
             error);
-    LBCheck(@"its next from what was said", [done.dueDate isEqualToDate:LBMoment(@"2029-04-01")] && LBIs(done.dueMileageQuantity, @"190000"),
-            LBDue(done));
-    LBCheck(@"saved", LBSave(world.context, @"closed by hand"), nil);
-    LBCheck(@"closed again is refused", ![next lb_completeByEvent:nil at:nil mileage:nil unit:nil by:world.anna next:NULL error:&error], nil);
+    LBCheck(@"saved", LBSave(world.context, @"closed by it"), nil);
+    LBCheck(@"closed again is refused", ![brakes lb_completeByEvent:service next:NULL error:&error], nil);
+}
+
+/* A schedule that recurs after a distance, closed by an event at none:
+   closed, and no next made; one by months alone makes its next. */
+static void LBNoMileage(void) {
+    LBWorld *world = LBNewWorld();
+    Schedule *permit = LBInsert([Schedule class], world.context);
+    permit.id = LBID(10);
+    permit.vehicle = world.golf;
+    permit.enteredBy = world.anna;
+    permit.expenseKind = world.parking;
+    permit.intervalQuantity = LBNumber(@"10000");
+    permit.intervalDistanceUnit = world.km;
+    permit.duration = 12;
+    LBSave(world.context, @"a schedule by distance and months");
+    Reminder *first = [permit lb_startFrom:LBMoment(@"2026-01-01 09:00") mileage:LBNumber(@"140000") unit:world.km by:world.anna
+                                        at:LBMoment(@"2026-10-20 18:00") error:NULL];
+    LBSave(world.context, @"started");
+    Expense *paid = LBExpense(world, 30, @"2026-12-01 09:00");
+    LBSave(world.context, @"an expense at no distance");
+    LBCheck(@"closed by it, and no next made", first.event == paid && !first.lb_nextReminder && !permit.lb_openReminder, LBDue(first));
+    permit.intervalQuantity = nil;
+    permit.intervalDistanceUnit = nil;
+    paid.timestamp = LBMoment(@"2026-12-02 09:00");
+    LBSave(world.context, @"by months alone, the expense moved a day");
+    Reminder *next = first.lb_nextReminder;
+    LBCheck(@"by months alone: its next, due on a day only", next && [next.dueDate isEqualToDate:LBMoment(@"2027-12-02")]
+                && !next.dueMileageQuantity, LBDue(next));
 }
 
 static void LBAutomatic(void) {
@@ -517,8 +552,7 @@ static void LBMoveCancelDiscard(void) {
                 && replacement.lb_isOpen && oil.lb_openReminder == replacement,
             error);
     LBCheck(@"saved", LBSave(world.context, @"cancelled"), nil);
-    LBCheck(@"a cancelled one is not done", ![first lb_completeByEvent:nil at:nil mileage:nil unit:nil by:world.anna next:NULL error:&error],
-            nil);
+    LBCheck(@"a cancelled one is not done", ![first lb_completeByEvent:nil next:NULL error:&error], nil);
 
     /* Discarded: what it closed reopened, the untouched next with it. */
     Service *service = LBService(world, nil, 30, @"2027-08-20 11:00", @"164000", @[ @"Oil change" ]);
@@ -540,18 +574,102 @@ static void LBMoveCancelDiscard(void) {
                 && error.code == LBProceduresErrorNextReminderTouched && [error.userInfo[LBNextRemindersErrorKey] containsObject:next]
                 && !service.isDeleted && !replacement.lb_isOpen && !world.context.hasChanges,
             error);
-    LBCheck(@"keeping the next: the reminder stays done, by hand", [service lb_discardKeepingNextReminders:@YES error:&error]
-                && !replacement.event && replacement.doneAt && !next.isDeleted, error);
-    LBCheck(@"saved", LBSave(world.context, @"discarded, the next kept"), nil);
-
-    Service *third = LBService(world, nil, 32, @"2028-08-20 11:00", @"179500", @[ @"Oil change" ]);
-    LBSave(world.context, @"another oil change");
-    Reminder *after = next.lb_nextReminder;
-    after.note = @"noted";
-    LBSave(world.context, @"its next noted");
-    LBCheck(@"deleting the next all the same: reopened", [third lb_discardKeepingNextReminders:@NO error:&error] && next.lb_isOpen
-                && after.isDeleted, error);
+    LBCheck(@"keeping the next is refused: a reminder is done only by an event", ![service lb_discardKeepingNextReminders:@YES error:&error]
+                && error.code == LBProceduresErrorRefused && !world.context.hasChanges, error);
+    LBCheck(@"deleting the next all the same: reopened", [service lb_discardKeepingNextReminders:@NO error:&error] && replacement.lb_isOpen
+                && next.isDeleted, error);
     LBCheck(@"saved", LBSave(world.context, @"discarded, the next deleted"), nil);
+}
+
+/* What a schedule's reminders are, said a line each. */
+static NSArray *LBStateOf(Schedule *schedule) {
+    NSMutableArray *said = [NSMutableArray array];
+    NSArray *reminders = [schedule.reminders.allObjects
+        sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(setAt)) ascending:YES] ]];
+    for (Reminder *reminder in reminders) {
+        if (reminder.isDeleted) continue;
+        [said addObject:[NSString stringWithFormat:@"%@ set %@ due %@ done %@ by %@", LBIDText(reminder.id), LBText(reminder.setAt),
+                                                   LBDue(reminder), LBText(reminder.doneAt), LBIDText(reminder.event.id) ?: @"-"]];
+    }
+    return said;
+}
+
+/* The oil schedule started, then oil changes entered one by one in the
+   order given: (id, moment, km) each. */
+static LBWorld *LBEntered(NSArray<NSArray *> *changes, Schedule **schedule) {
+    LBWorld *world = LBNewWorld();
+    Schedule *oil = LBOilSchedule(world, 10);
+    LBSave(world.context, @"a schedule");
+    [oil lb_startFrom:LBMoment(@"2026-06-01 10:00") mileage:LBNumber(@"148000") unit:world.km by:world.anna at:LBMoment(@"2026-10-20 18:00")
+                error:NULL];
+    LBSave(world.context, @"started");
+    for (NSArray *change in changes) {
+        LBService(world, nil, [change[0] unsignedIntValue], change[1], change[2], @[ @"Oil change" ]);
+        LBSave(world.context, @"an oil change");
+    }
+    *schedule = oil;
+    return world;
+}
+
+static Service *LBServiceOf(LBWorld *world, unsigned n) {
+    return LBFetchID([Service class], LBID(n), world.context);
+}
+
+/* Any order of entering, and moves after: the same as entering the events
+   as they end up, afresh. */
+static void LBOrders(void) {
+    NSArray *changes = @[ @[ @30, @"2026-11-01 10:00", @"152000" ], @[ @31, @"2027-03-01 10:00", @"158000" ],
+                          @[ @32, @"2027-09-01 10:00", @"166000" ] ];
+    NSArray *orders = @[ @[ @0, @1, @2 ], @[ @0, @2, @1 ], @[ @1, @0, @2 ], @[ @1, @2, @0 ], @[ @2, @0, @1 ], @[ @2, @1, @0 ] ];
+    Schedule *oil;
+    NSArray *expected = LBStateOf((LBEntered(changes, &oil), oil));
+    BOOL same = expected.count == 4;
+    NSMutableArray *differs = [NSMutableArray array];
+    for (NSArray *order in orders) {
+        NSMutableArray *entered = [NSMutableArray array];
+        for (NSNumber *i in order) [entered addObject:changes[i.unsignedIntegerValue]];
+        LBWorld *world = LBEntered(entered, &oil);
+        NSArray *state = LBStateOf(oil);
+        if (![state isEqualToArray:expected]) {
+            same = NO;
+            [differs addObject:@[ order, state ]];
+        }
+        (void)world;
+    }
+    LBCheck(@"three oil changes entered in each of the six orders: the same reminders", same, differs.count ? differs : expected);
+
+    /* Moved: the last one before the others; the same as entered so. */
+    LBWorld *world = LBEntered(changes, &oil);
+    Service *last = LBServiceOf(world, 32);
+    last.timestamp = LBMoment(@"2026-10-25 10:00");
+    last.mileageQuantity = LBNumber(@"151000");
+    LBSave(world.context, @"the last moved first");
+    NSArray *moved = LBStateOf(oil);
+    Schedule *fresh;
+    LBEntered(@[ @[ @31, @"2027-03-01 10:00", @"158000" ], @[ @32, @"2026-10-25 10:00", @"151000" ], @[ @30, @"2026-11-01 10:00", @"152000" ] ],
+              &fresh);
+    LBCheck(@"one moved before the others: as entered so afresh", [moved isEqualToArray:LBStateOf(fresh)],
+            [NSString stringWithFormat:@"%@ / %@", moved, LBStateOf(fresh)]);
+
+    /* Moved to another vehicle: as if never of this one. */
+    Vehicle *polo = LBVehicle(world, 2, @"Polo");
+    LBServiceOf(world, 30).vehicle = polo;
+    LBSave(world.context, @"one moved to another vehicle");
+    NSArray *away = LBStateOf(oil);
+    LBEntered(@[ @[ @31, @"2027-03-01 10:00", @"158000" ], @[ @32, @"2026-10-25 10:00", @"151000" ] ], &fresh);
+    LBCheck(@"one moved to another vehicle: as if never entered here", [away isEqualToArray:LBStateOf(fresh)],
+            [NSString stringWithFormat:@"%@ / %@", away, LBStateOf(fresh)]);
+
+    /* A touched next that a move would change: refused, nothing saved. */
+    Reminder *open = oil.lb_openReminder;
+    open.note = @"Use 5W-30";
+    LBSave(world.context, @"the open one noted");
+    Service *first = LBServiceOf(world, 32);
+    first.timestamp = LBMoment(@"2027-04-01 10:00");
+    NSError *error = nil;
+    LBCheck(@"a move that would change a noted next is refused", ![world.context lb_completeRemindersOfChangedEvents:&error]
+                && error.code == LBProceduresErrorNextReminderTouched, error);
+    [world.context rollback];
 }
 
 int main(int argc, const char *argv[]) {
@@ -576,6 +694,8 @@ int main(int argc, const char *argv[]) {
         LBComplete();
         LBAutomatic();
         LBEarliestWins();
+        LBNoMileage();
+        LBOrders();
         LBMoveCancelDiscard();
         printf("procedures: %lu failed\n", (unsigned long)LBFailures);
     }

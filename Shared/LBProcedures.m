@@ -184,7 +184,11 @@ static BOOL LBDoesWork(Event *event, NSString *task, ExpenseKind *kind, Checklis
 static NSArray<Event *> *LBEventsOf(Vehicle *vehicle) {
     NSMutableArray *events = [NSMutableArray array];
     for (Record *record in vehicle.records) {
-        if ([record isKindOfClass:[Event class]] && !record.isDeleted && ((Event *)record).timestamp) [events addObject:record];
+        /* Of it now: one moved to another vehicle may still be among its
+           records until the save (FreeCoreData keeps inverses so). */
+        if ([record isKindOfClass:[Event class]] && !record.isDeleted && record.vehicle == vehicle && ((Event *)record).timestamp) {
+            [events addObject:record];
+        }
     }
     return events;
 }
@@ -334,6 +338,43 @@ static User *LBActorOf(Event *event) {
 
 #pragma mark Reminders
 
+/* What closing a schedule's reminder by the event makes due next: the day
+   plus its months; the event's distance plus its interval, in the event's
+   unit. NO, and nothing is made, for a schedule that recurs after a
+   distance and an event at none. */
+static BOOL LBNextDue(Schedule *schedule, Event *event, NSDate **dueDate, NSDecimalNumber **dueMileage, DistanceUnit **dueUnit) {
+    *dueDate = schedule.duration > 0 ? LBAddMonths(LBDay(event.timestamp), schedule.duration) : nil;
+    *dueMileage = nil;
+    *dueUnit = nil;
+    if (schedule.intervalQuantity && schedule.intervalDistanceUnit) {
+        if (!event.mileageQuantity || !event.mileageDistanceUnit) return NO;
+        *dueMileage = [event.mileageQuantity
+            decimalNumberByAdding:LBInUnit(schedule.intervalQuantity, schedule.intervalDistanceUnit, event.mileageDistanceUnit)];
+        *dueUnit = event.mileageDistanceUnit;
+    }
+    return *dueDate || *dueMileage;
+}
+
+static NSUUID *LBNextIDOf(NSUUID *uuid) {
+    return uuid ? LBNamedUUID([@"next of " stringByAppendingString:LBIDText(uuid)]) : nil;
+}
+
+/* Whether the reminder is done as the event would do it (nil: open). */
+static BOOL LBDoneAsBy(Reminder *reminder, Event *event) {
+    if (!event) return !reminder.doneAt && !reminder.event;
+    NSDecimalNumber *mileage = event.mileageDistanceUnit ? event.mileageQuantity : nil;
+    return reminder.event == event && LBSameDate(reminder.doneAt, event.timestamp)
+        && LBSameDistance(reminder.doneMileageQuantity, reminder.doneMileageDistanceUnit, mileage, mileage ? event.mileageDistanceUnit : nil);
+}
+
+static void LBDoneBy(Reminder *reminder, Event *event) {
+    BOOL measured = event.mileageQuantity && event.mileageDistanceUnit;
+    reminder.event = event;
+    reminder.doneAt = event.timestamp;
+    reminder.doneMileageQuantity = measured ? event.mileageQuantity : nil;
+    reminder.doneMileageDistanceUnit = measured ? event.mileageDistanceUnit : nil;
+}
+
 @implementation Reminder (LBProcedures)
 
 - (BOOL)lb_isOpen {
@@ -352,12 +393,8 @@ static User *LBActorOf(Event *event) {
     return self.schedule ? self.schedule.checklist : self.checklist;
 }
 
-- (NSUUID *)lb_nextID {
-    return self.id ? LBNamedUUID([@"next of " stringByAppendingString:LBIDText(self.id)]) : nil;
-}
-
 - (Reminder *)lb_nextReminder {
-    NSUUID *next = [self lb_nextID];
+    NSUUID *next = LBNextIDOf(self.id);
     if (!next || !self.schedule) return nil;
     for (Reminder *reminder in self.schedule.reminders) {
         if (!reminder.isDeleted && [reminder.id isEqual:next]) return reminder;
@@ -365,96 +402,28 @@ static User *LBActorOf(Event *event) {
     return nil;
 }
 
-/* Whether the next reminder is as closing this one, at what it was done
-   at now, made it. */
-- (BOOL)lb_isUntouchedNext:(Reminder *)next {
-    for (Rescheduling *moved in next.reschedulings) {
-        if (!moved.isDeleted) return NO;
+- (BOOL)lb_isTouched {
+    for (Rescheduling *moved in self.reschedulings) {
+        if (!moved.isDeleted) return YES;
     }
-    for (Attachment *attached in next.attachments) {
-        if (!attached.isDeleted) return NO;
+    for (Attachment *attached in self.attachments) {
+        if (!attached.isDeleted) return YES;
     }
-    if (next.doneAt || next.cancelDate || next.replaced || next.replacement || next.note.length || !self.doneAt) return NO;
-    NSDate *dueDate;
-    NSDecimalNumber *dueMileage;
-    DistanceUnit *dueUnit;
-    LBDueAfter(next.schedule, self.vehicle, self.doneAt, self.doneMileageQuantity, self.doneMileageDistanceUnit, &dueDate, &dueMileage,
-               &dueUnit);
-    return LBSameDate(next.dueDate, dueDate) && LBSameDistance(next.dueMileageQuantity, next.dueMileageDistanceUnit, dueMileage, dueUnit);
+    return self.note.length || self.cancelDate || (self.replaced && !self.replaced.isDeleted)
+        || (self.replacement && !self.replacement.isDeleted);
 }
 
-- (BOOL)lb_nextReminderUntouched {
-    Reminder *next = self.lb_nextReminder;
-    return next && [self lb_isUntouchedNext:next];
-}
-
-/* Done at the moment and distance, by the event (nil: by hand). */
-- (void)lb_doneBy:(Event *)event at:(NSDate *)moment mileage:(NSDecimalNumber *)mileage unit:(DistanceUnit *)unit {
-    self.event = event;
-    self.doneAt = moment;
-    self.doneMileageQuantity = mileage && unit ? mileage : nil;
-    self.doneMileageDistanceUnit = mileage && unit ? unit : nil;
-}
-
-/* The next reminder due again from what this one was done at now. */
-- (void)lb_dueNext:(Reminder *)next {
-    NSDate *dueDate;
-    NSDecimalNumber *dueMileage;
-    DistanceUnit *dueUnit;
-    LBDueAfter(next.schedule, self.vehicle, self.doneAt, self.doneMileageQuantity, self.doneMileageDistanceUnit, &dueDate, &dueMileage,
-               &dueUnit);
-    next.setAt = self.doneAt;
-    next.dueDate = dueDate;
-    next.dueMileageQuantity = dueMileage;
-    next.dueMileageDistanceUnit = dueUnit;
-}
-
-/* Reopened, as before it was done. */
-- (void)lb_reopen {
-    [self lb_doneBy:nil at:nil mileage:nil unit:nil];
-}
-
-- (BOOL)lb_completeByEvent:(Event *)event at:(NSDate *)moment mileage:(NSDecimalNumber *)mileage unit:(DistanceUnit *)unit by:(User *)user
-                      next:(Reminder **)next error:(NSError **)error {
+- (BOOL)lb_completeByEvent:(Event *)event next:(Reminder **)next error:(NSError **)error {
     if (next) *next = nil;
     if (self.doneAt) return LBFail(error, @"The reminder is done already");
     if (self.cancelDate) return LBFail(error, @"A cancelled reminder is not done");
-    if (event) {
-        if (![event lb_mayCloseReminder:self]) {
-            return LBFail(error, @"That event does not do the reminder's work, of its vehicle, on or after the day it was set");
-        }
-        moment = event.timestamp;
-        mileage = event.mileageQuantity;
-        unit = event.mileageDistanceUnit;
-    } else if ((mileage == nil) != (unit == nil)) {
-        return LBFail(error, @"A distance is a quantity and its unit");
+    if (!event) return LBFail(error, @"A reminder is done by an event: say which");
+    if (![event lb_mayCloseReminder:self]) {
+        return LBFail(error, @"That event does not do the reminder's work, of its vehicle, on or after the day it was set");
     }
-    if (!moment) moment = [NSDate date];
-    Schedule *schedule = self.schedule;
-    NSDate *dueDate = nil;
-    NSDecimalNumber *dueMileage = nil;
-    DistanceUnit *dueUnit = nil;
-    if (schedule) {
-        if (!self.id) return LBFail(error, @"The reminder has no id yet");
-        LBDueAfter(schedule, self.vehicle, moment, mileage && unit ? mileage : nil, mileage && unit ? unit : nil, &dueDate, &dueMileage,
-                   &dueUnit);
-        if (!dueDate && !dueMileage) {
-            return LBFail(error, @"There is no distance to count the next reminder from: say the distance it was done at");
-        }
-    }
-    Reminder *made = nil;
-    if (schedule) {
-        made = LBNewReminder(self.vehicle, [self lb_nextID], self.managedObjectContext);
-        if (!made) return LBFail(error, @"The reminder's next was made already");
-        made.schedule = schedule;
-        made.enteredBy = user;
-        made.setAt = moment;
-        made.dueDate = dueDate;
-        made.dueMileageQuantity = dueMileage;
-        made.dueMileageDistanceUnit = dueUnit;
-    }
-    [self lb_doneBy:event at:moment mileage:mileage unit:unit];
-    if (next) *next = made;
+    if (![self.managedObjectContext lb_settleVehicles:[NSSet setWithObject:self.vehicle] without:nil force:NO error:error]) return NO;
+    if (!self.event) return LBFail(error, @"The reminder is not closed by that event: an earlier one of its schedule is open");
+    if (next) *next = self.lb_nextReminder;
     return YES;
 }
 
@@ -544,7 +513,7 @@ static User *LBActorOf(Event *event) {
 
 @end
 
-#pragma mark Undoing what an event closed
+#pragma mark Settling: what a vehicle's events close
 
 /* A reminder deleted, with what is of it (its moves, its attachments),
    taken out of its schedule and vehicle first: the rules, checked before
@@ -566,48 +535,273 @@ static void LBDeleteReminder(Reminder *reminder) {
     [context deleteObject:reminder];
 }
 
-/* Each reminder reopened, and the next its closing made deleted, where
-   untouched; where touched, as keep says (nil: refused, before anything is
-   changed). */
-static BOOL LBUndoClosing(NSArray<Reminder *> *reminders, NSNumber *keep, NSError **error) {
-    NSMutableArray<Reminder *> *touched = [NSMutableArray array];
-    for (Reminder *reminder in reminders) {
-        Reminder *next = reminder.lb_nextReminder;
-        if (next && ![reminder lb_isUntouchedNext:next]) [touched addObject:next];
+/* A place in a schedule's run of reminders: a reminder there, or the next
+   one that closing the one before makes, not made yet. */
+@interface LBSlot : NSObject
+@property (nonatomic, strong) Reminder *reminder;
+@property (nonatomic, strong) NSUUID *uuid;
+// Whose closing makes it (a next one); nil for a first reminder, a
+// replacement, or one left as it is.
+@property (nonatomic, strong) LBSlot *source;
+// What closes it; nil: open.
+@property (nonatomic, strong) Event *event;
+// Left as it is: cancelled, or done with no event.
+@property (nonatomic) BOOL fixed;
+// Its source closed otherwise than it is: it is due anew.
+@property (nonatomic) BOOL dueAnew;
+@end
+
+@implementation LBSlot
+@end
+
+/* A schedule's run: its reminders and events, as entering its vehicle's
+   events afresh, in order, leaves them. */
+@interface LBRun : NSObject
+@property (nonatomic, strong) Schedule *schedule;
+@property (nonatomic, strong) NSMutableArray<LBSlot *> *slots;
+@property (nonatomic, strong) NSMutableDictionary<NSUUID *, Reminder *> *byID;
+@property (nonatomic, strong) NSMutableSet<NSUUID *> *nextIDs;
+@property (nonatomic, strong) NSArray<Reminder *> *roots;
+@property (nonatomic) NSUInteger nextRoot;
+@end
+
+@implementation LBRun
+
+- (LBSlot *)slotOf:(Reminder *)reminder uuid:(NSUUID *)uuid source:(LBSlot *)source {
+    for (LBSlot *slot in _slots) {
+        if (reminder && slot.reminder == reminder) return nil;   /* no reminder twice: a cycle */
     }
-    if (touched.count && !keep) {
+    LBSlot *slot = [[LBSlot alloc] init];
+    slot.reminder = reminder;
+    slot.uuid = reminder.id ?: uuid;
+    slot.source = source;
+    slot.fixed = reminder && (reminder.cancelDate || (reminder.doneAt && !reminder.event));
+    [_slots addObject:slot];
+    return slot;
+}
+
+- (LBSlot *)takeRoot {
+    while (_nextRoot < _roots.count) {
+        LBSlot *slot = [self slotOf:_roots[_nextRoot++] uuid:nil source:nil];
+        if (slot) return slot;
+    }
+    return nil;
+}
+
+/* From the slot, the first that an event may close: past a cancelled one
+   to its replacement, past one done with no event to its next, as they
+   are; else the next first reminder. */
+- (LBSlot *)openFrom:(LBSlot *)slot {
+    while (slot && slot.fixed) {
+        Reminder *reminder = slot.reminder;
+        Reminder *after = reminder.cancelDate ? reminder.replacement : _byID[LBNextIDOf(reminder.id) ?: [NSUUID UUID]];
+        slot = after && !after.isDeleted ? [self slotOf:after uuid:nil source:nil] : [self takeRoot];
+    }
+    return slot;
+}
+
+- (instancetype)initWithSchedule:(Schedule *)schedule events:(NSArray<Event *> *)events {
+    if (!(self = [super init])) return nil;
+    _schedule = schedule;
+    _slots = [NSMutableArray array];
+    _byID = [NSMutableDictionary dictionary];
+    _nextIDs = [NSMutableSet set];
+    NSMutableArray *reminders = [NSMutableArray array];
+    for (Reminder *reminder in schedule.reminders) {
+        if (reminder.isDeleted) continue;
+        [reminders addObject:reminder];
+        if (reminder.id) {
+            _byID[reminder.id] = reminder;
+            [_nextIDs addObject:LBNextIDOf(reminder.id)];
+        }
+    }
+    [reminders sortUsingFunction:LBReminderOrder context:NULL];
+    NSMutableArray *roots = [NSMutableArray array];
+    for (Reminder *reminder in reminders) {
+        BOOL replaces = reminder.replaced && !reminder.replaced.isDeleted;
+        if (![_nextIDs containsObject:reminder.id ?: [NSUUID UUID]] && !replaces) [roots addObject:reminder];
+    }
+    _roots = roots;
+    LBSlot *slot = [self takeRoot];
+    for (Event *event in events) {
+        slot = [self openFrom:slot];
+        if (!slot) break;
+        if (!LBDoesWork(event, schedule.task, schedule.expenseKind, schedule.checklist)) continue;
+        NSDate *setAt = slot.reminder ? slot.reminder.setAt : slot.source.event.timestamp;
+        if (!setAt || [LBDay(setAt) compare:LBDay(event.timestamp)] == NSOrderedDescending) continue;
+        slot.event = event;
+        NSDate *dueDate;
+        NSDecimalNumber *dueMileage;
+        DistanceUnit *dueUnit;
+        if (LBNextDue(schedule, event, &dueDate, &dueMileage, &dueUnit)) {
+            NSUUID *next = LBNextIDOf(slot.uuid);
+            LBSlot *made = [self slotOf:_byID[next] uuid:next source:slot];
+            slot = made ?: [self takeRoot];
+        } else {
+            slot = [self takeRoot];
+        }
+    }
+    /* A next whose source closes otherwise than it is now is due anew. */
+    for (LBSlot *each in _slots) {
+        each.dueAnew = each.source && (!each.reminder || !each.source.reminder || !LBDoneAsBy(each.source.reminder, each.source.event));
+    }
+    return self;
+}
+
+/* The schedule's reminders that the run leaves out: the next ones of
+   reminders it does not close. */
+- (NSArray<Reminder *> *)left {
+    NSMutableSet *run = [NSMutableSet set];
+    for (LBSlot *slot in _slots) {
+        if (slot.reminder) [run addObject:slot.reminder];
+    }
+    NSMutableArray *left = [NSMutableArray array];
+    for (Reminder *reminder in [_byID.allValues sortedArrayUsingFunction:LBReminderOrder context:NULL]) {
+        if (![run containsObject:reminder] && [_nextIDs containsObject:reminder.id]) [left addObject:reminder];
+    }
+    return left;
+}
+
+/* The reminders the user changed that the run would change. */
+- (void)addTouchedTo:(NSMutableArray<Reminder *> *)touched {
+    for (LBSlot *slot in _slots) {
+        if (slot.reminder && slot.dueAnew && slot.reminder.lb_isTouched) [touched addObject:slot.reminder];
+    }
+    for (Reminder *reminder in [self left]) {
+        if (reminder.lb_isTouched) [touched addObject:reminder];
+    }
+}
+
+- (void)apply {
+    Vehicle *vehicle = _schedule.vehicle;
+    for (LBSlot *slot in _slots) {
+        Reminder *reminder = slot.reminder;
+        if (slot.dueAnew) {
+            Event *source = slot.source.event;
+            if (!reminder) {
+                reminder = LBNewReminder(vehicle, slot.uuid, _schedule.managedObjectContext);
+                if (!reminder) continue;
+                reminder.schedule = _schedule;
+                reminder.enteredBy = LBActorOf(source);
+                slot.reminder = reminder;
+            }
+            NSDate *dueDate;
+            NSDecimalNumber *dueMileage;
+            DistanceUnit *dueUnit;
+            LBNextDue(_schedule, source, &dueDate, &dueMileage, &dueUnit);
+            reminder.setAt = source.timestamp;
+            reminder.dueDate = dueDate;
+            reminder.dueMileageQuantity = dueMileage;
+            reminder.dueMileageDistanceUnit = dueUnit;
+        }
+        if (slot.fixed || !reminder || LBDoneAsBy(reminder, slot.event)) continue;
+        if (slot.event) {
+            LBDoneBy(reminder, slot.event);
+        } else {
+            reminder.event = nil;
+            reminder.doneAt = nil;
+            reminder.doneMileageQuantity = nil;
+            reminder.doneMileageDistanceUnit = nil;
+        }
+    }
+    for (Reminder *reminder in [self left]) LBDeleteReminder(reminder);
+    /* Done by an event no longer of the run (a first reminder past where
+       the run ended): open. */
+    for (Reminder *reminder in _byID.allValues) {
+        if (reminder.isDeleted || !reminder.event) continue;
+        BOOL inRun = NO;
+        for (LBSlot *slot in _slots) {
+            if (slot.reminder == reminder) inRun = YES;
+        }
+        if (!inRun) {
+            reminder.event = nil;
+            reminder.doneAt = nil;
+            reminder.doneMileageQuantity = nil;
+            reminder.doneMileageDistanceUnit = nil;
+        }
+    }
+}
+
+@end
+
+/* A one-off reminder: closed by the first of the events that may close it;
+   one cancelled, or done with no event, as it is. */
+static Event *LBFirstCloser(Reminder *reminder, NSArray<Event *> *events) {
+    for (Event *event in events) {
+        if (!reminder.setAt || [LBDay(reminder.setAt) compare:LBDay(event.timestamp)] == NSOrderedDescending) continue;
+        if (LBDoesWork(event, reminder.task, reminder.expenseKind, reminder.checklist)) return event;
+    }
+    return nil;
+}
+
+@implementation NSManagedObjectContext (LBSettling)
+
+- (BOOL)lb_settleVehicles:(NSSet<Vehicle *> *)vehicles without:(Event *)without force:(BOOL)force error:(NSError **)error {
+    NSMutableArray<LBRun *> *runs = [NSMutableArray array];
+    NSMutableArray<NSArray *> *oneOffs = [NSMutableArray array];   /* reminder, its closer (or NSNull) */
+    NSMutableArray<Reminder *> *touched = [NSMutableArray array];
+    for (Vehicle *vehicle in [vehicles.allObjects sortedArrayUsingFunction:LBIDOrder context:NULL]) {
+        if (vehicle.isDeleted) continue;
+        NSMutableArray<Event *> *events = [NSMutableArray array];
+        for (Event *event in LBEventsOf(vehicle)) {
+            if (event != without) [events addObject:event];
+        }
+        [events sortUsingFunction:LBEventOrder context:NULL];
+        NSArray *records = [vehicle.records.allObjects sortedArrayUsingFunction:LBIDOrder context:NULL];
+        for (Record *record in records) {
+            if (record.isDeleted || record.vehicle != vehicle) continue;
+            if ([record isKindOfClass:[Schedule class]]) {
+                LBRun *run = [[LBRun alloc] initWithSchedule:(Schedule *)record events:events];
+                [run addTouchedTo:touched];
+                [runs addObject:run];
+            } else if ([record isKindOfClass:[Reminder class]] && !((Reminder *)record).schedule) {
+                Reminder *reminder = (Reminder *)record;
+                if (reminder.cancelDate || (reminder.doneAt && !reminder.event)) continue;
+                [oneOffs addObject:@[ reminder, LBFirstCloser(reminder, events) ?: [NSNull null] ]];
+            }
+        }
+    }
+    if (touched.count && !force) {
         if (error) {
-            NSString *what = touched.count == 1 ? @"The reminder it made next has been changed since"
-                                                : @"The reminders it made next have been changed since";
+            NSString *what = touched.count == 1 ? @"A reminder made next has been changed since, and would have to change"
+                                                : @"Reminders made next have been changed since, and would have to change";
             *error = [NSError errorWithDomain:LBProceduresErrorDomain code:LBProceduresErrorNextReminderTouched
-                                     userInfo:@{ NSLocalizedDescriptionKey: [what stringByAppendingString:@": keep it, or delete it too?"],
+                                     userInfo:@{ NSLocalizedDescriptionKey: [what stringByAppendingString:@": delete them too?"],
                                                  LBNextRemindersErrorKey: touched }];
         }
         return NO;
     }
-    for (Reminder *reminder in reminders) {
-        Reminder *next = reminder.lb_nextReminder;
-        if (next && [touched containsObject:next] && keep.boolValue) {
-            /* The next kept: this one stays done, by hand. */
+    for (LBRun *run in runs) [run apply];
+    for (NSArray *oneOff in oneOffs) {
+        Reminder *reminder = oneOff[0];
+        Event *closer = oneOff[1] == [NSNull null] ? nil : oneOff[1];
+        if (LBDoneAsBy(reminder, closer)) continue;
+        if (closer) {
+            LBDoneBy(reminder, closer);
+        } else {
             reminder.event = nil;
-            continue;
+            reminder.doneAt = nil;
+            reminder.doneMileageQuantity = nil;
+            reminder.doneMileageDistanceUnit = nil;
         }
-        if (next) LBDeleteReminder(next);
-        [reminder lb_reopen];
     }
     return YES;
 }
 
+@end
+
 @implementation Record (LBProcedures)
 
 - (BOOL)lb_discardKeepingNextReminders:(NSNumber *)keep error:(NSError **)error {
-    if ([self isKindOfClass:[Event class]]) {
-        NSArray *closed = [((Event *)self).reminders.allObjects sortedArrayUsingFunction:LBIDOrder context:NULL];
-        NSMutableArray *kept = [NSMutableArray array];
-        for (Reminder *reminder in closed) {
-            if (!reminder.isDeleted) [kept addObject:reminder];
+    if (keep.boolValue) {
+        return LBFail(error, @"A reminder is done only by an event: the next one is kept only if the record is; delete it too, or keep "
+                             @"the record");
+    }
+    if ([self isKindOfClass:[Event class]] && self.vehicle) {
+        if (![self.managedObjectContext lb_settleVehicles:[NSSet setWithObject:self.vehicle] without:(Event *)self force:keep != nil
+                                                    error:error]) {
+            return NO;
         }
-        if (!LBUndoClosing(kept, keep, error)) return NO;
     }
     [self.managedObjectContext deleteObject:self];
     return YES;
@@ -616,71 +810,6 @@ static BOOL LBUndoClosing(NSArray<Reminder *> *reminders, NSNumber *keep, NSErro
 @end
 
 #pragma mark Automatic completion
-
-/* What an event closed and can no longer, undone; what it still does, at
-   its moment and distance now. */
-static BOOL LBFollowEvent(Event *event, NSError **error) {
-    NSArray *closed = [event.reminders.allObjects sortedArrayUsingFunction:LBIDOrder context:NULL];
-    NSMutableArray *undone = [NSMutableArray array];
-    for (Reminder *reminder in closed) {
-        if (reminder.isDeleted) continue;
-        if (![event lb_mayCloseReminder:reminder]) {
-            [undone addObject:reminder];
-            continue;
-        }
-        NSDecimalNumber *mileage = event.mileageDistanceUnit ? event.mileageQuantity : nil;
-        if (LBSameDate(reminder.doneAt, event.timestamp)
-            && LBSameDistance(reminder.doneMileageQuantity, reminder.doneMileageDistanceUnit, mileage, mileage ? event.mileageDistanceUnit : nil)) {
-            continue;
-        }
-        Reminder *next = reminder.lb_nextReminder;
-        BOOL untouched = next && [reminder lb_isUntouchedNext:next];
-        [reminder lb_doneBy:event at:event.timestamp mileage:mileage unit:event.mileageDistanceUnit];
-        if (untouched) [reminder lb_dueNext:next];
-    }
-    return LBUndoClosing(undone, nil, error);
-}
-
-/* For each schedule of the event's work, and each one-off reminder of it,
-   the reminder it closes: of those it may close, open or done by a later
-   event, the one set first. */
-static void LBCloseByEvent(Event *event) {
-    if (event.isDeleted || !event.vehicle || !event.timestamp) return;
-    NSMutableDictionary<NSString *, NSMutableArray<Reminder *> *> *lines = [NSMutableDictionary dictionary];
-    for (Record *record in event.vehicle.records) {
-        if (![record isKindOfClass:[Reminder class]] || ![event lb_mayCloseReminder:(Reminder *)record]) continue;
-        Reminder *reminder = (Reminder *)record;
-        NSString *line = LBIDText(reminder.schedule ? reminder.schedule.id : reminder.id);
-        if (!lines[line]) lines[line] = [NSMutableArray array];
-        [lines[line] addObject:reminder];
-    }
-    for (NSString *line in [lines.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
-        NSArray *reminders = [lines[line] sortedArrayUsingFunction:LBReminderOrder context:NULL];
-        Reminder *chosen = nil;
-        BOOL closesOne = NO;
-        for (Reminder *reminder in reminders) {
-            if (reminder.event == event) closesOne = YES;
-            BOOL takes = reminder.lb_isOpen || (reminder.event && [event lb_isBeforeEvent:reminder.event]);
-            if (takes && !chosen) chosen = reminder;
-        }
-        if (closesOne || !chosen) continue;
-        if (chosen.lb_isOpen) {
-            /* One that cannot be closed so (its next due at nothing) stays
-               open, for the owner to close by hand. */
-            [chosen lb_completeByEvent:event at:nil mileage:nil unit:nil by:LBActorOf(event) next:NULL error:NULL];
-            continue;
-        }
-        /* Taken from the later event that closed it, with its next as it was
-           made, due from this one now; the later one then closes what it
-           may, in turn. */
-        Event *later = chosen.event;
-        Reminder *next = chosen.lb_nextReminder;
-        if (next && ![chosen lb_isUntouchedNext:next]) continue;
-        [chosen lb_doneBy:event at:event.timestamp mileage:event.mileageQuantity unit:event.mileageDistanceUnit];
-        if (next) [chosen lb_dueNext:next];
-        LBCloseByEvent(later);
-    }
-}
 
 /* Whether an event saved changes what it does: new, or changed in its
    moment, vehicle, distance, kind, checklist or items. */
@@ -696,31 +825,33 @@ static BOOL LBChangesWork(Event *event) {
 @implementation NSManagedObjectContext (LBProcedures)
 
 - (BOOL)lb_completeRemindersOfChangedEvents:(NSError **)error {
-    NSMutableSet<Event *> *changed = [NSMutableSet set];
+    NSMutableSet<Vehicle *> *vehicles = [NSMutableSet set];
+    NSString *vehicleKey = NSStringFromSelector(@selector(vehicle));
     NSMutableSet *objects = [NSMutableSet setWithSet:self.insertedObjects];
     [objects unionSet:self.updatedObjects];
     for (NSManagedObject *object in objects) {
-        if ([object isKindOfClass:[Event class]] && LBChangesWork((Event *)object)) [changed addObject:(Event *)object];
+        Event *event = nil;
+        if ([object isKindOfClass:[Event class]] && LBChangesWork((Event *)object)) event = (Event *)object;
         /* A service's item added, or changed to another task. */
         if ([object isKindOfClass:[ServiceItem class]]) {
             ServiceItem *item = (ServiceItem *)object;
             NSDictionary *changes = item.changedValues;
-            if (item.service && (item.isInserted || changes[NSStringFromSelector(@selector(task))]
-                                 || changes[NSStringFromSelector(@selector(service))])) {
-                [changed addObject:item.service];
+            if (item.isInserted || changes[NSStringFromSelector(@selector(task))] || changes[NSStringFromSelector(@selector(service))]) {
+                event = item.service;
             }
         }
+        if (!event || event.isDeleted) continue;
+        if (event.vehicle) [vehicles addObject:event.vehicle];
+        /* Moved from another vehicle: that one's too, and those of the
+           reminders it closed. */
+        id before = event.isInserted ? nil : [event committedValuesForKeys:@[ vehicleKey ]][vehicleKey];
+        if ([before isKindOfClass:[NSManagedObjectID class]]) before = [self objectWithID:before];
+        if ([before isKindOfClass:[Vehicle class]]) [vehicles addObject:before];
+        for (Reminder *reminder in event.reminders) {
+            if (reminder.vehicle) [vehicles addObject:reminder.vehicle];
+        }
     }
-    NSMutableArray<Event *> *events = [NSMutableArray array];
-    for (Event *event in changed) {
-        if (!event.isDeleted && event.timestamp) [events addObject:event];
-    }
-    [events sortUsingFunction:LBEventOrder context:NULL];
-    for (Event *event in events) {
-        if (!LBFollowEvent(event, error)) return NO;
-    }
-    for (Event *event in events) LBCloseByEvent(event);
-    return YES;
+    return [self lb_settleVehicles:vehicles without:nil force:NO error:error];
 }
 
 @end

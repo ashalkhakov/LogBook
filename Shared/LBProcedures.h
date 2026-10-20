@@ -107,27 +107,21 @@ FOUNDATION_EXPORT NSDate *LBAddMonths(NSDate *day, NSInteger months);
 // The reminder its closing made (PROCESSES.md 5): its schedule's reminder
 // of the id "next of" it; nil when there is none.
 @property (nonatomic, readonly, nullable) Reminder *lb_nextReminder;
-// Whether the next reminder is as its closing made it (PROCESSES.md 9):
-// never moved, neither done nor cancelled, replacing and replaced by none,
-// with no note and no attachment, and due on and at just what closing this
-// one works out. NO when there is no next.
-@property (nonatomic, readonly) BOOL lb_nextReminderUntouched;
+// Changed by the user since it was made: moved, noted, with an attachment,
+// cancelled, replacing or replaced. Settling (below) does not change such a
+// reminder made next unless told to.
+@property (nonatomic, readonly) BOOL lb_isTouched;
 
-// Closed (PROCESSES.md 4): by the event, at its moment, and at its distance
-// where it has one; or with no event, by hand, at the moment given (now,
-// for none) and the distance given. The event must be one that may close
-// it (-lb_mayCloseReminder:). For a schedule's reminder the next is made
-// (5), entered by the user, set at the moment it was done: due on the day
-// done plus the schedule's months, as ReminderNextDue says, and at the
-// distance done (else the vehicle's latest at that moment) plus its
-// interval, in the unit done. Refused for one done or cancelled already.
-- (BOOL)lb_completeByEvent:(nullable Event *)event
-                        at:(nullable NSDate *)moment
-                   mileage:(nullable NSDecimalNumber *)mileage
-                      unit:(nullable DistanceUnit *)unit
-                        by:(User *)user
-                      next:(Reminder *_Nullable *_Nullable)next
-                     error:(NSError **)error;
+// Closed by the event (PROCESSES.md 4): a reminder is done only by an
+// event, one that may close it (-lb_mayCloseReminder:). What closes it is
+// what settling its vehicle says (below): the earliest event that may, so
+// this one, unless an earlier one closes it. For a schedule's reminder the
+// next is made (5): set at the moment done, due on the day done plus the
+// schedule's months, as ReminderNextDue says, and at the event's distance
+// plus its interval, in the event's unit; none is made for a schedule that
+// recurs after a distance, closed by an event at none. Refused for one done
+// or cancelled already.
+- (BOOL)lb_completeByEvent:(nullable Event *)event next:(Reminder *_Nullable *_Nullable)next error:(NSError **)error;
 
 // Moved (PROCESSES.md 6) to the day or the distance given (nil: as it is),
 // what it was due at before recorded with the move, made at now by the
@@ -156,36 +150,42 @@ FOUNDATION_EXPORT NSDate *LBAddMonths(NSDate *day, NSInteger months);
 @end
 
 @interface Record (LBProcedures)
-// Discarded, as entered in error (PROCESSES.md 9). For an event, what it
-// closed is undone first: each reminder it closed is reopened, and the next
-// one that closing made deleted with it, where untouched. Where one has
-// been touched, keep says what the owner chose: nil, refused
-// (LBProceduresErrorNextReminderTouched) before anything is changed; YES,
-// the next is kept, and the reminder stays done, by hand, at the moment and
-// distance it was (no longer by the event); NO, the next is deleted all the
-// same, and the reminder reopened. Then the record is deleted.
+// Discarded, as entered in error (PROCESSES.md 9). For an event, its
+// vehicle is settled without it first: what it closed is closed by the
+// next event that may, or reopened, the next reminders that made changed
+// or deleted with it. Where one of those was touched, keep says what the
+// owner chose: nil, refused (LBProceduresErrorNextReminderTouched) before
+// anything is changed; NO, it is changed or deleted all the same. YES,
+// keeping it, is refused (LBProceduresErrorRefused): a reminder is done
+// only by an event, and keeping the next would leave the one the record
+// closed done by nothing. Then the record is deleted.
 - (BOOL)lb_discardKeepingNextReminders:(nullable NSNumber *)keep error:(NSError **)error;
 @end
 
+@class Vehicle;
+
+@interface NSManagedObjectContext (LBSettling)
+// Settling (PROCESSES.md 4): each vehicle's reminders made what entering
+// all its events afresh, in order (moment, then id), would make them,
+// whatever order they came in or were changed in; without the event given
+// (one being discarded). For each schedule, its run: from its first
+// reminder, each event of its work closes the reminder open then, if set
+// on or before the event's day, and the next is made due from it; past a
+// cancelled reminder to its replacement, past one done with no event (as
+// a plain DELETE of its event leaves it) to its next, both as they are.
+// For a one-off reminder: the first event that may close it. Next reminders
+// the run no longer reaches are deleted; those whose source closes
+// otherwise are due anew. Where one of those was touched
+// (-lb_isTouched), refused (LBProceduresErrorNextReminderTouched) before
+// anything is changed, unless force.
+- (BOOL)lb_settleVehicles:(NSSet<Vehicle *> *)vehicles without:(nullable Event *)event force:(BOOL)force error:(NSError **)error;
+@end
+
 @interface NSManagedObjectContext (LBProcedures)
-// Automatic completion (PROCESSES.md 4 and 9), for the events the context
-// is about to save: added, or changed in what makes them do a reminder's
-// work (moment, vehicle, distance, kind, checklist, items). Earliest first
-// (moment, then id), each event:
-// - what it closed and can no longer (it is not of the work now, of
-//   another vehicle, before the day the reminder was set) is undone as in
-//   discarding it, the event kept; a touched next reminder refuses it
-//   (LBProceduresErrorNextReminderTouched);
-// - what it closed and still does follows it: done at its moment and
-//   distance now, and the untouched next due from them;
-// - for each schedule of its work, and each one-off reminder of it, of its
-//   vehicle, it closes one: of the reminders it may close that are open,
-//   or done by a later event (whose next is untouched), the one set first.
-//   One done by a later event is taken from it (its next due from this one
-//   now), and that later event is then given what it may close in turn. One
-//   done by hand stays as the owner said.
-// So whatever the order events of the same work are added in, each closes
-// the reminder that was open at its moment: the result is the same.
+// Automatic completion: the vehicles of the events the context is about to
+// save, added or changed in what makes them do a reminder's work (moment,
+// vehicle, distance, kind, checklist, items), settled; a vehicle an event
+// moved from too.
 - (BOOL)lb_completeRemindersOfChangedEvents:(NSError **)error;
 @end
 

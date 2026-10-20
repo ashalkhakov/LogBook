@@ -49,8 +49,10 @@ The procedures, as the server's actions (Server/LBActions.h), with no one
 signed in: a schedule started (its first reminder named by it, due from
 the last change); a service with an item of the task closes the reminder
 (automatic completion), one from before it was set, or of another task,
-does not; the next made, named by it; Complete of one done refused;
-Reschedule, Cancel with a replacement, Complete by hand; Discard of an
+does not; the next made, named by it; Complete of one done, or with no
+event, refused; Complete of a one-off by the event chosen, reopened when
+that event is moved before it was set; Reschedule, Cancel with a
+replacement; Discard of an
 event whose next was touched since refused, 409, until the owner says, and
 of one whose next is untouched, the next deleted with it.
 
@@ -463,11 +465,12 @@ def procedures(anna):
     _, statuses, bodies = oil_change(vehicle, anna, now(-24 * 30), 150000)
     check("an oil change from before it was set saved", statuses == [201, 201], (statuses, bodies))
     check("it closes nothing", reminder_of(first_id).get("DoneAt") is None, reminder_of(first_id))
-    _, statuses, bodies = oil_change(vehicle, anna, now(), 152000, tasks=("Brakes",))
+    brakes, statuses, bodies = oil_change(vehicle, anna, now(), 152000, tasks=("Brakes",))
     check("a service of another task closes nothing", statuses == [201, 201] and reminder_of(first_id).get("DoneAt") is None,
           (statuses, reminder_of(first_id)))
     service, statuses, bodies = oil_change(vehicle, anna, now(1), 152500)
     check("a service with an item of the task, saved", statuses == [201, 201], (statuses, bodies))
+    first_service = service
     done = reminder_of(first_id)
     status, by = request("GET", "Records(%s)/Default.Reminder/Event" % first_id)
     check("automatic completion: the reminder done by it, at its moment and distance",
@@ -513,10 +516,19 @@ def procedures(anna):
     status, body = action("Records(%s)" % service["Id"], "Discard")
     check("Discard, the next untouched: deleted with it, the replacement reopened", status == 204
           and reminder_of(later) is None and reminder_of(replacement_id).get("DoneAt") is None, (status, body))
-    status, next_one = action("Records(%s)" % replacement_id, "Complete", {"DoneAt": now(4), "DoneMileage": 153200,
-                                                                         "DoneMileageUnit": "km"})
-    check("Complete by hand: its next", status == 200 and next_one.get("Id", "").lower() == later
-          and next_one.get("DueMileageQuantity") == 168200, (status, next_one))
+    status, body = action("Records(%s)" % replacement_id, "Complete", {"DoneAt": now(4)})
+    check("Complete with no event is refused: a reminder is done by an event", status == 400, (status, body))
+    one_off = reminder(vehicle, anna, Task="Brakes", set=now(-1))
+    check("a one-off for the brakes, set before the brakes were done", request("POST", "Records", one_off)[0] == 201)
+    check("saving it closes nothing", reminder_of(one_off["Id"]).get("DoneAt") is None)
+    status, body = action("Records(%s)" % one_off["Id"], "Complete", {"Event": {"@odata.id": "Records(%s)" % first_service["Id"]}})
+    check("Complete by a service of another task is refused", status == 400, (status, body))
+    status, body = action("Records(%s)" % one_off["Id"], "Complete", {"Event": {"@odata.id": "Records(%s)" % brakes["Id"]}})
+    check("Complete by the brakes service: closed, no next", status == 204
+          and (reminder_of(one_off["Id"]).get("DoneAt") or "")[:16] == brakes["Timestamp"][:16], (status, body))
+    status, body = request("PATCH", "Records(%s)" % brakes["Id"], {"@odata.type": "#Default.Service", "Timestamp": now(-72)})
+    check("the service moved to before the one-off was set", status in (200, 204), (status, body))
+    check("moving it reopens the one-off", reminder_of(one_off["Id"]).get("DoneAt") is None, reminder_of(one_off["Id"]))
 
 
 def who_may():
@@ -613,11 +625,15 @@ def procedures_who_may(anna, ben, cid, vehicle):
     check("Anna discards it: refused while its next is moved", status == 409 and body["error"]["code"] == "NextReminderTouched",
           (status, body))
     status, body = action("Records(%s)" % service["Id"], "Discard", {"KeepNextReminder": True}, user=anna)
-    check("keeping the next: the first stays done, by hand", status == 204 and reminder_of(first_id, user=anna).get("DoneAt")
-          and reminder_of(next_id, user=anna) is not None, (status, body))
-    status, body = action("Records(%s)" % next_id, "Complete", {"DoneAt": now(2)}, user=ben)
-    check("Ben closes the next by hand", status == 200, (status, body))
-    status, body = action("Records(%s)" % next_id, "Cancel", user=anna)
+    check("keeping the next is refused: a reminder is done only by an event", status == 400, (status, body))
+    status, body = action("Records(%s)" % service["Id"], "Discard", {"KeepNextReminder": False}, user=anna)
+    check("the next deleted too: the first reopened", status == 204 and reminder_of(first_id, user=anna).get("DoneAt") is None
+          and reminder_of(next_id, user=anna) is None, (status, body))
+    oil_change(vehicle, ben, now(2), 141500, as_user=ben)
+    check("Ben's next oil change closes it again", reminder_of(first_id, user=anna).get("DoneMileageQuantity") == 141500)
+    status, body = action("Records(%s)" % first_id, "Complete", {"Event": {"@odata.id": "Records(%s)" % service["Id"]}}, user=ben)
+    check("Complete of one done is refused", status == 400, (status, body))
+    status, body = action("Records(%s)" % first_id, "Cancel", user=anna)
     check("a done one is not cancelled", status == 400, (status, body))
 
 

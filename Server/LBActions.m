@@ -65,16 +65,12 @@ static void LBRefuse(ODataReply *reply, NSError *error) {
 
 @implementation Reminder (LBActions)
 
-- (Reminder *)completeWithEvent:(Event *)event doneAt:(NSDate *)doneAt doneMileage:(NSDecimalNumber *)doneMileage
-                doneMileageUnit:(NSString *)doneMileageUnit reply:(ODataReply *)reply {
+- (Reminder *)completeWithEvent:(Event *)event reply:(ODataReply *)reply {
     User *user = LBActorFor(reply, self.vehicle, NO);
-    DistanceUnit *unit;
-    if (!user || !LBUnitCoded(reply, doneMileageUnit, &unit)) return nil;
+    if (!user) return nil;
     NSError *error = nil;
     Reminder *next = nil;
-    if (![self lb_completeByEvent:event at:doneAt ?: [NSDate date] mileage:doneMileage unit:unit by:user next:&next error:&error]) {
-        LBRefuse(reply, error);
-    }
+    if (![self lb_completeByEvent:event next:&next error:&error]) LBRefuse(reply, error);
     return next;
 }
 
