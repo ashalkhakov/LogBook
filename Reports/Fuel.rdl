@@ -71,12 +71,13 @@
             <DataType>String</DataType>
             <Nullable>true</Nullable>
             <AllowBlank>true</AllowBlank>
-            <Prompt>Vehicle</Prompt>
             <DefaultValue>
                 <Values>
                     <Value>Golf</Value>
                 </Values>
             </DefaultValue>
+            <Prompt>Vehicle</Prompt>
+            <Hidden>true</Hidden>
         </ReportParameter>
     </ReportParameters>
     <ReportSections>

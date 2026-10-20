@@ -1,6 +1,7 @@
 #import "LBMainWindowController.h"
 #import "LBStore.h"
 #import "LBDisplay.h"
+#import "LBReportsController.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
@@ -63,6 +64,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         item.target = self;
         item.tag = (NSInteger)i;
     }
+    [_reports chooseReport:nil];
     NSString *selection = NSStringFromSelector(@selector(selectionIndexes));
     [_vehicles addObserver:self forKeyPath:selection options:NSKeyValueObservingOptionInitial context:LBVehicleChosen];
     [_records addObserver:self forKeyPath:selection options:NSKeyValueObservingOptionInitial context:LBRecordChosen];
@@ -96,6 +98,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         if (shared.user && ![drivers containsObject:shared.user]) [drivers addObject:shared.user];
     }
     self.drivers = [drivers sortedArrayUsingDescriptors:[self byTitle]];
+    [_reports vehicleChosen];
 }
 
 /* The chosen record's form shown, given the record. */

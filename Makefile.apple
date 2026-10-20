@@ -16,6 +16,9 @@ comma = ,
 BUILD ?= build
 ODATAKIT = ODataKit OTelKit ODataIncrementalStore HTTPServerKit ODataService ODataSync
 ODATAKIT_DIRS = $(foreach f,$(ODATAKIT),$(abspath $(ORMKIT)/.deps/$(f).xcframework/macos-arm64_x86_64))
+# RDLKit's, by the version .github/pins.env names, in .deps (scripts/deps.sh
+# apple, from gnustep-release-actions); RDLKIT_DIRS names others.
+RDLKIT_DIRS ?= $(foreach f,RDLKit RDLKitUI,$(abspath .deps/$(f).xcframework/macos-arm64_x86_64))
 # ORMRuntime.framework, built by ORMKit's project.
 ORMKIT_PRODUCTS = $(abspath $(BUILD)/ORMKit/Build/Products/Debug)
 CC = clang
@@ -63,11 +66,14 @@ $(BUILD)/logbook-server: $(SERVER) Server/LBPermissions.h $(GENERATED)/.made $(O
 # its tables in its resources.
 APP_SOURCES = $(wildcard AppKit/*.m) $(wildcard Shared/*.m) Model/Constraints/LogbookValidation.m
 XIBS = $(wildcard AppKit/*.xib)
+APP_LIBS = $(addprefix -F,$(RDLKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(RDLKIT_DIRS)) \
+	-framework RDLKitUI -framework RDLKit -framework AppKit
 $(APP): $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h) $(XIBS) $(wildcard Reports/*.rdl) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	rm -rf $@ && mkdir -p $@/Contents/MacOS $@/Contents/Resources
 	cp AppKit/Info.plist $@/Contents/
-	$(CC) $(FLAGS) $(INC) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) -framework AppKit -o $@/Contents/MacOS/Logbook
+	@test -d $(firstword $(RDLKIT_DIRS)) || { echo "no RDLKit in .deps: gnustep-release-actions' scripts/deps.sh apple, here"; exit 1; }
+	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(RDLKIT_DIRS)) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) $(APP_LIBS) -o $@/Contents/MacOS/Logbook
 	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null || exit 1; done
 	cp -R $(BUILD)/Logbook.momd Model/Constraints/Logbook.ormplans Reports/*.rdl $@/Contents/Resources/
 

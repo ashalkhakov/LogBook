@@ -9,7 +9,7 @@
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
 
-@class LBStore, User, TyreSet;
+@class LBStore, User, TyreSet, LBReportsController;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -26,6 +26,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSTabView *recordForms;
 // Add's pull-down: an item for each kind of record.
 @property (nonatomic, strong) IBOutlet NSPopUpButton *addRecordButton;
+// The Reports tab's.
+@property (nonatomic, strong) IBOutlet LBReportsController *reports;
 
 // The chosen record under its entity's name (none when there is no one
 // record chosen): what each form's controller binds its content to.

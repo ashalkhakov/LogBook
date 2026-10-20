@@ -7,6 +7,7 @@
 #import "LBDisplay.h"
 #import "LBAppController.h"
 #import "LBReportData.h"
+#import "LBReportsController.h"
 
 NSURL *LBSelfTestRoot;
 
@@ -179,6 +180,47 @@ static void LBReportDataSteps(LBMainWindowController *controller, NSString *vehi
     LBCheck(@"rows as JSON", [json hasPrefix:@"[{"] && [json containsString:@"\"Price\":1.5"], json);
 }
 
+/* A report picked in the Reports tab, as a user does; what its viewer
+   rendered, as HTML's text. */
+static NSString *LBShowReport(LBMainWindowController *controller, NSString *title) {
+    LBReportsController *reports = controller.reports;
+    NSInteger index = [reports.reportPicker indexOfItemWithTitle:title];
+    LBCheck([NSString stringWithFormat:@"the Reports tab offers %@", title], index >= 0, reports.reportPicker.itemTitles);
+    if (index < 0) return @"";
+    [reports.reportPicker selectItemAtIndex:index];
+    [reports.reportPicker sendAction:reports.reportPicker.action to:reports.reportPicker.target];
+    LBSpin();
+    NSData *html = [reports.viewer dataUsingBackendNamed:@"HTML"];
+    LBCheck([NSString stringWithFormat:@"%@ shown, a page at least", title], reports.viewer.pageCount >= 1 && html.length > 0,
+            @(reports.viewer.pageCount));
+    return [[NSString alloc] initWithData:html ?: [NSData data] encoding:NSUTF8StringEncoding] ?: @"";
+}
+
+static void LBReportSteps(LBMainWindowController *controller) {
+    NSTabView *tabs = (NSTabView *)LBControl(controller.window.contentView, @"tabs");
+    [tabs selectTabViewItemWithIdentifier:@"reports"];
+    LBSpin();
+    NSString *costs = LBShowReport(controller, @"Costs by Month");
+    LBCheck(@"costs: the vehicle, its month's total in EUR", [costs containsString:@"Self-test Golf"] && [costs containsString:@"60.00"]
+                && [costs containsString:@"EUR"], nil);
+    NSString *fuel = LBShowReport(controller, @"Fuel");
+    /* LB_SCREENSHOT=file.png: the Reports tab too, beside it (macOS). */
+    if (getenv("LB_SCREENSHOT")) {
+        NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-reports.png"];
+        system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)controller.window.windowNumber, path].UTF8String);
+    }
+    LBCheck(@"fuel: the fill-up, a litre's price, the station", [fuel containsString:@"1.500"] && [fuel containsString:@"Shell"]
+                && [fuel containsString:@"Self-test Golf"], nil);
+    NSString *logbook = LBShowReport(controller, @"Logbook");
+    LBCheck(@"logbook: the fill-up, by kind", [logbook containsString:@"Fill-up"] && [logbook containsString:@"By kind"], nil);
+    [controller.reports.viewer setValue:@"2001-01-01" forParameter:@"To"];
+    LBSpin();
+    NSString *before = [[NSString alloc] initWithData:[controller.reports.viewer dataUsingBackendNamed:@"HTML"] ?: [NSData data]
+                                             encoding:NSUTF8StringEncoding];
+    LBCheck(@"logbook to a day long past: the fill-up asked for again, and not there", ![before containsString:@"Fill-up"]
+                && [before containsString:@"By kind"], nil);
+}
+
 static void LBSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
     controller.quiet = YES;
@@ -211,6 +253,7 @@ static void LBSteps(LBMainWindowController *controller) {
     LBRecordSteps(controller, kept);
     LBPreferenceSteps(controller);
     LBReportDataSteps(controller, @"Self-test Golf");
+    LBReportSteps(controller);
 }
 
 void LBRunSelfTest(LBMainWindowController *window) {

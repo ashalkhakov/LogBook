@@ -2,3 +2,4 @@ build/
 obj/
 Model/*.momd/
 Logbook.app/
+.deps/

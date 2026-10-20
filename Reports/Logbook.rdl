@@ -51,23 +51,23 @@
             <DataType>String</DataType>
             <Nullable>true</Nullable>
             <AllowBlank>true</AllowBlank>
-            <Prompt>Vehicle</Prompt>
             <DefaultValue>
                 <Values>
                     <Value>Golf</Value>
                 </Values>
             </DefaultValue>
+            <Prompt>Vehicle</Prompt>
+            <Hidden>true</Hidden>
         </ReportParameter>
-        <ReportParameter Name="Period">
-            <DataType>String</DataType>
+        <ReportParameter Name="From">
+            <DataType>DateTime</DataType>
             <Nullable>true</Nullable>
-            <AllowBlank>true</AllowBlank>
-            <Prompt>Period</Prompt>
-            <DefaultValue>
-                <Values>
-                    <Value>All</Value>
-                </Values>
-            </DefaultValue>
+            <Prompt>From</Prompt>
+        </ReportParameter>
+        <ReportParameter Name="To">
+            <DataType>DateTime</DataType>
+            <Nullable>true</Nullable>
+            <Prompt>To</Prompt>
         </ReportParameter>
     </ReportParameters>
     <ReportSections>
@@ -1039,7 +1039,7 @@
                                 <Paragraph>
                                     <TextRuns>
                                         <TextRun>
-                                            <Value>=Parameters!Vehicle.Value &amp; "  ·  " &amp; Parameters!Period.Value</Value>
+                                            <Value>=Parameters!Vehicle.Value &amp; "  ·  " &amp; IIf(IsNothing(Parameters!From.Value), "from the first", "from " &amp; Format(Parameters!From.Value, "d")) &amp; IIf(IsNothing(Parameters!To.Value), "", " to " &amp; Format(Parameters!To.Value, "d"))</Value>
                                             <Style>
                                                 <FontFamily>Arial</FontFamily>
                                                 <FontSize>9pt</FontSize>
