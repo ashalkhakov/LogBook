@@ -434,7 +434,9 @@ static void LBSteps(LBMainWindowController *controller) {
 
     LBClick(window, @"addVehicle");
     LBCheck(@"a new vehicle, chosen", [controller.vehicles.arrangedObjects count] == before + 1
-                                          && controller.vehicles.selectedObjects.count == 1, nil);
+                                          && controller.vehicles.selectedObjects.count == 1,
+            [NSString stringWithFormat:@"%lu listed (%lu before), %lu chosen", (unsigned long)[controller.vehicles.arrangedObjects count],
+                                       (unsigned long)before, (unsigned long)controller.vehicles.selectedObjects.count]);
     LBType(window, @"vehicleName", @"Self-test Golf");
     LBType(window, @"make", @"Volkswagen");
     LBType(window, @"carModel", @"Golf VII");

@@ -831,7 +831,6 @@ static BOOL LBChangesWork(Event *event) {
         /* Moved from another vehicle: that one's too, and those of the
            reminders it closed. */
         id before = event.isInserted ? nil : [event committedValuesForKeys:@[ vehicleKey ]][vehicleKey];
-        if ([before isKindOfClass:[NSManagedObjectID class]]) before = [self objectWithID:before];
         if ([before isKindOfClass:[Vehicle class]]) [vehicles addObject:before];
         for (Reminder *reminder in event.reminders) {
             if (reminder.vehicle) [vehicles addObject:reminder.vehicle];
