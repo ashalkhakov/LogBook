@@ -1643,7 +1643,10 @@ Who drives a vehicle is
 partly derived and not stored: the users it is shared with are entered,
 and its owner drives it by a rule (`OwnerDrives`), which queries and the
 rules about drivers go through beside what is entered. Every constraint is
-checked: 72, by the generated code.
+checked by the generated code, and so is every absorbed value that may be
+left out: a distance or an amount of money, absorbed into what has it, is
+whole or none, so a mileage's quantity is not saved without its unit, nor
+the unit without it. 85 rules in all.
 
 The subtypes defined by a rule keep it as NORMA keeps a subtype's
 derivation rule, and run it as a query: a Cost is a record that cost

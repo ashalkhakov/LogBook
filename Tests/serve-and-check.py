@@ -17,7 +17,9 @@ The rules, with no one signed in:
   saved; the same alone, as one request;
 - any event may be at a mileage: an expense with one and one without are
   saved; a meter reading without one is refused (a MeteredEvent is an
-  event at some distance);
+  event at some distance); half a mileage, its quantity without its unit
+  or the unit without the quantity, is refused, added or changed (a
+  Distance is whole or none);
 - reminders: one done by an expense with no mileage is saved, done at
   another moment than the expense's refused; done and cancelled refused;
   a replacement of another vehicle's reminder refused; two open reminders
@@ -289,6 +291,14 @@ def mileage_and_reminders(anna, vehicle):
     without = expense(vehicle, "Wash", "2026-05-02T09:00:00Z", anna)
     status, body = request("POST", "Records", without)
     check("an expense with none", status == 201, (status, body))
+    for part, value in (("MileageQuantity", 12100), ("MileageDistanceUnit@odata.bind", "DistanceUnits('km')")):
+        half = expense(vehicle, "Wash", "2026-05-02T08:00:00Z", anna)
+        half[part] = value
+        status, body = request("POST", "Records", half)
+        check("half a mileage (%s alone) is refused" % part.split("@")[0], status == 400 and "whole Distance or none" in json.dumps(body),
+              (status, body))
+    status, body = request("PATCH", "Records(%s)" % without["Id"], {"@odata.type": "#Default.Expense", "MileageQuantity": 12100})
+    check("and changed to half a mileage, too", status == 400 and "whole Distance or none" in json.dumps(body), (status, body))
     status, body = request("POST", "Records", {"@odata.type": "#Default.MeterReading", "Id": str(uuid.uuid4()),
                                                "Timestamp": "2026-05-03T09:00:00Z", "Driver@odata.bind": "Users('%s')" % anna,
                                                "EnteredBy@odata.bind": "Users('%s')" % anna,
