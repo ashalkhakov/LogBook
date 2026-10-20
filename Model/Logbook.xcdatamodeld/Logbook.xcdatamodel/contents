@@ -179,12 +179,7 @@
                 <entry key="ormkit.source" value="_EA02BE45-9262-4477-8742-B0D154AB0772"/>
             </userInfo>
         </attribute>
-        <relationship name="incomesAsMileageDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Income" inverseName="mileageDistanceUnit" inverseEntity="Income">
-            <userInfo>
-                <entry key="ormkit.source" value="_829AD7EF-DF6B-4CC4-853C-6EAF4D43D144/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
-            </userInfo>
-        </relationship>
-        <relationship name="meteredEventsAsMileageDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="MeteredEvent" inverseName="mileageDistanceUnit" inverseEntity="MeteredEvent">
+        <relationship name="eventsAsMileageDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Event" inverseName="mileageDistanceUnit" inverseEntity="Event">
             <userInfo>
                 <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
             </userInfo>
@@ -197,6 +192,11 @@
         <relationship name="remindersAsDueMileageDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="dueMileageDistanceUnit" inverseEntity="Reminder">
             <userInfo>
                 <entry key="ormkit.source" value="_4683605D-0CB6-4AF0-AEDD-69273A34ABA1/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
+            </userInfo>
+        </relationship>
+        <relationship name="reschedulingsAsFromMileageDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Rescheduling" inverseName="fromMileageDistanceUnit" inverseEntity="Rescheduling">
+            <userInfo>
+                <entry key="ormkit.source" value="_E8EDA587-3BD7-461C-81A4-0F8EEFDBBB98/_76B14F66-2B8D-4676-AE73-175539B353C1.inverse"/>
             </userInfo>
         </relationship>
         <relationship name="schedulesAsIntervalDistanceUnit" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Schedule" inverseName="intervalDistanceUnit" inverseEntity="Schedule">
@@ -271,6 +271,11 @@
         </userInfo>
     </entity>
     <entity name="Event" representedClassName="Event" parentEntity="Record" syncable="YES" codeGenerationType="class">
+        <attribute name="mileageQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
+            </userInfo>
+        </attribute>
         <attribute name="timestamp" attributeType="Date" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_29AE2287-AC15-42D4-AA20-BE1C9F364295"/>
@@ -280,6 +285,11 @@
             <userInfo>
                 <entry key="ormkit.mandatory" value="YES"/>
                 <entry key="ormkit.source" value="_2A70C8CB-45ED-4672-B0D8-1ADE420CF521"/>
+            </userInfo>
+        </relationship>
+        <relationship name="mileageDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="eventsAsMileageDistanceUnit" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
             </userInfo>
         </relationship>
         <relationship name="reminders" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Reminder" inverseName="event" inverseEntity="Reminder">
@@ -374,7 +384,7 @@
             <entry key="ormkit.source" value="_E3CAD27F-28E1-4AB0-B8B2-D94BDA69C521"/>
         </userInfo>
     </entity>
-    <entity name="FillUp" representedClassName="FillUp" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class">
+    <entity name="FillUp" representedClassName="FillUp" parentEntity="Event" syncable="YES" codeGenerationType="class">
         <attribute name="filledTheTank" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES">
             <userInfo>
                 <entry key="ormkit.source" value="_3F596A05-853C-4738-A00C-3FB7F0660533"/>
@@ -429,16 +439,6 @@
                 <entry key="ormkit.source" value="_55D67005-FDA2-4BBF-ACA3-0510D57A3E65"/>
             </userInfo>
         </attribute>
-        <attribute name="mileageQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="ormkit.source" value="_829AD7EF-DF6B-4CC4-853C-6EAF4D43D144/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
-            </userInfo>
-        </attribute>
-        <relationship name="mileageDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="incomesAsMileageDistanceUnit" inverseEntity="DistanceUnit">
-            <userInfo>
-                <entry key="ormkit.source" value="_829AD7EF-DF6B-4CC4-853C-6EAF4D43D144/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
-            </userInfo>
-        </relationship>
         <relationship name="trip" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Trip" inverseName="income" inverseEntity="Trip">
             <userInfo>
                 <entry key="ormkit.source" value="_D0C5E7CE-F41E-4E82-835B-803719D437C9"/>
@@ -449,7 +449,7 @@
             <entry key="ormkit.source" value="_42960B05-4236-4EBD-8AD8-EF3F678DE8B4"/>
         </userInfo>
     </entity>
-    <entity name="Inspection" representedClassName="Inspection" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class">
+    <entity name="Inspection" representedClassName="Inspection" parentEntity="Event" syncable="YES" codeGenerationType="class">
         <relationship name="answers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Answer" inverseName="inspection" inverseEntity="Answer">
             <userInfo>
                 <entry key="ormkit.source" value="_5A5BF447-9620-4FFF-BB60-68C35378D6CD._E34EDF73-C9C2-4863-A49D-F1D6B1A3B0ED"/>
@@ -466,27 +466,10 @@
             <entry key="ormkit.source" value="_66420072-59C5-42A5-B1BC-62B85C0EAC7C"/>
         </userInfo>
     </entity>
-    <entity name="MeterReading" representedClassName="MeterReading" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class">
+    <entity name="MeterReading" representedClassName="MeterReading" parentEntity="Event" syncable="YES" codeGenerationType="class">
         <userInfo>
             <entry key="OData.type" value="Default.MeterReading"/>
             <entry key="ormkit.source" value="_5366D673-F8EF-45E1-B0C4-20AF684022D3"/>
-        </userInfo>
-    </entity>
-    <entity name="MeteredEvent" representedClassName="MeteredEvent" parentEntity="Event" syncable="YES" codeGenerationType="class">
-        <attribute name="mileageQuantity" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
-            <userInfo>
-                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
-            </userInfo>
-        </attribute>
-        <relationship name="mileageDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="meteredEventsAsMileageDistanceUnit" inverseEntity="DistanceUnit">
-            <userInfo>
-                <entry key="ormkit.mandatory" value="YES"/>
-                <entry key="ormkit.source" value="_C6C1D974-34FB-48CB-8FB4-9747DCEE7114/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
-            </userInfo>
-        </relationship>
-        <userInfo>
-            <entry key="OData.type" value="Default.MeteredEvent"/>
-            <entry key="ormkit.source" value="_8302E203-13F7-4C5A-938A-C2A4BD091E8B"/>
         </userInfo>
     </entity>
     <entity name="Option" representedClassName="Option" syncable="YES" codeGenerationType="class">
@@ -666,6 +649,11 @@
         </userInfo>
     </entity>
     <entity name="Reminder" representedClassName="Reminder" parentEntity="Record" syncable="YES" codeGenerationType="class">
+        <attribute name="cancelDate" optional="YES" attributeType="Date" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_1F7BF1FD-76AB-48F4-9045-36975DC76505"/>
+            </userInfo>
+        </attribute>
         <attribute name="doneAt" optional="YES" attributeType="Date" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713"/>
@@ -716,6 +704,21 @@
                 <entry key="ormkit.source" value="_D7A0423C-ED85-491A-AAF5-F63EAC7CA214"/>
             </userInfo>
         </relationship>
+        <relationship name="replaced" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Reminder" inverseName="replacement" inverseEntity="Reminder">
+            <userInfo>
+                <entry key="ormkit.source" value="_E11A1DAA-75F6-4150-A125-C66C6C8B5EC1"/>
+            </userInfo>
+        </relationship>
+        <relationship name="replacement" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Reminder" inverseName="replaced" inverseEntity="Reminder">
+            <userInfo>
+                <entry key="ormkit.source" value="_5283B955-E104-42D6-859E-2A1C3708D229"/>
+            </userInfo>
+        </relationship>
+        <relationship name="reschedulings" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Rescheduling" inverseName="reminder" inverseEntity="Rescheduling">
+            <userInfo>
+                <entry key="ormkit.source" value="_AD06A20E-9B8C-41BB-99D8-8526FD8091CA"/>
+            </userInfo>
+        </relationship>
         <relationship name="schedule" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Schedule" inverseName="reminders" inverseEntity="Schedule">
             <userInfo>
                 <entry key="ormkit.source" value="_855A0C39-9802-4DDC-A04E-A94B39C4D3BA"/>
@@ -723,11 +726,73 @@
         </relationship>
         <userInfo>
             <entry key="OData.type" value="Default.Reminder"/>
-            <entry key="ormkit.rule.EqualityConstraint2" value="For each Reminder, that Reminder was done at some Moment if and only if that Reminder was done at some Distance."/>
             <entry key="ormkit.rule.ExclusionConstraint3" value="For each Reminder, exactly one of the following holds: that Reminder comes from some Schedule; that Reminder is for some Task; that Reminder is for some ExpenseKind; that Reminder is for some Checklist."/>
+            <entry key="ormkit.rule.ExclusionConstraint4" value="No Reminder was done at some Moment and was cancelled on some Date."/>
             <entry key="ormkit.rule.InclusiveOrConstraint2" value="Each Reminder is due at some Distance or is due on some Date."/>
+            <entry key="ormkit.rule.RingConstraint1" value="No Reminder may cycle back to itself via one or more traversals through Reminder replaces Reminder."/>
+            <entry key="ormkit.rule.SubsetConstraint12" value="If some Reminder was done at some Distance then that Reminder was done at some Moment."/>
+            <entry key="ormkit.rule.SubsetConstraint13" value="If some Reminder1 replaces some Reminder2 that is of some Vehicle then Reminder1 is of that Vehicle."/>
             <entry key="ormkit.rule.SubsetConstraint9" value="If some Reminder was done by some Event then that Reminder was done at some Moment."/>
             <entry key="ormkit.source" value="_66C78B16-140E-4A92-A0A6-2E08441358FE"/>
+        </userInfo>
+    </entity>
+    <entity name="Rescheduling" representedClassName="Rescheduling" syncable="YES" codeGenerationType="class">
+        <attribute name="fromDate" optional="YES" attributeType="Date" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_99E3A01D-0DB3-4564-9C53-2A9EFFF969EC"/>
+            </userInfo>
+        </attribute>
+        <attribute name="fromMileageQuantity" optional="YES" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_E8EDA587-3BD7-461C-81A4-0F8EEFDBBB98/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
+            </userInfo>
+        </attribute>
+        <attribute name="id" attributeType="UUID" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="OData.key" value="YES"/>
+                <entry key="ormkit.source" value="_523CF6FE-175A-4142-8392-841AEB31607D"/>
+            </userInfo>
+        </attribute>
+        <attribute name="madeAt" attributeType="Date" usesScalarValueType="NO">
+            <userInfo>
+                <entry key="ormkit.source" value="_B4D0FDE1-5749-405B-9988-C4C274D20D64"/>
+            </userInfo>
+        </attribute>
+        <attribute name="note" optional="YES" attributeType="String">
+            <userInfo>
+                <entry key="ormkit.source" value="_2E25F2DC-4C8A-408E-A995-CEA2ADEB2D7C"/>
+            </userInfo>
+        </attribute>
+        <relationship name="fromMileageDistanceUnit" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DistanceUnit" inverseName="reschedulingsAsFromMileageDistanceUnit" inverseEntity="DistanceUnit">
+            <userInfo>
+                <entry key="ormkit.source" value="_E8EDA587-3BD7-461C-81A4-0F8EEFDBBB98/_76B14F66-2B8D-4676-AE73-175539B353C1"/>
+            </userInfo>
+        </relationship>
+        <relationship name="madeBy" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="User" inverseName="reschedulingsAsMadeBy" inverseEntity="User">
+            <userInfo>
+                <entry key="ormkit.mandatory" value="YES"/>
+                <entry key="ormkit.source" value="_207601EB-763D-4FF7-BF8B-AD346F45E684"/>
+            </userInfo>
+        </relationship>
+        <relationship name="reminder" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Reminder" inverseName="reschedulings" inverseEntity="Reminder">
+            <userInfo>
+                <entry key="ormkit.mandatory" value="YES"/>
+                <entry key="ormkit.source" value="_03DD0D10-5BFF-481E-A042-DFEFA5612F53"/>
+            </userInfo>
+        </relationship>
+        <fetchIndex name="byIdIndex">
+            <fetchIndexElement property="id" type="Binary" order="ascending"/>
+        </fetchIndex>
+        <uniquenessConstraints>
+            <uniquenessConstraint>
+                <constraint value="id"/>
+            </uniquenessConstraint>
+        </uniquenessConstraints>
+        <userInfo>
+            <entry key="OData.entitySet" value="Reschedulings"/>
+            <entry key="OData.type" value="Default.Rescheduling"/>
+            <entry key="ormkit.rule.InclusiveOrConstraint3" value="Each Rescheduling moved from some Date or moved from some Distance."/>
+            <entry key="ormkit.source" value="_F06E8F99-03FD-4349-A67A-BE369288C59E"/>
         </userInfo>
     </entity>
     <entity name="Schedule" representedClassName="Schedule" parentEntity="Record" syncable="YES" codeGenerationType="class">
@@ -774,7 +839,7 @@
             <entry key="ormkit.source" value="_B6AA67C5-64A7-4DEF-AC86-845569D27FB0"/>
         </userInfo>
     </entity>
-    <entity name="Service" representedClassName="Service" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class">
+    <entity name="Service" representedClassName="Service" parentEntity="Event" syncable="YES" codeGenerationType="class">
         <attribute name="currency" attributeType="String" maxValueString="3" regularExpressionString="^(?:[A-Z]{3})$">
             <userInfo>
                 <entry key="ormkit.source" value="_1705B15D-A920-4517-8AAB-81A7227A7864"/>
@@ -886,7 +951,7 @@
             <entry key="ormkit.source" value="_046DBB94-CEE9-4E20-B771-D0E7AB0C7B4D"/>
         </userInfo>
     </entity>
-    <entity name="Trip" representedClassName="Trip" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class">
+    <entity name="Trip" representedClassName="Trip" parentEntity="Event" syncable="YES" codeGenerationType="class">
         <attribute name="distanceQuantity" attributeType="Decimal" minValueString="0" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_9DE6F490-9F69-4987-8E58-6D4F0B469A1F/_89A393AC-E378-4ECE-A7E8-3E331C1CE254"/>
@@ -929,7 +994,7 @@
             <entry key="ormkit.source" value="_BC7D1EAD-F12C-4A00-A629-1BA516C808EE"/>
         </userInfo>
     </entity>
-    <entity name="TyreChange" representedClassName="TyreChange" parentEntity="MeteredEvent" syncable="YES" codeGenerationType="class">
+    <entity name="TyreChange" representedClassName="TyreChange" parentEntity="Event" syncable="YES" codeGenerationType="class">
         <attribute name="tread" attributeType="Decimal" minValueString="0" maxValueString="20" usesScalarValueType="NO">
             <userInfo>
                 <entry key="ormkit.source" value="_CD977102-0F92-4D88-9A4C-F2BFF33C474E"/>
@@ -1036,6 +1101,11 @@
         <relationship name="recordsAsEnteredBy" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Record" inverseName="enteredBy" inverseEntity="Record">
             <userInfo>
                 <entry key="ormkit.source" value="_A017BBBE-71EE-4D4A-BD64-31D1619968CF"/>
+            </userInfo>
+        </relationship>
+        <relationship name="reschedulingsAsMadeBy" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="Rescheduling" inverseName="madeBy" inverseEntity="Rescheduling">
+            <userInfo>
+                <entry key="ormkit.source" value="_8867EAA7-2761-4A43-980F-BA42C636DF93"/>
             </userInfo>
         </relationship>
         <relationship name="vehicleDrivers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="VehicleDriver" inverseName="user" inverseEntity="VehicleDriver">

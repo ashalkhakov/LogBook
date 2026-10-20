@@ -386,22 +386,40 @@ unit they're stored in is for later.
 - Reminder 5 was done at Distance 162400 km.
 - Reminder 5 was done by Service 12.
 
+> We're away in May: move the air conditioning to June. Then: forget it,
+> it's fine; check it with the next service instead.
+
+- Rescheduling 1 is of Reminder 6.
+- Rescheduling 1 was made at Moment 2027-04-28 20:10 by User 'anna@example.org'.
+- Rescheduling 1 moved from Date 2027-05-01.
+- Reminder 6 is due on Date 2027-06-01.
+- Reminder 6 was cancelled on Date 2027-05-25.
+- Reminder 9 replaces Reminder 6.
+
 A **schedule** is planned work: which work, and how often, by distance,
 by time, or both, whichever comes first. The work is a task (what a
 service does), a kind of expense (what an expense pays for) or a
 checklist (what an inspection goes through). It is never done itself.
 
 A **reminder** is one time the work is due. The work it's for is its
-schedule's, or, set once by hand with no schedule, its own. It is done by
-the first record of that work after it was set: a service that includes
-the task, an expense of that kind, or an inspection through the
-checklist. Saving such a record marks the
-reminder done, with the record's moment and distance, and links it to the
-record; the owner may also mark one done by hand, with no record. A
-schedule's reminders come one after another: when one is done, the next
-is due its intervals after when and where it was done. Users write their
-own schedules and reminders, per vehicle; there's no manufacturer's
-catalogue for now.
+schedule's, or, set once by hand with no schedule, its own. It is open,
+done or cancelled. It is done by the first record of that work after it
+was set: a service that includes the task, an expense of that kind, or an
+inspection through the checklist; the reminder is then done at the
+record's moment, and at its distance when it has one, and links to it. The
+owner may also mark one done by hand, with no record. A reminder skipped
+or given up is cancelled, on a date, and may be replaced by a new one. One
+moved to another date or distance keeps what it is due at now, and a
+**rescheduling** says what it was due at before, when and by whom it was
+moved. A schedule's reminders come one after another: when one is done,
+the next is due its intervals after when and where it was done; a
+schedule has one open at a time. Users write their own schedules and
+reminders, per vehicle; there's no manufacturer's catalogue for now.
+
+Closing a reminder, making the next, reopening one whose record was
+entered in error: these are things the app does as it records what
+happened, not facts derived from others. [PROCESSES.md](PROCESSES.md)
+describes them.
 
 ### Reports
 
@@ -716,6 +734,7 @@ Document cost Money                             d1 | 610 EUR
 Expense is of Vehicle                           e12 | v1
                                                 e13 | v1
 Expense was at Moment                           e12 | 2026-08-03 06:15
+Expense was at Distance                         e13 | 152950 km
 Expense is of ExpenseKind                       e12 | 'Parking'
                                                 e13 | 'Toll'
 Expense cost Money                              e12 | 36 EUR
@@ -786,6 +805,13 @@ Reminder was done at Moment                     m5 | 2027-05-20 11:00
 Reminder was done at Distance                   m5 | 162400 km
 Reminder was done by Service                    m5 | s12
 Reminder was done by Expense                    m7 | e20
+Reminder was cancelled on Date                  m6 | 2027-05-25
+Reminder replaces Reminder                      m9 | m6
+Rescheduling is of Reminder                     rs1 | m6
+Rescheduling was made at Moment                 rs1 | 2027-04-28 20:10
+Rescheduling was made by User                   rs1 | anna@example.org
+Rescheduling moved from Date                    rs1 | 2027-05-01
+Rescheduling moved from Distance                rs2 | 160000 km
 ```
 
 A reminder from a schedule is for the schedule's work; "is for" on a
@@ -794,7 +820,11 @@ that includes it; work that is a kind of expense, by an expense of that
 kind. A schedule's reminders are kept as records: when one is done, the
 app makes the next one, due its intervals after when and where it was
 done. The owner may change any reminder afterwards, its due distance and
-date included.
+date included; moving it records a rescheduling, from what it was due at.
+Done (at a moment, maybe at a distance and by a record) and cancelled (on
+a date) are entered facts: the app's service layer enters them as it
+records the work, and clears them when that record is discarded
+([PROCESSES.md](PROCESSES.md)).
 
 ### Checklists and inspections
 
@@ -947,7 +977,7 @@ Each in the user's preferred units and currency, unless it says otherwise.
     last reminder was done + the schedule's intervals. Before any was
     done, counted from when the schedule was set up: its first reminder's
     due distance and date are given then.
-11. *Whether a reminder is due, or overdue:* not done, and the vehicle's
+11. *Whether a reminder is due, or overdue:* open, and the vehicle's
     latest reading has reached its distance, or today its date, whichever
     comes first.
 12. *How far and how long until a reminder is due:* its due distance − the
@@ -1137,7 +1167,7 @@ honestly be missing, and each such case is listed with why.
 | TyreSet | vehicle, name, season, model, size | price and the date bought, both or neither (a set that came with the car) |
 | TyreChange | vehicle, moment, distance, the set fitted, tread, driver | |
 | Document | vehicle, kind, issuer, number, valid from | expiry (a registration certificate doesn't expire); cost (some are free) |
-| Expense | vehicle, moment, kind, cost, driver | what it was charged in another currency |
+| Expense | vehicle, moment, kind, cost, driver | distance (any event may say one); what it was charged in another currency |
 | Income | vehicle, moment, kind, money, driver | distance (a refund comes away from the car); the trip (only a ride logged as a trip has one); instalments (paid at once, when missing) |
 | Attachment | the record it is of, file name | |
 | Checklist | who keeps it, name | questions (a new checklist, still being written) |
@@ -1146,15 +1176,16 @@ honestly be missing, and each such case is listed with why.
 | Inspection | vehicle, checklist, moment, distance, driver | answers (a question may be left unanswered) |
 | Answer | inspection, question | yes or no (an any-of answer has none); options chosen (none may apply); note |
 | Schedule | vehicle; its work: a task, a kind of expense or a checklist, exactly one (exclusive-or); at least one interval | the other interval: it may recur by distance only, by time only, or both (inclusive-or); note |
-| Reminder | vehicle; a due distance or a due date or both (inclusive-or); its schedule or work of its own, a task, a kind of expense or a checklist, exactly one of the four (exclusive-or) | note; the done moment, done distance and the record that did it, until it is done; then the moment and distance are a must, the record optional (done by hand); that record is a service, an expense or an inspection, exactly one (exclusive-or) |
+| Reminder | vehicle; a due distance or a due date or both (inclusive-or); its schedule or work of its own, a task, a kind of expense or a checklist, exactly one of the four (exclusive-or) | note; the done moment, done distance and the event that did it, until it is done; then the moment is a must, the distance and the event optional (an event with no distance, or done by hand); the date it was cancelled, until it is (not both done and cancelled); the reminder it replaces, and the one replacing it |
+| Rescheduling | the reminder, when and by whom it was made; what the reminder was due at before, a date or a distance or both (inclusive-or) | note |
 | Every record | who entered it | note; attachments (any number, none included) |
 | Money, Distance, Volume | amount and currency; quantity and unit | |
 | An exchange rate | all four roles | |
 
 Two of these are more than single mandatory roles:
-- **A reminder that is done** has both a done moment and a done distance.
-  That's an equality constraint between the two (step 6): it has one if and
-  only if it has the other.
+- **A reminder that is done** has a done moment, and a done distance only
+  with it: a subset constraint (step 6). An expense with no distance does
+  a reminder's work too, so a done reminder need not have a distance.
 - **"FillUp filled the tank"** is yes or no: a fill-up that doesn't say so
   didn't fill it. A unary can't be mandatory; leaving it out is the "no".
 
@@ -1181,14 +1212,19 @@ Facts worked out from others by rules, not arithmetic:
 3. **Who a vehicle is shared with:** its drivers other than its owner.
 4. **A reminder's work** (a task, a kind of expense or a checklist): its
    own, or its schedule's. Its note likewise.
-5. **Whether a reminder is done:** it has a done moment.
-6. **What did a reminder's work** (`Reminder was done by Service`, `by
-   Expense` or `by Inspection`): the first record of its vehicle, after it
-   was set, that does its work: a service with an item of its task, an
-   expense of its kind, or an inspection through its checklist. *Derived and stored*: when such a record is saved, the reminder
-   not yet done is marked done with the record's moment and distance, and
-   linked to it. The owner may change that afterwards, or mark a reminder
-   done by hand.
+5. **Whether a reminder is open, done or cancelled:** done, it has a done
+   moment; cancelled, a cancel date; open, neither.
+6. **What did a reminder's work** (`Reminder was done by Event`): the
+   first record of its vehicle, after it was set, that does its work: a
+   service with an item of its task, an expense of its kind, or an
+   inspection through its checklist. *Not a derivation:* the app's service
+   layer, saving such a record, enters the reminder done by it, at its
+   moment and at its distance when it has one, and makes the schedule's
+   next ([PROCESSES.md](PROCESSES.md)). The owner may change that
+   afterwards, or mark a reminder done by hand. What the model says of it
+   is checked: done by an event, at that event's moment
+   (`ReminderDoneAtItsEventsMoment`), and at its distance where it has one
+   (`ReminderDoneAtItsEventsMileage`).
 7. **That a vehicle was sold, when and for how much:** from its income of
    kind 'Car sale', the date of its moment and its money. A vehicle has at
    most one (step 6).
@@ -1264,18 +1300,23 @@ FillUp, Service, TyreChange, Expense, Income, Inspection. Once, of Event:
   moment);
 - Event had driver User.
 
-**MeteredEvent** is an event that was at a distance: every meter reading,
-trip (where it started), fill-up, service, tyre change and inspection.
-"MeteredEvent was at Distance" is said once, of it, and is a must there.
-This answers step 1's question: each of these gives a reading of the
-meter, and a MeterReading is the event that does nothing else.
+**MeteredEvent** is an event that was at a distance: *each MeteredEvent is
+by definition an Event that was at some Distance* (`MeteredEventRule`).
+"Event was at Distance" is said once, of Event, and is optional there: an
+expense or an income may say its distance, and need not. Every meter
+reading, trip (where it started), fill-up, service, tyre change and
+inspection is asserted a MeteredEvent, so its distance is a must: the
+generated code checks "Each FillUp is a MeteredEvent" as a rule of
+FillUp, and the same of the others. This answers step 1's question: each
+of these gives a reading of the meter, and a MeterReading is the event
+that does nothing else. A vehicle's reading at a moment (derivation 6),
+and the meter going up, are over its MeteredEvents: every event with a
+distance.
 
-An income may say its distance, and need not: "Income was at Distance" is
-its own, optional. So MeteredEvent is not defined by having a distance (a
-subtype by a rule, which ORMKit cannot enforce yet, would have left every
-fill-up's distance optional in the store); it is asserted, and its
-subtypes are those whose distance is a must. A vehicle's reading at a
-moment (derivation 6) is over MeteredEvents and incomes.
+MeteredEvent is no entity of its own in Core Data (a derived subtype's
+fact types are its supertype's): the distance is Event's, optional there,
+and FillUp, Service, Trip, TyreChange, MeterReading and Inspection are
+Event's subentities.
 
 **Cost** is a record that cost money: *each Cost is a Record that cost
 some Money*. Every fill-up, service and expense is one; a tyre set or a
@@ -1316,11 +1357,13 @@ the vehicle's side: a vehicle is sold at most once. The vehicle's sale
 ### Set-comparison constraints
 
 **Equality** (one if and only if the other):
-- a reminder's done moment and its done distance;
 - a tyre set's price and its date bought.
 
 **Subset** (the one only with the other):
-- *Reminder was done by Event* only for a reminder with a done moment;
+- *Reminder was done by Event*, and *Reminder was done at Distance*, only
+  for a reminder with a done moment;
+- *Reminder replaces Reminder* only where both are of the same vehicle (a
+  join subset);
 - *Income was for Trip* only where the income and the trip are of the
   same vehicle; the same for *Reminder was done by Event*, *Reminder comes
   from Schedule*, *TyreChange fitted TyreSet* and *TyreChange removed
@@ -1339,6 +1382,7 @@ the vehicle's side: a vehicle is sold at most once. The vehicle's sale
 **Exclusion** (not both):
 - a tyre change doesn't fit and remove the same set (a set already on
   isn't fitted again);
+- a reminder is not both done and cancelled;
 - a reminder comes from a schedule, or is for a task, a kind of expense
   or a checklist of its own: exactly one (step 5's exclusive-or; a
   schedule's the same, over its three);
@@ -1364,6 +1408,8 @@ A ring constraint is on two roles played by the same type. Logbook has
 few such fact types; one needs a constraint:
 - **On Date one Currency was worth Factor Currency:** irreflexive over
   the two currencies. A currency isn't worth anything in itself.
+- **Reminder replaces Reminder:** acyclic, so irreflexive too. A reminder
+  replaces at most one, and is replaced by at most one.
 
 ### Value comparisons
 
@@ -1379,10 +1425,14 @@ A value comparison constraint compares two values of one instance.
 
 ### Frequency constraints
 
-- **A schedule has at most one reminder not yet done.** The next is made
-  only when one is done. That's a uniqueness on a subtype: *each
-  OpenReminder is a Reminder that was not done*, and *OpenReminder comes
-  from Schedule* is unique on the schedule's side.
+- **A schedule has at most one reminder open,** neither done nor
+  cancelled. The next is made only when one is done (or cancelled). That's
+  a uniqueness on a subtype: *each OpenReminder is a Reminder that was
+  neither done nor cancelled*, and *OpenReminder comes from Schedule* is
+  unique on the schedule's side; written as a rule (`OneOpenReminder`). A
+  vehicle may have several open, of its schedules and one-offs. Two
+  devices offline making a schedule's next both: the server refuses the
+  second, and the sync settles it.
 - **A checklist an inspection went through has at least one question.**
 
 ### Deontic constraints: what ought to be, not what must
@@ -1438,8 +1488,10 @@ Each derivable fact is derived, unless kept for a reason:
 - **A reminder's vehicle,** for one from a schedule, is the schedule's.
   *Partly derived*: stored for a reminder of its own, derived for one
   from a schedule. The join subset of step 6 then always holds.
-- **A schedule's next reminder, its due distance and date:** *derived and
-  stored*, because the owner may change them afterwards (step 2).
+- **A schedule's next reminder, its due distance and date:** entered, by
+  the app's service layer when it makes the next reminder, and the owner
+  may change them afterwards (step 2). That's a process, not a derivation
+  ([PROCESSES.md](PROCESSES.md)); `ReminderNextDue` says when by date.
 - **The reverse exchange rate:** *derived and stored*, so reports read
   both directions alike (step 5).
 - **A service's cost, a vehicle's sale, a record's kind of cost, the
@@ -1502,7 +1554,11 @@ its unit's factor and a product.
 What no graphical constraint says is a rule, a query whose answers are
 what must not be ([RULES.md](../../NativeORM2/docs/RULES.md)), written
 in the schema as its outline:
-- a schedule has at most one reminder not yet done (`OneOpenReminder`);
+- a schedule has at most one reminder open, neither done nor cancelled
+  (`OneOpenReminder`);
+- a reminder done by an event was done at its moment, and at its distance
+  where it has one (`ReminderDoneAtItsEventsMoment`,
+  `ReminderDoneAtItsEventsMileage`);
 - an answer's options are its question's; yes or no only for a yes-or-no
   question, options only for an any-of one (`AnswerOptionsOfItsQuestion`,
   `YesOrNoAnswers`, `AnyOfAnswers`, `OptionsOfAnyOfQuestions`);
@@ -1526,7 +1582,11 @@ each full tank, the fuel put in since the full tank before over the
 distance since (`FullTankConsumption`). Dates are computed too: how long
 a trip lasted, a fact type derived by a query with a value node ("Trip
 lasted Minutes", `TripLasted`; `TripDuration` lists it), and when a done reminder's
-schedule is next due by date (`ReminderNextDue`). The report by month is
+schedule is next due by date (`ReminderNextDue`); which open reminders
+are overdue, by date (`OverdueReminders`, against `today()`) or by the
+vehicle's latest distance (`OverdueByMileage`), and which were closed late,
+done or cancelled after their date (`LateReminders`) or done past their
+distance (`DoneLateByMileage`). The report by month is
 a grouped list: each vehicle's costs for each month in its owner's
 currency, each cost at the latest exchange rate on or before its day, the
 latest month first (`CostsByMonth`).
@@ -1546,15 +1606,18 @@ are stored as well (a record's vehicle, its cost). Who drives a vehicle is
 partly derived and not stored: the users it is shared with are entered,
 and its owner drives it by a rule (`OwnerDrives`), which queries and the
 rules about drivers go through beside what is entered. Every constraint is
-checked: 57, by the generated code.
+checked: 72, by the generated code.
 
 The subtypes defined by a rule keep it as NORMA keeps a subtype's
 derivation rule, and run it as a query: a Cost is a record that cost
-some money (`CostRule`), a CarSale an income of kind 'Car sale'
+some money (`CostRule`), a MeteredEvent an event at some distance
+(`MeteredEventRule`), a CarSale an income of kind 'Car sale'
 (`CarSaleRule`), a ServiceKind a cost kind that is 'Maintenance' or
 'Repair' (`ServiceKindRule`, one of a list). A derived subtype is no
 entity of its own in Core Data: its fact types are its supertype's, so
-every record has what a cost is charged, whichever entity it is.
+every record has what a cost is charged, whichever entity it is. A
+subtype asserted of one (a FillUp is a Cost and a MeteredEvent) is
+checked to be one by its rule.
 
 ## Next
 

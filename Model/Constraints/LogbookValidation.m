@@ -76,6 +76,46 @@
 	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"CostsByMonth" model:model error:error];
 }
 
++ (ORMQueryResult *)overdueRemindersInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"OverdueReminders" inContext:context error:error];
+}
+
++ (ORMQueryOData *)overdueRemindersRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"OverdueReminders" model:model error:error];
+}
+
++ (ORMQueryResult *)overdueByMileageInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"OverdueByMileage" inContext:context error:error];
+}
+
++ (ORMQueryOData *)overdueByMileageRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"OverdueByMileage" model:model error:error];
+}
+
++ (ORMQueryResult *)lateRemindersInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"LateReminders" inContext:context error:error];
+}
+
++ (ORMQueryOData *)lateRemindersRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"LateReminders" model:model error:error];
+}
+
++ (ORMQueryResult *)doneLateByMileageInContext:(NSManagedObjectContext *)context error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] runQuery:@"DoneLateByMileage" inContext:context error:error];
+}
+
++ (ORMQueryOData *)doneLateByMileageRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error
+{
+	return [[ORMTables tablesNamed:@"Logbook" error:error] requestForQuery:@"DoneLateByMileage" model:model error:error];
+}
+
 @end
 
 @implementation LogbookReferenceData
@@ -239,6 +279,21 @@
 @end
 
 @implementation VehicleDriver (ORMValidation)
+
+- (BOOL)orm_validateConstraints:(NSError **)error
+{
+	ORMValidator *validator = [ORMValidator validatorNamed:@"Logbook" error:error];
+	return validator != nil && [validator validate:self error:error];
+}
+
+- (NSArray<NSError *> *)orm_deonticViolations
+{
+	return [[ORMValidator validatorNamed:@"Logbook" error:NULL] violationsOf:self deontic:YES] ?: @[];
+}
+
+@end
+
+@implementation Rescheduling (ORMValidation)
 
 - (BOOL)orm_validateConstraints:(NSError **)error
 {

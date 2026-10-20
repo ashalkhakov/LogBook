@@ -197,9 +197,16 @@ Event was at Moment (as Timestamp)
 Each Event was at exactly one Moment.
 Event had driver User (as Driver)
 Each Event had driver exactly one User.
-Each MeteredEvent is an Event.
-MeteredEvent was at Distance (as Mileage)
-Each MeteredEvent was at exactly one Distance.
+Event was at Distance (as Mileage)
+Each Event was at at most one Distance.
+// A metered event is one at a mileage: fill-ups, services, trips, tyre
+// changes, meter readings and inspections are, so theirs is mandatory.
+Each MeteredEvent is by definition an Event that was at some Distance.
+
+Query MeteredEventRule:
+Derivation of MeteredEvent:
+✓Event
+  + was at Distance
 
 Record cost Money (as Total)
 ++ A service's: the sum of its items' costs, less its discount, in its currency.
@@ -615,8 +622,6 @@ Income is of IncomeKind
 Each Income is of exactly one IncomeKind.
 Income earned Money (as Earned)
 Each Income earned exactly one Money.
-Income was at Distance (as Mileage)
-Each Income was at at most one Distance.
 Income was paid in Instalments
 Each Income was paid in at most one Instalments.
 Income was for Trip
@@ -770,25 +775,48 @@ Reminder is for Checklist
 Each Reminder is for at most one Checklist.
 For each Reminder, exactly one of the following holds: that Reminder comes from some Schedule; that Reminder is for some Task; that Reminder is for some ExpenseKind; that Reminder is for some Checklist.
 If some Reminder comes from some Schedule and that Reminder is of some Vehicle then that Schedule is of that Vehicle.
+// What is due, done and cancelled is entered: the app's service layer
+// works it out as it records what happened (docs/PROCESSES.md).
 Reminder is due at Distance (as DueMileage)
-++ A schedule's next reminder: the distance its last was done at, and the schedule's interval; the owner may change it.
 Each Reminder is due at at most one Distance.
 Reminder is due on Date (as DueDate)
-++ A schedule's next reminder: the date its last was done on, and the schedule's interval; the owner may change it.
 Each Reminder is due on at most one Date.
 Each Reminder is due at some Distance or is due on some Date.
+// A reminder is open, done or cancelled.
 Reminder was done at Moment (as DoneAt)
-++ The moment of the event that did its work, when one did.
 Each Reminder was done at at most one Moment.
 Reminder was done at Distance (as DoneMileage)
-++ The distance of the event that did its work, when one did.
 Each Reminder was done at at most one Distance.
-For each Reminder, that Reminder was done at some Moment if and only if that Reminder was done at some Distance.
+If some Reminder was done at some Distance then that Reminder was done at some Moment.
 Reminder was done by Event
-++ The first event of its vehicle, after it was set, that does its work: a service with an item of its task, an expense of its kind, an inspection through its checklist.
 Each Reminder was done by at most one Event.
 If some Reminder was done by some Event then that Reminder was done at some Moment.
 If some Reminder was done by some Event and that Reminder is of some Vehicle then that Event is of that Vehicle.
+Reminder was cancelled on Date (as CancelDate)
+Each Reminder was cancelled on at most one Date.
+No Reminder was done at some Moment and was cancelled on some Date.
+Reminder (as Replacement) replaces Reminder (as Replaced)
+Each Reminder replaces at most one Reminder.
+For each Reminder, at most one Reminder replaces that Reminder.
+No Reminder may cycle back to itself via one or more traversals through Reminder replaces Reminder.
+If some Reminder1 replaces some Reminder2 that is of some Vehicle then Reminder1 is of that Vehicle.
+
+// A reminder done by an event was done when it was, and at its mileage
+// where it has one.
+Query ReminderDoneAtItsEventsMoment:
+It is impossible that:
+✓Reminder
+  + was done by Event
+    + was at Moment1
+  + not was done at Moment1
+
+Query ReminderDoneAtItsEventsMileage:
+It is impossible that:
+✓Reminder
+  + was done by Event
+    + was at Distance1
+  + not was done at Distance1
+
 // When a done reminder's schedule is next due by date: the day it was
 // done, and the schedule's months.
 Query ReminderNextDue:
@@ -798,10 +826,81 @@ Query ReminderNextDue:
     + recurs after Duration
   ✓NextDue: Date = addMonths(date(Moment), Duration)
 
-// A schedule has at most one reminder not yet done.
+// A schedule has at most one reminder open: neither done nor cancelled. A
+// vehicle may have several, of its schedules and one-offs.
 Query OneOpenReminder:
 It is impossible that:
 ✓Schedule
   + Reminder comes from that Schedule
     + not was done at Moment
+    + not was cancelled on Date
     + count(Reminder) for Schedule > 1
+
+// Overdue: open, and due on a day gone by; or at a distance the vehicle
+// has reached, in kilometres whatever the units.
+Query OverdueReminders:
+✓Reminder
+  + is due on ✓Date1
+  + not was done at Moment
+  + not was cancelled on Date2
+  Today: Date = today() > Date1
+
+Query OverdueByMileage:
+✓Reminder
+  + is due at Distance1
+    + has Quantity1
+    + is in DistanceUnit1
+      + is worth Factor1 km
+  + not was done at Moment
+  + not was cancelled on Date
+  + is of Vehicle
+    + Record is of that Vehicle
+      + is Event
+        + was at Distance2
+          + has Quantity2
+          + is in DistanceUnit2
+            + is worth Factor2 km
+        Km2 = Quantity2 * Factor2
+  Latest = max(Km2) for Reminder
+  Due = Quantity1 * Factor1 <= Latest
+
+// Late: done or cancelled after the day it was due; done past the
+// distance it was due at.
+Query LateReminders:
+✓Reminder
+  + is due on ✓Date1
+  + maybe was done at Moment
+  + maybe was cancelled on Date2
+  ✓Closed: Date = coalesce(date(Moment), Date2) > Date1
+
+Query DoneLateByMileage:
+✓Reminder
+  + is due at Distance1
+    + has Quantity1
+    + is in DistanceUnit1
+      + is worth Factor1 km
+  + was done at Distance2
+    + has Quantity2
+    + is in DistanceUnit2
+      + is worth Factor2 km
+  Due = Quantity1 * Factor1
+  Done = Quantity2 * Factor2 > Due
+
+// A reminder moved: when, by whom, and from what it was due at; the
+// reminder keeps what it is due at now.
+Rescheduling is an entity type.
+Reference Mode: .id
+Portable data type: Other: Object ID
+Rescheduling is of Reminder
+Each Rescheduling is of exactly one Reminder.
+Rescheduling was made at Moment (as MadeAt)
+Each Rescheduling was made at exactly one Moment.
+Rescheduling was made by User (as MadeBy)
+Each Rescheduling was made by exactly one User.
+Rescheduling moved from Date (as FromDate)
+Each Rescheduling moved from at most one Date.
+Rescheduling moved from Distance (as FromMileage)
+Each Rescheduling moved from at most one Distance.
+Each Rescheduling moved from some Date or moved from some Distance.
+Rescheduling has Note
+Each Rescheduling has at most one Note.

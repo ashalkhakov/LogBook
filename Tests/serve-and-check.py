@@ -14,7 +14,16 @@ The rules, with no one signed in:
   change set);
 - a change set whose change fits the set the change before it fitted (so
   removes the set it fits) breaks a rule: refused, 400, and none of it
-  saved; the same alone, as one request.
+  saved; the same alone, as one request;
+- any event may be at a mileage: an expense with one and one without are
+  saved; a meter reading without one is refused (a MeteredEvent is an
+  event at some distance);
+- reminders: one done by an expense with no mileage is saved, done at
+  another moment than the expense's refused; done and cancelled refused;
+  a replacement of another vehicle's reminder refused; two open reminders
+  of one schedule refused, but open ones of other schedules and one-offs
+  of the vehicle saved, and the schedule's next once the open one is
+  cancelled; a rescheduling saved, one that moved from nothing refused.
 
 Who may do what, signed in with OpenID Connect, as deployed (JWTIssuer,
 AllowAnonymous NO): an issuer of its own here stands in for the provider
@@ -242,6 +251,104 @@ def the_rules():
     # A request's answer has each violation a detail; a batch's the message.
     message = json.dumps(body)
     check("the refusal names the rule", "removed the same TyreSet" in message, message)
+    mileage_and_reminders(anna, vehicle)
+
+
+def expense(vehicle, kind, moment, user, km=None):
+    body = {"@odata.type": "#Default.Expense", "Id": str(uuid.uuid4()), "Timestamp": moment,
+            "TotalAmount": 12.5, "TotalCurrency": "EUR", "ExpenseKind@odata.bind": "CostKinds('%s')" % kind,
+            "Driver@odata.bind": "Users('%s')" % user, "EnteredBy@odata.bind": "Users('%s')" % user,
+            "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+    if km is not None:
+        body.update({"MileageQuantity": km, "MileageDistanceUnit@odata.bind": "DistanceUnits('km')"})
+    return body
+
+
+def reminder(vehicle, user, **facts):
+    """A reminder of the vehicle, due on a date, for what the facts say:
+    Kind (an expense kind), Schedule (a schedule's id), else a task."""
+    body = {"@odata.type": "#Default.Reminder", "Id": str(uuid.uuid4()), "DueDate": facts.pop("due", "2026-06-01"),
+            "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+    kind, schedule = facts.pop("Kind", None), facts.pop("Schedule", None)
+    if kind:
+        body["ExpenseKind@odata.bind"] = "CostKinds('%s')" % kind
+    elif schedule:
+        body["Schedule@odata.bind"] = "Records(%s)" % schedule
+    else:
+        body["Task"] = "Wash"
+    body.update(facts)
+    return body
+
+
+def mileage_and_reminders(anna, vehicle):
+    """Mileage on every event, and reminders: done, cancelled, replaced,
+    rescheduled; one open a schedule."""
+    check("a kind of expense", request("POST", "CostKinds", {"@odata.type": "#Default.ExpenseKind", "Name": "Wash"})[0] == 201)
+    status, body = request("POST", "Records", expense(vehicle, "Wash", "2026-05-01T09:00:00Z", anna, km=12000))
+    check("an expense at a mileage", status == 201 and body.get("MileageQuantity") == 12000, (status, body))
+    without = expense(vehicle, "Wash", "2026-05-02T09:00:00Z", anna)
+    status, body = request("POST", "Records", without)
+    check("an expense with none", status == 201, (status, body))
+    status, body = request("POST", "Records", {"@odata.type": "#Default.MeterReading", "Id": str(uuid.uuid4()),
+                                               "Timestamp": "2026-05-03T09:00:00Z", "Driver@odata.bind": "Users('%s')" % anna,
+                                               "EnteredBy@odata.bind": "Users('%s')" % anna,
+                                               "Vehicle@odata.bind": "Vehicles(%s)" % vehicle})
+    check("a meter reading with none is refused (it is a MeteredEvent)", status == 400 and "MeteredEvent" in json.dumps(body),
+          (status, body))
+
+    done = reminder(vehicle, anna, Kind="Wash", **{"Event@odata.bind": "Records(%s)" % without["Id"],
+                                                   "DoneAt": without["Timestamp"]})
+    status, body = request("POST", "Records", done)
+    check("a reminder done by an expense with no mileage", status == 201, (status, body))
+    status, body = request("POST", "Records", reminder(vehicle, anna, Kind="Wash", **{
+        "Event@odata.bind": "Records(%s)" % without["Id"], "DoneAt": "2026-05-02T10:00:00Z"}))
+    check("done by it at another moment is refused", status == 400 and "was done at that Moment" in json.dumps(body),
+          (status, body))
+    status, body = request("POST", "Records", reminder(vehicle, anna, DoneAt="2026-05-02T10:00:00Z", CancelDate="2026-05-02"))
+    check("done and cancelled is refused", status == 400, (status, body))
+    cancelled = reminder(vehicle, anna, CancelDate="2026-05-02")
+    check("cancelled", request("POST", "Records", cancelled)[0] == 201)
+    status, body = request("POST", "Records", reminder(vehicle, anna, **{"Replaced@odata.bind": "Records(%s)" % cancelled["Id"]}))
+    check("replaced by another of the vehicle", status == 201, (status, body))
+
+    other = vehicle_body(anna)
+    check("another vehicle", request("POST", "Vehicles", other)[0] == 201)
+    elsewhere = reminder(other["Id"], anna, CancelDate="2026-05-02")
+    check("a reminder of it, cancelled", request("POST", "Records", elsewhere)[0] == 201)
+    status, body = request("POST", "Records", reminder(vehicle, anna, **{"Replaced@odata.bind": "Records(%s)" % elsewhere["Id"]}))
+    check("a replacement of another vehicle's is refused", status == 400, (status, body))
+
+    schedules = []
+    for kind in ("Wash", "Parking"):
+        if kind != "Wash":
+            request("POST", "CostKinds", {"@odata.type": "#Default.ExpenseKind", "Name": kind})
+        schedule = {"@odata.type": "#Default.Schedule", "Id": str(uuid.uuid4()), "Duration": 6,
+                    "ExpenseKind@odata.bind": "CostKinds('%s')" % kind, "EnteredBy@odata.bind": "Users('%s')" % anna,
+                    "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+        status, body = request("POST", "Records", schedule)
+        check("a schedule (%s)" % kind, status == 201, (status, body))
+        schedules.append(schedule["Id"])
+    first = reminder(vehicle, anna, Schedule=schedules[0])
+    check("its open reminder", request("POST", "Records", first)[0] == 201)
+    status, body = request("POST", "Records", reminder(vehicle, anna, Schedule=schedules[0], due="2026-07-01"))
+    check("a second open one of the schedule is refused", status == 400 and "the number of that Reminder is greater than 1" in json.dumps(body),
+          (status, body))
+    status, body = request("POST", "Records", reminder(vehicle, anna, Schedule=schedules[1]))
+    check("one of another schedule of the vehicle, open too", status == 201, (status, body))
+    status, body = request("POST", "Records", reminder(vehicle, anna))
+    check("and a one-off, open", status == 201, (status, body))
+    status, body = request("PATCH", "Records(%s)" % first["Id"], {"@odata.type": "#Default.Reminder", "CancelDate": "2026-05-04"})
+    check("the schedule's cancelled", status in (200, 204), (status, body))
+    status, body = request("POST", "Records", reminder(vehicle, anna, Schedule=schedules[0], due="2026-07-01"))
+    check("then its next", status == 201, (status, body))
+
+    rescheduling = {"Id": str(uuid.uuid4()), "Reminder@odata.bind": "Records(%s)" % done["Id"],
+                    "MadeAt": "2026-05-01T08:00:00Z", "MadeBy@odata.bind": "Users('%s')" % anna, "FromDate": "2026-05-15",
+                    "Note": "away"}
+    status, body = request("POST", "Reschedulings", rescheduling)
+    check("a rescheduling saved", status == 201, (status, body))
+    status, body = request("POST", "Reschedulings", dict(rescheduling, Id=str(uuid.uuid4()), FromDate=None))
+    check("one that moved from nothing is refused", status == 400, (status, body))
 
 
 def who_may():

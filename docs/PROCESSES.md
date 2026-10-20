@@ -1,0 +1,173 @@
+# Processes: what the app does with reminders
+
+The model ([CSDP.md](CSDP.md), [`Model/Logbook.forml`](../Model/Logbook.forml))
+says what may be recorded of schedules and reminders, and what must hold
+of it. It does not say what happens when: that a reminder is closed when
+an event does its work, that the schedule's next one is then made, that
+one closed by a record entered in error opens again. Those are processes,
+carried out by the app's service layer, one change at a time; the model's
+rules are checked on what each change leaves (the generated code, at
+save). None of them is a derivation, and none is in the model.
+
+**Where they run.** The desktop app runs each as an OData action on the
+server, in one change set: the server carries out the procedure and saves
+it whole, or refuses it with the rule it breaks. The mobile app, offline,
+queues each as an intent (what the user asked for, with the ids it made)
+and sends it once online, where the server carries it out the same way.
+What the actions and intents look like is for later; this is what each
+one does.
+
+The facts below are the model's, as the verbalizer says them.
+
+## 1. Set up a schedule
+
+The owner plans recurring work for a vehicle: a task (an oil change), a
+kind of expense (the parking permit) or a checklist (the monthly
+inspection), every so far, every so many months, or both, whichever comes
+first.
+
+The service layer records the schedule:
+- Schedule is of Vehicle; Schedule was entered by User;
+- Schedule is for Task, or for ExpenseKind, or for Checklist (exactly
+  one);
+- Schedule recurs after Distance, and/or recurs after Duration (at least
+  one);
+- maybe Schedule has Note.
+
+Then it makes the schedule's first reminder (2).
+
+## 2. Make a schedule's first reminder
+
+Due from now, or from the last time the work was done, as the owner says
+(the oil was last changed at 148,000 km on 2026-06-01).
+
+The service layer works out where it is due from: the moment and distance
+given, else the latest event of the vehicle that did the work (a service
+with an item of the task, an expense of the kind, an inspection through
+the checklist), else now and the vehicle's latest distance. It adds the
+schedule's intervals: the distance interval to the distance, the months
+to the date (as `ReminderNextDue` does for the date). It records:
+- Reminder comes from Schedule; Reminder is of Vehicle (the schedule's);
+  Reminder was entered by User;
+- Reminder is due at Distance, where the schedule recurs after a distance;
+- Reminder is due on Date, where it recurs after a duration.
+
+The schedule then has one open reminder (`OneOpenReminder`).
+
+## 3. A one-off reminder
+
+The owner asks to be reminded once: have the air conditioning checked by
+2027-05-01. The service layer records a reminder with no schedule:
+- Reminder is of Vehicle; Reminder was entered by User;
+- Reminder is for Task, or for ExpenseKind, or for Checklist (exactly
+  one, as a schedule's work would be);
+- Reminder is due at Distance and/or is due on Date;
+- maybe Reminder has Note.
+
+A vehicle may have any number of open reminders: one per schedule, and
+one-offs.
+
+## 4. An event does a reminder's work: it is closed
+
+A service is saved with an item of an oil change; an expense of the
+permit's kind; an inspection through the checklist. Saving it (adding the
+event, or changing it so that it now does the work), the service layer
+finds the open reminders of the event's vehicle that the event does the
+work of: for a schedule's reminder, the schedule's work; for a one-off,
+its own. For each, in the same change:
+- Reminder was done by Event;
+- Reminder was done at Moment: the event's moment;
+- Reminder was done at Distance: the event's distance, where it has one
+  (an expense need not).
+
+The rules hold it to that: a reminder done by an event was done at the
+event's moment (`ReminderDoneAtItsEventsMoment`) and at its distance where
+it has one (`ReminderDoneAtItsEventsMileage`); done by an event of its
+vehicle; done at a distance only with a moment.
+
+The owner may close a reminder by hand too, with no event: done at a
+moment, and at a distance if they say one.
+
+For a schedule's reminder, the service layer then makes the next (5).
+
+## 5. The schedule's next reminder
+
+When a schedule's reminder is done, the service layer makes the next, in
+the same change: due its intervals after when and where the last was done.
+- Reminder comes from Schedule (the same); Reminder is of Vehicle;
+  Reminder was entered by User;
+- Reminder is due on Date: the date of the done moment plus the
+  schedule's months (`ReminderNextDue`);
+- Reminder is due at Distance: the done distance plus the schedule's
+  interval, where it was done at a distance; where it was not (an
+  expense with no distance), the vehicle's latest distance at the done
+  moment plus the interval.
+
+## 6. Postpone or move a reminder
+
+The owner moves a reminder to another date or distance, whether it is
+overdue yet or not: away in May, the air conditioning in June. The
+reminder keeps what it is due at now; what it was due at before is
+recorded with the move:
+- Rescheduling is of Reminder; Rescheduling was made at Moment (now);
+  Rescheduling was made by User;
+- Rescheduling moved from Date: the due date before, where it changed;
+- Rescheduling moved from Distance: the due distance before, where it
+  changed (at least one of the two);
+- maybe Rescheduling has Note (why);
+- and the reminder's Reminder is due on Date / is due at Distance,
+  changed.
+
+## 7. Overdue and late
+
+Queries, not processes: the model has them, and the app runs them.
+- **Overdue:** open (neither done nor cancelled), and due on a day before
+  today (`OverdueReminders`), or at a distance the vehicle has reached, in
+  kilometres whatever the units (`OverdueByMileage`).
+- **Late:** done or cancelled after the day it was due (`LateReminders`,
+  with the day it was closed), or done past the distance it was due at
+  (`DoneLateByMileage`).
+
+## 8. Cancel a reminder
+
+The owner skips one (no inspection this month) or gives up on it (the car
+is sold before the permit runs out). The service layer records:
+- Reminder was cancelled on Date (today, or the day given).
+
+A cancelled reminder is not done too (an exclusion), and its schedule has
+no open reminder until the next is made: the owner may make one at once,
+due when they say, which replaces the one cancelled:
+- the new reminder, as in 2 or 3 (of the same vehicle: a reminder
+  replaces only one of its own vehicle);
+- Reminder replaces Reminder: the new replaces the cancelled.
+
+A reminder replaces at most one and is replaced by at most one, and no
+chain of them comes back to itself.
+
+## 9. A record entered in error is discarded
+
+The owner deletes a service entered by mistake. In the same change, the
+service layer first reopens what it closed, then deletes it:
+- for each reminder done by it: its Reminder was done by Event, was done
+  at Moment and was done at Distance taken away, so it is open again;
+- then the record itself is deleted.
+
+Not settled yet: a schedule's reminder reopened so, while the next one
+made when it closed (5) is still open, would leave the schedule two open
+reminders, which `OneOpenReminder` refuses. Whether that next one goes
+with the record, or the reopened one is cancelled, or the owner is asked,
+is to be decided.
+
+The same for an event changed so that it no longer does the work (a
+service whose oil change item is removed).
+
+## 10. Two devices, offline, both make the next reminder
+
+Anna and Ben both log the oil change offline, on two phones; each phone
+closes the reminder and makes the schedule's next (4, 5). Online, the
+first to send is saved. The second would leave the schedule two open
+reminders: `OneOpenReminder` refuses it at the server, and its change is
+not saved. The sync then settles it: the second device fetches what the
+server has (the reminder done, the next one made) and gives up what it
+made in their place. Two records of the same work, one from each device,
+are the owner's to keep or discard (9).

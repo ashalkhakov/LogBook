@@ -8,6 +8,9 @@
 #import "Expense+CoreDataClass.h"
 #import "Income+CoreDataClass.h"
 #import "Trip+CoreDataClass.h"
+#import "TyreChange+CoreDataClass.h"
+#import "MeterReading+CoreDataClass.h"
+#import "Inspection+CoreDataClass.h"
 
 static void *LBVehicleChosen = &LBVehicleChosen;
 static void *LBRecordChosen = &LBRecordChosen;
@@ -190,7 +193,12 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         event.timestamp = [NSDate date];
         event.driver = user;
     }
-    if ([record isKindOfClass:[MeteredEvent class]]) ((MeteredEvent *)record).mileageDistanceUnit = [self distanceUnit];
+    /* A metered event's odometer, in their unit (any event may have one:
+       an expense, an income). */
+    for (Class metered in @[ [FillUp class], [Service class], [Trip class], [TyreChange class], [MeterReading class],
+                             [Inspection class] ]) {
+        if ([record isKindOfClass:metered]) ((Event *)record).mileageDistanceUnit = [self distanceUnit];
+    }
     if ([record isKindOfClass:[FillUp class]]) {
         FillUp *fillUp = (FillUp *)record;
         fillUp.volumeVolumeUnit = [self volumeUnit];

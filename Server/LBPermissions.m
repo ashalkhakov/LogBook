@@ -13,6 +13,8 @@
 #import "Checklist+CoreDataClass.h"
 #import "Question+CoreDataClass.h"
 #import "Option+CoreDataClass.h"
+#import "Reminder+CoreDataClass.h"
+#import "Rescheduling+CoreDataClass.h"
 
 /* The name of a property as a write's values and a predicate have it: the
    generated class's, so that the compiler knows it. */
@@ -261,6 +263,41 @@ static Record *LBRecordOf(NSManagedObject *object) {
 
 @end
 
+/* A reminder's rescheduling: made by whoever drives its vehicle, made by
+   them; the owner's to change. */
+@interface LBReschedulingHandler : LBPermissionHandler
+@end
+
+@implementation LBReschedulingHandler
+
+- (NSPredicate *)visibleTo:(NSString *)email request:(ODataRequest *)request {
+    return LBDriven([LBKey(reminder) stringByAppendingFormat:@".%@", LBKey(vehicle)], email);
+}
+
+- (NSString *)whyNotAdd:(NSDictionary<NSString *, id> *)values email:(NSString *)email {
+    Reminder *reminder = values[LBKey(reminder)];
+    if (![reminder isKindOfClass:[Reminder class]]) return @"A rescheduling names its reminder";
+    return LBDrives(reminder.vehicle, email) ? nil : @"Only who drives a vehicle reschedules its reminders";
+}
+
+- (NSString *)whyNotChange:(NSManagedObject *)object values:(NSDictionary<NSString *, id> *)values email:(NSString *)email {
+    return LBOwns(((Rescheduling *)object).reminder.vehicle, email) ? nil
+        : @"Only a vehicle's owner changes what is recorded of it";
+}
+
+- (void)made:(NSManagedObject *)made by:(NSString *)email {
+    ((Rescheduling *)made).madeBy = LBUserNamed(made.managedObjectContext, email, YES);
+}
+
+/* Who made it is said once, by the server. */
+- (NSDictionary<NSString *, id> *)changeable:(NSDictionary<NSString *, id> *)values {
+    NSMutableDictionary *kept = [values mutableCopy];
+    [kept removeObjectForKey:LBKey(madeBy)];
+    return kept;
+}
+
+@end
+
 /* A user: named by their email, which whoever names them knows; what else
    is said of them is theirs. */
 @interface LBUserHandler : LBPermissionHandler
@@ -384,6 +421,7 @@ void LBServePermissions(ODataService *service) {
         LBEntity(ServiceItem): [LBOfRecordHandler class],
         LBEntity(Attachment): [LBOfRecordHandler class],
         LBEntity(Answer): [LBOfRecordHandler class],
+        LBEntity(Rescheduling): [LBReschedulingHandler class],
         LBEntity(User): [LBUserHandler class],
         LBEntity(Checklist): [LBChecklistHandler class],
         LBEntity(Question): [LBChecklistHandler class],

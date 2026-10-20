@@ -3,7 +3,6 @@
 #import "LBStore.h"
 #import "LogbookValidation.h"
 #import "FillUp+CoreDataClass.h"
-#import "MeteredEvent+CoreDataClass.h"
 
 @implementation LBReportData {
     NSManagedObjectContext *_context;

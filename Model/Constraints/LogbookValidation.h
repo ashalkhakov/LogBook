@@ -24,6 +24,7 @@
 #import "Option+CoreDataClass.h"
 #import "Answer+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
+#import "Rescheduling+CoreDataClass.h"
 #import "ExchangeRate+CoreDataClass.h"
 #import "VehicleWasValuedOnDateAtMoney+CoreDataClass.h"
 
@@ -139,6 +140,16 @@
 
 /* Checked by the model's tables (Logbook.ormplans), a subentity's rules with
  * its own. */
+@interface Rescheduling (ORMValidation)
+/* NO, with what is violated in the error: one NSError, or an
+ * NSValidationMultipleErrorsError with them under NSDetailedErrorsKey. */
+- (BOOL)orm_validateConstraints:(NSError **)error;
+/* The deontic rules broken: obligations to be told of, not enforced. */
+- (NSArray<NSError *> *)orm_deonticViolations;
+@end
+
+/* Checked by the model's tables (Logbook.ormplans), a subentity's rules with
+ * its own. */
 @interface ExchangeRate (ORMValidation)
 /* NO, with what is violated in the error: one NSError, or an
  * NSValidationMultipleErrorsError with them under NSDetailedErrorsKey. */
@@ -182,6 +193,18 @@
 /* CostsByMonth: List each Vehicle, Currency1, Month and Total where that Vehicle is owned by some User that prefers Currency1 and some Record is of that Vehicle and that Record is an Event that was at some Moment and that Record cost some Money that has some Amount and that Money is in some Currency2 that possibly was worth some Factor1 in Currency1 on some Date1 and possibly Currency2 was worth some Factor2 in Currency1 on some Date2 and Date1 is at most Day and Date2 is RateDay and Day is the date of that Moment and RateDay is the maximum of Date1 for that Record and Rate is the maximum of Factor2 for that Record and Month is the first day of the month of that Moment and Converted is that Amount times Rate, or 1 where there is none and Total is the total of Converted for that Vehicle and Month in descending order of Month. */
 + (ORMQueryResult *)costsByMonthInContext:(NSManagedObjectContext *)context error:(NSError **)error;
 + (ORMQueryOData *)costsByMonthRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
+/* OverdueReminders: List each Reminder and Date1 where that Reminder is due on Date1 and it is not true that that Reminder was done at some Moment and it is not true that that Reminder was cancelled on some Date2 and Today is today and Today is greater than Date1. */
++ (ORMQueryResult *)overdueRemindersInContext:(NSManagedObjectContext *)context error:(NSError **)error;
++ (ORMQueryOData *)overdueRemindersRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
+/* OverdueByMileage: List each Reminder where that Reminder is due at some Distance1 that has some Quantity1 and that Reminder is of some Vehicle and Distance1 is in some DistanceUnit1 that is worth some Factor1 km and some Record is of that Vehicle and that Record is an Event that was at some Distance2 that has some Quantity2 and Distance2 is in some DistanceUnit2 that is worth some Factor2 km and it is not true that that Reminder was done at some Moment and it is not true that that Reminder was cancelled on some Date and Km2 is Quantity2 times Factor2 and Latest is the maximum of Km2 for that Reminder and Due is Quantity1 times Factor1 and Due is at most Latest. */
++ (ORMQueryResult *)overdueByMileageInContext:(NSManagedObjectContext *)context error:(NSError **)error;
++ (ORMQueryOData *)overdueByMileageRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
+/* LateReminders: List each Reminder, Date1 and Closed where that Reminder is due on Date1 and possibly was done at some Moment and possibly was cancelled on some Date2 and Closed is the date of that Moment, or Date2 where there is none and Closed is greater than Date1. */
++ (ORMQueryResult *)lateRemindersInContext:(NSManagedObjectContext *)context error:(NSError **)error;
++ (ORMQueryOData *)lateRemindersRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
+/* DoneLateByMileage: List each Reminder where that Reminder is due at some Distance1 that has some Quantity1 and that Reminder was done at some Distance2 that has some Quantity2 and Distance1 is in some DistanceUnit1 that is worth some Factor1 km and Distance2 is in some DistanceUnit2 that is worth some Factor2 km and Due is Quantity1 times Factor1 and Done is Quantity2 times Factor2 and Done is greater than Due. */
++ (ORMQueryResult *)doneLateByMileageInContext:(NSManagedObjectContext *)context error:(NSError **)error;
++ (ORMQueryOData *)doneLateByMileageRequestForModel:(NSManagedObjectModel *)model error:(NSError **)error;
 @end
 
 /* The model's reference data (docs/EXPRESSIONS.md), from the tables (Logbook.ormplans):
