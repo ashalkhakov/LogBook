@@ -4,7 +4,7 @@
 // model's rules kept as it writes: before it saves a request, or a change
 // set at its end, the stored derivations are worked out and every rule
 // checked for what the change reaches (the generated orm_prepareForSave:,
-// Model/Constraints); a change that breaks one is refused (400), and
+// build/Model/Constraints, generated); a change that breaks one is refused (400), and
 // nothing of it saved.
 //
 //   logbook-server -StoreURL logbook.sqlite -Port 8080 -Localhost NO

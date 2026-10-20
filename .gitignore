@@ -1,6 +1,12 @@
 build/
 obj/
-Model/*.momd/
 Logbook.app/
 .deps/
 .DS_Store
+# Generated from Model/Logbook.orm by the build (into build/Model, or
+# obj/Model on GNUstep); kept out of the sources should a tool write them
+# beside the model (ORMDesigner's Synchronize does).
+Model/*.xcdatamodeld/
+Model/*.momd/
+Model/Constraints/
+Model/*.forml

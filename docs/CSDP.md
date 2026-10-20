@@ -1,9 +1,9 @@
 # Logbook's model, by CSDP
 
 Halpin's Conceptual Schema Design Procedure, step by step. The ORM model it
-ends with is `Model/Logbook.orm`. Everything else is derived from it: the Core
-Data model, the OData service, the sync, and the code that checks the
-constraints.
+ends with is `Model/Logbook.orm`, the one source. Everything else is
+generated from it by the build: the Core Data model, the OData service, the
+sync, the code that checks the constraints, and the schema's listing.
 
 ## Scope
 
@@ -1534,14 +1534,48 @@ CarSale: n41; OpenReminder: m6).
 
 ## The model
 
-The schema is [`Model/Logbook.forml`](../Model/Logbook.forml): every
-fact type, constraint, subtype and derivation above, a statement a line,
-as ORMKit's verbalizer says them. `Model/Logbook.orm` is built from it:
+The model is [`Model/Logbook.orm`](../Model/Logbook.orm), and nothing
+else is: every fact type, constraint, subtype, derivation and query above,
+the Core Data mapping (its settings and names), and a diagram for each
+part of the schema. It is ORMKit's model saved as NORMA's file, so NORMA
+opens it as well; the comments of the listing below are the notes of the
+elements they come before, NORMA's own Notes (a query's in ORMKit's
+namespace).
+
+Change it in ORMDesigner, or by applying lines of FORML to it:
 
 ```sh
-ormtool build Model/Logbook.forml Model/Logbook.orm
-ormtool verbalize Model/Logbook.orm      # read it back
+ormtool apply Model/Logbook.orm changes.forml
 ```
+
+Each line is a statement as the listing says it, and is applied as one
+change: what the model lacks is made (on the diagram of a `# heading`
+above it, else of what it names), what it says already is left as it is,
+a `// comment` just before a line becomes the note of what that line says,
+and a line starting `- ` takes away what it says: `- Car has VIN` a fact
+type, `- Each Vehicle has at most one VIN.` a constraint, `- ++ ...` a
+fact type's derivation, `- Reference data: km, 1` a fact, `- // ...` a
+note, `- Query Name:` a query. A query given again under its name, its
+outline after it, replaces the one the model has. Lines are compared with
+the listing's, so copy them from it. The file is written only when every
+line was read.
+
+What the build generates from it, into `build/Model` (`obj/Model` on
+GNUstep), and never keeps in git: the Core Data model
+(`Logbook.xcdatamodeld`), the code and tables that keep the constraints
+and work out the stored derivations (`Constraints/LogbookValidation.h`,
+`.m` and `Logbook.ormplans`), and the listing, `Logbook.forml`: every
+statement of the model, a line each as ORMKit's verbalizer says it, part
+by part as the diagrams have them, each element's note as a comment before
+it, each query as its outline.
+
+```sh
+ormtool forml Model/Logbook.orm                # the listing
+ormtool coredata Model/Logbook.orm Out.xcdatamodeld Logbook --validation Out/
+```
+
+`ormtool build schema.txt model.orm` makes a new model from such text: it
+is how `Logbook.orm` began, not how it changes.
 
 Currency codes and VINs have patterns, ORMKit's own (NORMA has none):
 Core Data checks them.

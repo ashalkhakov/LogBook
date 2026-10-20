@@ -7,9 +7,11 @@ own.
 
 It is built on [ORMKit](../NativeORM2):
 - **The model:** an ORM model, designed by Halpin's conceptual schema
-  design procedure ([docs/CSDP.md](docs/CSDP.md)).
-- **Derived from it:** the Core Data model, the OData service, the sync,
-  and the code that checks its constraints.
+  design procedure ([docs/CSDP.md](docs/CSDP.md)): `Model/Logbook.orm`,
+  the one source of it.
+- **Generated from it, by the build:** the Core Data model, the code and
+  tables that keep its constraints, and its listing; through them the
+  OData service and the sync.
 - **Written by hand:** the forms, in the manner of TopoText's SimpleNotes:
   - an AppKit app for macOS and GNUstep;
   - an iOS app;
@@ -17,13 +19,40 @@ It is built on [ORMKit](../NativeORM2):
 
 Early days: the model is done, and the server runs it.
 
+## The model
+
+`Model/Logbook.orm` is the model, and the only copy of it: its facts,
+constraints, queries and derivations, its Core Data mapping, and its
+diagrams. It is ORMKit's model in NORMA's file format, so NORMA opens it
+too. Change it in ORMDesigner, or apply lines of FORML to it, as the
+listing says them:
+
+```sh
+ormtool apply Model/Logbook.orm changes.forml   # "- line" takes one away
+```
+
+([docs/CSDP.md](docs/CSDP.md#the-model) says how.) What the apps and the
+server use is generated from it by the build, into `build/Model`
+(`obj/Model` on GNUstep), with ORMKit's `ormtool`, built from
+`../NativeORM2` first:
+- `Logbook.xcdatamodeld`, the Core Data model (compiled to `Logbook.momd`,
+  and its classes generated, as Xcode does);
+- `Constraints/`: `LogbookValidation.h` and `.m`, and `Logbook.ormplans`,
+  the code and tables that keep the model's rules and work out its stored
+  derivations;
+- `Logbook.forml`, the listing: every statement of the model, a line each,
+  as the verbalizer says it, for reading and for copying lines from.
+
+None of it is kept in git, nor edited: it is made again whenever the
+model, or ormtool, changes.
+
 ## The server
 
 `logbook-server` serves the logbook over OData for the apps to sync with:
 ODataKit's service, with ODataSync's part of it, and the model's rules
 kept as it writes. Before it saves a request, or a change set at its end,
 the stored derivations are worked out and every rule is checked for what
-the change reaches (the generated code in `Model/Constraints`); a change
+the change reaches (the generated code in `build/Model/Constraints`); a change
 that breaks one is refused, `400`, and nothing of it is saved.
 
 ```sh

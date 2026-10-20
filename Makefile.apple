@@ -10,6 +10,12 @@
 #                                   (Tests/serve-and-check.py); the app
 #                                   driven from within against one
 #                                   (Tests/app-check.sh)
+#
+# The model is Model/Logbook.orm, and nothing else: what the build needs of
+# it is generated from it by ORMKit's ormtool, into build/Model -- the Core
+# Data model (Logbook.xcdatamodeld), the code and tables that keep its rules
+# (Constraints/: LogbookValidation.h and .m, Logbook.ormplans) and its
+# listing (Logbook.forml) -- and never kept in git.
 
 ORMKIT = ../NativeORM2
 comma = ,
@@ -25,50 +31,63 @@ CC = clang
 FLAGS = -fobjc-arc -fblocks -g -Wall -Wno-unused-parameter -mmacosx-version-min=14.0
 # The model's classes, generated as Xcode generates them.
 GENERATED = $(BUILD)/Generated
+# What is generated from the model (above), by ORMKit's ormtool.
+MODEL = $(BUILD)/Model
+ORMTOOL = $(ORMKIT_PRODUCTS)/ormtool
 # ODataKit's frameworks first: Xcode copies the ones ORMRuntime was built
 # against beside it, which a pin moved since would make stale.
-INC = -IModel/Constraints -IShared -IAppKit -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
+INC = -I$(MODEL)/Constraints -IShared -IAppKit -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
 LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(ODATAKIT_DIRS)) \
 	-F$(ORMKIT_PRODUCTS) -Wl,-rpath,$(ORMKIT_PRODUCTS) \
 	-framework ORMRuntime -framework ODataSync -framework ODataService -framework HTTPServerKit \
 	-framework ODataIncrementalStore -framework OTelKit -framework ODataKit -framework CoreData -framework Foundation
-MODEL_FILES := $(shell find Model/Logbook.xcdatamodeld -type f)
 
 .PHONY: all check clean runtime
 APP = $(BUILD)/Logbook.app
 all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(APP)
 
-runtime $(ORMKIT_PRODUCTS)/ORMRuntime.framework:
+# ORMKit's runtime, and its ormtool, which generates from the model.
+runtime $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(ORMTOOL):
 	@test -d $(ORMKIT)/.deps/ODataKit.xcframework \
 	  || { echo "no ODataKit in $(ORMKIT)/.deps: gnustep-release-actions' scripts/deps.sh apple, there"; exit 1; }
-	xcodebuild -workspace $(ORMKIT)/ORMKit.xcworkspace -scheme ORMRuntime -configuration Debug \
-	  -destination 'platform=macOS' -derivedDataPath $(abspath $(BUILD)/ORMKit) build -quiet
+	for scheme in ORMRuntime ormtool; do \
+	  xcodebuild -workspace $(ORMKIT)/ORMKit.xcworkspace -scheme $$scheme -configuration Debug \
+	    -destination 'platform=macOS' -derivedDataPath $(abspath $(BUILD)/ORMKit) build -quiet || exit 1; \
+	done
 
-$(BUILD)/Logbook.momd: $(MODEL_FILES)
-	@mkdir -p $(BUILD)
-	rm -rf $@ && xcrun momc Model/Logbook.xcdatamodeld $(abspath $@) >/dev/null
-
-$(GENERATED)/.made: $(MODEL_FILES)
-	rm -rf $(GENERATED) && mkdir -p $(GENERATED)
-	xcrun momc --action generate Model/Logbook.xcdatamodeld $(abspath $(GENERATED)) >/dev/null
+# The model's outputs, from the model.
+$(MODEL)/.made: Model/Logbook.orm $(ORMTOOL)
+	rm -rf $(MODEL) && mkdir -p $(MODEL)
+	DYLD_FRAMEWORK_PATH=$(ORMKIT_PRODUCTS) $(ORMTOOL) coredata Model/Logbook.orm $(MODEL)/Logbook.xcdatamodeld Logbook \
+	  --validation $(MODEL)/Constraints >$(MODEL)/mapping.txt
+	DYLD_FRAMEWORK_PATH=$(ORMKIT_PRODUCTS) $(ORMTOOL) forml Model/Logbook.orm $(MODEL)/Logbook.forml
 	touch $@
 
-$(BUILD)/Logbook.ormplans: Model/Constraints/Logbook.ormplans
-	@mkdir -p $(BUILD)
-	cp $< $@
+$(MODEL)/Constraints/LogbookValidation.m: $(MODEL)/.made ;
 
-SERVER = Server/LBServer.m Server/LBPermissions.m Model/Constraints/LogbookValidation.m
+$(BUILD)/Logbook.momd: $(MODEL)/.made
+	rm -rf $@ && xcrun momc $(MODEL)/Logbook.xcdatamodeld $(abspath $@) >/dev/null
 
-$(BUILD)/logbook-server: $(SERVER) Server/LBPermissions.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+$(GENERATED)/.made: $(MODEL)/.made
+	rm -rf $(GENERATED) && mkdir -p $(GENERATED)
+	xcrun momc --action generate $(MODEL)/Logbook.xcdatamodeld $(abspath $(GENERATED)) >/dev/null
+	touch $@
+
+$(BUILD)/Logbook.ormplans: $(MODEL)/.made
+	cp $(MODEL)/Constraints/Logbook.ormplans $@
+
+SERVER = Server/LBServer.m Server/LBPermissions.m $(MODEL)/Constraints/LogbookValidation.m
+
+$(BUILD)/logbook-server: $(MODEL)/.made $(SERVER) Server/LBPermissions.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) $(SERVER) $(GENERATED)/*.m $(LIBS) -o $@
 
 # The desktop app: its code, its windows (the XIBs compiled), the model and
 # its tables in its resources.
-APP_SOURCES = $(wildcard AppKit/*.m) $(wildcard Shared/*.m) Model/Constraints/LogbookValidation.m
+APP_SOURCES = $(wildcard AppKit/*.m) $(wildcard Shared/*.m) $(MODEL)/Constraints/LogbookValidation.m
 XIBS = $(wildcard AppKit/*.xib)
 APP_LIBS = $(addprefix -F,$(RDLKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(RDLKIT_DIRS)) \
 	-framework RDLKitUI -framework RDLKit -framework AppKit
-$(APP): $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h) $(XIBS) $(wildcard Reports/*.rdl) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
+$(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h) $(XIBS) $(wildcard Reports/*.rdl) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	rm -rf $@ && mkdir -p $@/Contents/MacOS $@/Contents/Resources
 	cp AppKit/Info.plist $@/Contents/
@@ -76,7 +95,7 @@ $(APP): $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h) $(XIBS) $(wildcard Repo
 	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(RDLKIT_DIRS)) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) $(APP_LIBS) -o $@/Contents/MacOS/Logbook
 	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null \
 	  || { echo "$$x does not compile (ibtool --errors --compile)"; rm -rf $@; exit 1; }; done
-	cp -R $(BUILD)/Logbook.momd Model/Constraints/Logbook.ormplans Reports/*.rdl $@/Contents/Resources/
+	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $@/Contents/Resources/
 
 check: all
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
