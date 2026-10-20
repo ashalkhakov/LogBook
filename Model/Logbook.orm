@@ -2705,15 +2705,6 @@ reminder keeps what it is due at now.</orm:Text>
 					<orm:UniquenessConstraint ref="_318E4FE6-07F0-49AC-80EE-532F1A0B87E4" />
 					<orm:MandatoryConstraint ref="_BB131D80-88DA-4FE0-B3F9-1459BC703030" />
 				</orm:InternalConstraints>
-				<orm:DerivationRule>
-					<orm:FactTypeDerivationPath id="_EFE969CD-470E-4EEE-883E-741D5048C2A4" DerivationCompleteness="PartiallyDerived" DerivationStorage="Stored">
-						<orm:InformalRule>
-							<orm:DerivationNote id="_5AD44754-4A00-4471-BA2C-7019DB5F576D">
-								<orm:Body>A reminder from a schedule is of the schedule's vehicle.</orm:Body>
-							</orm:DerivationNote>
-						</orm:InformalRule>
-					</orm:FactTypeDerivationPath>
-				</orm:DerivationRule>
 			</orm:Fact>
 			<orm:Fact id="_A79546DB-541A-4C49-A4CA-164C3E7F5CDE" _Name="RecordWasEnteredByUser">
 				<orm:FactRoles>

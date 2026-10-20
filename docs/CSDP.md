@@ -1635,8 +1635,11 @@ vehicle: the date of its car sale's moment (`SaleDate`, derived and
 stored), and what the sale earned (`SellingPrice`). The tyre set a change
 removed is the one the vehicle's change before it fitted (`RemovedSet`,
 the one before, derived and stored), so that no change fitting and
-removing the same set is checked on it. Two partly derived fact types
-are stored as well (a record's vehicle, its cost). Who drives a vehicle is
+removing the same set is checked on it. A partly derived fact type is
+stored as well (a record's cost). A record's vehicle is entered: a
+reminder from a schedule is of the schedule's vehicle because the service
+layer records it so ([PROCESSES.md](PROCESSES.md)), and a rule checks it.
+Who drives a vehicle is
 partly derived and not stored: the users it is shared with are entered,
 and its owner drives it by a rule (`OwnerDrives`), which queries and the
 rules about drivers go through beside what is entered. Every constraint is

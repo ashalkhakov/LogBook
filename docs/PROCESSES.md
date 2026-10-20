@@ -48,10 +48,16 @@ with an item of the task, an expense of the kind, an inspection through
 the checklist), else now and the vehicle's latest distance. It adds the
 schedule's intervals: the distance interval to the distance, the months
 to the date (as `ReminderNextDue` does for the date). It records:
-- Reminder comes from Schedule; Reminder is of Vehicle (the schedule's);
-  Reminder was entered by User;
+- Reminder comes from Schedule; Reminder is of Vehicle; Reminder was
+  entered by User;
 - Reminder is due at Distance, where the schedule recurs after a distance;
 - Reminder is due on Date, where it recurs after a duration.
+
+A reminder from a schedule is of the schedule's vehicle: the service layer
+records it so, here and wherever it makes one (5), an entered fact like any
+record's vehicle. The model does not derive it; it checks it ("If some
+Reminder comes from some Schedule and that Reminder is of some Vehicle then
+that Schedule is of that Vehicle").
 
 The schedule then has one open reminder (`OneOpenReminder`).
 
@@ -95,8 +101,8 @@ For a schedule's reminder, the service layer then makes the next (5).
 
 When a schedule's reminder is done, the service layer makes the next, in
 the same change: due its intervals after when and where the last was done.
-- Reminder comes from Schedule (the same); Reminder is of Vehicle;
-  Reminder was entered by User;
+- Reminder comes from Schedule (the same); Reminder is of Vehicle (the
+  schedule's, as in 2); Reminder was entered by User;
 - Reminder is due on Date: the date of the done moment plus the
   schedule's months (`ReminderNextDue`);
 - Reminder is due at Distance: the done distance plus the schedule's
