@@ -47,7 +47,7 @@ static NSComparisonResult LBNewestFirst(Record *a, Record *b, void *unused) {
     }
     [records sortUsingFunction:LBNewestFirst context:NULL];
     NSDateFormatter *monthOf = [[NSDateFormatter alloc] init];
-    [monthOf setLocalizedDateFormatFromTemplate:@"MMMM yyyy"];
+    monthOf.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"MMMM yyyy" options:0 locale:[NSLocale currentLocale]] ?: @"MMMM yyyy";
     NSMutableArray<LBMonth *> *months = [NSMutableArray array];
     NSMutableArray *current = nil;
     NSString *title = nil;
