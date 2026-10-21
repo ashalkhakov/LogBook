@@ -54,7 +54,7 @@
         </arrayController>
         <arrayController objectClassName="Attachment" editable="NO" userLabel="Attachments" id="attachments">
             <connections>
-                <binding destination="-2" name="contentArray" keyPath="chosenAttachments" id="attachmentsContent"/>
+                <binding destination="records" name="contentSet" keyPath="selection.attachments" id="attachmentsContent"/>
             </connections>
         </arrayController>
         <arrayController mode="entity" entityName="ExpenseKind" automaticallyPreparesContent="YES" userLabel="ExpenseKind" id="expenseKinds">
@@ -731,6 +731,7 @@
                                             </buttonCell>
                                             <connections>
                                                 <action selector="openAttachment:" target="-2" id="openAttachmentAction"/>
+                                                <binding destination="attachments" name="enabled" keyPath="selectedObjects.@count" id="openAttachmentEnabled"/>
                                             </connections>
                                         </button>
                                         <popUpButton verticalHuggingPriority="750" identifier="addRecord" id="addRecord">

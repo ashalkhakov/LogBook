@@ -30,7 +30,6 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @property (nonatomic, readwrite, copy) NSArray<User *> *drivers;
 @property (nonatomic, readwrite, copy) NSArray<TyreSet *> *tyreSets;
 @property (nonatomic, readwrite, copy) NSArray<CostKind *> *serviceKinds;
-@property (nonatomic, readwrite, copy) NSArray<Attachment *> *chosenAttachments;
 @end
 
 @implementation LBMainWindowController
@@ -42,7 +41,6 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         _drivers = @[];
         _tyreSets = @[];
         _serviceKinds = @[];
-        _chosenAttachments = @[];
     }
     return self;
 }
@@ -88,6 +86,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_reports chooseReport:nil];
     /* Reference data, the model's: read once. */
     self.serviceKinds = [CostKind lbServiceKindsInContext:self.context];
+    _attachments.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(fileName)) ascending:YES] ];
     _attachmentsTable.target = self;
     _attachmentsTable.doubleAction = @selector(openAttachment:);
     NSString *selection = NSStringFromSelector(@selector(selectionIndexes));
@@ -135,18 +134,6 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     self.chosenRecords = kind ? @{ kind: record } : @{};
     NSInteger form = [_recordForms indexOfTabViewItemWithIdentifier:kind ?: @"none"];
     [_recordForms selectTabViewItemAtIndex:form == NSNotFound ? 0 : form];
-    [self attachmentsChanged];
-}
-
-- (void)attachmentsChanged {
-    NSArray *chosen = _records.selectedObjects;
-    Record *record = chosen.count == 1 ? chosen[0] : nil;
-    NSMutableArray<Attachment *> *attachments = [NSMutableArray array];
-    for (Attachment *attachment in record.attachments) {
-        if (!attachment.isDeleted) [attachments addObject:attachment];
-    }
-    [attachments sortUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(fileName)) ascending:YES] ]];
-    if (![attachments isEqualToArray:_chosenAttachments]) self.chosenAttachments = attachments;
 }
 
 - (void)recordsChanged {
@@ -339,7 +326,6 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_vehicles willChangeValueForKey:selection];
     [_vehicles didChangeValueForKey:selection];
     [_remindersController refresh];
-    [self attachmentsChanged];
 }
 
 - (BOOL)saveChanges {

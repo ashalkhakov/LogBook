@@ -205,6 +205,10 @@ static void LBAttachmentSteps(LBMainWindowController *controller, Vehicle *kept)
     NSArray *names = [controller.attachments.arrangedObjects valueForKey:NSStringFromSelector(@selector(fileName))];
     NSTableView *table = (NSTableView *)LBControl(window.contentView, @"attachmentsTable");
     LBCheck(@"the record's attachment listed beside it", [names isEqualToArray:@[ @"receipt-0914.jpg" ]] && table.numberOfRows == 1, names);
+    [controller.attachments setSelectionIndexes:[NSIndexSet indexSet]];
+    LBSpin();
+    NSButton *open = (NSButton *)LBControl(window.contentView, @"openAttachment");
+    LBCheck(@"nothing to open with no attachment chosen", open && !open.isEnabled, nil);
     [controller.attachments setSelectionIndex:0];
     LBSpin();
     LBClick(window, @"openAttachment");

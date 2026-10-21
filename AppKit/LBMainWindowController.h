@@ -50,9 +50,6 @@ NS_ASSUME_NONNULL_BEGIN
 // and its tyre sets: what a record's form chooses from.
 @property (nonatomic, readonly, copy) NSArray<User *> *drivers;
 @property (nonatomic, readonly, copy) NSArray<TyreSet *> *tyreSets;
-// The chosen record's attachments, by file name: what the attachments'
-// controller shows.
-@property (nonatomic, readonly, copy) NSArray<Attachment *> *chosenAttachments;
 // The kinds a service may be of: the model's (CostKind's
 // lbServiceKindsInContext:).
 @property (nonatomic, readonly, copy) NSArray<CostKind *> *serviceKinds;
