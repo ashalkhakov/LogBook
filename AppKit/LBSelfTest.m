@@ -356,7 +356,7 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     NSUUID *nextID = LBNamedUUID([@"next of " stringByAppendingString:firstID.UUIDString.lowercaseString]);
     Reminder *next = LBListed(controller, nextID);
     LBCheck(@"the reminder shows done by the service, closed on the server as it saved",
-            [first.lbStatus hasPrefix:@"Done"] && ![first.lbStatus hasSuffix:@"by hand"] && [first.event.id isEqual:service.id]
+            [first.lbStatus hasPrefix:@"Done"] && [first.lbStatus hasSuffix:@"by Service"] && [first.event.id isEqual:service.id]
                 && first.doneMileageQuantity.integerValue == 13000,
             first.lbStatus);
     LBCheck(@"and the next appears, open, due from the service", next && next.lb_isOpen && next.dueMileageQuantity.integerValue == 28000
