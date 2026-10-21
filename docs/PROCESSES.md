@@ -41,12 +41,14 @@ The same code runs wherever the logbook is kept:
   (ODataKit's `ODataOperationCall`) and reads back what they changed; an
   event it saves in the Records tab closes reminders on the server as it
   is saved.
-- **The mobile app**, later, is local-first: it keeps its own store, runs
-  the same procedures in it as the user acts, offline or not, and syncs
-  the objects they made and changed, as it syncs any record. It queues no
-  actions or intents: what a procedure does is in its objects, and since
-  they are named by what they are made of (below), another device that
-  did the same makes the same objects, which the sync meets as one.
+- **The iOS app** is local-first: it keeps its own store, runs the same
+  procedures in it as the user acts, offline or not, and before each save
+  the same automatic completion and rules as the server; it syncs the
+  objects they made and changed, as it syncs any record (Offline, below).
+  It queues no actions or intents: what a procedure does is in its
+  objects, and since they are named by what they are made of (below),
+  another device that did the same makes the same objects, which the sync
+  meets as one.
 
 **Deterministic.** Whatever a procedure makes is named by what it is made
 of: its id is a name-based UUID (version 5: SHA-1 of Logbook's namespace,
@@ -296,8 +298,67 @@ vehicle (4): the reminder closed by the earlier of the two, the next by
 the later, whichever came first; two records of the same work are then
 the owner's to keep or discard (9).
 
-Where the two phones made the same object with different values (the
-next reminder due from each one's event), the sync meets a conflict. The
-iOS app, when it is built, leaves it to the user: take the latest, giving
-up what this phone made, or spell out by hand what the object is to be.
-Nothing of this is built yet.
+Where the two phones made the same object with the same values, the sync
+meets it as one, and says nothing. Where they made it, or changed it,
+differently, it is a conflict (below): the server's stands, and the phone
+keeps its own for the user to settle.
+
+## Offline: the phone
+
+What syncs, and which way, is the model's: its Core Data mapping in
+`Model/Logbook.orm` says it (`ormtool sync`), and ORMKit writes it into the
+generated model, which the server and the phone both load:
+
+| Which way | What |
+|---|---|
+| down: the server's, read | units, kinds of cost, exchange rates |
+| both: changed on either side | users, vehicles and their sharing and valuations, records (every kind, schedules and reminders among them) and their items, answers and attachments, reschedulings, checklists and their questions and options |
+
+Each object a phone changes carries ODataSync's bookkeeping, added by the
+mapping and not part of the conceptual model: its version vector
+(`syncVersions`: what each device's changes it has seen, so an older copy
+is never taken for a newer one and only changes made without knowing of
+each other conflict), and the stamp of its last change (`syncModified`).
+The server keeps both, as it keeps any property, and its ODataSyncService
+compares what a device sends with what it has.
+
+**When it syncs.** As the app opens and comes back, two seconds after a
+save (once for saves close together), every minute, and when sync is
+switched back on. Each sync brings down what changed at the server that
+the user may see, then sends what waits, oldest first. With sync off, or
+no network, what is saved waits; the Vehicle tab says how many changes
+wait, and how many the server refused (with its words: sent again, or
+forgotten).
+
+A change the server refuses because what came with it had not arrived yet
+(a reminder's next, sent before the reminder it follows was closed there)
+is sent again once, at the end of the same sync, after the rest.
+
+**Conflicts.** A change made on the phone to an object the server changed
+too, since they last agreed, is a conflict. The sync never waits on one:
+the server's version stands, there and on the phone, and what the phone
+changed otherwise than the server did is kept as a pending conflict, on
+the phone alone (an app-state store beside the logbook's, never synced,
+no part of the model): which object, which properties, mine and theirs,
+when. Bookkeeping, a value the phone left unsaid, and the same value on
+both sides (the same procedure, carried out on both) are no conflict. The
+app shows how many wait (a badge on the Vehicle tab, a button over the
+lists), and for each, the user chooses:
+
+- **Keep theirs:** what the phone had is given up; the conflict is
+  forgotten.
+- **Keep mine:** the phone's values are written back over the server's,
+  as a new change: saved here (the rules checked), and synced, so the
+  server and every other device take them. An object the server deleted
+  is made again.
+- **Edit by hand:** the record's form, as it now is (the server's); what
+  the user saves settles it, and syncs.
+
+A record deleted at the server and changed on the phone stays deleted
+until the user keeps theirs (it goes) or keeps mine (it comes back); one
+deleted on the phone and changed at the server comes back, and the user
+may delete it again.
+
+**Receipts.** A photo of a receipt is an Attachment of its record, named
+by its id, which syncs; the image stays on the phone that took it, since
+the model's Attachment has a file name and no content.
