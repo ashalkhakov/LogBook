@@ -953,6 +953,50 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
                 && [ahead containsObject:@(LBCalendarPlanned)],
             ahead);
     LBClick(window, @"thisMonth");
+
+    /* Another vehicle of the user's, read today elsewhere: All Vehicles
+       shows both, each entry with its vehicle. */
+    NSManagedObjectContext *there = LBServerSide.context;
+    /* What it read before, read again: the model's rules check it all. */
+    for (NSManagedObject *object in there.registeredObjects.allObjects) [there refreshObject:object mergeChanges:NO];
+    User *user = [LBServerObjects([User class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(email)),
+                                                                  controller.store.user.email]) firstObject];
+    Vehicle *polo = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:there];
+    polo.id = [NSUUID UUID];
+    polo.vehicleName = @"Self-test Polo";
+    polo.make = @"Volkswagen";
+    polo.carModel = @"Polo VI";
+    polo.manufactureYear = 2019;
+    polo.fuel = @"Petrol";
+    polo.owner = user;
+    MeterReading *read = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([MeterReading class])
+                                                       inManagedObjectContext:there];
+    read.id = [NSUUID UUID];
+    read.vehicle = polo;
+    read.enteredBy = user;
+    read.driver = user;
+    read.timestamp = [NSDate date];
+    read.mileageQuantity = [NSDecimalNumber decimalNumberWithString:@"80000"];
+    read.mileageDistanceUnit = [LBServerObjects([DistanceUnit class], [NSPredicate predicateWithFormat:@"%K == %@",
+                                                                                 NSStringFromSelector(@selector(code)), @"km"]) firstObject];
+    NSError *error = nil;
+    LBCheck(@"another vehicle of the user's, read today, elsewhere", [LBServerSide save:&error], error);
+    [controller.vehicles fetch:nil];
+    LBSpin();
+    [controller readAgain];
+    LBClick(window, @"calendarAllVehicles");
+    NSSet *vehicles = [NSSet setWithArray:[calendar.entries valueForKey:NSStringFromSelector(@selector(vehicleTitle))]];
+    LBCheck(@"All Vehicles: both vehicles' entries in the month, each said with its vehicle",
+            calendar.allVehicles && view.showsVehicles && [vehicles containsObject:@"Self-test Golf"] && [vehicles containsObject:@"Self-test Polo"],
+            vehicles);
+    if (getenv("LB_SCREENSHOT")) {
+        NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-all.png"];
+        system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);
+    }
+    LBClick(window, @"calendarAllVehicles");
+    vehicles = [NSSet setWithArray:[calendar.entries valueForKey:NSStringFromSelector(@selector(vehicleTitle))]];
+    LBCheck(@"and off: the chosen vehicle's only", !calendar.allVehicles && [vehicles isEqualToSet:[NSSet setWithObject:@"Self-test Golf"]],
+            vehicles);
 }
 
 static void LBSteps(LBMainWindowController *controller) {

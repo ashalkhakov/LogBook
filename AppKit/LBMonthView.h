@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSDate *chosenDay;
 // Today, marked.
 @property (nonatomic, copy, nullable) NSDate *today;
+// Several vehicles' entries: each said with its vehicle ("Golf: Oil change").
+@property (nonatomic) BOOL showsVehicles;
 @property (nonatomic, weak, nullable) id target;
 @property (nonatomic, nullable) SEL action;
 // The first day shown and the day after the last (six weeks).

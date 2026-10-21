@@ -387,12 +387,11 @@ The desktop's Calendar tab shows a vehicle's month: its reminders on
 their days, done (by which event, its driver; late or not), cancelled
 (and what replaced it), open (due, overdue, moved), and planned (in
 italics where the day is estimated); each record on its day besides; a
-day chosen, its entries listed beneath. Working out what is planned is
+day chosen, its entries listed beneath. With All Vehicles, the month is
+of every vehicle the user owns or drives together, each entry said with
+its vehicle, for whoever keeps several. Working out what is planned is
 procedure, shared by both apps (`Shared/LBPlanned.h`), and so is what a
 calendar shows (`Shared/LBCalendar.h`); nothing of it is saved.
-
-Next: one calendar of all the vehicles a user owns (or drives), each
-entry said with its vehicle, for whoever keeps several.
 
 ## Offline: the phone
 

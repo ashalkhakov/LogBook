@@ -3,6 +3,7 @@
 #import "LBMonthView.h"
 #import "LBCalendar.h"
 #import "LBProcedures.h"
+#import "Vehicle+CoreDataClass.h"
 
 @interface LBCalendarController ()
 @property (nonatomic, readwrite, copy) NSString *monthTitle;
@@ -59,6 +60,11 @@
     [self showMonth:[utc dateFromComponents:[utc components:NSCalendarUnitYear | NSCalendarUnitMonth fromDate:[NSDate date]]]];
 }
 
+- (void)setAllVehicles:(BOOL)allVehicles {
+    _allVehicles = allVehicles;
+    [self refresh];
+}
+
 - (IBAction)dayChosen:(id)sender {
     [self list];
 }
@@ -70,7 +76,11 @@
     title.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
     title.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"MMMMyyyy" options:0 locale:[NSLocale currentLocale]];
     self.monthTitle = [title stringFromDate:_monthView.month];
-    self.entries = [LBCalendar entriesOfVehicle:[_windowController chosenVehicle] from:_monthView.firstDay to:_monthView.endDay asOf:now];
+    NSArray *vehicles = _allVehicles ? _windowController.vehicles.arrangedObjects : nil;
+    Vehicle *chosen = [_windowController chosenVehicle];
+    self.entries = [LBCalendar entriesOfVehicles:vehicles ?: (chosen ? @[ chosen ] : @[]) from:_monthView.firstDay to:_monthView.endDay
+                                            asOf:now];
+    _monthView.showsVehicles = _allVehicles;
     _monthView.today = LBDay(now);
     _monthView.entries = _entries;
     [self list];

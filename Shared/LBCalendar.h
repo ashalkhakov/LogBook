@@ -1,7 +1,8 @@
-// A vehicle's days, as a calendar shows them (docs/PROCESSES.md 12): its
-// reminders, done (by what, whose; late or not), cancelled, open (due,
-// overdue) and planned (worked out, estimated where by distance); and its
-// records, each on its day. Days are the model's, UTC days.
+// A vehicle's days, or several vehicles' together, as a calendar shows
+// them (docs/PROCESSES.md 12): their reminders, done (by what, whose; late
+// or not), cancelled, open (due, overdue) and planned (worked out,
+// estimated where by distance); and their records, each on its day. Days
+// are the model's, UTC days.
 
 #pragma once
 #import <Foundation/Foundation.h>
@@ -32,6 +33,9 @@ typedef NS_ENUM(NSInteger, LBCalendarKind) {
 @property (nonatomic, readonly) BOOL estimated;
 // The reminder or record; nil for one planned.
 @property (nonatomic, readonly, nullable) id object;
+// Whose: the vehicle, and what it is called.
+@property (nonatomic, readonly) Vehicle *vehicle;
+@property (nonatomic, readonly) NSString *vehicleTitle;
 // The day said short, for a list: "2/28/27".
 @property (nonatomic, readonly) NSString *dayText;
 @end
@@ -41,6 +45,9 @@ typedef NS_ENUM(NSInteger, LBCalendarKind) {
 // the last, by day, reminders before records; as of now (what is overdue,
 // what is planned, how far the vehicle goes a day).
 + (NSArray<LBCalendarEntry *> *)entriesOfVehicle:(nullable Vehicle *)vehicle from:(NSDate *)from to:(NSDate *)to asOf:(NSDate *)now;
+// Several vehicles' entries together, as one's are: by day, then by
+// vehicle on the same day.
++ (NSArray<LBCalendarEntry *> *)entriesOfVehicles:(NSArray<Vehicle *> *)vehicles from:(NSDate *)from to:(NSDate *)to asOf:(NSDate *)now;
 @end
 
 NS_ASSUME_NONNULL_END

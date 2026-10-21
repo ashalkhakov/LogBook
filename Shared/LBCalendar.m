@@ -14,11 +14,16 @@
 @property (nonatomic, readwrite) NSString *detail;
 @property (nonatomic, readwrite) BOOL estimated;
 @property (nonatomic, readwrite, nullable) id object;
+@property (nonatomic, readwrite) Vehicle *vehicle;
 @end
 
 @implementation LBCalendarEntry
 - (NSString *)dayText {
     return LBDayText(_day) ?: @"";
+}
+
+- (NSString *)vehicleTitle {
+    return _vehicle.lbTitle ?: @"";
 }
 @end
 
@@ -48,12 +53,31 @@ static NSInteger LBEntryOrder(id a, id b, void *context) {
     NSComparisonResult byDay = [x.day compare:y.day];
     if (byDay != NSOrderedSame) return byDay;
     if (x.kind != y.kind) return x.kind < y.kind ? NSOrderedAscending : NSOrderedDescending;
+    NSComparisonResult byVehicle = [x.vehicleTitle compare:y.vehicleTitle];
+    if (byVehicle != NSOrderedSame) return byVehicle;
     return [x.title compare:y.title];
 }
 
 @implementation LBCalendar
 
 + (NSArray<LBCalendarEntry *> *)entriesOfVehicle:(Vehicle *)vehicle from:(NSDate *)from to:(NSDate *)to asOf:(NSDate *)now {
+    return [self entriesOfVehicles:vehicle ? @[ vehicle ] : @[] from:from to:to asOf:now];
+}
+
++ (NSArray<LBCalendarEntry *> *)entriesOfVehicles:(NSArray<Vehicle *> *)vehicles from:(NSDate *)from to:(NSDate *)to asOf:(NSDate *)now {
+    NSMutableArray<LBCalendarEntry *> *all = [NSMutableArray array];
+    for (Vehicle *vehicle in vehicles) {
+        for (LBCalendarEntry *entry in [self entriesOfOne:vehicle from:from to:to asOf:now]) {
+            entry.vehicle = vehicle;
+            [all addObject:entry];
+        }
+    }
+    [all sortUsingFunction:LBEntryOrder context:NULL];
+    return all;
+}
+
+/* One vehicle's entries on the days, by day. */
++ (NSArray<LBCalendarEntry *> *)entriesOfOne:(Vehicle *)vehicle from:(NSDate *)from to:(NSDate *)to asOf:(NSDate *)now {
     NSMutableArray<LBCalendarEntry *> *entries = [NSMutableArray array];
     NSDate *today = LBDay(now);
     for (Record *record in vehicle.records) {

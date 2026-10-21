@@ -1,6 +1,8 @@
-// The Calendar tab (MainWindow.xib): the chosen vehicle's month (LBMonthView)
-// and, beneath it, its entries (LBCalendar.h): the chosen day's, or the
-// month's when none is chosen. What it shows is worked out anew whenever
+// The Calendar tab (MainWindow.xib): a month (LBMonthView) of the chosen
+// vehicle, or with All Vehicles of every vehicle listed (those the user
+// owns and drives, each entry said with its vehicle); beneath it, its
+// entries (LBCalendar.h): the chosen day's, or the month's when none is
+// chosen. What it shows is worked out anew whenever
 // the vehicle is chosen or read again, the month changed, a day chosen.
 
 #import <AppKit/AppKit.h>
@@ -18,6 +20,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSArray<LBCalendarEntry *> *listed;
 // The month's entries, all.
 @property (nonatomic, readonly, copy) NSArray<LBCalendarEntry *> *entries;
+// All the vehicles listed, each entry said with its vehicle; else the
+// chosen one's.
+@property (nonatomic) BOOL allVehicles;
 
 - (IBAction)previousMonth:(nullable id)sender;
 - (IBAction)nextMonth:(nullable id)sender;

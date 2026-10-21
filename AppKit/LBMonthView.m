@@ -63,6 +63,11 @@ static NSColor *LBColorOf(LBCalendarKind kind) {
     [self setNeedsDisplay:YES];
 }
 
+- (void)setShowsVehicles:(BOOL)showsVehicles {
+    _showsVehicles = showsVehicles;
+    [self setNeedsDisplay:YES];
+}
+
 - (void)setChosenDay:(NSDate *)chosenDay {
     _chosenDay = [chosenDay copy];
     [self setNeedsDisplay:YES];
@@ -142,7 +147,8 @@ static NSColor *LBColorOf(LBCalendarKind kind) {
         for (NSInteger line = 0; line < (NSInteger)those.count && line < room; line++) {
             LBCalendarEntry *entry = those[(NSUInteger)line];
             BOOL last = line == room - 1 && (NSInteger)those.count > room;
-            NSString *text = last ? [NSString stringWithFormat:@"+%ld more", (long)(those.count - (NSUInteger)line)] : entry.title;
+            NSString *title = _showsVehicles ? [NSString stringWithFormat:@"%@: %@", entry.vehicleTitle, entry.title] : entry.title;
+            NSString *text = last ? [NSString stringWithFormat:@"+%ld more", (long)(those.count - (NSUInteger)line)] : title;
             NSFont *font = entry.estimated ? [[NSFontManager sharedFontManager] convertFont:[NSFont systemFontOfSize:10]
                                                                                 toHaveTrait:NSItalicFontMask]
                                            : [NSFont systemFontOfSize:10];
