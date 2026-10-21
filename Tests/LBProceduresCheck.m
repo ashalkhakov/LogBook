@@ -680,6 +680,72 @@ static void LBOrders(void) {
     [world.context rollback];
 }
 
+/* A schedule changed (PROCESSES.md 11): a new one going on from it, its
+   open reminder due anew, or, touched, cancelled and the new one started;
+   the old one's past as it was, and nothing more of its own. */
+static void LBContinue(void) {
+    LBWorld *world = LBNewWorld();
+    Schedule *oil = LBOilSchedule(world, 10);
+    LBSave(world.context, @"a schedule");
+    Reminder *first = [oil lb_startFrom:LBMoment(@"2026-06-01 10:00") mileage:LBNumber(@"148000") unit:world.km by:world.anna
+                                     at:LBMoment(@"2026-06-02 10:00") error:NULL];
+    LBService(world, nil, 30, @"2027-05-20 11:00", @"162400", @[ @"Oil change" ]);
+    LBSave(world.context, @"an oil change");
+    Reminder *open = first.lb_nextReminder;
+    NSUUID *openID = open.id;
+    NSError *error = nil;
+    Reminder *cancelled = nil;
+    NSDate *now = LBMoment(@"2027-06-01 09:00");
+    Schedule *often = [oil lb_continueWithTask:@"Oil change" expenseKind:nil checklist:nil interval:LBNumber(@"10000") unit:world.km
+                                        months:6 note:@"older engine" by:world.anna at:now cancelled:&cancelled error:&error];
+    LBCheck(@"changed: a new schedule going on from it, of the vehicle, its intervals and note",
+            often && often.continued == oil && oil.continuation == often && often.vehicle == world.golf && often.duration == 6
+                && LBIs(often.intervalQuantity, @"10000") && [often.note isEqualToString:@"older engine"]
+                && [often.id isEqual:LBNamedUUID([@"continuation of " stringByAppendingString:oil.id.UUIDString.lowercaseString])],
+            error);
+    LBCheck(@"its open reminder goes with it, the same, due anew from where it is counted from: 6 months, 10000 km on",
+            open.schedule == often && [open.id isEqual:openID] && !cancelled && [open.dueDate isEqualToDate:LBMoment(@"2027-11-20")]
+                && LBIs(open.dueMileageQuantity, @"172400") && [open.countedFromDate isEqualToDate:LBMoment(@"2027-05-20")],
+            LBDue(open));
+    LBCheck(@"the old one keeps its past, and has none open", first.schedule == oil && first.event && !oil.lb_openReminder, nil);
+    LBCheck(@"saved, the model's rules kept", LBSave(world.context, @"the change"), nil);
+    LBCheck(@"changed again from the old one: refused", ![oil lb_continueWithTask:@"Oil change" expenseKind:nil checklist:nil
+                                                                         interval:nil unit:nil months:3 note:nil by:world.anna
+                                                                               at:now cancelled:NULL error:&error],
+            nil);
+
+    /* An oil change after: closes it in the new one, whose next is due by
+       the new rule; the old one makes nothing. */
+    LBService(world, nil, 31, @"2027-11-01 09:00", @"170500", @[ @"Oil change" ]);
+    LBCheck(@"an oil change after the change, saved", LBSave(world.context, @"another oil change"), nil);
+    Reminder *after = open.lb_nextReminder;
+    NSUInteger oldOnes = 0;
+    for (Reminder *reminder in oil.reminders) {
+        if (!reminder.isDeleted) oldOnes++;
+    }
+    LBCheck(@"it closes the new one's, whose next is 6 months and 10000 km on",
+            open.event && after.schedule == often && [after.dueDate isEqualToDate:LBMoment(@"2028-05-01")]
+                && LBIs(after.dueMileageQuantity, @"180500") && oldOnes == 1,
+            [NSString stringWithFormat:@"open %@ done %@ by %@, after %@ (%@), %lu old", LBDue(open), LBText(open.doneAt),
+                                       open.event.id, after.id, after == open ? @"itself" : LBDue(after), (unsigned long)oldOnes]);
+
+    /* Moved by hand, then changed: cancelled, and the new one started from
+       where it was counted from. */
+    LBCheck(@"moved by hand", [after lb_rescheduleToDate:LBMoment(@"2028-06-01") mileage:nil unit:nil note:@"away" by:world.anna
+                                                       at:now error:&error] != nil,
+            error);
+    LBSave(world.context, @"the move");
+    Schedule *filter = [often lb_continueWithTask:@"Oil and filter" expenseKind:nil checklist:nil interval:LBNumber(@"10000")
+                                             unit:world.km months:6 note:nil by:world.anna at:now cancelled:&cancelled error:&error];
+    Reminder *started = filter.lb_openReminder;
+    LBCheck(@"changed, the moved one cancelled today, and the new one started from where it was counted from",
+            filter && cancelled == after && [after.cancelDate isEqualToDate:LBMoment(@"2027-06-01")] && after.schedule == often
+                && started && started != after && [started.dueDate isEqualToDate:LBMoment(@"2028-05-01")]
+                && LBIs(started.dueMileageQuantity, @"180500") && [started.countedFromDate isEqualToDate:LBMoment(@"2027-11-01")],
+            error ?: LBDue(started));
+    LBCheck(@"saved", LBSave(world.context, @"the second change"), nil);
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -705,6 +771,7 @@ int main(int argc, const char *argv[]) {
         LBNoMileage();
         LBOrders();
         LBMoveCancelDiscard();
+        LBContinue();
         printf("procedures: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

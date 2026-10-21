@@ -595,8 +595,9 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     Reminder *onServer = LBServerReminder(oneOff.id);
     LBCheck(@"the server has it done by the service", onServer.doneAt && [onServer.event.id isEqual:service.id], onServer);
 
-    /* The schedule changed: not its task, which the service did; every 6
-       months. */
+    /* The schedule changed: another task, every 6 months. Not in place: a
+       new schedule goes on from it, listed instead; its open reminder, a
+       replacement (touched), is cancelled and the new one started. */
     [tab.schedules setSelectedObjects:@[ schedule ]];
     LBSpin();
     LBClick(window, @"editSchedule");
@@ -613,23 +614,27 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     [lists close];
     [window makeKeyAndOrderFront:nil];
     LBType(window, @"scheduleTask", @"Oil and filter");
-    LBClick(window, @"scheduleSave");
-    LBCheck(@"its work is not changed once a service has done it: refused, and said",
-            [schedule.task isEqualToString:@"Oil change"] && [controller.lastError.localizedDescription containsString:@"start a new schedule"]
-                && [tab.forms.selectedTabViewItem.identifier isEqual:@"schedule"],
-            controller.lastError);
-    LBType(window, @"scheduleTask", @"Oil change");
     LBType(window, @"scheduleMonths", @"6");
     LBClick(window, @"scheduleSave");
-    LBCheck(@"the schedule changed: every 15000 km or 6 months", schedule.duration == 6 && schedule.intervalQuantity.integerValue == 15000
+    Schedule *changed = [tab.schedules.arrangedObjects firstObject];
+    LBCheck(@"changed: a new schedule going on from it, listed instead, the old one as it was",
+            [tab.schedules.arrangedObjects count] == 1 && changed != schedule && changed.continued == schedule
+                && [changed.task isEqualToString:@"Oil and filter"] && changed.duration == 6 && changed.intervalQuantity.integerValue == 15000
+                && [schedule.task isEqualToString:@"Oil change"] && schedule.duration == 12 && !controller.lastError
                 && [tab.forms.selectedTabViewItem.identifier isEqual:@"none"],
-            controller.lastError ?: schedule.lbEvery);
-    Reminder *open = LBServerReminder(replacementID);
-    Schedule *changed = [LBServerObjects([Schedule class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)),
-                                                                        schedule.id]) firstObject];
-    LBCheck(@"the server has it, and its open reminder stays due where it was", changed.duration == 6 && open.schedule == changed
-                && [open.dueDate isEqualToDate:replacementDue],
-            open.lbWork);
+            controller.lastError ?: [tab.schedules.arrangedObjects valueForKey:NSStringFromSelector(@selector(lbWork))]);
+    Reminder *wasOpen = LBServerReminder(replacementID);
+    Reminder *nowOpen = nil;
+    for (Reminder *reminder in tab.reminders.arrangedObjects) {
+        if (reminder.schedule == changed && reminder.lb_isOpen) nowOpen = reminder;
+    }
+    LBCheck(@"its open reminder, touched, cancelled today; the new one started, due 6 months on from where that was counted from",
+            wasOpen.cancelDate && [wasOpen.schedule.id isEqual:schedule.id] && nowOpen
+                && [nowOpen.dueDate isEqualToDate:LBAddMonths(wasOpen.countedFromDate, 6)],
+            nowOpen ? nowOpen.lbDue : wasOpen.lbStatus);
+    Schedule *there = [LBServerObjects([Schedule class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)),
+                                                                      changed.id]) firstObject];
+    LBCheck(@"the server has it, going on from the old one", [there.continued.id isEqual:schedule.id] && there.duration == 6, there);
     if (getenv("LB_SCREENSHOT")) {
         NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-reminders.png"];
         system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);

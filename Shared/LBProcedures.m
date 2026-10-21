@@ -347,6 +347,101 @@ static User *LBActorOf(Event *event) {
     return first;
 }
 
+- (Schedule *)lb_continueWithTask:(NSString *)task expenseKind:(ExpenseKind *)expenseKind checklist:(Checklist *)checklist
+                         interval:(NSDecimalNumber *)interval unit:(DistanceUnit *)unit months:(int32_t)months note:(NSString *)note
+                               by:(User *)user at:(NSDate *)now cancelled:(Reminder **)cancelled error:(NSError **)error {
+    if (cancelled) *cancelled = nil;
+    if (!self.vehicle || !self.id) {
+        LBFail(error, @"The schedule is not of a vehicle yet");
+        return nil;
+    }
+    if (self.continuation && !self.continuation.isDeleted) {
+        LBFail(error, @"The schedule was changed already: change the one it goes on in");
+        return nil;
+    }
+    NSString *named = [task stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    task = named.length ? named : nil;
+    if ((task ? 1 : 0) + (expenseKind ? 1 : 0) + (checklist ? 1 : 0) != 1) {
+        LBFail(error, @"A schedule is for a task, a kind of expense or a checklist: one of them");
+        return nil;
+    }
+    if ((interval == nil) != (unit == nil)) {
+        LBFail(error, @"A distance is a quantity and its unit");
+        return nil;
+    }
+    if (!interval && months < 1) {
+        LBFail(error, @"A schedule recurs every so far, every so many months, or both");
+        return nil;
+    }
+    NSUUID *uuid = LBNamedUUID([@"continuation of " stringByAppendingString:LBIDText(self.id)]);
+    for (Record *record in self.vehicle.records) {
+        if (!record.isDeleted && [record.id isEqual:uuid]) {
+            LBFail(error, @"The schedule was changed so already");
+            return nil;
+        }
+    }
+    Schedule *next = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Schedule class])
+                                                   inManagedObjectContext:self.managedObjectContext];
+    next.id = uuid;
+    next.vehicle = self.vehicle;
+    next.enteredBy = user;
+    next.task = task;
+    next.expenseKind = expenseKind;
+    next.checklist = checklist;
+    next.intervalQuantity = interval;
+    next.intervalDistanceUnit = unit;
+    if (months > 0) next.duration = months;
+    next.note = note.length ? note : nil;
+    next.continued = self;
+
+    Reminder *open = self.lb_openReminder;
+    if (open && !open.lb_isTouched) {
+        /* The same reminder, planned by the new rule from where it is
+           counted from. */
+        NSDate *from = open.countedFromDate ?: LBDay(open.setAt);
+        NSDecimalNumber *mileage = open.countedFromMileageQuantity;
+        DistanceUnit *mileageUnit = open.countedFromMileageDistanceUnit;
+        if ((!mileage || !mileageUnit) && interval) {
+            Event *latest = LBLatestMetered(self.vehicle, from);
+            mileage = latest.mileageQuantity;
+            mileageUnit = latest.mileageDistanceUnit;
+        }
+        NSDate *dueDate;
+        NSDecimalNumber *dueMileage;
+        DistanceUnit *dueUnit;
+        LBDueAfter(next, self.vehicle, from, mileage, mileageUnit, &dueDate, &dueMileage, &dueUnit);
+        if (!dueDate && !dueMileage) {
+            [self.managedObjectContext deleteObject:next];
+            LBFail(error, @"There is no distance to count the schedule from: say a distance it recurs after with months, or start it anew");
+            return nil;
+        }
+        open.schedule = next;
+        open.dueDate = dueDate;
+        open.dueMileageQuantity = dueMileage;
+        open.dueMileageDistanceUnit = dueUnit;
+        LBCountFrom(open, from, mileage, mileageUnit);
+        return next;
+    }
+    NSDate *from = nil;
+    NSDecimalNumber *mileage = nil;
+    DistanceUnit *mileageUnit = nil;
+    if (open) {
+        /* Touched: what the owner decided was for the old rule. */
+        open.cancelDate = LBDay(now);
+        if (cancelled) *cancelled = open;
+        from = open.countedFromDate;
+        mileage = open.countedFromMileageQuantity;
+        mileageUnit = open.countedFromMileageDistanceUnit;
+    }
+    if (![next lb_startFrom:from mileage:mileage unit:mileageUnit by:user at:now error:error]) {
+        if (open) open.cancelDate = nil;
+        if (cancelled) *cancelled = nil;
+        [self.managedObjectContext deleteObject:next];
+        return nil;
+    }
+    return next;
+}
+
 @end
 
 #pragma mark Reminders
@@ -628,10 +723,19 @@ static void LBDeleteReminder(Reminder *reminder) {
         if (![_nextIDs containsObject:reminder.id ?: [NSUUID UUID]] && !replaces) [roots addObject:reminder];
     }
     _roots = roots;
+    /* What did the reminders of the schedules it goes on from is theirs. */
+    NSMutableSet<Event *> *theirs = [NSMutableSet set];
+    for (Schedule *before = schedule.continued; before && !before.isDeleted; before = before.continued) {
+        for (Reminder *reminder in before.reminders) {
+            if (reminder.event && !reminder.isDeleted) [theirs addObject:reminder.event];
+        }
+        if (before == schedule) break;
+    }
     LBSlot *slot = [self takeRoot];
     for (Event *event in events) {
         slot = [self openFrom:slot];
         if (!slot) break;
+        if ([theirs containsObject:event]) continue;
         if (!LBDoesWork(event, schedule.task, schedule.expenseKind, schedule.checklist)) continue;
         NSDate *setAt = slot.reminder ? slot.reminder.setAt : slot.source.event.timestamp;
         if (!setAt || [LBDay(setAt) compare:LBDay(event.timestamp)] == NSOrderedDescending) continue;
@@ -640,8 +744,11 @@ static void LBDeleteReminder(Reminder *reminder) {
         NSDecimalNumber *dueMileage;
         DistanceUnit *dueUnit;
         if (LBNextDue(schedule, event, &dueDate, &dueMileage, &dueUnit)) {
+            /* A schedule gone on in another makes no next of its own: past
+               its reminders, the run is the other's. */
             NSUUID *next = LBNextIDOf(slot.uuid);
-            LBSlot *made = [self slotOf:_byID[next] uuid:next source:slot];
+            BOOL continued = schedule.continuation && !schedule.continuation.isDeleted;
+            LBSlot *made = _byID[next] || !continued ? [self slotOf:_byID[next] uuid:next source:slot] : nil;
             slot = made ?: [self takeRoot];
         } else {
             slot = [self takeRoot];

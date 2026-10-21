@@ -286,6 +286,7 @@ def the_rules():
     attachments(summer["Id"])
     mileage_and_reminders(anna, vehicle)
     procedures(anna)
+    continued(anna)
 
 
 PHOTO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "receipt-photo.jpg")
@@ -569,6 +570,50 @@ def procedures(anna):
     status, body = request("PATCH", "Records(%s)" % brakes["Id"], {"@odata.type": "#Default.Service", "Timestamp": now(-72)})
     check("the service moved to before the one-off was set", status in (200, 204), (status, body))
     check("moving it reopens the one-off", reminder_of(one_off["Id"]).get("DoneAt") is None, reminder_of(one_off["Id"]))
+
+
+def continued(anna):
+    """A schedule changed by the Continue action: a new one going on from
+    it, the open reminder due anew in it; the next closing of the work
+    closes it there."""
+    made = vehicle_body(anna)
+    check("a vehicle for a changed schedule", request("POST", "Vehicles", made)[0] == 201)
+    vehicle = made["Id"]
+    schedule = oil_schedule(vehicle, anna)
+    request("POST", "Records", schedule)
+    sid = schedule["Id"]
+    status, first = action("Records(%s)" % sid, "Start", {"LastDoneAt": "2026-06-01T10:00:00Z", "LastDoneMileage": 148000,
+                                                          "LastDoneMileageUnit": "km"})
+    service, statuses, bodies = oil_change(vehicle, anna, now(), 150000)
+    check("started, and an oil change closes its first", status == 200 and statuses == [201, 201], (status, statuses, bodies))
+    next_id = named("next of " + named("start of " + sid))
+    status, new = action("Records(%s)" % sid, "Continue", {"Task": "Oil change", "Interval": 10000, "IntervalUnit": "km",
+                                                           "Months": 6, "Note": "older engine"})
+    new_id = named("continuation of " + sid)
+    check("Continue: a new schedule, named by the old one, its intervals and note", status == 200
+          and new.get("Id", "").lower() == new_id and new.get("Duration") == 6 and new.get("IntervalQuantity") == 10000
+          and new.get("Note") == "older engine", (status, new))
+    status, of = request("GET", "Records(%s)/Default.Reminder/Schedule" % next_id)
+    moved = reminder_of(next_id)
+    check("the open reminder goes with it, due 10000 km on from where it is counted from", status == 200
+          and of.get("Id", "").lower() == new_id and moved.get("DueMileageQuantity") == 160000
+          and moved.get("CountedFromMileageQuantity") == 150000, (of, moved))
+    status, continued_from = request("GET", "Records(%s)/Default.Schedule/Continued" % new_id)
+    check("the new one goes on from the old", status == 200 and continued_from.get("Id", "").lower() == sid, continued_from)
+    status, body = action("Records(%s)" % sid, "Continue", {"Task": "Oil change", "Months": 3})
+    check("changing the old one again is refused", status == 400 and "changed already" in json.dumps(body), (status, body))
+    service, statuses, bodies = oil_change(vehicle, anna, now(2), 159000)
+    after = reminder_of(named("next of " + next_id))
+    status, of = request("GET", "Records(%s)/Default.Reminder/Schedule" % named("next of " + next_id))
+    check("an oil change after closes it there, the next made by the new one: 10000 km on",
+          reminder_of(next_id).get("DoneMileageQuantity") == 159000 and after is not None and after.get("DueMileageQuantity") == 169000
+          and of.get("Id", "").lower() == new_id, (reminder_of(next_id), after, of))
+    check("a kind of expense for a changed schedule",
+          request("POST", "CostKinds", {"@odata.type": "#Default.ExpenseKind", "Name": "Oil top-up"})[0] == 201)
+    status, again = action("Records(%s)" % new_id, "Continue", {"ExpenseKind": {"@odata.id": "CostKinds('Oil top-up')"}, "Months": 1})
+    status2, kind = request("GET", "Records(%s)/Default.Schedule/ExpenseKind" % named("continuation of " + new_id))
+    check("Continue again, for a kind of expense given by reference", status == 200 and status2 == 200
+          and kind.get("Name") == "Oil top-up", (status, again, kind))
 
 
 def who_may():

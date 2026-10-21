@@ -57,7 +57,10 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
     _doneEvents = @[];
     /* A vehicle's records, each list those of its kind. */
     NSString *kind = [NSString stringWithFormat:@"%@.%@", NSStringFromSelector(@selector(entity)), NSStringFromSelector(@selector(name))];
-    _schedules.filterPredicate = [NSPredicate predicateWithFormat:@"%K == %@", kind, NSStringFromClass([Schedule class])];
+    /* The schedules in force: one changed went on in another (its past is
+       the calendar's). */
+    _schedules.filterPredicate = [NSPredicate predicateWithFormat:@"%K == %@ AND %K == nil", kind, NSStringFromClass([Schedule class]),
+                                                                  NSStringFromSelector(@selector(continuation))];
     _reminders.filterPredicate = [NSPredicate predicateWithFormat:@"%K == %@", kind, NSStringFromClass([Reminder class])];
     _schedules.clearsFilterPredicateOnInsertion = NO;
     _reminders.clearsFilterPredicateOnInsertion = NO;
@@ -293,12 +296,10 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
     return NO;
 }
 
-/* The chosen schedule changed as the form says. Its reminders are for its
-   work, whatever it is now (they have none of their own), and which events
-   did it is worked out from that again as events are saved: so its work is
-   not changed once an event has done one of them (another work is another
-   schedule). Its intervals count from its next reminder; its note is a
-   note. */
+/* The chosen schedule changed as the form says: not in place, but a new
+   one going on from it, by the server's Continue (PROCESSES.md 11). Its
+   open reminder goes with it, due anew; one moved or noted by hand is
+   cancelled instead, which is said first. */
 - (BOOL)saveScheduleChange {
     Schedule *schedule = _scheduleFor;
     NSString *task;
@@ -310,32 +311,27 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
     }
     if (!_form.every && _form.months.integerValue < 1) return [self refuse:@"A schedule recurs every so far, every so many months, or both"];
     if (_form.every && !_form.everyUnit) return [self refuse:@"Say the unit of the distance"];
-    BOOL sameWork = [task ?: @"" isEqualToString:schedule.task ?: @""] && kind == schedule.expenseKind && checklist == schedule.checklist;
-    if (!sameWork) {
-        for (Reminder *reminder in schedule.reminders) {
-            if (reminder.event && !reminder.isDeleted) {
-                return [self refuse:[NSString stringWithFormat:@"“%@” was done %@: for other work, start a new schedule (its intervals and "
-                                                                @"note can be changed here)",
-                                                               schedule.lbWork, reminder.event.lbTitle]];
-            }
-        }
+    Reminder *open = schedule.lb_openReminder;
+    if (open.lb_isTouched && !_windowController.quiet) {
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = @"The open reminder was changed by hand";
+        alert.informativeText = [NSString stringWithFormat:@"It is due %@ as you set it. Changing the schedule cancels it, and plans the "
+                                                           @"next by the changed schedule.", open.lbDue];
+        [alert addButtonWithTitle:@"Change Schedule"];
+        [alert addButtonWithTitle:@"Cancel"];
+        if ([alert runModal] != NSAlertFirstButtonReturn) return NO;
     }
-    schedule.task = task;
-    schedule.expenseKind = kind;
-    schedule.checklist = checklist;
-    schedule.intervalQuantity = _form.every;
-    schedule.intervalDistanceUnit = _form.every ? _form.everyUnit : nil;
-    /* No months: none recorded, not nought (the scalar accessor would say 0). */
-    if (_form.months.integerValue > 0) schedule.duration = (int32_t)_form.months.integerValue;
-    else [schedule setValue:nil forKey:NSStringFromSelector(@selector(duration))];
-    schedule.note = _form.note.length ? _form.note : nil;
-    if ([_windowController saveChanges]) {
-        [_windowController readAgain];
-        return YES;
+    NSMutableDictionary *parameters = [NSMutableDictionary dictionary];
+    if (task) parameters[@"Task"] = task;
+    if (kind) parameters[@"ExpenseKind"] = kind;
+    if (checklist) parameters[@"Checklist"] = checklist;
+    if (_form.every) {
+        parameters[@"Interval"] = _form.every;
+        if (_form.everyUnit.code) parameters[@"IntervalUnit"] = _form.everyUnit.code;
     }
-    /* Refused: as the server has it, for the form to be put right. */
-    [schedule.managedObjectContext refreshObject:schedule mergeChanges:NO];
-    return NO;
+    if (_form.months.integerValue > 0) parameters[@"Months"] = @(_form.months.integerValue);
+    if (_form.note.length) parameters[@"Note"] = _form.note;
+    return [_windowController performAction:@"Continue" on:schedule parameters:parameters] != nil;
 }
 
 - (BOOL)saveReminder {

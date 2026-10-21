@@ -95,6 +95,28 @@ FOUNDATION_EXPORT NSDate *LBAddMonths(NSDate *day, NSInteger months);
                                  by:(User *)user
                                  at:(NSDate *)now
                               error:(NSError **)error;
+
+// The schedule changed (PROCESSES.md 11): not in place, but a new one going
+// on from it ("continuation of" its id), of its vehicle, entered by the
+// user, for the work (one of the three) and intervals given, with the
+// note. Its open reminder goes with it, due anew by the new intervals from
+// where it is counted from; one touched (moved, noted, ...) is cancelled
+// today instead, and the new schedule started from where it was counted
+// from; with none open, the new one is started (as -lb_startFrom: with
+// nothing given). *cancelled is the reminder cancelled so, else nil.
+// Refused for a schedule changed already (change the one it goes on in),
+// for no work or more than one, and for no interval.
+- (nullable Schedule *)lb_continueWithTask:(nullable NSString *)task
+                               expenseKind:(nullable ExpenseKind *)expenseKind
+                                 checklist:(nullable Checklist *)checklist
+                                  interval:(nullable NSDecimalNumber *)interval
+                                      unit:(nullable DistanceUnit *)unit
+                                    months:(int32_t)months
+                                      note:(nullable NSString *)note
+                                        by:(User *)user
+                                        at:(NSDate *)now
+                                 cancelled:(Reminder *_Nullable *_Nullable)cancelled
+                                     error:(NSError **)error;
 @end
 
 @interface Reminder (LBProcedures)

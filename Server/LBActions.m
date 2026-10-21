@@ -61,6 +61,24 @@ static void LBRefuse(ODataReply *reply, NSError *error) {
     return first;
 }
 
++ (NSDictionary<NSString *, NSString *> *)ODataOperationTypes {
+    return @{ @"continueWithTask:expenseKind:checklist:interval:intervalUnit:months:note:reply:.months": @"Edm.Int32" };
+}
+
+- (Schedule *)continueWithTask:(NSString *)task expenseKind:(ExpenseKind *)expenseKind checklist:(Checklist *)checklist
+                      interval:(NSDecimalNumber *)interval intervalUnit:(NSString *)intervalUnit months:(NSNumber *)months
+                          note:(NSString *)note reply:(ODataReply *)reply {
+    User *user = LBActorFor(reply, self.vehicle, YES);
+    DistanceUnit *unit;
+    if (!user || !LBUnitCoded(reply, intervalUnit, &unit)) return nil;
+    NSError *error = nil;
+    Schedule *next = [self lb_continueWithTask:task expenseKind:expenseKind checklist:checklist interval:interval unit:unit
+                                        months:(int32_t)months.integerValue note:note by:user at:[NSDate date] cancelled:NULL
+                                         error:&error];
+    if (!next) LBRefuse(reply, error);
+    return next;
+}
+
 @end
 
 @implementation Reminder (LBActions)

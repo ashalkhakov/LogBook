@@ -8,6 +8,9 @@
 //
 //   POST Records(<schedule>)/Default.Start
 //        {LastDoneAt?, LastDoneMileage?, LastDoneMileageUnit?}  the first reminder
+//   POST Records(<schedule>)/Default.Continue
+//        {Task?, ExpenseKind?, Checklist?, Interval?, IntervalUnit?,
+//         Months?, Note?}                                       the schedule going on from it
 //   POST Records(<reminder>)/Default.Complete
 //        {Event}                                                the next, or null
 //   POST Records(<reminder>)/Default.Reschedule
@@ -20,7 +23,7 @@
 // A unit is its code ('km'), an event a reference ({"@odata.id":
 // "Records(<id>)"}), a date a moment whose UTC day is meant. Who may call
 // each (LBPermissions.h): whoever drives the vehicle closes and moves its
-// reminders; its owner starts its schedules, cancels its reminders and
+// reminders; its owner starts and changes its schedules, cancels its reminders and
 // discards its records (403 for anyone else). A procedure's refusal is a
 // 400; Discard of an event whose next reminder was touched since is a 409,
 // its code NextReminderTouched and its target the reminder's id, nothing
@@ -42,6 +45,16 @@ FOUNDATION_EXPORT NSString * const LBNextReminderTouchedCode;   // @"NextReminde
                            lastDoneMileage:(nullable NSDecimalNumber *)lastDoneMileage
                        lastDoneMileageUnit:(nullable NSString *)lastDoneMileageUnit
                                      reply:(ODataReply *)reply;
+// The schedule changed (PROCESSES.md 11): -lb_continueWithTask:..., the
+// work one of the three, an expense kind and a checklist by reference.
+- (nullable Schedule *)continueWithTask:(nullable NSString *)task
+                            expenseKind:(nullable ExpenseKind *)expenseKind
+                              checklist:(nullable Checklist *)checklist
+                               interval:(nullable NSDecimalNumber *)interval
+                           intervalUnit:(nullable NSString *)intervalUnit
+                                 months:(nullable NSNumber *)months
+                                   note:(nullable NSString *)note
+                                  reply:(ODataReply *)reply;
 @end
 
 @protocol LBReminderActions <ODataActions>

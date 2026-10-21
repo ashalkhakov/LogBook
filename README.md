@@ -36,14 +36,14 @@ of" the reminder it follows), so two devices that do the same, offline,
 make the same objects.
 
 - The server runs them as OData actions bound to what they act on
-  (`Start`, `Complete`, `Reschedule`, `Cancel`, `Discard`:
+  (`Start`, `Continue`, `Complete`, `Reschedule`, `Cancel`, `Discard`:
   `Server/LBActions.h`), and closes the reminders an event does the work
   of whenever it saves one, whichever device sent it.
 - The desktop app, online, calls the actions from its Reminders tab: the
   chosen vehicle's schedules and reminders, the open first, overdue as the
   model's queries say, and how each was moved before. A schedule is
-  changed in place (Edit Schedule): its intervals and note, and its work
-  until an event has done one of its reminders. The
+  changed (Edit Schedule) by going on in a new one (the `Continue`
+  action): its past stays as it was, its open reminder due anew. The
   kinds of expense and the checklists the forms pick from are the users'
   own, written in their own window (Expense Kinds…, Checklists…, or Edit…
   beside a pop-up), as are the exchange rates costs by month counts each

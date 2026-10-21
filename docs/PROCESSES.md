@@ -319,10 +319,6 @@ keeps its own for the user to settle.
 
 ## 11. Change a schedule
 
-(The model has it; the procedure is to come. Until then the desktop's
-Edit Schedule changes a schedule in place: its intervals and note, and
-its work only while no event has done one of its reminders.)
-
 A schedule is a rule its reminders are made by, one at a time. Its done
 and cancelled reminders are what happened, made by the rule as it was;
 its open one, and those to come, are what is planned. The owner changes
@@ -358,6 +354,16 @@ The open reminder goes on with it, as it is or anew:
 
 Its ids are named as the procedures name what they make: the new schedule
 "continuation of" the old one's id, its first reminder as a start of it.
+The server does it as the action `Continue`, bound to the schedule
+changed (`Server/LBActions.h`), its owner's to call; a schedule changed
+already is refused (the one it goes on in is changed instead). The
+desktop lists the schedules in force, those nothing goes on from.
+
+Automatic completion (4) works each schedule's run as before, with two
+differences: a schedule gone on in another makes no next past its own
+reminders (its run ends there), and the events that did the reminders of
+the schedules a schedule goes on from are theirs, not its own (the event a
+reminder that went on was counted from does not close it again).
 A schedule changed again goes on in a third; the chain is one series to
 whoever looks at it (the calendar, 12).
 
