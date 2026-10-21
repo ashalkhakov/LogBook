@@ -5,6 +5,7 @@
 #import "LBProcedures.h"
 #import "ExpenseKind+CoreDataClass.h"
 #import "Option+CoreDataClass.h"
+#import "ExchangeRate+CoreDataClass.h"
 
 @implementation LBListsController {
     LBMainWindowController *_logbook;
@@ -31,6 +32,29 @@
     NSString *position = NSStringFromSelector(@selector(position));
     _questions.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:position ascending:YES] ];
     _options.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:position ascending:YES] ];
+    /* The latest rates first; each on a day of the model's (a UTC one), a
+       factor of up to six places. */
+    _exchangeRates.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(date)) ascending:NO] ];
+    NSDateFormatter *day = [[NSDateFormatter alloc] init];
+    day.dateStyle = NSDateFormatterShortStyle;
+    day.timeStyle = NSDateFormatterNoStyle;
+    day.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    [[_exchangeRatesTable tableColumnWithIdentifier:NSStringFromSelector(@selector(date))].dataCell setFormatter:day];
+    NSNumberFormatter *factor = [[NSNumberFormatter alloc] init];
+    factor.numberStyle = NSNumberFormatterDecimalStyle;
+    factor.generatesDecimalNumbers = YES;
+    factor.maximumFractionDigits = 6;
+    [[_exchangeRatesTable tableColumnWithIdentifier:NSStringFromSelector(@selector(factor))].dataCell setFormatter:factor];
+    _expenseKindsTable.delegate = self;
+    _exchangeRatesTable.delegate = self;
+}
+
+/* A kind of expense or an exchange rate is typed over only before it is
+   saved: the server keeps them as they were added. */
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)column row:(NSInteger)row {
+    NSArrayController *controller = tableView == _expenseKindsTable ? _expenseKinds : tableView == _exchangeRatesTable ? _exchangeRates : nil;
+    if (!controller || row < 0 || row >= (NSInteger)[controller.arrangedObjects count]) return YES;
+    return [(NSManagedObject *)controller.arrangedObjects[(NSUInteger)row] isInserted];
 }
 
 - (void)showTab:(NSString *)identifier {
@@ -87,6 +111,11 @@ static int32_t LBNextPosition(NSSet *objects) {
 - (IBAction)removeExpenseKind:(id)sender {
     ExpenseKind *kind = [self chosenIn:_expenseKinds];
     if (!kind) return;
+    if (!kind.isInserted) {
+        [self refuse:[NSString stringWithFormat:@"“%@” is saved: kinds of expense are kept once saved, as others' records may be of them.",
+                                                kind.name]];
+        return;
+    }
     NSUInteger uses = kind.expenses.count + kind.schedules.count + kind.reminders.count;
     if (uses) {
         [self refuse:[NSString stringWithFormat:@"“%@” is the kind of %lu expenses, schedules or reminders: it stays.", kind.name,
@@ -195,10 +224,44 @@ static int32_t LBNextPosition(NSSet *objects) {
     [self.context deleteObject:option];
 }
 
+#pragma mark Exchange rates
+
+/* Today's rate, 1 to 1 into the user's currency: the base and the factor
+   are typed over. */
+- (IBAction)addExchangeRate:(id)sender {
+    if (![self.window makeFirstResponder:nil]) return;
+    NSCalendar *utc = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    utc.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    NSDateComponents *today = [[NSCalendar currentCalendar] components:NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay
+                                                              fromDate:[NSDate date]];
+    ExchangeRate *rate = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([ExchangeRate class])
+                                                       inManagedObjectContext:self.context];
+    rate.date = [utc dateFromComponents:today];
+    rate.quoteCurrency = _logbook.store.user.lbCurrency;
+    rate.baseCurrency = [rate.quoteCurrency isEqualToString:@"EUR"] ? @"USD" : @"EUR";
+    rate.factor = [NSDecimalNumber one];
+    [self.context processPendingChanges];
+    [_exchangeRates rearrangeObjects];
+    [_exchangeRates setSelectedObjects:@[ rate ]];
+    NSUInteger row = [_exchangeRates.arrangedObjects indexOfObjectIdenticalTo:rate];
+    NSInteger column = [_exchangeRatesTable columnWithIdentifier:NSStringFromSelector(@selector(baseCurrency))];
+    if (row != NSNotFound && column >= 0) [_exchangeRatesTable editColumn:column row:(NSInteger)row withEvent:nil select:YES];
+}
+
+- (IBAction)removeExchangeRate:(id)sender {
+    ExchangeRate *rate = [self chosenIn:_exchangeRates];
+    if (!rate) return;
+    if (!rate.isInserted) {
+        [self refuse:@"This rate is saved: exchange rates are kept once saved, as costs are counted at them."];
+        return;
+    }
+    [self.context deleteObject:rate];
+}
+
 /* What was typed kept, then saved with the logbook's other changes. */
 - (IBAction)done:(id)sender {
     if (![self.window makeFirstResponder:nil]) return;
-    for (NSArrayController *controller in @[ _expenseKinds, _checklists, _questions, _options ]) {
+    for (NSArrayController *controller in @[ _expenseKinds, _checklists, _questions, _options, _exchangeRates ]) {
         if (![controller commitEditing]) return;
     }
     [_logbook save:sender];

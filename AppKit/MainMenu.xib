@@ -39,6 +39,11 @@
                                     <action selector="showChecklists:" target="appController" id="checklistsItemAction"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Exchange Rates…" id="exchangeRatesItem">
+                                <connections>
+                                    <action selector="showExchangeRates:" target="appController" id="exchangeRatesItemAction"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="separator2"/>
                             <menuItem title="Hide Logbook" keyEquivalent="h" id="hide">
                                 <connections>

@@ -68,11 +68,16 @@
     [self showLists:@"checklists"];
 }
 
+- (IBAction)showExchangeRates:(id)sender {
+    [self showLists:@"exchangeRates"];
+}
+
 /* Preferences and lists only while there is a logbook, whose user they
    are. */
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     SEL action = item.action;
-    BOOL needsLogbook = action == @selector(showPreferences:) || action == @selector(showExpenseKinds:) || action == @selector(showChecklists:);
+    BOOL needsLogbook = action == @selector(showPreferences:) || action == @selector(showExpenseKinds:) || action == @selector(showChecklists:)
+                        || action == @selector(showExchangeRates:);
     return !needsLogbook || _window != nil;
 }
 

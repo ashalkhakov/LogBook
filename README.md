@@ -43,7 +43,8 @@ make the same objects.
   changed in place (Edit Schedule): its work, intervals and note. The
   kinds of expense and the checklists the forms pick from are the users'
   own, written in their own window (Expense Kinds…, Checklists…, or Edit…
-  beside a pop-up).
+  beside a pop-up), as are the exchange rates costs by month counts each
+  cost at (Exchange Rates…). Kinds and rates are kept once saved.
 - The iOS app runs the same procedures in its own store as it saves,
   offline or not, and syncs what they made ([iOS](#the-ios-app)).
 

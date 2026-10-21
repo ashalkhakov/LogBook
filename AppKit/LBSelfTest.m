@@ -18,6 +18,7 @@
 #import "Attachment+CoreDataClass.h"
 #import "ExpenseKind+CoreDataClass.h"
 #import "Option+CoreDataClass.h"
+#import "ExchangeRate+CoreDataClass.h"
 
 NSURL *LBSelfTestRoot;
 
@@ -302,6 +303,20 @@ static void LBListSteps(LBMainWindowController *controller) {
     LBClick(lists, @"moveQuestionUp");
     NSArray *texts = [owner.questions.arrangedObjects valueForKey:NSStringFromSelector(@selector(questionText))];
     LBCheck(@"the questions in the order put", [texts isEqualToArray:(@[ @"Which lights are out?", @"Are the tyres fine?" ])], texts);
+
+    [owner.tabs selectTabViewItemWithIdentifier:@"exchangeRates"];
+    LBSpin();
+    LBClick(lists, @"addExchangeRate");
+    LBTypeInRow(lists, @"a new rate's currency", @"USD");
+    NSTableView *rates = owner.exchangeRatesTable;
+    ExchangeRate *rate = owner.exchangeRates.selectedObjects.firstObject;
+    [rates editColumn:[rates columnWithIdentifier:NSStringFromSelector(@selector(factor))]
+                  row:(NSInteger)[owner.exchangeRates.arrangedObjects indexOfObjectIdenticalTo:rate] withEvent:nil select:YES];
+    LBTypeInRow(lists, @"its factor", @"0.9");
+    NSString *mine = controller.store.user.currency;
+    LBCheck(@"a rate of today: 1 USD is worth 0.9 in the user's currency", [rate.baseCurrency isEqualToString:@"USD"]
+                && [rate.quoteCurrency isEqualToString:mine] && [rate.factor isEqual:[NSDecimalNumber decimalNumberWithString:@"0.9"]],
+            rate);
     LBClick(lists, @"done");
     LBCheck(@"saved and closed", !lists.isVisible && !controller.lastError && !controller.store.context.hasChanges,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
@@ -319,6 +334,20 @@ static void LBListSteps(LBMainWindowController *controller) {
                 && [questions[0].questionText isEqualToString:@"Which lights are out?"] && [questions[0].answerKind isEqualToString:LBAnyOf]
                 && questions[0].options.count == 2 && [questions[1].answerKind isEqualToString:LBYesOrNo],
             kept);
+    ExchangeRate *keptRate = [LBServerObjects([ExchangeRate class], [NSPredicate predicateWithFormat:@"%K == %@",
+                                                                      NSStringFromSelector(@selector(baseCurrency)), @"USD"]) firstObject];
+    LBCheck(@"and the rate", [keptRate.quoteCurrency isEqualToString:controller.store.user.currency]
+                && [keptRate.factor isEqual:[NSDecimalNumber decimalNumberWithString:@"0.9"]],
+            keptRate);
+    [NSApp sendAction:@selector(showExchangeRates:) to:nil from:nil];
+    LBSpin();
+    LBCheck(@"saved, a rate is not typed over", ![owner tableView:owner.exchangeRatesTable shouldEditTableColumn:nil row:0], nil);
+    [owner.exchangeRates setSelectionIndex:0];
+    LBClick(lists, @"removeExchangeRate");
+    LBCheck(@"nor removed: refused, and said", [owner.exchangeRates.arrangedObjects count] == 1
+                && [controller.lastError.localizedDescription containsString:@"kept once saved"],
+            controller.lastError);
+    [lists close];
     NSPopUpButton *kinds = (NSPopUpButton *)LBControl(controller.window.contentView, @"scheduleExpenseKind");
     NSPopUpButton *checklists = (NSPopUpButton *)LBControl(controller.window.contentView, @"scheduleChecklist");
     LBCheck(@"a schedule's form offers both", [kinds indexOfItemWithTitle:@"Car wash"] >= 0
