@@ -190,6 +190,9 @@ ios-app:
 	  -Xlinker -rpath -Xlinker @executable_path/Frameworks -o $(IOS_APP)/Logbook
 	rm -rf $(IOS_BUILD)/$(SDK)/Logbook.app.dSYM && mv $(IOS_APP)/Logbook.dSYM $(IOS_BUILD)/$(SDK)/Logbook.app.dSYM
 	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans $(IOS_APP)/
+	@# The self-test's photo of a receipt (a phone's, larger than kept), in
+	@# the simulator's app only.
+	if [ $(SDK) = iphonesimulator ]; then cp Tests/receipt-photo.jpg $(IOS_APP)/SelfTestReceipt.jpg; fi
 	for f in $(IOS_FRAMEWORKS); do cp -R $$f/*.framework $(IOS_APP)/Frameworks/; done
 	cp -R $(IOS_ORMRUNTIME)/ORMRuntime.framework $(IOS_APP)/Frameworks/
 	xcrun actool iOS/Assets.xcassets --compile $(IOS_APP) --platform $(SDK) --minimum-deployment-target $(IOS_MIN) \

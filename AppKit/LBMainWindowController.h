@@ -9,7 +9,7 @@
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
 
-@class LBStore, User, TyreSet, Vehicle, DistanceUnit, CostKind, LBReportsController, LBRemindersController;
+@class LBStore, User, TyreSet, Vehicle, DistanceUnit, CostKind, Attachment, LBReportsController, LBRemindersController;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -34,6 +34,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSArrayController *serviceItems;
 // Whom the chosen vehicle is shared with (its VehicleDrivers).
 @property (nonatomic, strong) IBOutlet NSArrayController *vehicleDrivers;
+// The chosen record's attachments (a receipt's photo, a policy), listed
+// beside the records: opened by Open, or a double click.
+@property (nonatomic, strong) IBOutlet NSArrayController *attachments;
+@property (nonatomic, strong) IBOutlet NSTableView *attachmentsTable;
 // The email the vehicle is to be shared with next.
 @property (nonatomic, copy, nullable) NSString *shareEmail;
 
@@ -46,6 +50,9 @@ NS_ASSUME_NONNULL_BEGIN
 // and its tyre sets: what a record's form chooses from.
 @property (nonatomic, readonly, copy) NSArray<User *> *drivers;
 @property (nonatomic, readonly, copy) NSArray<TyreSet *> *tyreSets;
+// The chosen record's attachments, by file name: what the attachments'
+// controller shows.
+@property (nonatomic, readonly, copy) NSArray<Attachment *> *chosenAttachments;
 // The kinds a service may be of: the model's (CostKind's
 // lbServiceKindsInContext:).
 @property (nonatomic, readonly, copy) NSArray<CostKind *> *serviceKinds;
@@ -63,6 +70,12 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)share:(nullable id)sender;
 // The sharings chosen ended.
 - (IBAction)unshare:(nullable id)sender;
+// The attachment chosen opened, as the system opens a file of its kind
+// (NSWorkspace): its content written to a file of its name first.
+- (IBAction)openAttachment:(nullable id)sender;
+// That file: in a folder of the attachment's own in the temporary
+// directory. nil, and why, when it cannot be written (or has no content).
+- (nullable NSURL *)fileOfAttachment:(Attachment *)attachment error:(NSError **)error;
 
 // The vehicle chosen, when one is.
 - (nullable Vehicle *)chosenVehicle;

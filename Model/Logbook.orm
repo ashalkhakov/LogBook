@@ -438,6 +438,7 @@
 					<orm:Role ref="_B1B9BB82-EAB5-45D7-A638-B2EFCC3467CD" />
 					<orm:Role ref="_B45FDF16-F834-4BBB-B36A-6CCDBA5CB6F9" />
 					<orm:Role ref="_61499840-4172-4A7B-8E64-587784C9FFDF" />
+					<orm:Role ref="_B090573E-76FF-42DD-A08E-1A8E387328E6" />
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_12EF8F1A-79BB-4774-9B65-6BA3CAE702F9" />
 			</orm:EntityType>
@@ -1185,6 +1186,12 @@ reminder keeps what it is due at now.</orm:Text>
 					<orm:Role ref="_523CF6FE-175A-4142-8392-841AEB31607D" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_02525EC1-2D7A-44EB-B07C-35FE5D3EA209" ref="_EA5BBACA-CD80-4C5B-B0E5-1C3525347A21" Scale="0" Length="0" />
+			</orm:ValueType>
+			<orm:ValueType id="_F0D52DF5-08C9-48AA-849A-0971773D1AE0" Name="Content">
+				<orm:PlayedRoles>
+					<orm:Role ref="_68E9FDAD-E1F5-404C-B36F-2E277A88BFBA" />
+				</orm:PlayedRoles>
+				<orm:ConceptualDataType id="_63E62507-7D65-43B5-A4CC-B8174868AD81" ref="_1FA1B312-6B20-45DD-9D6A-C58BFE38FAD1" Scale="0" Length="0" />
 			</orm:ValueType>
 		</orm:Objects>
 		<orm:Facts>
@@ -6982,6 +6989,42 @@ on, not one before (docs/PROCESSES.md).</orm:Text>
 					<orm:MandatoryConstraint ref="_0EC30E40-388C-4083-80FF-52C5D78D88DC" />
 				</orm:InternalConstraints>
 			</orm:Fact>
+			<orm:Fact id="_8B7C278A-5DA4-47DE-B60C-F2B367ED61C7" _Name="AttachmentHasContent">
+				<orm:Notes>
+					<orm:Note id="_24058064-76EF-4BAB-BBAA-DFDFEA50CA63">
+						<orm:Text>The file itself (a receipt's photo, a policy's PDF): kept beside the
+store, and synced with its record.</orm:Text>
+					</orm:Note>
+				</orm:Notes>
+				<orm:FactRoles>
+					<orm:Role id="_B090573E-76FF-42DD-A08E-1A8E387328E6" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+						<orm:RolePlayer ref="_9FF4D860-7EDF-4129-81D0-7484A7F694CA" />
+					</orm:Role>
+					<orm:Role id="_68E9FDAD-E1F5-404C-B36F-2E277A88BFBA" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
+						<orm:RolePlayer ref="_F0D52DF5-08C9-48AA-849A-0971773D1AE0" />
+					</orm:Role>
+				</orm:FactRoles>
+				<orm:ReadingOrders>
+					<orm:ReadingOrder id="_7DED16D0-3873-43C0-9878-D25C4CEF5A87">
+						<orm:Readings>
+							<orm:Reading id="_F6106F88-6343-40EB-BAA6-A25F2FCCB830">
+								<orm:Data>{0} has {1}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" has " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_B090573E-76FF-42DD-A08E-1A8E387328E6" />
+							<orm:Role ref="_68E9FDAD-E1F5-404C-B36F-2E277A88BFBA" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+				</orm:ReadingOrders>
+				<orm:InternalConstraints>
+					<orm:UniquenessConstraint ref="_214E1B68-74B1-4628-925C-FED259A14C3B" />
+					<orm:MandatoryConstraint ref="_EBC61FCF-B826-492A-90DD-4BB3FA9524D3" />
+				</orm:InternalConstraints>
+			</orm:Fact>
 		</orm:Facts>
 		<orm:Constraints>
 			<orm:UniquenessConstraint id="_1FEF91CF-70BC-4EDF-9E47-39016ED2922D" Name="InternalUniquenessConstraint1" IsInternal="true">
@@ -9790,6 +9833,22 @@ on, not one before (docs/PROCESSES.md).</orm:Text>
 					<orm:Role id="_2D47113E-CB42-4640-BA87-FCE8404839F0" ref="_B75D02E3-EEBF-45B0-86CB-BA978524D7FF" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
+			<orm:MandatoryConstraint id="_A3AF43E8-33DD-48C5-905E-3FBE4CFBE27C" Name="ImpliedMandatoryConstraint91" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_F0032A3D-8120-4B11-A879-0C4084C530D9" ref="_68E9FDAD-E1F5-404C-B36F-2E277A88BFBA" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_F0D52DF5-08C9-48AA-849A-0971773D1AE0" />
+			</orm:MandatoryConstraint>
+			<orm:UniquenessConstraint id="_214E1B68-74B1-4628-925C-FED259A14C3B" Name="InternalUniquenessConstraint225" IsInternal="true">
+				<orm:RoleSequence>
+					<orm:Role id="_EB92C07D-0BEF-4ED1-96F3-DE98E0A39594" ref="_B090573E-76FF-42DD-A08E-1A8E387328E6" />
+				</orm:RoleSequence>
+			</orm:UniquenessConstraint>
+			<orm:MandatoryConstraint id="_EBC61FCF-B826-492A-90DD-4BB3FA9524D3" Name="SimpleMandatoryConstraint114" IsSimple="true">
+				<orm:RoleSequence>
+					<orm:Role id="_37C3E749-56BD-466E-9D76-AD336A8DBB08" ref="_B090573E-76FF-42DD-A08E-1A8E387328E6" />
+				</orm:RoleSequence>
+			</orm:MandatoryConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:UnspecifiedDataType id="_75EA85C2-1A83-415B-A49C-FCBB218BCD3B" />
@@ -9804,6 +9863,7 @@ on, not one before (docs/PROCESSES.md).</orm:Text>
 			<orm:LargeLengthTextDataType id="_0CC390D3-5E1E-4326-B05B-B2622E526B32" />
 			<orm:TrueOrFalseLogicalDataType id="_95CEC07E-8D2F-4F4A-8FBA-C1E7AF9622AD" />
 			<orm:UnsignedIntegerNumericDataType id="_D1B5152D-8878-4B1B-9FC0-787DAEA55DCB" />
+			<orm:LargeLengthRawDataDataType id="_1FA1B312-6B20-45DD-9D6A-C58BFE38FAD1" />
 		</orm:DataTypes>
 		<orm:Functions>
 			<orm:Function id="_124193E2-394E-9EBE-DD4B-85257E1A7F69" Name="minutes">
@@ -10561,6 +10621,21 @@ on, not one before (docs/PROCESSES.md).</orm:Text>
 				<ormDiagram:RoleDisplayOrder>
 					<ormDiagram:Role ref="_13C30629-AE15-4814-B7F5-0A795265C5A1" />
 					<ormDiagram:Role ref="_E4DFF2EE-EB6B-47D7-8E08-C13C6E10BC65" />
+				</ormDiagram:RoleDisplayOrder>
+			</ormDiagram:FactTypeShape>
+			<ormDiagram:ObjectTypeShape id="_CBA1FD46-934B-464E-BA53-E0CE31E23310" IsExpanded="true" AbsoluteBounds="11.930555555555555, 1.5416666666666667, 0.505, 0.22944444444444445">
+				<ormDiagram:Subject ref="_F0D52DF5-08C9-48AA-849A-0971773D1AE0" />
+			</ormDiagram:ObjectTypeShape>
+			<ormDiagram:FactTypeShape id="_2D2C70C2-3BC6-4D52-9739-1381B96DAE24" IsExpanded="true" AbsoluteBounds="8.333333333333334, 4.541666666666667, 0.3838888889923692, 0.24388888899236916">
+				<ormDiagram:RelativeShapes>
+					<ormDiagram:ReadingShape id="_1A7B62CD-1A84-4070-BFA8-AD324B93E3AB" IsExpanded="true" AbsoluteBounds="8.333333333333334, 4.850255555659036, 1.1, 0.1295030266046524">
+						<ormDiagram:Subject ref="_7DED16D0-3873-43C0-9878-D25C4CEF5A87" />
+					</ormDiagram:ReadingShape>
+				</ormDiagram:RelativeShapes>
+				<ormDiagram:Subject ref="_8B7C278A-5DA4-47DE-B60C-F2B367ED61C7" />
+				<ormDiagram:RoleDisplayOrder>
+					<ormDiagram:Role ref="_B090573E-76FF-42DD-A08E-1A8E387328E6" />
+					<ormDiagram:Role ref="_68E9FDAD-E1F5-404C-B36F-2E277A88BFBA" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
 		</ormDiagram:Shapes>

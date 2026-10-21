@@ -68,14 +68,26 @@ static NSString *LBKey(NSUUID *uuid) {
     return uuid.UUIDString.lowercaseString;
 }
 
-static NSData *LBReceiptJPEG(void) {
-    UIGraphicsImageRenderer *renderer = [[UIGraphicsImageRenderer alloc] initWithSize:CGSizeMake(300, 400)];
-    UIImage *image = [renderer imageWithActions:^(UIGraphicsImageRendererContext *context) {
-        [[UIColor whiteColor] setFill];
-        UIRectFill(CGRectMake(0, 0, 300, 400));
-        [@"SHELL  40.5 L  68.40 EUR" drawAtPoint:CGPointMake(20, 40) withAttributes:@{ NSFontAttributeName: [UIFont systemFontOfSize:18] }];
-    }];
-    return UIImageJPEGRepresentation(image, 0.7);
+/* Edm.Binary as OData's JSON writes it: base64url, unpadded. */
+static NSData *LBDataOfBase64URL(NSString *text) {
+    NSMutableString *base64 = [[[text stringByReplacingOccurrencesOfString:@"-" withString:@"+"]
+                                   stringByReplacingOccurrencesOfString:@"_" withString:@"/"] mutableCopy];
+    while (base64.length % 4) [base64 appendString:@"="];
+    return [[NSData alloc] initWithBase64EncodedString:base64 options:0];
+}
+
+/* An object of the store by its id. */
+static id LBFetchID(LBLocalStore *store, Class cls, NSUUID *uuid) {
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(cls)];
+    fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)), uuid];
+    return [[store.context executeFetchRequest:fetch error:NULL] firstObject];
+}
+
+/* A phone's photo of a receipt, 3024 by 4032 (Tests/receipt-photo.jpg, in
+   the simulator's app). */
+static UIImage *LBReceiptPhoto(void) {
+    NSString *path = [[NSBundle mainBundle] pathForResource:@"SelfTestReceipt" ofType:@"jpg"];
+    return path ? [UIImage imageWithContentsOfFile:path] : nil;
 }
 
 @interface LBSelfTest : NSObject
@@ -274,14 +286,23 @@ static NSData *LBReceiptJPEG(void) {
           @"and the server has it");
     (void)navigation;
 
-    /* A receipt's photo. */
+    /* A receipt's photo, as one taken: kept smaller, synced with its record. */
+    UIImage *photo = LBReceiptPhoto();
+    LBSay(photo.size.width == 3024 && photo.size.height == 4032, @"a photo of a receipt, 3024 by 4032");
     form = [[LBRecordFormViewController alloc] initWithObject:fillUp phone:app.phone];
-    [form addImageData:LBReceiptJPEG()];
+    [form imagePickerController:nil didFinishPickingMediaWithInfo:@{ UIImagePickerControllerOriginalImage: photo ?: [[UIImage alloc] init] }];
     LBSay([form saveIgnoringWarnings:YES], @"a receipt's photo attached");
     LBSettle(store);
     Attachment *receipt = fillUp.attachments.anyObject;
-    LBSay(receipt && [store imageOfAttachment:receipt].length > 0, @"its image kept on the phone");
-    LBSay(LBServerHas([NSString stringWithFormat:@"Attachments(%@)", LBKey(receipt.id)]) != nil, @"the attachment on the server");
+    UIImage *kept = receipt.content ? [UIImage imageWithData:receipt.content] : nil;
+    LBSay(kept && MAX(kept.size.width * kept.scale, kept.size.height * kept.scale) == LBPhotoLongestSide
+              && [receipt.fileName hasSuffix:@".jpg"],
+          [NSString stringWithFormat:@"kept as a JPEG of %.0f by %.0f, %lu KB", kept.size.width * kept.scale, kept.size.height * kept.scale,
+                                     (unsigned long)receipt.content.length / 1024]);
+    NSDictionary *attached = LBServerHas([NSString stringWithFormat:@"Attachments(%@)", LBKey(receipt.id)]);
+    NSData *served = [attached[@"Content"] isKindOfClass:[NSString class]] ? LBDataOfBase64URL(attached[@"Content"]) : nil;
+    LBSay([served isEqualToData:receipt.content] && [store pendingCount] == 0,
+          [NSString stringWithFormat:@"synced: the server has the photo (%lu bytes)", (unsigned long)served.length]);
 
     /* Shared by its owner; a driver is offered no sharing. */
     LBSay([vehicleTab shareWithEmail:@"Ben@Example.org" problems:&problems],
@@ -299,6 +320,8 @@ static NSData *LBReceiptJPEG(void) {
     LBSync(benStore, @"Ben's phone syncs");
     LBPhone *benPhone = [[LBPhone alloc] initWithStore:benStore];
     LBSay([[[benPhone vehicles] valueForKey:NSStringFromSelector(@selector(vehicleName))] containsObject:@"Golf"], @"Ben has the Golf, shared");
+    Attachment *receiptThere = LBFetchID(benStore, [Attachment class], receipt.id);
+    LBSay(receiptThere.content.length > 0 && [receiptThere.content isEqualToData:receipt.content], @"and the receipt's photo, on his phone");
     LBVehicleViewController *benVehicle = [[LBVehicleViewController alloc] initWithPhone:benPhone];
     LBSay(![benVehicle showsSharing] && ![[benVehicle shownSections] containsObject:@"Sharing"],
           [NSString stringWithFormat:@"a driver is offered no sharing (%@)", [[benVehicle shownSections] componentsJoinedByString:@", "]]);

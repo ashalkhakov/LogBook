@@ -7,7 +7,12 @@ Each part on a server of its own: a temporary store, on a free port on
 loopback.
 
 The rules, with no one signed in:
-- the units every store starts with are there;
+- the units and the kinds of cost every store starts with are there (the
+  model's reference data: 'Maintenance' and 'Repair', a service's, and
+  'Fuel', 'Tyres', 'Documents'), none of them a kind of expense;
+- an attachment of a record has its content, a photo (Edm.Binary, base64
+  in JSON; base64url as the server writes it), which comes back byte for
+  byte; one with none is refused;
 - a change set (a $batch atomicity group) of a vehicle's tyre sets and two
   tyre changes is saved whole, and the second change's removed set is the
   one the change before it fitted (derived and stored, at the end of the
@@ -278,8 +283,34 @@ def the_rules():
     # A request's answer has each violation a detail; a batch's the message.
     message = json.dumps(body)
     check("the refusal names the rule", "removed the same TyreSet" in message, message)
+    attachments(summer["Id"])
     mileage_and_reminders(anna, vehicle)
     procedures(anna)
+
+
+PHOTO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "receipt-photo.jpg")
+
+
+def attachments(record):
+    """A receipt's photo attached to a record: its content, Edm.Binary,
+    base64 in JSON, back as it was sent; an attachment of no content is
+    none."""
+    with open(PHOTO, "rb") as f:
+        photo = f.read()
+    attached = {"Id": str(uuid.uuid4()), "FileName": "receipt.jpg", "Content": base64.b64encode(photo).decode(),
+                "Record@odata.bind": "Records(%s)" % record}
+    status, body = request("POST", "Attachments", attached)
+    check("an attachment with its content, a photo of %d KB" % (len(photo) // 1024), status == 201, (status, str(body)[:300]))
+    status, body = request("GET", "Attachments(%s)" % attached["Id"])
+    # As OData's JSON writes Edm.Binary: base64url, unpadded.
+    content = body.get("Content") or "" if status == 200 else ""
+    back = base64.urlsafe_b64decode(content + "=" * (-len(content) % 4))
+    check("its content back, byte for byte", back == photo, (status, len(back)))
+    status, body = request("GET", "Records(%s)/Attachments?$select=FileName" % record)
+    check("the record's attachments", status == 200 and [a["FileName"] for a in body["value"]] == ["receipt.jpg"], (status, body))
+    status, body = request("POST", "Attachments", {"Id": str(uuid.uuid4()), "FileName": "nothing.jpg",
+                                                   "Record@odata.bind": "Records(%s)" % record})
+    check("one with no content is refused", status == 400, (status, body))
 
 
 def expense(vehicle, kind, moment, user, km=None):

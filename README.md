@@ -82,9 +82,12 @@ phone changed waits as a pending conflict (a badge on the Vehicle tab):
 keep theirs, keep mine (written back as a new change), or edit by hand
 ([PROCESSES.md](docs/PROCESSES.md#offline-the-phone)).
 
-A receipt's photo is an Attachment of its record, which syncs; the image
-itself stays on the phone that took it, since the model's Attachment has a
-file name and no content yet.
+A receipt's photo is an Attachment of its record, the image its content: a
+JPEG no larger than 2000 pixels on its longest side, which syncs with the
+record (`Edm.Binary` in the sync's JSON; kept in a file beside the store,
+as Core Data keeps a large value), to the server and every other device
+of the vehicle's. The desktop app lists a record's attachments beside it
+and opens one as the system opens a file of its kind.
 
 ### Building and running it
 
@@ -161,11 +164,12 @@ It builds on ORMKit's runtime from `../NativeORM2`, and on the ODataKit
 release ORMKit pins. `make check` checks the procedures over a store of
 their own (`Tests/LBProceduresCheck.m`), then `Tests/serve-and-check.py`
 runs the server on a temporary store and checks it over HTTP: the
-reference data, a change set saved with what it derives, one a rule
-refuses, the actions and automatic completion, and who may do what,
-signed in; `Tests/sync-check.sh` syncs two devices' offline stores
-through one (`Tests/LBSyncCheck.m`); then `Tests/app-check.sh` drives the
-desktop app against one.
+reference data (the units, the kinds of cost), a change set saved with
+what it derives, one a rule refuses, an attachment's photo there and
+back, the actions and automatic completion, and who may do what, signed
+in; `Tests/sync-check.sh` syncs two devices' offline stores through one,
+a receipt's photo among what they sync (`Tests/LBSyncCheck.m`); then
+`Tests/app-check.sh` drives the desktop app against one.
 
 ### Signing in with Keycloak (or another OpenID Connect provider)
 

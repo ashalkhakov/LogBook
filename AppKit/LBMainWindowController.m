@@ -19,6 +19,7 @@
 #import "TyreChange+CoreDataClass.h"
 #import "MeterReading+CoreDataClass.h"
 #import "Inspection+CoreDataClass.h"
+#import "Attachment+CoreDataClass.h"
 
 static void *LBVehicleChosen = &LBVehicleChosen;
 static void *LBRecordChosen = &LBRecordChosen;
@@ -29,6 +30,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @property (nonatomic, readwrite, copy) NSArray<User *> *drivers;
 @property (nonatomic, readwrite, copy) NSArray<TyreSet *> *tyreSets;
 @property (nonatomic, readwrite, copy) NSArray<CostKind *> *serviceKinds;
+@property (nonatomic, readwrite, copy) NSArray<Attachment *> *chosenAttachments;
 @end
 
 @implementation LBMainWindowController
@@ -40,6 +42,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         _drivers = @[];
         _tyreSets = @[];
         _serviceKinds = @[];
+        _chosenAttachments = @[];
     }
     return self;
 }
@@ -85,6 +88,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_reports chooseReport:nil];
     /* Reference data, the model's: read once. */
     self.serviceKinds = [CostKind lbServiceKindsInContext:self.context];
+    _attachmentsTable.target = self;
+    _attachmentsTable.doubleAction = @selector(openAttachment:);
     NSString *selection = NSStringFromSelector(@selector(selectionIndexes));
     [_vehicles addObserver:self forKeyPath:selection options:NSKeyValueObservingOptionInitial context:LBVehicleChosen];
     [_records addObserver:self forKeyPath:selection options:NSKeyValueObservingOptionInitial context:LBRecordChosen];
@@ -130,6 +135,18 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     self.chosenRecords = kind ? @{ kind: record } : @{};
     NSInteger form = [_recordForms indexOfTabViewItemWithIdentifier:kind ?: @"none"];
     [_recordForms selectTabViewItemAtIndex:form == NSNotFound ? 0 : form];
+    [self attachmentsChanged];
+}
+
+- (void)attachmentsChanged {
+    NSArray *chosen = _records.selectedObjects;
+    Record *record = chosen.count == 1 ? chosen[0] : nil;
+    NSMutableArray<Attachment *> *attachments = [NSMutableArray array];
+    for (Attachment *attachment in record.attachments) {
+        if (!attachment.isDeleted) [attachments addObject:attachment];
+    }
+    [attachments sortUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(fileName)) ascending:YES] ]];
+    if (![attachments isEqualToArray:_chosenAttachments]) self.chosenAttachments = attachments;
 }
 
 - (void)recordsChanged {
@@ -193,6 +210,33 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     if (![self commitEdits]) return;
     for (VehicleDriver *sharing in [_vehicleDrivers.selectedObjects copy]) [self.context deleteObject:sharing];
     [self vehicleChosen];
+}
+
+- (IBAction)openAttachment:(id)sender {
+    Attachment *attachment = _attachments.selectedObjects.firstObject;
+    if (!attachment) return;
+    NSError *error = nil;
+    NSURL *file = [self fileOfAttachment:attachment error:&error];
+    if (!file) {
+        [self reportError:error];
+        return;
+    }
+    if (!_quiet && ![[NSWorkspace sharedWorkspace] openURL:file]) NSBeep();
+}
+
+- (NSURL *)fileOfAttachment:(Attachment *)attachment error:(NSError **)error {
+    NSData *content = attachment.content;
+    NSString *name = attachment.fileName.lastPathComponent;
+    if (!content || !name.length || !attachment.id) {
+        if (error) *error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileReadNoSuchFileError
+                                            userInfo:@{ NSLocalizedDescriptionKey: @"The attachment has no file here." }];
+        return nil;
+    }
+    NSString *folder = [NSTemporaryDirectory() stringByAppendingPathComponent:
+                                                   [@"Logbook-" stringByAppendingString:attachment.id.UUIDString.lowercaseString]];
+    if (![[NSFileManager defaultManager] createDirectoryAtPath:folder withIntermediateDirectories:YES attributes:nil error:error]) return nil;
+    NSURL *file = [NSURL fileURLWithPath:[folder stringByAppendingPathComponent:name]];
+    return [content writeToURL:file options:NSDataWritingAtomic error:error] ? file : nil;
 }
 
 /* The records chosen gone from the logbook, not only from the vehicle; an
@@ -295,6 +339,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_vehicles willChangeValueForKey:selection];
     [_vehicles didChangeValueForKey:selection];
     [_remindersController refresh];
+    [self attachmentsChanged];
 }
 
 - (BOOL)saveChanges {

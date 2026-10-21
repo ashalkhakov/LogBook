@@ -14,6 +14,7 @@
 #import "Service+CoreDataClass.h"
 #import "ServiceItem+CoreDataClass.h"
 #import "CostKind+CoreDataClass.h"
+#import "Attachment+CoreDataClass.h"
 
 NSURL *LBSelfTestRoot;
 
@@ -174,6 +175,44 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
             sent && sent.volumeQuantity.integerValue == 40 && [sent.station isEqualToString:@"Shell"] && sent.filledTheTank
                 && [sent.driver.email isEqualToString:user.email] && [sent.mileageDistanceUnit.code isEqualToString:@"km"],
             [NSString stringWithFormat:@"%@ %@ %@ %@", sent, sent.volumeQuantity, sent.station, sent.mileageDistanceUnit.code]);
+}
+
+/* A receipt attached to the fill-up elsewhere (a phone's photo, synced to
+   the server): listed with the record, opened as a file of its name. */
+static void LBAttachmentSteps(LBMainWindowController *controller, Vehicle *kept) {
+    NSWindow *window = controller.window;
+    [LBServerSide.context refreshObject:kept mergeChanges:NO];
+    FillUp *there = nil;
+    for (Record *record in kept.records) {
+        if ([record isKindOfClass:[FillUp class]]) there = (FillUp *)record;
+    }
+    Attachment *receipt = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Attachment class])
+                                                        inManagedObjectContext:LBServerSide.context];
+    receipt.id = [NSUUID UUID];
+    receipt.fileName = @"receipt-0914.jpg";
+    receipt.content = [@"the receipt's photo" dataUsingEncoding:NSUTF8StringEncoding];
+    receipt.record = there;
+    NSError *error = nil;
+    LBCheck(@"a receipt attached to the fill-up elsewhere", there && [LBServerSide save:&error], error);
+    [controller readAgain];
+    LBSpin();
+    FillUp *fillUp = nil;
+    for (Record *record in controller.records.arrangedObjects) {
+        if ([record isKindOfClass:[FillUp class]]) fillUp = (FillUp *)record;
+    }
+    [controller.records setSelectedObjects:fillUp ? @[ fillUp ] : @[]];
+    LBSpin();
+    NSArray *names = [controller.attachments.arrangedObjects valueForKey:NSStringFromSelector(@selector(fileName))];
+    NSTableView *table = (NSTableView *)LBControl(window.contentView, @"attachmentsTable");
+    LBCheck(@"the record's attachment listed beside it", [names isEqualToArray:@[ @"receipt-0914.jpg" ]] && table.numberOfRows == 1, names);
+    [controller.attachments setSelectionIndex:0];
+    LBSpin();
+    LBClick(window, @"openAttachment");
+    Attachment *listed = controller.attachments.selectedObjects.firstObject;
+    NSURL *file = listed ? [controller fileOfAttachment:listed error:&error] : nil;
+    LBCheck(@"opened as a file of its name, its content", [file.lastPathComponent isEqualToString:@"receipt-0914.jpg"]
+                && [[NSData dataWithContentsOfURL:file] isEqualToData:receipt.content] && !controller.lastError,
+            error ?: controller.lastError ?: file);
 }
 
 /* The user's currency set in the Preferences window, as a user does. */
@@ -457,6 +496,7 @@ static void LBSteps(LBMainWindowController *controller) {
     LBCheck(@"its owner the user", [kept.owner.email isEqualToString:controller.store.user.email], kept.owner.email);
     LBSharingSteps(controller, kept);
     LBRecordSteps(controller, kept);
+    LBAttachmentSteps(controller, kept);
     LBPreferenceSteps(controller);
     LBReportDataSteps(controller, @"Self-test Golf");
     LBReportSteps(controller);

@@ -8,10 +8,7 @@
 //   one: the server's version is taken (LBConflictResolver, ODataSync's
 //   resolver), and this device's side kept here, for the user to settle
 //   (LBLocalStore.h): keep theirs, keep mine (written back, a new change),
-//   or edit by hand;
-// - the images of attachments taken on this device (a receipt's photo):
-//   the model's Attachment has a file name and no content, so the image
-//   stays with the device that took it (docs/PROCESSES.md, Offline).
+//   or edit by hand.
 //
 // Foundation and Core Data only: the iOS app's, and checked on macOS and
 // GNUstep with the rest of Shared/.
@@ -59,10 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
                    deletedHere:(BOOL)deletedHere;
 // Settled: forgotten.
 - (void)removeConflict:(LBPendingConflict *)conflict;
-
-// An attachment's image, by the attachment's id; nil: none here.
-- (nullable NSData *)dataOfAttachment:(NSUUID *)attachmentID;
-- (void)setData:(nullable NSData *)data ofAttachment:(NSUUID *)attachmentID;
 @end
 
 // ODataSync's resolver for a both entity: the server's version stands

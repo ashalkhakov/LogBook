@@ -21,6 +21,6 @@ for i in $(seq 1 100); do
 done
 python3 "$here/seed.py" "$root"
 status=0
-"$check" "$root" "$3" "$4" || status=$?
+"$check" "$root" "$3" "$4" "$here/receipt-photo.jpg" || status=$?
 [ $status -eq 0 ] || { echo "the server's log:"; cat "$log"; }
 exit $status

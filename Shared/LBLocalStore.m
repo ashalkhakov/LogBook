@@ -434,6 +434,8 @@ static void LBFlattenInto(NSError *error, NSMutableArray<NSString *> *into) {
         return [number stringFromNumber:value] ?: [value description];
     }
     if ([value isKindOfClass:[NSUUID class]]) return [value UUIDString];
+    if ([value isKindOfClass:[NSData class]])
+        return [NSString stringWithFormat:@"a file of %lu KB", (unsigned long)(([value length] + 1023) / 1024)];
     if ([value isKindOfClass:[NSDictionary class]]) {
         NSEntityDescription *entity = _coordinator.managedObjectModel.entitiesByName[conflict.objectEntityName];
         NSRelationshipDescription *relationship = entity.relationshipsByName[name];
@@ -456,13 +458,9 @@ static void LBFlattenInto(NSError *error, NSMutableArray<NSString *> *into) {
                                                                          inManagedObjectContext:_context];
     attachment.id = [NSUUID UUID];
     attachment.fileName = [[attachment.id.UUIDString lowercaseString] stringByAppendingPathExtension:@"jpg"];
+    attachment.content = jpeg;
     attachment.record = record;
-    [_appState setData:jpeg ofAttachment:attachment.id];
     return attachment;
-}
-
-- (NSData *)imageOfAttachment:(Attachment *)attachment {
-    return [_appState dataOfAttachment:attachment.id];
 }
 
 @end

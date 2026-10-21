@@ -157,8 +157,11 @@ FOUNDATION_EXPORT NSNotificationName const LBPhoneVehicleDidChangeNotification;
 - (void)addItemTask:(NSString *)task cost:(NSDecimalNumber *)cost;
 // An inspection's answer to the question.
 - (void)answer:(BOOL)yes toQuestionAt:(NSUInteger)index;
-// A receipt's photo (JPEG data), as one picked.
+// A receipt's photo (JPEG data), as one picked: the attachment's content.
 - (void)addImageData:(NSData *)jpeg;
+// A photo taken or chosen (UIImagePickerControllerDelegate's): kept as a
+// JPEG, its longest side no more than LBPhotoLongestSide.
+- (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<UIImagePickerControllerInfoKey, id> *)info;
 // Saved: NO when warnings stopped it (unless ignored) or a rule refused.
 - (BOOL)saveIgnoringWarnings:(BOOL)ignoring;
 @property (nonatomic, readonly, copy) NSArray<NSString *> *warnings;

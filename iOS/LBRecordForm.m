@@ -109,10 +109,14 @@ static NSString *LBTextOfNumber(NSNumber *number) {
 }
 
 /* An image no larger than 1600 pixels across, as a JPEG. */
+/* A photo as it is kept and synced: a JPEG, its longest side no more than
+   LBPhotoLongestSide pixels. */
+CGFloat const LBPhotoLongestSide = 2000;
+
 static NSData *LBJPEGOf(UIImage *image) {
     CGFloat longest = MAX(image.size.width, image.size.height);
-    if (longest > 1600) {
-        CGFloat scale = 1600 / longest;
+    if (longest > LBPhotoLongestSide) {
+        CGFloat scale = LBPhotoLongestSide / longest;
         CGSize size = CGSizeMake(floor(image.size.width * scale), floor(image.size.height * scale));
         UIGraphicsImageRendererFormat *format = [UIGraphicsImageRendererFormat defaultFormat];
         format.scale = 1;
@@ -129,7 +133,6 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
 @implementation LBRecordFormViewController {
     LBPhone *_phone;
     NSArray<LBField *> *_fields;
-    NSMutableArray<NSUUID *> *_addedImages;
     BOOL _isNew;
 }
 
@@ -181,7 +184,6 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
         _object = object;
         _phone = phone;
         _isNew = object.isInserted;
-        _addedImages = [NSMutableArray array];
         _warnings = @[];
         _problems = @[];
         _fields = [self fieldsOf:object];
@@ -384,8 +386,7 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
 
 - (void)addImageData:(NSData *)jpeg {
     if (![_object isKindOfClass:[Record class]] || !jpeg) return;
-    Attachment *attachment = [_phone.store attachImage:jpeg toRecord:(Record *)_object];
-    [_addedImages addObject:attachment.id];
+    [_phone.store attachImage:jpeg toRecord:(Record *)_object];
     if ([self isViewLoaded]) [self.tableView reloadData];
 }
 
@@ -433,7 +434,6 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
         _problems = sentences.count ? sentences : @[ error.localizedDescription ?: @"Not saved." ];
         return NO;
     }
-    [_addedImages removeAllObjects];
     if ([_delegate respondsToSelector:@selector(recordFormDidSave:)]) [_delegate recordFormDidSave:self];
     return YES;
 }
@@ -473,8 +473,6 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
 
 - (IBAction)cancel:(id)sender {
     [self.view endEditing:YES];
-    for (NSUUID *image in _addedImages) [_phone.store.appState setData:nil ofAttachment:image];
-    [_addedImages removeAllObjects];
     [_phone.store.context rollback];
     [self finish];
 }
@@ -621,10 +619,8 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
     NSArray<Attachment *> *attachments = [self attachments];
     if ((NSUInteger)row < attachments.count) {
         Attachment *attachment = attachments[(NSUInteger)row];
-        NSData *data = [_phone.store imageOfAttachment:attachment];
         cell.textLabel.text = [NSString stringWithFormat:@"Receipt %ld", (long)row + 1];
-        cell.detailTextLabel.text = data ? nil : @"on another device";
-        if (data) cell.imageView.image = [UIImage imageWithData:data];
+        cell.imageView.image = attachment.content ? [UIImage imageWithData:attachment.content] : nil;
     } else {
         cell.textLabel.text = @"Add Photo…";
         cell.textLabel.textColor = self.view.tintColor;

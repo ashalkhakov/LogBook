@@ -360,5 +360,8 @@ deleted on the phone and changed at the server comes back, and the user
 may delete it again.
 
 **Receipts.** A photo of a receipt is an Attachment of its record, named
-by its id, which syncs; the image stays on the phone that took it, since
-the model's Attachment has a file name and no content.
+by its id: its content the photo, a JPEG at most 2000 pixels on its
+longest side, which syncs with it both ways, as any of its properties
+(ODataSync carries it as `Edm.Binary`, base64 in the JSON of the change
+set; Core Data keeps it in a file beside the store, and the sync's own
+bookkeeping keeps its digest, not the photo).

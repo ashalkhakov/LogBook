@@ -781,7 +781,10 @@ Attachment has FileName                         a1 | 'receipt-0914.jpg'
 ```
 
 A record may have many attachments, each of one record. An attachment is
-a file; how the sync carries files is for later.
+a file, and has its content: "Attachment has Content" (raw data, large),
+mandatory, as a file has some (a photo taken on the phone always does).
+In Core Data it is stored externally, beside the store, and the sync
+carries it as any value of the record's, `Edm.Binary` in JSON.
 
 ### Schedules and reminders
 

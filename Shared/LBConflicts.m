@@ -76,16 +76,6 @@ static NSDictionary *LBUnarchivedValues(NSData *data) {
 }
 @end
 
-/* An attachment's image, kept by its id. */
-@interface LBAttachmentImage : NSManagedObject
-@property (nonatomic, copy, nullable) NSString *attachmentID;
-@property (nonatomic, copy, nullable) NSData *data;
-@end
-
-@implementation LBAttachmentImage
-@dynamic attachmentID, data;
-@end
-
 static NSAttributeDescription *LBAttribute(SEL name, NSAttributeType type, BOOL optional) {
     NSAttributeDescription *attribute = [[NSAttributeDescription alloc] init];
     attribute.name = NSStringFromSelector(name);
@@ -111,14 +101,8 @@ static NSManagedObjectModel *LBAppStateModel(void) {
                              LBAttribute(@selector(propertyNames), NSStringAttributeType, YES),
                              deletedThere, deletedHere,
                              LBAttribute(@selector(when), NSDateAttributeType, YES) ];
-    NSEntityDescription *image = [[NSEntityDescription alloc] init];
-    image.name = NSStringFromClass([LBAttachmentImage class]);
-    image.managedObjectClassName = NSStringFromClass([LBAttachmentImage class]);
-    NSAttributeDescription *data = LBAttribute(@selector(data), NSBinaryDataAttributeType, YES);
-    data.allowsExternalBinaryDataStorage = YES;
-    image.properties = @[ LBAttribute(@selector(attachmentID), NSStringAttributeType, NO), data ];
     NSManagedObjectModel *model = [[NSManagedObjectModel alloc] init];
-    model.entities = @[ conflict, image ];
+    model.entities = @[ conflict ];
     return model;
 }
 
@@ -188,32 +172,6 @@ static NSManagedObjectModel *LBAppStateModel(void) {
 - (void)removeConflict:(LBPendingConflict *)conflict {
     if (conflict.managedObjectContext != _context) return;
     [_context deleteObject:conflict];
-    [_context save:NULL];
-}
-
-- (LBAttachmentImage *)imageOf:(NSUUID *)attachmentID {
-    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([LBAttachmentImage class])];
-    fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(attachmentID)), attachmentID.UUIDString];
-    return [[_context executeFetchRequest:fetch error:NULL] firstObject];
-}
-
-- (NSData *)dataOfAttachment:(NSUUID *)attachmentID {
-    return attachmentID ? [self imageOf:attachmentID].data : nil;
-}
-
-- (void)setData:(NSData *)data ofAttachment:(NSUUID *)attachmentID {
-    if (!attachmentID) return;
-    LBAttachmentImage *image = [self imageOf:attachmentID];
-    if (!data) {
-        if (image) [_context deleteObject:image];
-    } else {
-        if (!image) {
-            image = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([LBAttachmentImage class])
-                                                  inManagedObjectContext:_context];
-            image.attachmentID = attachmentID.UUIDString;
-        }
-        image.data = data;
-    }
     [_context save:NULL];
 }
 

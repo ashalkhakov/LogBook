@@ -114,10 +114,9 @@ FOUNDATION_EXPORT NSNotificationName const LBLocalStoreDidChangeNotification;
 // related object's title.
 - (NSString *)textOfValue:(nullable id)value property:(NSString *)name ofConflict:(LBPendingConflict *)conflict;
 
-// A receipt's photo, as an Attachment of the record (named by its id,
-// .jpg), its image kept on this device (LBAppState).
+// A receipt's photo, as an Attachment of the record: named by its id
+// (.jpg), the image its content, which syncs with it.
 - (Attachment *)attachImage:(NSData *)jpeg toRecord:(Record *)record;
-- (nullable NSData *)imageOfAttachment:(Attachment *)attachment;
 
 @end
 

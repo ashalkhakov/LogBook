@@ -16,7 +16,8 @@
 // - a record changed on both devices: the server's version stands, the
 //   other side's kept as a pending conflict, and each way of settling it:
 //   keep theirs, keep mine (written back, and synced), edited by hand;
-// - a receipt's photo: its Attachment synced, its image kept here;
+// - a receipt's photo (Tests/receipt-photo.jpg): its Attachment synced
+//   with its content, through the server to the other device;
 // - a change a rule refuses is not saved, each rule said.
 
 #import <Foundation/Foundation.h>
@@ -191,7 +192,7 @@ static LBPendingConflict *LBConflict(LBLocalStore *anna, LBLocalStore *ben, NSUU
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 4) {
-            fprintf(stderr, "usage: lb-sync-check <service root> Logbook.momd Logbook.ormplans\n");
+            fprintf(stderr, "usage: lb-sync-check <service root> Logbook.momd Logbook.ormplans [photo.jpg]\n");
             return 2;
         }
         LBRoot = [NSURL URLWithString:@(argv[1])];
@@ -323,17 +324,20 @@ int main(int argc, const char *argv[]) {
                     && [((FillUp *)LBThere(ben, [FillUp class], fillUp.id)).note isEqualToString:@"Washed, tyres checked"],
                 ((FillUp *)LBThere(ben, [FillUp class], fillUp.id)).note);
 
-        /* A receipt's photo. */
-        NSData *jpeg = [@"a JPEG's bytes" dataUsingEncoding:NSUTF8StringEncoding];
+        /* A receipt's photo: its content synced, through the server. */
+        NSData *jpeg = argc > 4 ? [NSData dataWithContentsOfFile:@(argv[4])] : nil;
+        LBCheck(@"a photo of a receipt", jpeg.length > 0, argc > 4 ? @(argv[4]) : @"none given");
+        if (!jpeg) jpeg = [@"a JPEG's bytes" dataUsingEncoding:NSUTF8StringEncoding];
         Attachment *receipt = [anna attachImage:jpeg toRecord:fillUp];
         LBSave(anna, @"a receipt attached");
         LBSync(anna, @"synced");
+        LBCheck(@"it went", [anna pendingCount] == 0 && anna.issues.count == 0, LBIssues(anna));
         LBSync(ben, @"Ben syncs");
         Attachment *receiptThere = LBThere(ben, [Attachment class], receipt.id);
         LBCheck(@"Ben has the attachment, of the fill-up", [receiptThere.record.id isEqual:fillUp.id]
                     && [receiptThere.fileName isEqualToString:receipt.fileName], receiptThere);
-        LBCheck(@"the image is Anna's device's", [[anna imageOfAttachment:receipt] isEqual:jpeg] && ![ben imageOfAttachment:receiptThere],
-                nil);
+        LBCheck(@"and the photo, byte for byte", [receiptThere.content isEqualToData:jpeg],
+                [NSString stringWithFormat:@"%lu bytes of %lu", (unsigned long)receiptThere.content.length, (unsigned long)jpeg.length]);
 
         /* A rule refuses. */
         FillUp *half = LBFillUp(anna, golf, @"149000");
