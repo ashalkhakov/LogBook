@@ -31,6 +31,8 @@ static NSString *LBCount(NSUInteger n) {
     ODataSyncRemote *_remote;
     NSTimer *_timer;
     BOOL _syncAgain;
+    /* A save of the store's own that waits for the next sync. */
+    BOOL _savingQuietly;
     /* Changes refused in the sync running (told on the engine's thread),
        and whether this sync is the one sending them again. */
     NSUInteger _setAside;
@@ -211,9 +213,12 @@ static NSString *LBCount(NSUInteger n) {
         [self say:[self syncedStatus]];
         /* A user who prefers no currency takes this phone's, once the
            server's say has come down: what their costs by month are
-           reported in. */
+           reported in. It waits for the next sync, as a sync of its own
+           would still be going when the user next saves. */
         NSError *saveError = nil;
+        _savingQuietly = YES;
         if ([[self user] lbTakeLocaleCurrency] && ![self save:&saveError]) NSLog(@"Logbook: the currency not kept: %@", saveError.localizedDescription);
+        _savingQuietly = NO;
     }
     /* A change refused while what came with it was still on its way (a
        reminder's next, sent before the reminder it follows was closed
@@ -315,7 +320,7 @@ static NSString *LBCount(NSUInteger n) {
     }
     [[NSNotificationCenter defaultCenter] postNotificationName:LBLocalStoreDidChangeNotification object:self
                                                       userInfo:@{ @"status": _status ?: @"" }];
-    if (_serviceRoot && _syncEnabled) {
+    if (_serviceRoot && _syncEnabled && !_savingQuietly) {
         /* Once for saves close together. */
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(sync) object:nil];
         [self performSelector:@selector(sync) withObject:nil afterDelay:2];
