@@ -158,7 +158,9 @@ static LBPendingConflict *LBConflict(LBLocalStore *anna, LBLocalStore *ben, NSUU
     }
     LBSync(ben, @"and synced");
     LBCheck(@"Ben's went", [ben pendingCount] == 0 && !ben.issues.count, LBIssues(ben));
-    NSData *row = [NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"Records(%@)", fillUpID.UUIDString] relativeToURL:LBRoot]];
+    /* Read afresh: GNUstep's plain read keeps an http answer in a cache. */
+    NSData *row = [NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"Records(%@)", fillUpID.UUIDString] relativeToURL:LBRoot]
+                                        options:NSDataReadingUncached error:NULL];
     NSDictionary *json = row ? [NSJSONSerialization JSONObjectWithData:row options:0 error:NULL] : nil;
     NSString *wire = [NSStringFromSelector(field) capitalizedString];
     LBCheck(@"the server has Ben's", [json[wire] isEqual:his], json);
