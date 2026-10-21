@@ -325,7 +325,8 @@ def expense(vehicle, kind, moment, user, km=None):
 
 def reminder(vehicle, user, **facts):
     """A reminder of the vehicle, due on a date, for what the facts say:
-    Kind (an expense kind), Schedule (a schedule's id), else a task."""
+    Kind (an expense kind), Schedule (a schedule's id, counted from a day
+    a year before it is due), else a task."""
     body = {"@odata.type": "#Default.Reminder", "Id": str(uuid.uuid4()), "DueDate": facts.pop("due", "2026-06-01"),
             "SetAt": facts.pop("set", "2026-04-01T09:00:00Z"), "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
     kind, schedule = facts.pop("Kind", None), facts.pop("Schedule", None)
@@ -333,6 +334,7 @@ def reminder(vehicle, user, **facts):
         body["ExpenseKind@odata.bind"] = "CostKinds('%s')" % kind
     elif schedule:
         body["Schedule@odata.bind"] = "Records(%s)" % schedule
+        body["CountedFromDate"] = facts.pop("counted", "2025-06-01")
     else:
         body["Task"] = "Wash"
     body.update(facts)

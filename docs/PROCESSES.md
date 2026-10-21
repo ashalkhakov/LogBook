@@ -89,15 +89,8 @@ The service layer records the schedule:
 
 Then it makes the schedule's first reminder (2).
 
-The owner may change a schedule later (the desktop's Edit Schedule): its
-intervals and its note, and its work until an event has done one of its
-reminders. Its reminders have no work of their own ("Reminder comes from
-Schedule", or one of the three, exclusively), and which events did the
-work is worked out from the schedule's work again whenever an event of the
-vehicle is saved (4): changed after one was done, the past would be
-undone (the event no longer does it). Other work is then a new schedule.
-New intervals count from the next reminder (5); the open one stays due
-where it is, for the owner to move (6).
+A schedule is changed by going on in another from its open reminder on
+(11): its past stays as it was.
 
 ## 2. Make a schedule's first reminder
 
@@ -127,6 +120,12 @@ records it so, here and wherever it makes one (5), an entered fact like any
 record's vehicle. The model does not derive it; it checks it ("If some
 Reminder comes from some Schedule and that Reminder is of some Vehicle then
 that Schedule is of that Vehicle").
+
+It records where the reminder is counted from: "Reminder is counted from
+Date" (the day it was worked out from), and "Reminder is counted from
+Distance" where the schedule recurs after a distance and one was known.
+Every reminder of a schedule is counted from a day; a one-off is counted
+from nothing. A change of the schedule counts it again from there (11).
 
 The schedule then has one open reminder (`OneOpenReminder`).
 
@@ -214,7 +213,12 @@ the same change: due its intervals after when and where the last was done.
 - Reminder is due on Date: the date of the done moment plus the
   schedule's months (`ReminderNextDue`);
 - Reminder is due at Distance: the event's distance plus the schedule's
-  interval, in the event's unit.
+  interval, in the event's unit;
+- Reminder is counted from Date: the day of the done moment; Reminder is
+  counted from Distance: the event's distance.
+
+A cancelled reminder's replacement (8) is due where the owner says, and
+counted from where the one it replaces was.
 
 For a schedule that recurs after a distance, the event's distance is
 needed: closed by an event at none (an expense with no odometer reading),
@@ -312,6 +316,72 @@ Where the two phones made the same object with the same values, the sync
 meets it as one, and says nothing. Where they made it, or changed it,
 differently, it is a conflict (below): the server's stands, and the phone
 keeps its own for the user to settle.
+
+## 11. Change a schedule
+
+(The model has it; the procedure is to come. Until then the desktop's
+Edit Schedule changes a schedule in place: its intervals and note, and
+its work only while no event has done one of its reminders.)
+
+A schedule is a rule its reminders are made by, one at a time. Its done
+and cancelled reminders are what happened, made by the rule as it was;
+its open one, and those to come, are what is planned. The owner changes
+the rule: its work, its intervals, its note (the desktop's Edit
+Schedule). What happened stays as it is; what is planned follows.
+
+So a change is a new schedule going on from the old one, from its open
+reminder on:
+- Schedule is a continuation of Schedule (the old one); the new one is of
+  the same vehicle (checked: "If some Schedule1 is a continuation of some
+  Schedule2 that is of some Vehicle then Schedule1 is of that Vehicle"),
+  entered by the owner, with the work, intervals and note as changed;
+- the old schedule keeps its done and cancelled reminders, with its work
+  and intervals as they were: which events did them is worked out from
+  the old schedule's work still (4), so changing the work undoes nothing;
+- the old schedule has no reminder open after (`ContinuedHaveNoOpenReminder`),
+  and makes no next: its events past the change close what the new one
+  has open.
+
+The open reminder goes on with it, as it is or anew:
+- **Not touched** (neither moved, noted, given an attachment, nor a
+  replacement): it comes from the new schedule now, counted from where it
+  was (its Reminder is counted from Date and Distance), due anew by the
+  new intervals: the day plus the new months, the distance plus the new
+  interval. Its id stays (it is the same reminder, planned otherwise).
+- **Touched** (moved by hand, say): what the owner decided was for the
+  old rule. It is cancelled (Reminder was cancelled on Date: today), and
+  the new schedule is started from where it was counted from, its first
+  reminder due by the new intervals (2). The app says so before the
+  change is saved: the move is not carried over.
+- **None open** (a schedule that recurs after a distance, closed by an
+  event at none (5)): the new schedule is started as in 2.
+
+Its ids are named as the procedures name what they make: the new schedule
+"continuation of" the old one's id, its first reminder as a start of it.
+A schedule changed again goes on in a third; the chain is one series to
+whoever looks at it (the calendar, 12).
+
+## 12. What is planned, and when
+
+What a schedule has planned past its open reminder is not recorded: it
+is worked out when it is shown, from the rule, so a changed schedule
+plans otherwise at once.
+- **By date:** the open reminder's due date, plus the months, again and
+  again.
+- **By distance:** the open reminder's due distance, plus the interval;
+  on a calendar, on the day the vehicle is expected to reach it, by the
+  distance it has gone a day over its last 90 days of odometer readings
+  (an estimate, said as one). With too few readings to tell, it is listed
+  by its distance, on no day.
+- **Both:** whichever comes first.
+- So far ahead: a year from today.
+
+The desktop's calendar (to come) shows a vehicle's reminders on their
+days: done (by which event, its driver; late or not), cancelled (and what
+replaced it), open (due, overdue, moved from where), and planned (as
+estimated where they are); each record on its day besides. Working out
+what is planned is procedure, shared by both apps; nothing of it is
+saved.
 
 ## Offline: the phone
 

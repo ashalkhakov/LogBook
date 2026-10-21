@@ -316,6 +316,9 @@ static void LBStart(void) {
                 && first.dueMileageDistanceUnit == world.km && [first.setAt isEqualToDate:now] && first.schedule == oil
                 && first.vehicle == world.golf && first.enteredBy == world.anna,
             error ?: LBDue(first));
+    LBCheck(@"counted from today and the latest distance", [first.countedFromDate isEqualToDate:LBMoment(@"2026-10-20")]
+                && LBIs(first.countedFromMileageQuantity, @"150000") && first.countedFromMileageDistanceUnit == world.km,
+            LBText(first.countedFromDate));
     LBCheck(@"saved", LBSave(world.context, @"the first reminder"), nil);
     LBCheck(@"the schedule's open reminder", oil.lb_openReminder == first, nil);
     LBCheck(@"started again is refused", ![oil lb_startFrom:nil mileage:nil unit:nil by:world.anna at:now error:&error]
@@ -327,8 +330,10 @@ static void LBStart(void) {
     Schedule *again = LBOilSchedule(world, 11);
     LBSave(world.context, @"another schedule");
     Reminder *counted = [again lb_startFrom:nil mileage:nil unit:nil by:world.anna at:now error:&error];
-    LBCheck(@"from the last oil change: 2027-06-01, 163000 km",
-            [counted.dueDate isEqualToDate:LBMoment(@"2027-06-01")] && LBIs(counted.dueMileageQuantity, @"163000"), error ?: LBDue(counted));
+    LBCheck(@"from the last oil change: 2027-06-01, 163000 km, counted from it",
+            [counted.dueDate isEqualToDate:LBMoment(@"2027-06-01")] && LBIs(counted.dueMileageQuantity, @"163000")
+                && [counted.countedFromDate isEqualToDate:LBMoment(@"2026-06-01")] && LBIs(counted.countedFromMileageQuantity, @"148000"),
+            error ?: LBDue(counted));
     [world.context rollback];
 
     /* From what the owner says, an interval in miles. */
@@ -375,6 +380,9 @@ static void LBComplete(void) {
             next && [next.dueDate isEqualToDate:LBMoment(@"2028-05-20")] && LBIs(next.dueMileageQuantity, @"177400")
                 && [next.setAt isEqualToDate:service.timestamp] && next.schedule == oil && next.vehicle == world.golf && next.lb_isOpen,
             LBDue(next));
+    LBCheck(@"counted from the service: its day and distance", [next.countedFromDate isEqualToDate:LBMoment(@"2027-05-20")]
+                && LBIs(next.countedFromMileageQuantity, @"162400") && next.countedFromMileageDistanceUnit == world.km,
+            LBText(next.countedFromDate));
     LBCheck(@"untouched", !next.lb_isTouched, nil);
     ORMQueryResult *nextDue = [LogbookQueries reminderNextDueInContext:world.context error:&error];
     NSDate *said = nil;

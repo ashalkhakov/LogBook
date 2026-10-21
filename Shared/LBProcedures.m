@@ -221,6 +221,15 @@ static void LBDueAfter(Schedule *schedule, Vehicle *vehicle, NSDate *moment, NSD
     *dueUnit = unit;
 }
 
+/* Where a schedule's reminder is counted from: the day of the moment; the
+   distance, where the schedule recurs after one and a distance is known. */
+static void LBCountFrom(Reminder *reminder, NSDate *moment, NSDecimalNumber *mileage, DistanceUnit *unit) {
+    BOOL byDistance = reminder.schedule.intervalQuantity && reminder.schedule.intervalDistanceUnit && mileage && unit;
+    reminder.countedFromDate = LBDay(moment);
+    reminder.countedFromMileageQuantity = byDistance ? mileage : nil;
+    reminder.countedFromMileageDistanceUnit = byDistance ? unit : nil;
+}
+
 /* A reminder of the id, made; nil when the vehicle has one of it already
    (made by this procedure before). */
 static Reminder *LBNewReminder(Vehicle *vehicle, NSUUID *uuid, NSManagedObjectContext *context) {
@@ -304,6 +313,11 @@ static User *LBActorOf(Event *event) {
         }
     }
     if (!from) from = now;
+    if ((!mileage || !unit) && self.intervalQuantity && self.intervalDistanceUnit) {
+        Event *latest = LBLatestMetered(self.vehicle, from);
+        mileage = latest.mileageQuantity;
+        unit = latest.mileageDistanceUnit;
+    }
     NSDate *dueDate;
     NSDecimalNumber *dueMileage;
     DistanceUnit *dueUnit;
@@ -329,6 +343,7 @@ static User *LBActorOf(Event *event) {
     first.dueDate = dueDate;
     first.dueMileageQuantity = dueMileage;
     first.dueMileageDistanceUnit = dueUnit;
+    LBCountFrom(first, from, mileage, unit);
     return first;
 }
 
@@ -491,7 +506,12 @@ static void LBDoneBy(Reminder *reminder, Event *event) {
                              self.managedObjectContext);
         if (!made) return LBFail(error, @"The reminder's replacement was made already");
         if (self.schedule) {
+            /* Due where the owner says; counted from where the one it
+               replaces was. */
             made.schedule = self.schedule;
+            made.countedFromDate = self.countedFromDate;
+            made.countedFromMileageQuantity = self.countedFromMileageQuantity;
+            made.countedFromMileageDistanceUnit = self.countedFromMileageDistanceUnit;
         } else {
             made.task = self.task;
             made.expenseKind = self.expenseKind;
@@ -679,6 +699,7 @@ static void LBDeleteReminder(Reminder *reminder) {
             reminder.dueDate = dueDate;
             reminder.dueMileageQuantity = dueMileage;
             reminder.dueMileageDistanceUnit = dueUnit;
+            LBCountFrom(reminder, source.timestamp, source.mileageQuantity, source.mileageDistanceUnit);
         }
         if (slot.fixed || !reminder || LBDoneAsBy(reminder, slot.event)) continue;
         if (slot.event) {
