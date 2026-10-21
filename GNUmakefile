@@ -10,8 +10,9 @@
 #                            Logbook.ormplans beside it; Logbook.app, the
 #                            desktop app
 #   make check               the procedures checked over a store of their
-#                            own; the server run, and asked over HTTP; the app
-#                            driven from within against one (under X:
+#                            own; the server run, and asked over HTTP; two
+#                            devices' offline stores synced through it; the
+#                            app driven from within against one (under X:
 #                            xvfb-run -a make check)
 #   make LB_SERVER_ONLY=yes  the server alone, on Foundation only
 #
@@ -52,7 +53,7 @@ Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/Connec
 	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl)
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 
-TOOL_NAME = logbook-server lb-procedures-check
+TOOL_NAME = logbook-server lb-procedures-check lb-sync-check
 logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Shared/LBProcedures.m \
 	$(LB_MODEL)/Constraints/LogbookValidation.m
 logbook-server_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
@@ -72,6 +73,16 @@ lb-procedures-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
 lb-procedures-check_LIB_DIRS = $(logbook-server_LIB_DIRS)
 lb-procedures-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
 lb-procedures-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
+
+# The offline store (the iOS app's) against a server: two devices.
+lb-sync-check_OBJC_FILES = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m \
+	Shared/LBDisplay.m Shared/LBProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
+lb-sync-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
+lb-sync-check_COREDATA_CODEGEN = yes
+lb-sync-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
+lb-sync-check_LIB_DIRS = $(logbook-server_LIB_DIRS)
+lb-sync-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
+lb-sync-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 
 include $(GNUSTEP_MAKEFILES)/coredata-model.make
 -include GNUmakefile.preamble
@@ -124,6 +135,7 @@ LB_RUN = LD_LIBRARY_PATH="$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)$${LD_LIBRARY_P
 check:: all
 	$(LB_RUN) obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
 	$(LB_RUN) python3 Tests/serve-and-check.py obj/logbook-server
+	$(LB_RUN) Tests/sync-check.sh obj/logbook-server obj/lb-sync-check obj/Logbook.momd obj/Logbook.ormplans
 ifneq ($(LB_SERVER_ONLY),yes)
 	$(LB_RUN) Tests/app-check.sh obj/logbook-server Logbook.app/Logbook
 endif
