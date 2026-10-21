@@ -1,7 +1,8 @@
 #!/bin/sh
 # The offline store (Tests/LBSyncCheck.m) against a server of its own: a
-# temporary store, no sign-in, on a free port on loopback, its kinds of
-# cost seeded (Tests/seed.py).
+# temporary store, no sign-in, on a free port on loopback, an expense kind
+# of a user's seeded (Tests/seed.py); a receipt's photo to sync
+# (Tests/receipt-photo.jpg).
 #
 #   Tests/sync-check.sh build/logbook-server build/lb-sync-check build/Logbook.momd build/Logbook.ormplans
 set -e

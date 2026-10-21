@@ -156,8 +156,7 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
     if ([record isKindOfClass:[Service class]]) {
         Service *service = (Service *)record;
         service.currency = LBCurrencyOf(phone);
-        service.serviceKind = LBFetchFirst(store.context, [CostKind class],
-                                           [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(name)), @"Maintenance"]);
+        service.serviceKind = [CostKind lbServiceKindsInContext:store.context].firstObject;
     }
     if ([record isKindOfClass:[Expense class]]) record.totalCurrency = LBCurrencyOf(phone);
     if ([record isKindOfClass:[Trip class]]) {
@@ -235,11 +234,7 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
     if ([object isKindOfClass:[Service class]]) {
         [fields addObject:LBMakeField(@"Garage", @selector(garage), LBFieldText)];
         LBField *kind = LBMakeField(@"Kind", @selector(serviceKind), LBFieldChoice);
-        NSMutableArray *kinds = [NSMutableArray array];
-        for (CostKind *each in LBAll(context, [CostKind class], nil, @selector(name))) {
-            if (![each isKindOfClass:[ExpenseKind class]]) [kinds addObject:each];
-        }
-        kind.choices = kinds;
+        kind.choices = [CostKind lbServiceKindsInContext:context];
         [fields addObject:kind];
         [fields addObject:LBMakeField(@"Title", @selector(title), LBFieldText)];
     }

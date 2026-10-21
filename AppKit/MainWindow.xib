@@ -50,12 +50,6 @@
                 <binding destination="-2" name="sortDescriptors" keyPath="byTitle" id="volumeUnitsOrder"/>
             </connections>
         </arrayController>
-        <arrayController mode="entity" entityName="CostKind" automaticallyPreparesContent="YES" userLabel="CostKind" id="costKinds">
-            <connections>
-                <binding destination="-2" name="managedObjectContext" keyPath="context" id="costKindsContext"/>
-                <binding destination="-2" name="sortDescriptors" keyPath="byTitle" id="costKindsOrder"/>
-            </connections>
-        </arrayController>
         <arrayController mode="entity" entityName="ExpenseKind" automaticallyPreparesContent="YES" userLabel="ExpenseKind" id="expenseKinds">
             <connections>
                 <binding destination="-2" name="managedObjectContext" keyPath="context" id="expenseKindsContext"/>
@@ -1141,8 +1135,8 @@
                                                                     <menu key="menu" id="ServiceKindMenu"/>
                                                                 </popUpButtonCell>
                                                                 <connections>
-                                                                    <binding destination="costKinds" name="content" keyPath="arrangedObjects" id="ServiceKindContent"/>
-                                                                    <binding destination="costKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="ServiceKindContent" id="ServiceKindValues"/>
+                                                                    <binding destination="-2" name="content" keyPath="serviceKinds" id="ServiceKindContent"/>
+                                                                    <binding destination="-2" name="contentValues" keyPath="serviceKinds.lbTitle" previousBinding="ServiceKindContent" id="ServiceKindValues"/>
                                                                     <binding destination="ServiceForm" name="selectedObject" keyPath="selection.serviceKind" previousBinding="ServiceKindValues" id="ServiceKindChosen">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>

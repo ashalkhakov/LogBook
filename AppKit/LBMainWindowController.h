@@ -9,7 +9,7 @@
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
 
-@class LBStore, User, TyreSet, Vehicle, DistanceUnit, LBReportsController, LBRemindersController;
+@class LBStore, User, TyreSet, Vehicle, DistanceUnit, CostKind, LBReportsController, LBRemindersController;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -46,6 +46,9 @@ NS_ASSUME_NONNULL_BEGIN
 // and its tyre sets: what a record's form chooses from.
 @property (nonatomic, readonly, copy) NSArray<User *> *drivers;
 @property (nonatomic, readonly, copy) NSArray<TyreSet *> *tyreSets;
+// The kinds a service may be of: the model's (CostKind's
+// lbServiceKindsInContext:).
+@property (nonatomic, readonly, copy) NSArray<CostKind *> *serviceKinds;
 
 // A new record of the chosen vehicle, of the kind of the sender's tag (an
 // index in +[Record lbKinds]), filled in as far as it can be and chosen.

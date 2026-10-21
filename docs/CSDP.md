@@ -1586,7 +1586,16 @@ Core Data checks them.
 What each unit is worth in kilometres or litres is reference data: facts
 of the app's own, which every store starts with (`LogbookReferenceData`
 seeds them), not the user's. A distance or a volume converts by a step to
-its unit's factor and a product.
+its unit's factor and a product. So are the kinds of cost the model
+names, by their names alone ("Reference data: Maintenance" after
+CostKind): 'Maintenance' and 'Repair', what ServiceKind is by definition,
+and 'Fuel', 'Tyres' and 'Documents', what a fill-up, a tyre set and a
+document are of ("Cost is of CostKind", derived, and mandatory for every
+cost). Being there from the start, no user's kind of expense takes one of
+their names; users add kinds of expense of their own. The forms offer a
+service the kinds ServiceKind's rule finds (`ServiceKindRule`, which the
+tables run as a query); that a service's kind is one is not yet checked
+at save (a value list's rule is not one step the planner can negate).
 
 What no graphical constraint says is a rule, a query whose answers are
 what must not be ([RULES.md](../../NativeORM2/docs/RULES.md)), written

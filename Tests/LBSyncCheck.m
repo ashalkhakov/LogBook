@@ -1,13 +1,14 @@
 // The offline store (Shared/LBLocalStore.h) checked against a server: two
 // devices, Anna's and Ben's, each a store of its own in a temporary
 // directory, syncing with the server at the root given (one with no
-// sign-in, its cost kinds seeded: Tests/sync-check.sh). Each check a line,
-// "ok" or "FAIL"; 1 when one failed.
+// sign-in, an expense kind of a user's seeded: Tests/sync-check.sh). Each
+// check a line, "ok" or "FAIL"; 1 when one failed.
 //
-//   lb-sync-check <service root> build/Logbook.momd build/Logbook.ormplans
+//   lb-sync-check <service root> build/Logbook.momd build/Logbook.ormplans [photo.jpg]
 //
-// - the reference data comes down; a vehicle made on one device reaches
-//   the other;
+// - the reference data comes down (the units, the kinds of cost the
+//   model's, the service kinds among them); a vehicle made on one device
+//   reaches the other;
 // - a fill-up saved with sync off waits, and goes once it is on;
 // - a service with an item of a schedule's task closes its reminder as it
 //   is saved, the next made, named by it: the other device has the same
@@ -24,6 +25,7 @@
 #import "LBLocalStore.h"
 #import "LBProcedures.h"
 #import "LBVehicleSummary.h"
+#import "LBDisplay.h"
 #import "Vehicle+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
@@ -208,7 +210,14 @@ int main(int argc, const char *argv[]) {
         LBLocalStore *ben = LBDevice(@"ben@example.org");
         LBSync(anna, @"Anna's device syncs");
         LBCheck(@"the units came down", LBFetch([DistanceUnit class], @selector(code), @"km", anna) != nil, nil);
-        LBCheck(@"and the kinds of cost", LBFetch([CostKind class], @selector(name), @"Maintenance", anna) != nil, nil);
+        NSFetchRequest *kinds = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([CostKind class])];
+        NSArray *names = [[anna.context executeFetchRequest:kinds error:NULL] valueForKey:NSStringFromSelector(@selector(name))];
+        BOOL allKinds = YES;
+        for (NSString *name in @[ @"Fuel", @"Maintenance", @"Repair", @"Tyres", @"Documents" ]) allKinds = allKinds && [names containsObject:name];
+        LBCheck(@"and the model's kinds of cost", allKinds, names);
+        NSArray *serviceKinds = [[CostKind lbServiceKindsInContext:anna.context] valueForKey:NSStringFromSelector(@selector(name))];
+        LBCheck(@"the kinds of service, as the model's rule finds them", [serviceKinds isEqualToArray:(@[ @"Maintenance", @"Repair" ])],
+                serviceKinds);
 
         Vehicle *golf = LBInsert([Vehicle class], anna);
         golf.vehicleName = @"Golf";
@@ -256,7 +265,7 @@ int main(int argc, const char *argv[]) {
         service.mileageQuantity = LBNumber(@"148500");
         service.mileageDistanceUnit = LBFetch([DistanceUnit class], @selector(code), @"km", anna);
         service.garage = @"Garage Müller";
-        service.serviceKind = LBFetch([CostKind class], @selector(name), @"Maintenance", anna);
+        service.serviceKind = [CostKind lbServiceKindsInContext:anna.context].firstObject;
         service.currency = @"EUR";
         ServiceItem *item = LBInsert([ServiceItem class], anna);
         item.service = service;

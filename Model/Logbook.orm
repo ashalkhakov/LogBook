@@ -448,6 +448,13 @@
 				<orm:ConceptualDataType id="_2FB9A557-46D4-4F0C-A0CB-2F32A123B8FA" ref="_EA5BBACA-CD80-4C5B-B0E5-1C3525347A21" Scale="0" Length="0" />
 			</orm:ValueType>
 			<orm:EntityType id="_D3D9EF81-F055-4F1A-A33A-E5C495D7B619" Name="CostKind" _ReferenceMode="name">
+				<orm:Notes>
+					<orm:Note id="_5A9B8C72-AF1C-417E-9329-DF11C6CF00AC">
+						<orm:Text>The kinds of cost every store starts with, the app's own: what a
+fill-up, a tyre set and a document are of, and a service's two (its
+ServiceKind). A user adds kinds of expense of their own.</orm:Text>
+					</orm:Note>
+				</orm:Notes>
 				<orm:PlayedRoles>
 					<orm:Role ref="_B4674739-655C-4ADB-91DF-34AFE083F58F" />
 					<orm:Role ref="_E4DFF2EE-EB6B-47D7-8E08-C13C6E10BC65" />
@@ -455,12 +462,57 @@
 					<orm:SupertypeMetaRole ref="_86908C24-4436-457E-91A8-7528AB84A0EC" />
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_CB9DC41F-98A3-494F-A226-26B675176433" />
+				<orm:Instances>
+					<orm:EntityTypeInstance id="_8101C070-D5D7-4DCA-9908-37D2E44F1AE1">
+						<orm:RoleInstances>
+							<orm:EntityTypeRoleInstance ref="_DB3A8E81-88EA-4FB7-AEA6-0B758846D5E8" />
+						</orm:RoleInstances>
+					</orm:EntityTypeInstance>
+					<orm:EntityTypeInstance id="_FB266C56-2989-4759-99E3-F9F27F50A768">
+						<orm:RoleInstances>
+							<orm:EntityTypeRoleInstance ref="_32C1B085-7647-4294-8CEA-9B904AB7F926" />
+						</orm:RoleInstances>
+					</orm:EntityTypeInstance>
+					<orm:EntityTypeInstance id="_AA1921C0-1D4E-4CA8-909D-FFD3ECB1C7C6">
+						<orm:RoleInstances>
+							<orm:EntityTypeRoleInstance ref="_5D6594DE-08E0-4EEC-8C67-CEDAE59B8C79" />
+						</orm:RoleInstances>
+					</orm:EntityTypeInstance>
+					<orm:EntityTypeInstance id="_4A1217F4-78EB-4D99-B301-368E4F402ED1">
+						<orm:RoleInstances>
+							<orm:EntityTypeRoleInstance ref="_221816F3-AE26-450F-9B9A-B00FB87C15D4" />
+						</orm:RoleInstances>
+					</orm:EntityTypeInstance>
+					<orm:EntityTypeInstance id="_235FE583-9165-4FAC-B83B-0851A0E0EBE3">
+						<orm:RoleInstances>
+							<orm:EntityTypeRoleInstance ref="_BE755D2B-FBA9-459F-8D02-3A833386D05B" />
+						</orm:RoleInstances>
+					</orm:EntityTypeInstance>
+				</orm:Instances>
+				<ormv:ReferenceData>true</ormv:ReferenceData>
 			</orm:EntityType>
 			<orm:ValueType id="_4C82CD8D-59F6-4D1B-BBB4-CF0F50DF31C8" Name="CostKind_name">
 				<orm:PlayedRoles>
 					<orm:Role ref="_DEFF1D4A-2980-424F-961C-A2657FCEF5A1" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_CE305EC4-F24A-4CE6-B038-EF8D88871F6B" ref="_380AB1C0-186E-4409-B484-09338C079516" Scale="0" Length="0" />
+				<orm:Instances>
+					<orm:ValueTypeInstance id="_5814B2CD-F594-4377-9D6C-8779A6ECE3A2">
+						<orm:Value>Fuel</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_FE0CFD7B-7B45-4E63-A293-CD8D7C42BD27">
+						<orm:Value>Maintenance</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_507028F5-9E1E-4A57-BAD9-9DF7A3432234">
+						<orm:Value>Repair</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_E1CE0FE7-B6CE-4CB8-A07C-FDB3D99D6A88">
+						<orm:Value>Tyres</orm:Value>
+					</orm:ValueTypeInstance>
+					<orm:ValueTypeInstance id="_2E39D31A-57C1-42DB-9DE6-3F64AA231B8F">
+						<orm:Value>Documents</orm:Value>
+					</orm:ValueTypeInstance>
+				</orm:Instances>
 			</orm:ValueType>
 			<orm:EntityType id="_890D546C-1996-4726-98DB-4A4151CA6089" Name="Event" _ReferenceMode="">
 				<orm:PlayedRoles>
@@ -2640,6 +2692,13 @@ reminder keeps what it is due at now.</orm:Text>
 					</orm:Role>
 					<orm:Role id="_DEFF1D4A-2980-424F-961C-A2657FCEF5A1" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
 						<orm:RolePlayer ref="_4C82CD8D-59F6-4D1B-BBB4-CF0F50DF31C8" />
+						<orm:RoleInstances>
+							<orm:EntityTypeRoleInstance id="_DB3A8E81-88EA-4FB7-AEA6-0B758846D5E8" ref="_5814B2CD-F594-4377-9D6C-8779A6ECE3A2" />
+							<orm:EntityTypeRoleInstance id="_32C1B085-7647-4294-8CEA-9B904AB7F926" ref="_FE0CFD7B-7B45-4E63-A293-CD8D7C42BD27" />
+							<orm:EntityTypeRoleInstance id="_5D6594DE-08E0-4EEC-8C67-CEDAE59B8C79" ref="_507028F5-9E1E-4A57-BAD9-9DF7A3432234" />
+							<orm:EntityTypeRoleInstance id="_221816F3-AE26-450F-9B9A-B00FB87C15D4" ref="_E1CE0FE7-B6CE-4CB8-A07C-FDB3D99D6A88" />
+							<orm:EntityTypeRoleInstance id="_BE755D2B-FBA9-459F-8D02-3A833386D05B" ref="_2E39D31A-57C1-42DB-9DE6-3F64AA231B8F" />
+						</orm:RoleInstances>
 					</orm:Role>
 				</orm:FactRoles>
 				<orm:ReadingOrders>

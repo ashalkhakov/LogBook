@@ -198,8 +198,10 @@ Once signed in, who may see and change what is the model's
 - whoever drives a vehicle adds records to it, entered by them;
 - a user is named by their email: a vehicle is shared with someone by it,
   before they first sign in too; what else is said of a user is theirs;
-- units and kinds of cost are the app's; an exchange rate is added, never
-  changed;
+- units and kinds of cost are the app's (the model's reference data,
+  every store's from the start: 'Maintenance' and 'Repair', a service's,
+  'Fuel', 'Tyres', 'Documents'); a user adds kinds of expense of their
+  own, which no one removes; an exchange rate is added, never changed;
 - whoever drives a vehicle closes and moves its reminders; its owner
   starts its schedules, cancels its reminders and discards its records.
 

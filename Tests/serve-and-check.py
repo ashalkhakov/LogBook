@@ -40,14 +40,15 @@ Anna owns a vehicle and shares it with Ben; Cid is no one to it.
 - Ben adds a record, entered by him whatever the request says, and
   changes or removes none; Anna, the owner, changes his; Cid adds none;
 - the units are the app's; a kind of cost or of expense anyone adds, and
-  no one removes.
+  no one removes, the model's ('Maintenance') neither.
 - the procedures: whoever drives the vehicle closes and moves its
   reminders, its owner alone starts its schedules, cancels its reminders and
   discards its records; Ben's oil change closes Anna's reminder.
 
 The procedures, as the server's actions (Server/LBActions.h), with no one
 signed in: a schedule started (its first reminder named by it, due from
-the last change); a service with an item of the task closes the reminder
+the last change); a service, of the kind 'Maintenance' every store
+starts with, with an item of the task closes the reminder
 (automatic completion), one from before it was set, or of another task,
 does not; the next made, named by it; Complete of one done, or with no
 event, refused; Complete of a one-off by the event chosen, reopened when
@@ -242,6 +243,11 @@ def tyre_change(vehicle, fits, day, km, user):
 def the_rules():
     status, units = request("GET", "DistanceUnits")
     check("the units are there", status == 200 and sorted(u["Code"] for u in units["value"]) == ["km", "mi"], units)
+    status, kinds = request("GET", "CostKinds")
+    names = sorted(k["Name"] for k in kinds.get("value", [])) if status == 200 else kinds
+    check("the kinds of cost are there, the model's", names == ["Documents", "Fuel", "Maintenance", "Repair", "Tyres"], names)
+    check("none of them a kind of expense", status == 200
+          and all(k.get("@odata.type", "#Default.CostKind") == "#Default.CostKind" for k in kinds["value"]), kinds)
     anna = "anna@example.org"
     check("a user", request("POST", "Users", {"Email": anna})[0] == 201)
     made = vehicle_body(anna)
@@ -446,7 +452,8 @@ def procedures(anna):
     made = vehicle_body(anna)
     check("a vehicle for the procedures", request("POST", "Vehicles", made)[0] == 201)
     vehicle = made["Id"]
-    check("a kind of service", request("POST", "CostKinds", {"Name": "Maintenance"})[0] == 201)
+    status, kind = request("GET", "CostKinds('Maintenance')")
+    check("a kind of service, there from the start", status == 200 and kind.get("Name") == "Maintenance", (status, kind))
     schedule = oil_schedule(vehicle, anna)
     status, body = request("POST", "Records", schedule)
     check("a schedule of the oil", status == 201, (status, body))
@@ -586,6 +593,8 @@ def who_may():
     check("Cid a kind of expense", status == 201, (status, body))
     status, body = request("DELETE", "CostKinds('Parking')", user=ben)
     check("which no one removes, nor changes (its name is all it has)", status == 403, (status, body))
+    status, body = request("DELETE", "CostKinds('Maintenance')", user=anna)
+    check("nor the model's kinds", status == 403, (status, body))
     procedures_who_may(anna, ben, cid, vehicle)
 
 
@@ -593,7 +602,6 @@ def procedures_who_may(anna, ben, cid, vehicle):
     """Who may call each action: whoever drives the vehicle closes and
     moves its reminders; its owner starts, cancels and discards. A driver's
     service closes the owner's reminder all the same."""
-    check("a kind of service", request("POST", "CostKinds", {"Name": "Maintenance"}, user=anna)[0] == 201)
     schedule = oil_schedule(vehicle, anna)
     status, body = request("POST", "Records", schedule, user=anna)
     check("Anna's schedule", status == 201, (status, body))

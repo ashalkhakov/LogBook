@@ -28,6 +28,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @property (nonatomic, readwrite, copy) NSDictionary<NSString *, id> *chosenRecords;
 @property (nonatomic, readwrite, copy) NSArray<User *> *drivers;
 @property (nonatomic, readwrite, copy) NSArray<TyreSet *> *tyreSets;
+@property (nonatomic, readwrite, copy) NSArray<CostKind *> *serviceKinds;
 @end
 
 @implementation LBMainWindowController
@@ -38,6 +39,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         _chosenRecords = @{};
         _drivers = @[];
         _tyreSets = @[];
+        _serviceKinds = @[];
     }
     return self;
 }
@@ -81,6 +83,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         item.tag = (NSInteger)i;
     }
     [_reports chooseReport:nil];
+    /* Reference data, the model's: read once. */
+    self.serviceKinds = [CostKind lbServiceKindsInContext:self.context];
     NSString *selection = NSStringFromSelector(@selector(selectionIndexes));
     [_vehicles addObserver:self forKeyPath:selection options:NSKeyValueObservingOptionInitial context:LBVehicleChosen];
     [_records addObserver:self forKeyPath:selection options:NSKeyValueObservingOptionInitial context:LBRecordChosen];

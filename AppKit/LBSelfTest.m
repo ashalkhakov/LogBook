@@ -298,11 +298,6 @@ static void LBChooseReminder(LBMainWindowController *controller, Reminder *remin
 static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     NSWindow *window = controller.window;
     LBRemindersController *tab = controller.remindersController;
-    /* A kind of service to log one of: the app's, not the user's to add. */
-    CostKind *maintenance = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([CostKind class])
-                                                          inManagedObjectContext:controller.context];
-    maintenance.name = @"Maintenance";
-    LBCheck(@"a kind of service", [controller saveChanges], controller.lastError);
     NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
     [tabs selectTabViewItemWithIdentifier:@"reminders"];
     LBSpin();
@@ -336,6 +331,14 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBCheck(@"a new service, its form shown", [service isKindOfClass:[Service class]]
                 && [controller.recordForms.selectedTabViewItem.identifier isEqual:@"Service"], service);
     LBType(window, @"ServiceGarage", @"Garage Müller");
+    /* The kinds of service, the model's (every store starts with them):
+       no kind of expense, nor a fill-up's 'Fuel'. */
+    NSPopUpButton *kinds = (NSPopUpButton *)LBControl(window.contentView, @"ServiceKind");
+    NSMutableArray *offered = [NSMutableArray array];
+    for (NSMenuItem *item in kinds.itemArray) {
+        if (item.representedObject) [offered addObject:item.title];
+    }
+    LBCheck(@"a service's kinds are the model's two", [offered isEqualToArray:(@[ @"Maintenance", @"Repair" ])], [kinds itemTitles]);
     LBChoose(window, @"ServiceKind", @"Maintenance");
     LBClick(window, @"addServiceItem");
     ServiceItem *item = controller.serviceItems.selectedObjects.firstObject;

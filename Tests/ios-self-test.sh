@@ -1,7 +1,7 @@
 #!/bin/bash
 # The iOS app's self-test (iOS/LBiOSSelfTest.h) in a simulator, against a
 # server of its own on this Mac (the simulator shares its network): a
-# temporary store, no sign-in, its kinds of cost seeded (Tests/seed.py).
+# temporary store, no sign-in, an expense kind seeded (Tests/seed.py).
 #
 #   Tests/ios-self-test.sh <logbook-server> <Logbook.app for the simulator> [device name]
 set -u

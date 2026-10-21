@@ -32,6 +32,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface VolumeUnit (LBDisplay) <LBTitled>
 @end
 @interface CostKind (LBDisplay) <LBTitled>
+// The kinds a service may be of: the model's ServiceKind ('Maintenance',
+// 'Repair', the reference data every store starts with), as its rule
+// (ServiceKindRule) finds them in the context, by name.
++ (NSArray<CostKind *> *)lbServiceKindsInContext:(NSManagedObjectContext *)context;
 @end
 @interface TyreSet (LBDisplay) <LBTitled>
 @end

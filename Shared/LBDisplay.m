@@ -2,6 +2,7 @@
 #import "Event+CoreDataClass.h"
 #import "Document+CoreDataClass.h"
 #import "ExpenseKind+CoreDataClass.h"
+#import "LogbookValidation.h"
 
 /* A record's day as it is changed: of each kind, what it is. */
 @implementation Event (LBDisplay)
@@ -34,6 +35,18 @@
 
 @implementation CostKind (LBDisplay)
 - (NSString *)lbTitle { return self.name ?: @""; }
+
++ (NSArray<CostKind *> *)lbServiceKindsInContext:(NSManagedObjectContext *)context {
+    NSError *error = nil;
+    ORMQueryResult *found = [LogbookQueries serviceKindRuleInContext:context error:&error];
+    if (!found) NSLog(@"Logbook: the kinds of service not found: %@", error.localizedDescription);
+    NSMutableArray *kinds = [NSMutableArray array];
+    for (id object in found.objects) {
+        if ([object isKindOfClass:[CostKind class]] && ![kinds containsObject:object]) [kinds addObject:object];
+    }
+    [kinds sortUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(name)) ascending:YES] ]];
+    return kinds;
+}
 @end
 
 @implementation TyreSet (LBDisplay)

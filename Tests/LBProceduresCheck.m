@@ -172,8 +172,8 @@ static LBWorld *LBNewWorld(void) {
     world.anna.email = @"anna@example.org";
     world.km = LBUnit(@"km", world.context);
     world.mi = LBUnit(@"mi", world.context);
-    world.maintenance = LBInsert([CostKind class], world.context);
-    world.maintenance.name = @"Maintenance";
+    /* The model's, seeded as every store's are. */
+    world.maintenance = LBFetchKey([CostKind class], NSStringFromSelector(@selector(name)), @"Maintenance", world.context);
     world.parking = LBInsert([ExpenseKind class], world.context);
     world.parking.name = @"Parking";
     world.golf = LBVehicle(world, 1, @"Golf");
