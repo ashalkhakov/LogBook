@@ -28,6 +28,7 @@
 #import <CoreData/CoreData.h>
 #import "LogbookValidation.h"
 #import "LBProcedures.h"
+#import "LBPlanned.h"
 #import "Vehicle+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
 #import "ServiceItem+CoreDataClass.h"
@@ -746,6 +747,68 @@ static void LBContinue(void) {
     LBCheck(@"saved", LBSave(world.context, @"the second change"), nil);
 }
 
+/* What a schedule plans (PROCESSES.md 12): by months exactly; by distance
+   on the day the vehicle is expected there, 100 km a day over its last 90
+   days; whichever first; a year ahead; worked out anew as it changes. */
+static void LBPlanning(void) {
+    LBWorld *world = LBNewWorld();
+    LBReading(world, 20, @"2026-07-05 09:00", @"140200");
+    LBReading(world, 21, @"2026-10-01 09:00", @"149000");
+    Schedule *oil = LBOilSchedule(world, 10);
+    Schedule *wash = LBOilSchedule(world, 11);
+    wash.task = @"Wash";
+    wash.intervalQuantity = nil;
+    wash.intervalDistanceUnit = nil;
+    wash.duration = 6;
+    LBSave(world.context, @"two schedules, readings");
+    NSDate *now = LBMoment(@"2026-10-01 12:00");
+    NSDate *year = LBMoment(@"2027-10-01");
+    Reminder *open = [oil lb_startFrom:nil mileage:nil unit:nil by:world.anna at:now error:NULL];
+    [wash lb_startFrom:nil mileage:nil unit:nil by:world.anna at:now error:NULL];
+    LBSave(world.context, @"both started");
+    NSNumber *rate = [world.golf lbKilometresADayAsOf:now];
+    LBCheck(@"the vehicle goes 100 km a day over its last 90 days", rate && fabs(rate.doubleValue - 100) < 0.001, rate);
+    BOOL estimated = NO;
+    NSDate *day = [open lbDayAsOf:now estimated:&estimated];
+    LBCheck(@"the open reminder falls on the day 164000 km is expected, before its date",
+            [day isEqualToDate:LBMoment(@"2027-02-28")] && estimated, LBText(day));
+    NSArray<LBPlannedReminder *> *planned = [oil lbPlannedUntil:year asOf:now];
+    LBPlannedReminder *next = planned.firstObject;
+    LBCheck(@"planned after it, a year ahead: one, at 179000 km, on the day expected", planned.count == 1
+                && LBIs(next.dueMileage, @"179000") && next.dueUnit == world.km && [next.dueDate isEqualToDate:LBMoment(@"2028-02-28")]
+                && [next.day isEqualToDate:LBMoment(@"2027-07-28")] && next.estimated,
+            next ? LBText(next.day) : @"none");
+    NSArray<LBPlannedReminder *> *washes = [wash lbPlannedUntil:year asOf:now];
+    LBCheck(@"by months: six months on from the open one's date, exactly", washes.count == 1
+                && [washes.firstObject.day isEqualToDate:LBMoment(@"2027-10-01")] && !washes.firstObject.estimated,
+            washes.firstObject ? LBText(washes.firstObject.day) : @"none");
+
+    /* Changed: every 10000 km; what it plans, at once otherwise. */
+    Schedule *often = [oil lb_continueWithTask:@"Oil change" expenseKind:nil checklist:nil interval:LBNumber(@"10000") unit:world.km
+                                        months:12 note:nil by:world.anna at:now cancelled:NULL error:NULL];
+    LBSave(world.context, @"the change");
+    planned = [often lbPlannedUntil:year asOf:now];
+    LBCheck(@"changed, it plans otherwise: 169000 and 179000 km, on their days",
+            planned.count == 2 && LBIs(planned[0].dueMileage, @"169000") && [planned[0].day isEqualToDate:LBMoment(@"2027-04-19")]
+                && LBIs(planned[1].dueMileage, @"179000") && [planned[1].day isEqualToDate:LBMoment(@"2027-07-28")],
+            [planned valueForKey:@"dueMileage"]);
+    LBCheck(@"the old one plans nothing", [oil lbPlannedUntil:year asOf:now].count == 0, nil);
+
+    /* No readings to tell by: by its distance, on no day, three. */
+    Vehicle *polo = LBVehicle(world, 2, @"Polo");
+    Schedule *tyres = LBOilSchedule(world, 12);
+    tyres.vehicle = polo;
+    tyres.task = @"Tyre rotation";
+    [tyres setValue:nil forKey:@"duration"];
+    tyres.intervalQuantity = LBNumber(@"10000");
+    LBSave(world.context, @"a vehicle with no readings, a schedule by distance");
+    [tyres lb_startFrom:now mileage:LBNumber(@"50000") unit:world.km by:world.anna at:now error:NULL];
+    NSArray<LBPlannedReminder *> *undated = [tyres lbPlannedUntil:year asOf:now];
+    LBCheck(@"with no readings to tell by: three, by distance, on no day",
+            undated.count == 3 && LBIs(undated[0].dueMileage, @"70000") && !undated[0].day && LBIs(undated[2].dueMileage, @"90000"),
+            [undated valueForKey:@"dueMileage"]);
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -772,6 +835,7 @@ int main(int argc, const char *argv[]) {
         LBOrders();
         LBMoveCancelDiscard();
         LBContinue();
+        LBPlanning();
         printf("procedures: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

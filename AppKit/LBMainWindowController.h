@@ -9,7 +9,7 @@
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
 
-@class LBStore, User, TyreSet, Trip, Vehicle, DistanceUnit, CostKind, Attachment, LBReportsController, LBRemindersController, LBAnswersController, Record;
+@class LBStore, User, TyreSet, Trip, Vehicle, DistanceUnit, CostKind, Attachment, LBReportsController, LBRemindersController, LBAnswersController, LBCalendarController, Record;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -31,6 +31,7 @@ NS_ASSUME_NONNULL_BEGIN
 // The Reminders tab's.
 @property (nonatomic, strong) IBOutlet LBRemindersController *remindersController;
 @property (nonatomic, strong) IBOutlet LBAnswersController *answersController;
+@property (nonatomic, strong) IBOutlet LBCalendarController *calendarController;
 // The chosen service's items (the Service form's list).
 @property (nonatomic, strong) IBOutlet NSArrayController *serviceItems;
 // Whom the chosen vehicle is shared with (its VehicleDrivers).

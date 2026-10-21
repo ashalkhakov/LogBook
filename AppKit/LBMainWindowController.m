@@ -4,6 +4,7 @@
 #import "LBReportsController.h"
 #import "LBRemindersController.h"
 #import "LBAnswersController.h"
+#import "LBCalendarController.h"
 #import <ODataIncrementalStore/ODataOperationCall.h>
 #import <ODataKit/ODataError.h>
 #import "Schedule+CoreDataClass.h"
@@ -93,6 +94,14 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     /* Reference data, the model's: read once. */
     self.serviceKinds = [CostKind lbServiceKindsInContext:self.context];
     _attachments.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(fileName)) ascending:YES] ];
+    /* A day of the model (bought on, issued, expires) is a UTC day: its
+       field reads and says it so, whatever the zone here. */
+    for (NSTabViewItem *form in _recordForms.tabViewItems) {
+        for (NSString *identifier in @[ @"TyreSetDate", @"DocumentDate", @"DocumentExpires" ]) {
+            NSTextField *field = (NSTextField *)[self controlOf:identifier in:form.view];
+            ((NSDateFormatter *)field.formatter).timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+        }
+    }
     _attachmentsTable.target = self;
     _attachmentsTable.doubleAction = @selector(openAttachment:);
     NSString *selection = NSStringFromSelector(@selector(selectionIndexes));
@@ -120,6 +129,16 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 /* Its drivers to choose from (its records the XIB binds). */
+/* The control of the identifier, in the view or under it. */
+- (NSView *)controlOf:(NSString *)identifier in:(NSView *)view {
+    if ([view.identifier isEqualToString:identifier]) return view;
+    for (NSView *each in view.subviews) {
+        NSView *found = [self controlOf:identifier in:each];
+        if (found) return found;
+    }
+    return nil;
+}
+
 - (void)vehicleChosen {
     Vehicle *vehicle = [self chosenVehicle];
     NSMutableArray<User *> *drivers = [NSMutableArray array];
@@ -130,6 +149,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     self.drivers = [drivers sortedArrayUsingDescriptors:[self byTitle]];
     [_reports vehicleChosen];
     [_remindersController refresh];
+    [_calendarController refresh];
 }
 
 /* The chosen record's form shown, given the record. */
@@ -389,6 +409,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_vehicles willChangeValueForKey:selection];
     [_vehicles didChangeValueForKey:selection];
     [_remindersController refresh];
+    [_calendarController refresh];
     NSMutableArray *still = [NSMutableArray array];
     for (Record *record in chosen) {
         if (!record.isDeleted && record.managedObjectContext) [still addObject:record];

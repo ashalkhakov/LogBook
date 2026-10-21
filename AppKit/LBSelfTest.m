@@ -21,6 +21,9 @@
 #import "LBRemindersController.h"
 #import "LBListsController.h"
 #import "LBAnswersController.h"
+#import "LBCalendarController.h"
+#import "LBMonthView.h"
+#import "LBCalendar.h"
 #import "LBProcedures.h"
 #import "Service+CoreDataClass.h"
 #import "ServiceItem+CoreDataClass.h"
@@ -438,6 +441,11 @@ static void LBReportSteps(LBMainWindowController *controller) {
    day (UTC) as the calendar here has it. */
 static void LBTypeDay(NSWindow *window, NSString *identifier, NSDate *day) {
     NSTextField *field = (NSTextField *)LBControl(window.contentView, identifier);
+    /* A field of a model day itself, in UTC: the day as it is. */
+    if (((NSDateFormatter *)field.formatter).timeZone.secondsFromGMT == 0) {
+        LBType(window, identifier, [field.formatter stringForObjectValue:day] ?: @"");
+        return;
+    }
     NSCalendar *utc = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
     utc.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
     NSDate *local = [[NSCalendar currentCalendar]
@@ -772,9 +780,10 @@ static void LBKindSteps(LBMainWindowController *controller) {
     LBType(window, @"DocumentTotal", @"300");
     LBType(window, @"DocumentTotalCurrency", @"EUR");
     Document *keptDocument = LBSaved(controller, document, @"the document saved");
-    LBCheck(@"the server has it, valid a year", [keptDocument.issuer isEqualToString:@"Allianz"] && keptDocument.expiresOnDate
-                && LBIs(keptDocument.totalAmount, @"300"),
-            keptDocument);
+    LBCheck(@"the server has it, issued today, valid a year", [keptDocument.issuer isEqualToString:@"Allianz"]
+                && [keptDocument.date isEqualToDate:LBDay([NSDate date])]
+                && [keptDocument.expiresOnDate isEqualToDate:LBAddMonths(LBDay([NSDate date]), 12)] && LBIs(keptDocument.totalAmount, @"300"),
+            [NSString stringWithFormat:@"%@ to %@", keptDocument.date, keptDocument.expiresOnDate]);
     LBChooseRecord(controller, document);
     LBType(window, @"DocumentNumber", @"P-1235");
     keptDocument = LBSaved(controller, document, @"the document corrected");
@@ -885,6 +894,67 @@ static void LBKindSteps(LBMainWindowController *controller) {
             [NSString stringWithFormat:@"%@ deleting %@", controller.lastError.localizedDescription, deleting]);
 }
 
+/* The kinds of the month's entries, a set. */
+static NSSet<NSNumber *> *LBKindsOf(NSArray<LBCalendarEntry *> *entries) {
+    return [NSSet setWithArray:[entries valueForKey:NSStringFromSelector(@selector(kind))]];
+}
+
+/* The Calendar tab, as a user: this month's done and cancelled reminders
+   and records, each on its day; months on, the open one and what the
+   schedule plans; a day chosen. */
+static void LBCalendarSteps(LBMainWindowController *controller) {
+    NSWindow *window = controller.window;
+    NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
+    [tabs selectTabViewItemWithIdentifier:@"calendar"];
+    LBSpin();
+    LBCalendarController *calendar = controller.calendarController;
+    LBClick(window, @"thisMonth");
+    NSArray<LBCalendarEntry *> *month = calendar.entries;
+    NSSet *kinds = LBKindsOf(month);
+    LBCheck(@"this month: reminders done, cancelled, and records", [kinds containsObject:@(LBCalendarDone)]
+                && [kinds containsObject:@(LBCalendarCancelled)] && [kinds containsObject:@(LBCalendarRecord)],
+            [month valueForKey:NSStringFromSelector(@selector(kindText))]);
+    LBCalendarEntry *done = nil;
+    for (LBCalendarEntry *entry in month) {
+        if (entry.kind == LBCalendarDone && [entry.title isEqualToString:@"Oil change"]) done = entry;
+    }
+    LBCheck(@"the oil change done by the service, whose driver is said", [done.detail hasPrefix:@"by Service"]
+                && [done.detail containsString:controller.store.user.lbTitle],
+            done.detail);
+    NSTextField *title = (NSTextField *)LBControl(window.contentView, @"calendarMonth");
+    NSTableView *list = (NSTableView *)LBControl(window.contentView, @"calendarEntries");
+    LBCheck(@"its month said, its entries listed", title.stringValue.length && list.numberOfRows == (NSInteger)calendar.listed.count
+                && calendar.listed.count > 0,
+            title.stringValue);
+    LBMonthView *view = calendar.monthView;
+    NSBitmapImageRep *drawn = [view bitmapImageRepForCachingDisplayInRect:view.bounds];
+    [view cacheDisplayInRect:view.bounds toBitmapImageRep:drawn];
+    LBCheck(@"the month drawn", drawn.pixelsWide > 0, nil);
+    view.chosenDay = done.day;
+    [calendar dayChosen:view];
+    LBCheck(@"a day chosen: its entries listed, only", calendar.listed.count > 0
+                && [[NSSet setWithArray:[calendar.listed valueForKey:NSStringFromSelector(@selector(day))]] isEqualToSet:[NSSet setWithObject:done.day]],
+            [calendar.listed valueForKey:NSStringFromSelector(@selector(dayText))]);
+    if (getenv("LB_SCREENSHOT")) {
+        NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-calendar.png"];
+        system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);
+    }
+    NSMutableSet *ahead = [NSMutableSet set];
+    for (NSInteger i = 0; i < 12; i++) {
+        LBClick(window, @"nextMonth");
+        BOOL firstPlanned = ![ahead containsObject:@(LBCalendarPlanned)] && [LBKindsOf(calendar.entries) containsObject:@(LBCalendarPlanned)];
+        [ahead unionSet:LBKindsOf(calendar.entries)];
+        if (firstPlanned && getenv("LB_SCREENSHOT")) {
+            NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-planned.png"];
+            system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);
+        }
+    }
+    LBCheck(@"months on: the open reminder, and what the schedule plans", [ahead containsObject:@(LBCalendarOpen)]
+                && [ahead containsObject:@(LBCalendarPlanned)],
+            ahead);
+    LBClick(window, @"thisMonth");
+}
+
 static void LBSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
     controller.quiet = YES;
@@ -926,6 +996,7 @@ static void LBSteps(LBMainWindowController *controller) {
     LBReportSteps(controller);
     LBReminderSteps(controller, kept);
     LBKindSteps(controller);
+    LBCalendarSteps(controller);
 }
 
 void LBRunSelfTest(LBMainWindowController *window) {

@@ -104,7 +104,7 @@ $(BUILD)/logbook-server: $(MODEL)/.made $(SERVER) Server/LBPermissions.h Server/
 	$(CC) $(FLAGS) $(INC) $(SERVER) $(GENERATED)/*.m $(LIBS) -o $@
 
 # The procedures checked over a store of the model's own.
-PROCEDURES = Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+PROCEDURES = Shared/LBProcedures.m Shared/LBPlanned.m $(MODEL)/Constraints/LogbookValidation.m
 
 $(BUILD)/lb-procedures-check: $(MODEL)/.made Tests/LBProceduresCheck.m $(PROCEDURES) Shared/LBProcedures.h $(GENERATED)/.made \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework

@@ -380,14 +380,19 @@ plans otherwise at once.
   (an estimate, said as one). With too few readings to tell, it is listed
   by its distance, on no day.
 - **Both:** whichever comes first.
-- So far ahead: a year from today.
+- So far ahead: as far as what shows it asks (the calendar, to the end of
+  the month it shows).
 
-The desktop's calendar (to come) shows a vehicle's reminders on their
-days: done (by which event, its driver; late or not), cancelled (and what
-replaced it), open (due, overdue, moved from where), and planned (as
-estimated where they are); each record on its day besides. Working out
-what is planned is procedure, shared by both apps; nothing of it is
-saved.
+The desktop's Calendar tab shows a vehicle's month: its reminders on
+their days, done (by which event, its driver; late or not), cancelled
+(and what replaced it), open (due, overdue, moved), and planned (in
+italics where the day is estimated); each record on its day besides; a
+day chosen, its entries listed beneath. Working out what is planned is
+procedure, shared by both apps (`Shared/LBPlanned.h`), and so is what a
+calendar shows (`Shared/LBCalendar.h`); nothing of it is saved.
+
+Next: one calendar of all the vehicles a user owns (or drives), each
+entry said with its vehicle, for whoever keeps several.
 
 ## Offline: the phone
 

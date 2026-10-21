@@ -21,7 +21,8 @@ Early days: the model is done, the server runs it, the desktop app keeps
 a vehicle's records of every kind (added, corrected and removed in its
 Records tab: an inspection's answers, an income's trip, what a cost was
 charged, files attached), its schedules and reminders, and its reports,
-and the iOS app (below) logs on the road, offline first.
+a calendar of a vehicle's month (what was done, what is due, what its
+schedules plan), and the iOS app (below) logs on the road, offline first.
 
 ## Schedules and reminders
 

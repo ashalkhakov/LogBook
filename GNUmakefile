@@ -66,7 +66,7 @@ logbook-server_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
 logbook-server_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 
 # The procedures checked over a store of the model's own.
-lb-procedures-check_OBJC_FILES = Tests/LBProceduresCheck.m Shared/LBProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
+lb-procedures-check_OBJC_FILES = Tests/LBProceduresCheck.m Shared/LBProcedures.m Shared/LBPlanned.m $(LB_MODEL)/Constraints/LogbookValidation.m
 lb-procedures-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 lb-procedures-check_COREDATA_CODEGEN = yes
 lb-procedures-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
