@@ -310,8 +310,9 @@ static UIImage *LBReceiptPhoto(void) {
     LBSay(!main.presentedViewController && !fillUp.isInserted && fillUp.managedObjectContext,
           [NSString stringWithFormat:@"saved, offline (%@)", [form.problems componentsJoinedByString:@"; "]]);
     LBSay([fillUp.mileageDistanceUnit.code isEqualToString:@"km"] && [fillUp.volumeVolumeUnit.code isEqualToString:@"L"]
-              && [fillUp.totalCurrency isEqualToString:@"EUR"] && fillUp.driver == store.user,
-          @"in the user's units, by the user, now");
+              && store.user.currency.length && [fillUp.totalCurrency isEqualToString:store.user.currency] && fillUp.driver == store.user,
+          [NSString stringWithFormat:@"in the user's units and currency, the phone's taken at the first sync (%@), by the user, now",
+                                     fillUp.totalCurrency]);
     LBTimelineViewController *timeline = (LBTimelineViewController *)((UINavigationController *)main.viewControllers[0]).topViewController;
     LBSay([[timeline shownRows].firstObject hasSuffix:@": Fill-up"], [NSString stringWithFormat:@"the timeline has it (%@)", [timeline shownRows]]);
     LBSay([store pendingCount] > 0 && [store.status hasPrefix:@"Sync is off"], [NSString stringWithFormat:@"it waits (%@)", store.status]);

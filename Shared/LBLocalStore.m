@@ -209,6 +209,11 @@ static NSString *LBCount(NSUInteger n) {
     } else {
         _lastSync = [NSDate date];
         [self say:[self syncedStatus]];
+        /* A user who prefers no currency takes this phone's, once the
+           server's say has come down: what their costs by month are
+           reported in. */
+        NSError *saveError = nil;
+        if ([[self user] lbTakeLocaleCurrency] && ![self save:&saveError]) NSLog(@"Logbook: the currency not kept: %@", saveError.localizedDescription);
     }
     /* A change refused while what came with it was still on its way (a
        reminder's next, sent before the reminder it follows was closed

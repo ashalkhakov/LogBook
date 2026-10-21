@@ -101,6 +101,15 @@
                             <PaddingBottom>2pt</PaddingBottom>
                         </Style>
                         <DataSetName>FillUps</DataSetName>
+                        <Filters>
+                            <Filter>
+                                <FilterExpression>=IsNothing(Fields!Consumption.Value)</FilterExpression>
+                                <Operator>Equal</Operator>
+                                <FilterValues>
+                                    <FilterValue>=False</FilterValue>
+                                </FilterValues>
+                            </Filter>
+                        </Filters>
                         <SortExpressions>
                             <SortExpression>
                                 <Value>=Fields!When.Value</Value>
@@ -126,6 +135,10 @@
                                             <ChartDataPointValues>
                                                 <Y>=Sum(Fields!Consumption.Value)</Y>
                                             </ChartDataPointValues>
+                                            <ChartMarker>
+                                                <Type>Circle</Type>
+                                                <Size>6pt</Size>
+                                            </ChartMarker>
                                         </ChartDataPoint>
                                     </ChartDataPoints>
                                     <Type>Line</Type>
@@ -164,6 +177,9 @@
                                 <Caption>Consumption at each full tank, per 100</Caption>
                             </ChartTitle>
                         </ChartTitles>
+                        <ChartNoDataMessage Name="NoDataMessage">
+                            <Caption>Consumption shows from the second full tank: the fuel put in since the full tank before, over the distance since.</Caption>
+                        </ChartNoDataMessage>
                     </Chart>
                     <Tablix Name="FillUpsTable">
                         <Top>2.55000in</Top>

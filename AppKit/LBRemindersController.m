@@ -7,6 +7,7 @@
 #import "Vehicle+CoreDataClass.h"
 
 static void *LBReminderChosen = &LBReminderChosen;
+static void *LBScheduleChosen = &LBScheduleChosen;
 static NSString * const LBNoForm = @"none";
 
 @implementation LBReminderForm
@@ -42,10 +43,12 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
 @property (nonatomic, readwrite, copy) NSArray<Event *> *doneEvents;
 @property (nonatomic, readwrite) BOOL hasVehicle;
 @property (nonatomic, readwrite) BOOL chosenOpen;
+@property (nonatomic, readwrite) BOOL scheduleChosen;
 @end
 
 @implementation LBRemindersController {
     Reminder *_formFor;
+    Schedule *_scheduleFor;
 }
 
 - (void)awakeFromNib {
@@ -66,15 +69,30 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
                                     [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(setAt)) ascending:YES] ];
     _reschedulings.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(madeAt)) ascending:NO] ];
     [_reminders addObserver:self forKeyPath:NSStringFromSelector(@selector(selectionIndexes)) options:0 context:LBReminderChosen];
+    [_schedules addObserver:self forKeyPath:NSStringFromSelector(@selector(selectionIndexes)) options:0 context:LBScheduleChosen];
 }
 
 - (void)dealloc {
     [_reminders removeObserver:self forKeyPath:NSStringFromSelector(@selector(selectionIndexes)) context:LBReminderChosen];
+    [_schedules removeObserver:self forKeyPath:NSStringFromSelector(@selector(selectionIndexes)) context:LBScheduleChosen];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if (context == LBReminderChosen) [self reminderChosen];
+    else if (context == LBScheduleChosen) [self scheduleChosenChanged];
     else [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
+
+- (nullable Schedule *)chosenSchedule {
+    NSArray *chosen = _schedules.selectedObjects;
+    return chosen.count == 1 ? chosen[0] : nil;
+}
+
+/* A schedule's form about the schedule chosen before is put away. */
+- (void)scheduleChosenChanged {
+    Schedule *chosen = [self chosenSchedule];
+    self.scheduleChosen = chosen != nil;
+    if (_scheduleFor && _scheduleFor != chosen) [self closeForm:nil];
 }
 
 - (nullable Reminder *)chosenReminder {
@@ -109,6 +127,7 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
     [_schedules rearrangeObjects];
     [_reminders rearrangeObjects];
     [self reminderChosen];
+    [self scheduleChosenChanged];
 }
 
 #pragma mark The forms
@@ -116,6 +135,7 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
 - (void)show:(NSString *)identifier form:(LBReminderForm *)form about:(Reminder *)reminder {
     [_windowController.window makeFirstResponder:nil];
     _formFor = reminder;
+    _scheduleFor = nil;
     self.form = form;
     [_forms selectTabViewItemWithIdentifier:identifier];
 }
@@ -132,6 +152,23 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
 - (IBAction)newSchedule:(id)sender {
     if (![_windowController chosenVehicle]) return;
     [self show:@"schedule" form:[self newForm] about:nil];
+}
+
+/* The schedule chosen, as it is, in the schedule's form. */
+- (IBAction)editSchedule:(id)sender {
+    Schedule *schedule = [self chosenSchedule];
+    if (!schedule) return;
+    LBReminderForm *form = [self newForm];
+    form.editing = YES;
+    form.task = schedule.task;
+    form.expenseKind = schedule.expenseKind;
+    form.checklist = schedule.checklist;
+    form.every = schedule.intervalQuantity;
+    if (schedule.intervalDistanceUnit) form.everyUnit = schedule.intervalDistanceUnit;
+    form.months = schedule.duration > 0 ? @(schedule.duration) : nil;
+    form.note = schedule.note;
+    [self show:@"schedule" form:form about:nil];
+    _scheduleFor = schedule;
 }
 
 - (IBAction)newReminder:(id)sender {
@@ -174,6 +211,7 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
 
 - (IBAction)closeForm:(id)sender {
     _formFor = nil;
+    _scheduleFor = nil;
     self.form = [self newForm];
     [_forms selectTabViewItemWithIdentifier:LBNoForm];
 }
@@ -182,7 +220,7 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
     if (![_windowController commitEdits]) return;
     NSString *shown = _forms.selectedTabViewItem.identifier;
     BOOL done = NO;
-    if ([shown isEqualToString:@"schedule"]) done = [self saveSchedule];
+    if ([shown isEqualToString:@"schedule"]) done = _form.editing ? [self saveScheduleChange] : [self saveSchedule];
     else if ([shown isEqualToString:@"reminder"]) done = [self saveReminder];
     else if ([shown isEqualToString:@"reschedule"]) done = [self saveReschedule];
     else if ([shown isEqualToString:@"cancel"]) done = [self saveCancel];
@@ -252,6 +290,37 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
     /* Not started: not kept, for the form to be put right. */
     [context deleteObject:schedule];
     [_windowController saveChanges];
+    return NO;
+}
+
+/* The chosen schedule changed as the form says. Its reminders are for its
+   work, whatever it is now: they have none of their own. */
+- (BOOL)saveScheduleChange {
+    Schedule *schedule = _scheduleFor;
+    NSString *task;
+    ExpenseKind *kind;
+    Checklist *checklist;
+    if (!schedule) return NO;
+    if (![self work:&task kind:&kind checklist:&checklist]) {
+        return [self refuse:@"A schedule is for a task, a kind of expense or a checklist: one of them"];
+    }
+    if (!_form.every && _form.months.integerValue < 1) return [self refuse:@"A schedule recurs every so far, every so many months, or both"];
+    if (_form.every && !_form.everyUnit) return [self refuse:@"Say the unit of the distance"];
+    schedule.task = task;
+    schedule.expenseKind = kind;
+    schedule.checklist = checklist;
+    schedule.intervalQuantity = _form.every;
+    schedule.intervalDistanceUnit = _form.every ? _form.everyUnit : nil;
+    /* No months: none recorded, not nought (the scalar accessor would say 0). */
+    if (_form.months.integerValue > 0) schedule.duration = (int32_t)_form.months.integerValue;
+    else [schedule setValue:nil forKey:NSStringFromSelector(@selector(duration))];
+    schedule.note = _form.note.length ? _form.note : nil;
+    if ([_windowController saveChanges]) {
+        [_windowController readAgain];
+        return YES;
+    }
+    /* Refused: as the server has it, for the form to be put right. */
+    [schedule.managedObjectContext refreshObject:schedule mergeChanges:NO];
     return NO;
 }
 

@@ -1,14 +1,17 @@
 #import "LBAppController.h"
 #import "LBStore.h"
+#import "LBDisplay.h"
 #import "LBMainWindowController.h"
 #import "LBSelfTest.h"
 #import "LBPreferencesController.h"
+#import "LBListsController.h"
 
 @implementation LBAppController {
     LBConnectPanel *_panel;
     ODataSignIn *_signIn;
     LBMainWindowController *_window;
     LBPreferencesController *_preferences;
+    LBListsController *_lists;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
@@ -51,14 +54,33 @@
     [_preferences showWindow:sender];
 }
 
-/* Preferences only while there is a logbook, whose user they are. */
+- (void)showLists:(NSString *)tab {
+    if (!_window) return;
+    if (!_lists) _lists = [[LBListsController alloc] initWithLogbook:_window];
+    [_lists showTab:tab];
+}
+
+- (IBAction)showExpenseKinds:(id)sender {
+    [self showLists:@"expenseKinds"];
+}
+
+- (IBAction)showChecklists:(id)sender {
+    [self showLists:@"checklists"];
+}
+
+/* Preferences and lists only while there is a logbook, whose user they
+   are. */
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
-    return item.action != @selector(showPreferences:) || _window != nil;
+    SEL action = item.action;
+    BOOL needsLogbook = action == @selector(showPreferences:) || action == @selector(showExpenseKinds:) || action == @selector(showChecklists:);
+    return !needsLogbook || _window != nil;
 }
 
 - (void)closeLogbook {
     [_preferences close];
     _preferences = nil;
+    [_lists close];
+    _lists = nil;
     LBMainWindowController *window = _window;
     _window = nil;
     _store = nil;
@@ -80,6 +102,9 @@
         return;
     }
     _store = store;
+    /* A user who prefers no currency takes this Mac's: what their costs by
+       month are reported in. */
+    if ([store.user lbTakeLocaleCurrency] && ![store save:&error]) NSLog(@"Logbook: the currency not kept: %@", error.localizedDescription);
     _window = [[LBMainWindowController alloc] initWithStore:store];
     [_window showWindow:nil];
     if (LBSelfTestRoot) LBRunSelfTest(_window);

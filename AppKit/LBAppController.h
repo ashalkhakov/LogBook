@@ -21,6 +21,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)signOut:(nullable id)sender;
 // The signed-in user's preferences (LBPreferencesController.h).
 - (IBAction)showPreferences:(nullable id)sender;
+// The kinds of expense and the checklists, each at its tab
+// (LBListsController.h).
+- (IBAction)showExpenseKinds:(nullable id)sender;
+- (IBAction)showChecklists:(nullable id)sender;
 @end
 
 NS_ASSUME_NONNULL_END

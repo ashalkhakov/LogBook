@@ -39,7 +39,11 @@ make the same objects.
   of whenever it saves one, whichever device sent it.
 - The desktop app, online, calls the actions from its Reminders tab: the
   chosen vehicle's schedules and reminders, the open first, overdue as the
-  model's queries say, and how each was moved before.
+  model's queries say, and how each was moved before. A schedule is
+  changed in place (Edit Schedule): its work, intervals and note. The
+  kinds of expense and the checklists the forms pick from are the users'
+  own, written in their own window (Expense Kinds…, Checklists…, or Edit…
+  beside a pop-up).
 - The iOS app runs the same procedures in its own store as it saves,
   offline or not, and syncs what they made ([iOS](#the-ios-app)).
 

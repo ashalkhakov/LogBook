@@ -23,6 +23,18 @@
 
 @implementation User (LBDisplay)
 - (NSString *)lbTitle { return self.personName.length ? self.personName : self.email ?: @""; }
+
+static NSString *LBLocaleCurrency(void) {
+    return [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode] ?: @"EUR";
+}
+
+- (NSString *)lbCurrency { return self.currency.length ? self.currency : LBLocaleCurrency(); }
+
+- (BOOL)lbTakeLocaleCurrency {
+    if (self.currency.length) return NO;
+    self.currency = LBLocaleCurrency();
+    return YES;
+}
 @end
 
 @implementation DistanceUnit (LBDisplay)
@@ -58,6 +70,17 @@
 
 @implementation Checklist (LBDisplay)
 - (NSString *)lbTitle { return self.checklistName ?: @""; }
+@end
+
+NSString * const LBYesOrNo = @"Yes or no";
+NSString * const LBAnyOf = @"Any of";
+
+@implementation Question (LBDisplay)
+- (BOOL)lbTakesOptions { return [self.answerKind isEqualToString:LBAnyOf]; }
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingLbTakesOptions {
+    return [NSSet setWithObject:NSStringFromSelector(@selector(answerKind))];
+}
 @end
 
 @implementation Record (LBDisplay)

@@ -347,7 +347,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
    their units and currency. */
 - (void)fillIn:(Record *)record {
     User *user = _store.user;
-    NSString *currency = user.currency ?: [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode] ?: @"EUR";
+    NSString *currency = user.lbCurrency ?: @"EUR";
     if ([record isKindOfClass:[Event class]]) {
         Event *event = (Event *)record;
         event.timestamp = [NSDate date];

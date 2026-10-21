@@ -29,6 +29,16 @@
                                     <action selector="showPreferences:" target="appController" id="preferencesAction"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Expense Kinds…" id="expenseKindsItem">
+                                <connections>
+                                    <action selector="showExpenseKinds:" target="appController" id="expenseKindsItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Checklists…" id="checklistsItem">
+                                <connections>
+                                    <action selector="showChecklists:" target="appController" id="checklistsItemAction"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="separator2"/>
                             <menuItem title="Hide Logbook" keyEquivalent="h" id="hide">
                                 <connections>

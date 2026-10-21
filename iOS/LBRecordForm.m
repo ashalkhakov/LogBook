@@ -74,7 +74,7 @@ static VolumeUnit *LBVolumeUnitOf(LBPhone *phone) {
 }
 
 static NSString *LBCurrencyOf(LBPhone *phone) {
-    return phone.store.user.currency.length ? phone.store.user.currency : @"EUR";
+    return phone.store.user.lbCurrency ?: @"EUR";
 }
 
 static NSArray *LBAll(NSManagedObjectContext *context, Class cls, NSPredicate *predicate, SEL sortedBy) {

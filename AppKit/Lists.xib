@@ -1,0 +1,459 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24127" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" customObjectInstantitationMethod="direct">
+    <dependencies>
+        <deployment identifier="macosx"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24127"/>
+    </dependencies>
+    <objects>
+        <customObject id="-2" userLabel="File's Owner" customClass="LBListsController">
+            <connections>
+                <outlet property="window" destination="listsWindow" id="listsWindowOutlet"/>
+                <outlet property="tabs" destination="tabs" id="tabsOutlet"/>
+                <outlet property="expenseKinds" destination="expenseKinds" id="expenseKindsOutlet"/>
+                <outlet property="checklists" destination="checklists" id="checklistsOutlet"/>
+                <outlet property="questions" destination="questions" id="questionsOutlet"/>
+                <outlet property="options" destination="options" id="optionsOutlet"/>
+                <outlet property="expenseKindsTable" destination="expenseKindsTable" id="expenseKindsTableOutlet"/>
+                <outlet property="checklistsTable" destination="checklistsTable" id="checklistsTableOutlet"/>
+                <outlet property="questionsTable" destination="questionsTable" id="questionsTableOutlet"/>
+                <outlet property="optionsTable" destination="optionsTable" id="optionsTableOutlet"/>
+            </connections>
+        </customObject>
+        <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+        <arrayController mode="entity" entityName="ExpenseKind" automaticallyPreparesContent="YES" userLabel="Expense Kinds" id="expenseKinds">
+            <connections>
+                <binding destination="-2" name="managedObjectContext" keyPath="context" id="expenseKindsContext"/>
+                <binding destination="-2" name="sortDescriptors" keyPath="byTitle" id="expenseKindsOrder"/>
+            </connections>
+        </arrayController>
+        <arrayController mode="entity" entityName="Checklist" automaticallyPreparesContent="YES" userLabel="Checklists" id="checklists">
+            <connections>
+                <binding destination="-2" name="managedObjectContext" keyPath="context" id="checklistsContext"/>
+                <binding destination="-2" name="sortDescriptors" keyPath="byTitle" id="checklistsOrder"/>
+            </connections>
+        </arrayController>
+        <arrayController objectClassName="Question" editable="YES" userLabel="Questions" id="questions">
+            <connections>
+                <binding destination="checklists" name="contentSet" keyPath="selection.questions" id="questionsContent"/>
+            </connections>
+        </arrayController>
+        <arrayController objectClassName="Option" editable="YES" userLabel="Options" id="options">
+            <connections>
+                <binding destination="questions" name="contentSet" keyPath="selection.options" id="optionsContent"/>
+            </connections>
+        </arrayController>
+        <window title="Expense Kinds and Checklists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookLists" animationBehavior="default" id="listsWindow">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES"/>
+            <rect key="contentRect" x="280" y="360" width="700" height="470"/>
+            <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
+            <view key="contentView" id="listsContent">
+                <rect key="frame" x="0" y="0" width="700" height="470"/>
+                <autoresizingMask key="autoresizingMask"/>
+                <subviews>
+                    <tabView identifier="tabs" id="tabs">
+                        <rect key="frame" x="13" y="50" width="674" height="400"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <font key="font" metaFont="system"/>
+                        <tabViewItems>
+                            <tabViewItem label="Expense Kinds" identifier="expenseKinds" id="expenseKindsItem">
+                                <view key="view" id="expenseKindsView">
+                                    <rect key="frame" x="10" y="33" width="654" height="354"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="expenseKindsTableScroll">
+                                            <rect key="frame" x="10" y="48" width="320" height="296"/>
+                                            <autoresizingMask key="autoresizingMask" heightSizable="YES" flexibleMaxX="YES"/>
+                                            <clipView key="contentView" id="expenseKindsTableClip">
+                                                <rect key="frame" x="1" y="1" width="318" height="294"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="expenseKindsTableHeader" identifier="expenseKindsTable" id="expenseKindsTable">
+                                                        <rect key="frame" x="0" y="0" width="318" height="271"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <size key="intercellSpacing" width="3" height="2"/>
+                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                        <tableColumns>
+                                        <tableColumn identifier="name" width="300" minWidth="40" maxWidth="1000" id="expenseKindsTableNameColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Kind of expense">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="expenseKindsTableNameCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="expenseKinds" name="value" keyPath="arrangedObjects.name" id="expenseKindsTableNameValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                                        </tableColumns>
+                                                    </tableView>
+                                                </subviews>
+                                            </clipView>
+                                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="expenseKindsTableHScroller">
+                                                <rect key="frame" x="1" y="280" width="318" height="15"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            </scroller>
+                                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="expenseKindsTableVScroller">
+                                                <rect key="frame" x="304" y="1" width="15" height="294"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                            </scroller>
+                                            <tableHeaderView key="headerView" id="expenseKindsTableHeader">
+                                                <rect key="frame" x="0" y="0" width="318" height="23"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                            </tableHeaderView>
+                                        </scrollView>
+                                        <button verticalHuggingPriority="750" identifier="addExpenseKind" id="addExpenseKind">
+                                            <rect key="frame" x="6" y="10" width="80" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addExpenseKindCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="addExpenseKind:" target="-2" id="addExpenseKindAction"/>
+                                                
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="removeExpenseKind" id="removeExpenseKind">
+                                            <rect key="frame" x="86" y="10" width="90" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeExpenseKindCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="removeExpenseKind:" target="-2" id="removeExpenseKindAction"/>
+                                                <binding destination="expenseKinds" name="enabled" keyPath="canRemove" id="removeExpenseKindEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="expenseKindsNote">
+                                            <rect key="frame" x="340" y="314" width="304" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES" widthSizable="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="The kinds an expense, a schedule or a reminder may be of, besides the fixed ones." id="expenseKindsNoteCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                    </subviews>
+                                </view>
+                            </tabViewItem>
+                            <tabViewItem label="Checklists" identifier="checklists" id="checklistsItem">
+                                <view key="view" id="checklistsView">
+                                    <rect key="frame" x="10" y="33" width="654" height="354"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    <subviews>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="checklistsHeading">
+                                            <rect key="frame" x="10" y="332" width="120" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Checklists" id="checklistsHeadingCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="checklistsTableScroll">
+                                            <rect key="frame" x="10" y="48" width="200" height="280"/>
+                                            <autoresizingMask key="autoresizingMask" heightSizable="YES" flexibleMaxX="YES"/>
+                                            <clipView key="contentView" id="checklistsTableClip">
+                                                <rect key="frame" x="1" y="1" width="198" height="278"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="checklistsTableHeader" identifier="checklistsTable" id="checklistsTable">
+                                                        <rect key="frame" x="0" y="0" width="198" height="255"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <size key="intercellSpacing" width="3" height="2"/>
+                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                        <tableColumns>
+                                        <tableColumn identifier="checklistName" width="180" minWidth="40" maxWidth="1000" id="checklistsTableChecklistNameColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Checklist">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="checklistsTableChecklistNameCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="checklists" name="value" keyPath="arrangedObjects.checklistName" id="checklistsTableChecklistNameValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                                        </tableColumns>
+                                                    </tableView>
+                                                </subviews>
+                                            </clipView>
+                                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="checklistsTableHScroller">
+                                                <rect key="frame" x="1" y="264" width="198" height="15"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            </scroller>
+                                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="checklistsTableVScroller">
+                                                <rect key="frame" x="184" y="1" width="15" height="278"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                            </scroller>
+                                            <tableHeaderView key="headerView" id="checklistsTableHeader">
+                                                <rect key="frame" x="0" y="0" width="198" height="23"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                            </tableHeaderView>
+                                        </scrollView>
+                                        <button verticalHuggingPriority="750" identifier="addChecklist" id="addChecklist">
+                                            <rect key="frame" x="6" y="10" width="80" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addChecklistCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="addChecklist:" target="-2" id="addChecklistAction"/>
+                                                
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="removeChecklist" id="removeChecklist">
+                                            <rect key="frame" x="86" y="10" width="90" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeChecklistCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="removeChecklist:" target="-2" id="removeChecklistAction"/>
+                                                <binding destination="checklists" name="enabled" keyPath="canRemove" id="removeChecklistEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="questionsHeading">
+                                            <rect key="frame" x="220" y="332" width="200" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Its questions, in order" id="questionsHeadingCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="questionsTableScroll">
+                                            <rect key="frame" x="220" y="116" width="270" height="212"/>
+                                            <autoresizingMask key="autoresizingMask" heightSizable="YES" flexibleMaxX="YES"/>
+                                            <clipView key="contentView" id="questionsTableClip">
+                                                <rect key="frame" x="1" y="1" width="268" height="210"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="questionsTableHeader" identifier="questionsTable" id="questionsTable">
+                                                        <rect key="frame" x="0" y="0" width="268" height="187"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <size key="intercellSpacing" width="3" height="2"/>
+                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                        <tableColumns>
+                                        <tableColumn identifier="questionText" width="250" minWidth="40" maxWidth="1000" id="questionsTableQuestionTextColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Question">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="questionsTableQuestionTextCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="questions" name="value" keyPath="arrangedObjects.questionText" id="questionsTableQuestionTextValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                                        </tableColumns>
+                                                    </tableView>
+                                                </subviews>
+                                            </clipView>
+                                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="questionsTableHScroller">
+                                                <rect key="frame" x="1" y="196" width="268" height="15"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            </scroller>
+                                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="questionsTableVScroller">
+                                                <rect key="frame" x="254" y="1" width="15" height="210"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                            </scroller>
+                                            <tableHeaderView key="headerView" id="questionsTableHeader">
+                                                <rect key="frame" x="0" y="0" width="268" height="23"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                            </tableHeaderView>
+                                        </scrollView>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="answerKindLabel">
+                                            <rect key="frame" x="220" y="86" width="64" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Answered:" id="answerKindLabelCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <popUpButton verticalHuggingPriority="750" identifier="answerKind" id="answerKind">
+                                            <rect key="frame" x="290" y="80" width="200" height="26"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="answerKindCell">
+                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="menu"/>
+                                                <menu key="menu" id="answerKindMenu">
+                                                    <items>
+                                                    <menuItem title="Yes or no" id="answerKind0"/>
+                                                    <menuItem title="Any of" id="answerKind1"/>
+                                                    </items>
+                                                </menu>
+                                            </popUpButtonCell>
+                                            <connections>
+                                                <binding destination="questions" name="selectedValue" keyPath="selection.answerKind" id="answerKindValue"/>
+                                                <binding destination="questions" name="enabled" keyPath="canRemove" id="answerKindEnabled"/>
+                                            </connections>
+                                        </popUpButton>
+                                        <button verticalHuggingPriority="750" identifier="addQuestion" id="addQuestion">
+                                            <rect key="frame" x="216" y="44" width="70" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addQuestionCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="addQuestion:" target="-2" id="addQuestionAction"/>
+                                                <binding destination="checklists" name="enabled" keyPath="canRemove" id="addQuestionEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="removeQuestion" id="removeQuestion">
+                                            <rect key="frame" x="286" y="44" width="84" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeQuestionCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="removeQuestion:" target="-2" id="removeQuestionAction"/>
+                                                <binding destination="questions" name="enabled" keyPath="canRemove" id="removeQuestionEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="moveQuestionUp" id="moveQuestionUp">
+                                            <rect key="frame" x="370" y="44" width="62" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Up" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="moveQuestionUpCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="moveQuestionUp:" target="-2" id="moveQuestionUpAction"/>
+                                                <binding destination="questions" name="enabled" keyPath="canRemove" id="moveQuestionUpEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="moveQuestionDown" id="moveQuestionDown">
+                                            <rect key="frame" x="432" y="44" width="62" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Down" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="moveQuestionDownCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="moveQuestionDown:" target="-2" id="moveQuestionDownAction"/>
+                                                <binding destination="questions" name="enabled" keyPath="canRemove" id="moveQuestionDownEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="optionsHeading">
+                                            <rect key="frame" x="500" y="332" width="150" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Its options (any of)" id="optionsHeadingCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="optionsTableScroll">
+                                            <rect key="frame" x="500" y="116" width="150" height="212"/>
+                                            <autoresizingMask key="autoresizingMask" heightSizable="YES" flexibleMaxX="YES"/>
+                                            <clipView key="contentView" id="optionsTableClip">
+                                                <rect key="frame" x="1" y="1" width="148" height="210"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                <subviews>
+                                                    <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="optionsTableHeader" identifier="optionsTable" id="optionsTable">
+                                                        <rect key="frame" x="0" y="0" width="148" height="187"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <size key="intercellSpacing" width="3" height="2"/>
+                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                        <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                        <tableColumns>
+                                        <tableColumn identifier="optionText" width="130" minWidth="40" maxWidth="1000" id="optionsTableOptionTextColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Option">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="optionsTableOptionTextCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="options" name="value" keyPath="arrangedObjects.optionText" id="optionsTableOptionTextValue"/>
+                                            </connections>
+                                        </tableColumn>
+                                                        </tableColumns>
+                                                    </tableView>
+                                                </subviews>
+                                            </clipView>
+                                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="optionsTableHScroller">
+                                                <rect key="frame" x="1" y="196" width="148" height="15"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            </scroller>
+                                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="optionsTableVScroller">
+                                                <rect key="frame" x="134" y="1" width="15" height="210"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                            </scroller>
+                                            <tableHeaderView key="headerView" id="optionsTableHeader">
+                                                <rect key="frame" x="0" y="0" width="148" height="23"/>
+                                                <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                            </tableHeaderView>
+                                        </scrollView>
+                                        <button verticalHuggingPriority="750" identifier="addOption" id="addOption">
+                                            <rect key="frame" x="496" y="80" width="70" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addOptionCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="addOption:" target="-2" id="addOptionAction"/>
+                                                <binding destination="questions" name="enabled" keyPath="selection.lbTakesOptions" id="addOptionEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="removeOption" id="removeOption">
+                                            <rect key="frame" x="566" y="80" width="88" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeOptionCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="removeOption:" target="-2" id="removeOptionAction"/>
+                                                <binding destination="options" name="enabled" keyPath="canRemove" id="removeOptionEnabled"/>
+                                            </connections>
+                                        </button>
+                                    </subviews>
+                                </view>
+                            </tabViewItem>
+                        </tabViewItems>
+                    </tabView>
+                    <button verticalHuggingPriority="750" identifier="done" id="done">
+                        <rect key="frame" x="584" y="13" width="100" height="32"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                        <buttonCell key="cell" type="push" title="Done" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="doneCell">
+                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                            <font key="font" metaFont="system"/>
+                        </buttonCell>
+                        <connections>
+                            <action selector="done:" target="-2" id="doneAction"/>
+                            
+                        </connections>
+                    </button>
+                </subviews>
+            </view>
+            <connections>
+                <outlet property="delegate" destination="-2" id="listsWindowDelegate"/>
+            </connections>
+        </window>
+    </objects>
+</document>

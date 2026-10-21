@@ -12,6 +12,7 @@
 #import "CostKind+CoreDataClass.h"
 #import "TyreSet+CoreDataClass.h"
 #import "Checklist+CoreDataClass.h"
+#import "Question+CoreDataClass.h"
 #import "Schedule+CoreDataClass.h"
 #import "Reminder+CoreDataClass.h"
 #import "Rescheduling+CoreDataClass.h"
@@ -26,6 +27,12 @@ NS_ASSUME_NONNULL_BEGIN
 @interface Vehicle (LBDisplay) <LBTitled>
 @end
 @interface User (LBDisplay) <LBTitled>
+// What the user's costs are in: the currency they prefer, else this
+// device's locale's.
+- (NSString *)lbCurrency;
+// A user who prefers no currency given this device's locale's (what costs
+// by month are reported in): YES when it was.
+- (BOOL)lbTakeLocaleCurrency;
 @end
 @interface DistanceUnit (LBDisplay) <LBTitled>
 @end
@@ -36,6 +43,13 @@ NS_ASSUME_NONNULL_BEGIN
 // 'Repair', the reference data every store starts with), as its rule
 // (ServiceKindRule) finds them in the context, by name.
 + (NSArray<CostKind *> *)lbServiceKindsInContext:(NSManagedObjectContext *)context;
+@end
+// What a question is answered by, as the model names them (AnswerKind).
+extern NSString * const LBYesOrNo;
+extern NSString * const LBAnyOf;
+@interface Question (LBDisplay)
+// An any-of question: the one kind with options to choose from.
+@property (nonatomic, readonly) BOOL lbTakesOptions;
 @end
 @interface TyreSet (LBDisplay) <LBTitled>
 @end

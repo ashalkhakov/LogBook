@@ -10,11 +10,14 @@
 #import "LBReportData.h"
 #import "LBReportsController.h"
 #import "LBRemindersController.h"
+#import "LBListsController.h"
 #import "LBProcedures.h"
 #import "Service+CoreDataClass.h"
 #import "ServiceItem+CoreDataClass.h"
 #import "CostKind+CoreDataClass.h"
 #import "Attachment+CoreDataClass.h"
+#import "ExpenseKind+CoreDataClass.h"
+#import "Option+CoreDataClass.h"
 
 NSURL *LBSelfTestRoot;
 
@@ -229,11 +232,98 @@ static void LBPreferenceSteps(LBMainWindowController *controller) {
     }
     LBCheck(@"the Preferences window", preferences != nil, nil);
     if (!preferences) return;
+    NSString *localeCurrency = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode] ?: @"EUR";
+    LBCheck(@"a user who preferred no currency took this Mac's at sign-in", [controller.store.user.currency isEqualToString:localeCurrency],
+            controller.store.user.currency);
     LBType(preferences, @"currency", @"EUR");
     LBClick(preferences, @"done");
     LBCheck(@"saved and closed", !preferences.isVisible && !controller.lastError && !controller.store.context.hasChanges,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
     LBCheck(@"the user's currency", [controller.store.user.currency isEqualToString:@"EUR"], controller.store.user.currency);
+}
+
+/* The objects of an entity the server has, as the predicate says. */
+static NSArray *LBServerObjects(Class cls, NSPredicate *predicate) {
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(cls)];
+    fetch.predicate = predicate;
+    NSArray *objects = [LBServerSide.context executeFetchRequest:fetch error:NULL] ?: @[];
+    for (NSManagedObject *object in objects) [LBServerSide.context refreshObject:object mergeChanges:NO];
+    return objects;
+}
+
+/* Typed over the name a list's new row is ready with, as a user does. */
+static void LBTypeInRow(NSWindow *window, NSString *what, NSString *text) {
+    NSTextView *editor = (NSTextView *)window.firstResponder;
+    BOOL editing = [editor isKindOfClass:[NSTextView class]];
+    LBCheck([NSString stringWithFormat:@"%@ ready to be typed", what], editing, window.firstResponder);
+    if (!editing) return;
+    [editor selectAll:nil];
+    [editor insertText:text replacementRange:NSMakeRange(NSNotFound, 0)];
+    [window makeFirstResponder:nil];
+    LBSpin();
+}
+
+static NSWindow *LBListsWindow(void) {
+    for (NSWindow *window in NSApp.windows) {
+        if (window.isVisible && [window.windowController isKindOfClass:NSClassFromString(@"LBListsController")]) return window;
+    }
+    return nil;
+}
+
+/* The users' own lists, written in their window: a kind of expense, a
+   checklist of two questions, one any-of with two options, put in order;
+   saved, and offered where a form picks from them. */
+static void LBListSteps(LBMainWindowController *controller) {
+    [NSApp sendAction:@selector(showExpenseKinds:) to:nil from:nil];
+    LBSpin();
+    NSWindow *lists = LBListsWindow();
+    LBListsController *owner = lists.windowController;
+    LBCheck(@"the lists' window, at the kinds of expense", lists && [owner.tabs.selectedTabViewItem.identifier isEqual:@"expenseKinds"], nil);
+    if (!lists) return;
+    LBClick(lists, @"addExpenseKind");
+    LBTypeInRow(lists, @"a new kind", @"Car wash");
+    LBCheck(@"a kind of expense named", [[owner.expenseKinds.selectedObjects.firstObject name] isEqualToString:@"Car wash"],
+            owner.expenseKinds.selectedObjects);
+
+    [owner.tabs selectTabViewItemWithIdentifier:@"checklists"];
+    LBSpin();
+    LBClick(lists, @"addChecklist");
+    LBTypeInRow(lists, @"a new checklist", @"Monthly check");
+    LBClick(lists, @"addQuestion");
+    LBTypeInRow(lists, @"a new question", @"Are the tyres fine?");
+    LBCheck(@"a question takes no options until it is any-of", !((NSButton *)LBControl(lists.contentView, @"addOption")).isEnabled, nil);
+    LBClick(lists, @"addQuestion");
+    LBTypeInRow(lists, @"another question", @"Which lights are out?");
+    LBChoose(lists, @"answerKind", @"Any of");
+    LBClick(lists, @"addOption");
+    LBTypeInRow(lists, @"an option", @"Low beams");
+    LBClick(lists, @"addOption");
+    LBTypeInRow(lists, @"another option", @"High beams");
+    LBClick(lists, @"moveQuestionUp");
+    NSArray *texts = [owner.questions.arrangedObjects valueForKey:NSStringFromSelector(@selector(questionText))];
+    LBCheck(@"the questions in the order put", [texts isEqualToArray:(@[ @"Which lights are out?", @"Are the tyres fine?" ])], texts);
+    LBClick(lists, @"done");
+    LBCheck(@"saved and closed", !lists.isVisible && !controller.lastError && !controller.store.context.hasChanges,
+            controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
+
+    NSString *name = NSStringFromSelector(@selector(name));
+    LBCheck(@"the server has the kind",
+            [LBServerObjects([ExpenseKind class], [NSPredicate predicateWithFormat:@"%K == %@", name, @"Car wash"]) count] == 1, nil);
+    Checklist *kept = [LBServerObjects([Checklist class], [NSPredicate predicateWithFormat:@"%K == %@",
+                                                                       NSStringFromSelector(@selector(checklistName)), @"Monthly check"])
+        firstObject];
+    NSArray<Question *> *questions = [kept.questions.allObjects
+        sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(position)) ascending:YES] ]];
+    LBCheck(@"and the checklist, the user's, its questions in order, the first any-of of two options",
+            [kept.user.email isEqualToString:controller.store.user.email] && questions.count == 2
+                && [questions[0].questionText isEqualToString:@"Which lights are out?"] && [questions[0].answerKind isEqualToString:LBAnyOf]
+                && questions[0].options.count == 2 && [questions[1].answerKind isEqualToString:LBYesOrNo],
+            kept);
+    NSPopUpButton *kinds = (NSPopUpButton *)LBControl(controller.window.contentView, @"scheduleExpenseKind");
+    NSPopUpButton *checklists = (NSPopUpButton *)LBControl(controller.window.contentView, @"scheduleChecklist");
+    LBCheck(@"a schedule's form offers both", [kinds indexOfItemWithTitle:@"Car wash"] >= 0
+                && [checklists indexOfItemWithTitle:@"Monthly check"] >= 0,
+            [[kinds itemTitles] arrayByAddingObjectsFromArray:[checklists itemTitles]]);
 }
 
 /* What each report would show, from the logbook as it is now. */
@@ -460,6 +550,38 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
             controller.lastError ?: oneOff.lbStatus);
     Reminder *onServer = LBServerReminder(oneOff.id);
     LBCheck(@"the server has it done by the service", onServer.doneAt && [onServer.event.id isEqual:service.id], onServer);
+
+    /* The schedule changed: another task, every 6 months; its open
+       reminder (the replacement) is for its work, now that. */
+    [tab.schedules setSelectedObjects:@[ schedule ]];
+    LBSpin();
+    LBClick(window, @"editSchedule");
+    NSTextField *task = (NSTextField *)LBControl(window.contentView, @"scheduleTask");
+    LBCheck(@"Edit Schedule shows it in its form, and asks no last done",
+            [tab.forms.selectedTabViewItem.identifier isEqual:@"schedule"] && [task.stringValue isEqualToString:@"Oil change"]
+                && LBControl(window.contentView, @"scheduleDate").isHidden,
+            task.stringValue);
+    LBClick(window, @"scheduleChecklistEdit");
+    NSWindow *lists = LBListsWindow();
+    LBCheck(@"Edit… beside the checklists shows them", lists
+                && [((LBListsController *)lists.windowController).tabs.selectedTabViewItem.identifier isEqual:@"checklists"],
+            nil);
+    [lists close];
+    [window makeKeyAndOrderFront:nil];
+    LBType(window, @"scheduleTask", @"Oil and filter");
+    LBType(window, @"scheduleMonths", @"6");
+    LBClick(window, @"scheduleSave");
+    LBCheck(@"the schedule changed: its work, every 15000 km or 6 months",
+            [schedule.task isEqualToString:@"Oil and filter"] && schedule.duration == 6 && schedule.intervalQuantity.integerValue == 15000
+                && !controller.lastError && [tab.forms.selectedTabViewItem.identifier isEqual:@"none"],
+            controller.lastError ?: schedule.lbEvery);
+    Reminder *open = LBServerReminder(replacementID);
+    Schedule *changed = [LBServerObjects([Schedule class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)),
+                                                                        schedule.id]) firstObject];
+    LBCheck(@"the server has it, and its open reminder is for the new task", changed.duration == 6
+                && [changed.task isEqualToString:@"Oil and filter"] && open.schedule == changed
+                && [open.lbWork isEqualToString:@"Oil and filter"],
+            open.lbWork);
     if (getenv("LB_SCREENSHOT")) {
         NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-reminders.png"];
         system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);
@@ -502,6 +624,7 @@ static void LBSteps(LBMainWindowController *controller) {
     LBRecordSteps(controller, kept);
     LBAttachmentSteps(controller, kept);
     LBPreferenceSteps(controller);
+    LBListSteps(controller);
     LBReportDataSteps(controller, @"Self-test Golf");
     LBReportSteps(controller);
     LBReminderSteps(controller, kept);

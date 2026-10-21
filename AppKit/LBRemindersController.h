@@ -8,6 +8,9 @@
 // saved and started (Start), a one-off reminder saved, a reminder moved
 // (Reschedule), cancelled and maybe replaced (Cancel), or closed by an
 // event of its work (Complete): a reminder is done only by an event. What the server made is read back after.
+// A schedule is changed in place (Edit Schedule): its work, its intervals,
+// its note. Its reminders are for its work, as it is now; the intervals
+// count from its next reminder (the open one is moved by Reschedule).
 
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
@@ -39,6 +42,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) DistanceUnit *replacementUnit;
 // The event that closed a reminder.
 @property (nonatomic, strong, nullable) Event *event;
+// The schedule form changes a schedule there is (no last done asked).
+@property (nonatomic) BOOL editing;
 @end
 
 @interface LBRemindersController : NSObject
@@ -55,11 +60,13 @@ NS_ASSUME_NONNULL_BEGIN
 // The events Mark Done offers: those of the vehicle that may close the
 // chosen reminder, the latest first.
 @property (nonatomic, readonly, copy) NSArray<Event *> *doneEvents;
-// A vehicle is chosen; an open reminder is chosen.
+// A vehicle is chosen; an open reminder is chosen; a schedule is chosen.
 @property (nonatomic, readonly) BOOL hasVehicle;
 @property (nonatomic, readonly) BOOL chosenOpen;
+@property (nonatomic, readonly) BOOL scheduleChosen;
 
 - (IBAction)newSchedule:(nullable id)sender;
+- (IBAction)editSchedule:(nullable id)sender;
 - (IBAction)newReminder:(nullable id)sender;
 - (IBAction)reschedule:(nullable id)sender;
 - (IBAction)cancelReminder:(nullable id)sender;
