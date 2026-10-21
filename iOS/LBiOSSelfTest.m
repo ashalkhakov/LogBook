@@ -113,6 +113,110 @@ static UIImage *LBReceiptPhoto(void) {
     exit(LBFailed);
 }
 
+/* Signed in by email to the self-test's server, as a user does: the
+   logbook once it shows, synced. */
+- (LBMainViewController *)signInAs:(NSString *)email {
+    LBiOSAppDelegate *app = self.app;
+    LBSignInViewController *signIn = app.signInController;
+    signIn.serverText = LBSelfTestRoot.absoluteString;
+    signIn.emailText = email;
+    [signIn connect:nil];
+    NSDate *until = [NSDate dateWithTimeIntervalSinceNow:30];
+    while (!app.mainController && [until timeIntervalSinceNow] > 0) LBSpin(0.1);
+    if (app.mainController) {
+        LBSettle(app.store);
+        [app.store syncAndWait:NULL];
+        app.mainController.selectedIndex = 2;
+        LBSpin(0.5);
+    }
+    return app.mainController;
+}
+
+- (LBVehicleViewController *)vehicleTabOf:(LBMainViewController *)main {
+    return (LBVehicleViewController *)((UINavigationController *)main.viewControllers[2]).topViewController;
+}
+
+/* Signing out with changes waiting: warned, how many said, conflicts
+   among them; each button does what it says. */
+- (void)signOutSteps:(FillUp *)fillUp {
+    LBiOSAppDelegate *app = self.app;
+    LBLocalStore *store = app.store;
+    LBMainViewController *main = app.mainController;
+    LBVehicleViewController *vehicleTab = [self vehicleTabOf:main];
+    main.selectedIndex = 2;
+    LBSpin(0.5);
+    [vehicleTab setSyncOn:NO];
+    fillUp.note = @"Before signing out";
+    NSError *error = nil;
+    LBSay([store save:&error], [NSString stringWithFormat:@"a change saved, sync off (%@)", error.localizedDescription]);
+    [store.appState recordConflictOfEntity:NSStringFromClass([FillUp class]) key:@{ NSStringFromSelector(@selector(id)): fillUp.id }
+                                properties:@[ NSStringFromSelector(@selector(station)) ]
+                                      mine:@{ NSStringFromSelector(@selector(station)): @"Aral" }
+                                    theirs:@{ NSStringFromSelector(@selector(station)): fillUp.station ?: @"" }
+                              deletedThere:NO deletedHere:NO];
+    UIAlertController *warning = [vehicleTab signOutWarning];
+    NSArray *buttons = [warning.actions valueForKey:NSStringFromSelector(@selector(title))];
+    LBSay([warning.message hasPrefix:@"1 change not sent to the server yet and 1 conflict not settled would be lost"]
+              && [warning.title isEqualToString:@"2 Changes Would Be Lost"],
+          [NSString stringWithFormat:@"the warning says what would be lost (%@: %@)", warning.title, warning.message]);
+    LBSay([buttons isEqualToArray:(@[ @"Sync Now", @"Sign Out Anyway", @"Cancel" ])]
+              && warning.actions[1].style == UIAlertActionStyleDestructive && warning.actions[2].style == UIAlertActionStyleCancel,
+          [NSString stringWithFormat:@"its buttons: %@", [buttons componentsJoinedByString:@", "]]);
+    [vehicleTab signOut:nil];
+    LBSpin(0.8);
+    LBSay([vehicleTab.presentedViewController isKindOfClass:[UIAlertController class]], @"Sign Out warns first");
+    [vehicleTab dismissViewControllerAnimated:NO completion:nil];
+    [vehicleTab signOutChoosing:LBSignOutCancel];
+    LBSpin(0.5);
+    LBSay(app.mainController == main && [store pendingCount] > 0, @"Cancel: still signed in, the change waiting");
+
+    /* Sync Now: synced; the conflict is still to lose, so said again. */
+    [vehicleTab signOutChoosing:LBSignOutSyncFirst];
+    LBSettle(store);
+    LBSpin(0.5);
+    UIAlertController *again = (UIAlertController *)vehicleTab.presentedViewController;
+    LBSay(app.mainController == main && [store pendingCount] == 0
+              && [LBServerHas([NSString stringWithFormat:@"Records(%@)", LBKey(fillUp.id)])[@"Note"] isEqual:@"Before signing out"],
+          @"Sync Now: synced, with sync off");
+    LBSay([again isKindOfClass:[UIAlertController class]] && [again.message hasPrefix:@"1 conflict not settled"],
+          [NSString stringWithFormat:@"the conflict left to lose: warned again (%@)",
+                                     [again isKindOfClass:[UIAlertController class]] ? again.message : again]);
+    [vehicleTab dismissViewControllerAnimated:NO completion:nil];
+    [store keepTheirs:[store pendingConflicts].firstObject];
+    fillUp.note = @"Synced, then signed out";
+    LBSay([store save:&error] && [store changesLostOnSignOut] == 1, @"the conflict settled; another change waiting");
+    [vehicleTab signOutChoosing:LBSignOutSyncFirst];
+    NSDate *until = [NSDate dateWithTimeIntervalSinceNow:60];
+    while (app.mainController && [until timeIntervalSinceNow] > 0) LBSpin(0.1);
+    LBSay(!app.mainController && app.signInController
+              && [LBServerHas([NSString stringWithFormat:@"Records(%@)", LBKey(fillUp.id)])[@"Note"] isEqual:@"Synced, then signed out"],
+          @"Sync Now: synced, then signed out");
+
+    /* Nothing waiting: signed out at once. */
+    main = [self signInAs:@"anna@example.org"];
+    LBSay(main != nil && LBFetchID(app.store, [FillUp class], fillUp.id) != nil, @"signed in again: the logbook back from the server");
+    if (!main) return;
+    vehicleTab = [self vehicleTabOf:main];
+    LBSay(![vehicleTab signOutWarning], @"nothing waiting: no warning");
+    [vehicleTab signOut:nil];
+    LBSpin(0.5);
+    LBSay(!app.mainController && app.signInController, @"signed out at once");
+
+    /* Sign Out Anyway: what waits is lost. */
+    main = [self signInAs:@"anna@example.org"];
+    if (!main) return;
+    vehicleTab = [self vehicleTabOf:main];
+    [vehicleTab setSyncOn:NO];
+    FillUp *here = LBFetchID(app.store, [FillUp class], fillUp.id);
+    here.note = @"Never sent";
+    LBSay([app.store save:&error] && [vehicleTab signOutWarning] != nil, @"a change waiting: warned");
+    [vehicleTab signOutChoosing:LBSignOutAnyway];
+    LBSpin(0.5);
+    LBSay(!app.mainController && app.signInController
+              && [LBServerHas([NSString stringWithFormat:@"Records(%@)", LBKey(fillUp.id)])[@"Note"] isEqual:@"Synced, then signed out"],
+          @"Sign Out Anyway: signed out, the change lost with the phone's logbook");
+}
+
 /* The form the + (or another) presented, once it shows. */
 - (LBRecordFormViewController *)presentedFormOver:(UIViewController *)controller {
     LBSpin(0.8);
@@ -338,6 +442,8 @@ static UIImage *LBReceiptPhoto(void) {
     LBSay(![form saveIgnoringWarnings:YES] && form.problems.count > 0,
           [NSString stringWithFormat:@"a fill-up of no volume: refused, the rule said (%@)", [form.problems componentsJoinedByString:@"; "]]);
     [store.context rollback];
+
+    [self signOutSteps:fillUp];
 }
 
 @end

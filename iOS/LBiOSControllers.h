@@ -106,6 +106,16 @@ FOUNDATION_EXPORT NSNotificationName const LBPhoneVehicleDidChangeNotification;
 - (BOOL)cancel:(Reminder *)reminder problems:(NSArray<NSString *> *_Nullable *_Nullable)problems;
 @end
 
+// What signing out with changes waiting does, as the warning offers.
+typedef NS_ENUM(NSInteger, LBSignOutChoice) {
+    // Synced first (sync off too), then signed out if nothing is left to
+    // lose; warned again with what is.
+    LBSignOutSyncFirst,
+    // Signed out, what waits lost.
+    LBSignOutAnyway,
+    LBSignOutCancel,
+};
+
 @interface LBVehicleViewController : UITableViewController
 - (instancetype)initWithPhone:(LBPhone *)phone NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
@@ -121,9 +131,21 @@ FOUNDATION_EXPORT NSNotificationName const LBPhoneVehicleDidChangeNotification;
 - (void)setSyncOn:(BOOL)on;
 // A new vehicle's form.
 - (IBAction)addVehicle:(nullable id)sender;
+// Sign Out: at once with nothing waiting; else the warning shown first.
+- (IBAction)signOut:(nullable id)sender;
+// The warning, when signing out would lose something (the changes not
+// sent, the pending conflicts: LBLocalStore's changesLostOnSignOut), how
+// many said: Sync Now, Sign Out Anyway (destructive), Cancel. nil: nothing
+// would be lost.
+- (nullable UIAlertController *)signOutWarning;
+// What the warning's buttons do.
+- (void)signOutChoosing:(LBSignOutChoice)choice;
 @end
 
 @class LBRecordFormViewController;
+
+// How large a photo is kept, its longest side in pixels.
+FOUNDATION_EXPORT CGFloat const LBPhotoLongestSide;
 
 @protocol LBRecordFormDelegate <NSObject>
 @optional

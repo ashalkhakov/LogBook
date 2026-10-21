@@ -147,6 +147,14 @@ static NSString *LBCount(NSUInteger n) {
     return _engine.pendingChanges.count;
 }
 
+- (NSUInteger)changesLostOnSignOut {
+    return [self pendingCount] + [self pendingConflicts].count;
+}
+
+- (NSError *)lastSyncError {
+    return _lastFailure;
+}
+
 - (NSArray<ODataSyncIssue *> *)issues {
     return _engine.issues;
 }
@@ -236,6 +244,13 @@ static NSString *LBCount(NSUInteger n) {
     while (!_waitedFor || _syncing || _retrying) [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.02]];
     if (error) *error = _lastFailure;
     return _lastOK;
+}
+
+- (void)syncNow {
+    BOOL enabled = _syncEnabled;
+    _syncEnabled = YES;
+    [self sync];
+    _syncEnabled = enabled;
 }
 
 /* How far it is: told on the engine's thread, said on the main one. */

@@ -667,6 +667,9 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
     LBPhone *_phone;
     NSArray<NSNumber *> *_sections;
     LBVehicleSummary *_summary;
+    /* Sync Now chosen: signed out once the sync is done, if it lost
+       nothing. */
+    BOOL _signOutAfterSync;
 }
 
 - (instancetype)initWithPhone:(LBPhone *)phone {
@@ -676,6 +679,8 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
         for (NSNotificationName name in @[ LBLocalStoreDidChangeNotification, LBPhoneVehicleDidChangeNotification ]) {
             [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reload) name:name object:nil];
         }
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(storeDidChange:) name:LBLocalStoreDidChangeNotification
+                                                   object:nil];
         [self reload];
     }
     return self;
@@ -833,7 +838,7 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
     else if (section == LBVehicleSectionSync && indexPath.row == 3) [self showIssues];
     else if (section == LBVehicleSectionSync && indexPath.row == 4)
         [self.navigationController pushViewController:[[LBConflictsViewController alloc] initWithPhone:_phone] animated:YES];
-    else if (section == LBVehicleSectionAccount && last) [self signOut];
+    else if (section == LBVehicleSectionAccount && last) [self signOut:nil];
 }
 
 - (BOOL)tableView:(UITableView *)tableView canEditRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -951,7 +956,76 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
     [self presentViewController:alert animated:YES completion:nil];
 }
 
-- (void)signOut {
+#pragma mark Signing out
+
+- (IBAction)signOut:(id)sender {
+    UIAlertController *warning = [self signOutWarning];
+    if (warning) [self presentViewController:warning animated:YES completion:nil];
+    else [self signOutNow];
+}
+
+/* "1 change not sent yet and 1 conflict not settled". */
+static NSString *LBCounted(NSUInteger n, NSString *one, NSString *many) {
+    return [NSString stringWithFormat:@"%lu %@", (unsigned long)n, n == 1 ? one : many];
+}
+
+- (UIAlertController *)signOutWarning {
+    LBLocalStore *store = _phone.store;
+    NSUInteger lost = [store changesLostOnSignOut];
+    if (!lost) return nil;
+    NSUInteger conflicts = [store pendingConflicts].count, waiting = lost - conflicts;
+    NSMutableArray *what = [NSMutableArray array];
+    if (waiting) [what addObject:LBCounted(waiting, @"change not sent to the server yet", @"changes not sent to the server yet")];
+    if (conflicts) [what addObject:LBCounted(conflicts, @"conflict not settled", @"conflicts not settled")];
+    NSString *message = [NSString stringWithFormat:@"%@ would be lost: signing out deletes the logbook on this phone.",
+                                                   [what componentsJoinedByString:@" and "]];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:LBCounted(lost, @"Change Would Be Lost", @"Changes Would Be Lost")
+                                                                   message:message preferredStyle:UIAlertControllerStyleAlert];
+    __weak LBVehicleViewController *weakSelf = self;
+    [alert addAction:[UIAlertAction actionWithTitle:@"Sync Now" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        [weakSelf signOutChoosing:LBSignOutSyncFirst];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Sign Out Anyway" style:UIAlertActionStyleDestructive handler:^(UIAlertAction *action) {
+        [weakSelf signOutChoosing:LBSignOutAnyway];
+    }]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction *action) {
+        [weakSelf signOutChoosing:LBSignOutCancel];
+    }]];
+    return alert;
+}
+
+- (void)signOutChoosing:(LBSignOutChoice)choice {
+    _signOutAfterSync = choice == LBSignOutSyncFirst;
+    if (choice == LBSignOutAnyway) [self signOutNow];
+    else if (choice == LBSignOutSyncFirst) [_phone.store syncNow];
+}
+
+/* A sync done, Sync Now chosen: looked at once the store is done with it
+   (a change set aside is sent again after it is said). */
+- (void)storeDidChange:(NSNotification *)notification {
+    if (!_signOutAfterSync || _phone.store.isSyncing) return;
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(syncedBeforeSigningOut) object:nil];
+    [self performSelector:@selector(syncedBeforeSigningOut) withObject:nil afterDelay:0];
+}
+
+- (void)syncedBeforeSigningOut {
+    LBLocalStore *store = _phone.store;
+    if (!_signOutAfterSync || store.isSyncing) return;
+    _signOutAfterSync = NO;
+    UIAlertController *warning = [self signOutWarning];
+    if (!store.lastSyncError && !warning) {
+        [self signOutNow];
+        return;
+    }
+    /* Not synced, or something left to lose: said again. */
+    if (store.lastSyncError) warning.message = [NSString stringWithFormat:@"Not synced: %@\n\n%@",
+                                                                          store.lastSyncError.localizedDescription ?: @"no answer.",
+                                                                          warning.message ?: @""];
+    if (warning && !self.presentedViewController) [self presentViewController:warning animated:YES completion:nil];
+}
+
+- (void)signOutNow {
+    _signOutAfterSync = NO;
     LBMainViewController *main = (LBMainViewController *)self.tabBarController;
     if ([main isKindOfClass:[LBMainViewController class]] && main.signOutTarget && main.signOutAction)
         [[UIApplication sharedApplication] sendAction:main.signOutAction to:main.signOutTarget from:self forEvent:nil];

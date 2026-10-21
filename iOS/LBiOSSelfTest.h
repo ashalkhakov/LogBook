@@ -5,8 +5,11 @@
 // service of a schedule's task closing its reminder here, the server
 // agreeing (the same reminders, by id); a record changed here and at the
 // server, each way of settling the conflict; the vehicle shared by its
-// owner, and a driver's session offering no sharing; a receipt's photo; a
-// deontic rule said before saving, a refusal with the rule's words. PASS or
+// owner, and a driver's session offering no sharing; a receipt's photo (a
+// bundled one, through the picker's path: kept smaller, synced to the
+// server and to the driver's phone); a deontic rule said before saving, a
+// refusal with the rule's words; signing out with changes waiting warned,
+// each of its buttons, and with none, at once. PASS or
 // FAIL a line on standard error, then "self-test: passed" or "FAILED"; the
 // app exits with the number that failed.
 

@@ -79,6 +79,15 @@ FOUNDATION_EXPORT NSNotificationName const LBLocalStoreDidChangeNotification;
 - (void)sync;
 // The same, waited for, on the main thread (the self-test).
 - (BOOL)syncAndWait:(NSError **)error;
+// A sync now, with sync switched off too (the user asked for it): once.
+- (void)syncNow;
+// Why the last sync failed; nil: it did not (or none has run).
+@property (nonatomic, readonly, nullable) NSError *lastSyncError;
+// What signing out would lose, as it deletes this device's logbook: the
+// changes not sent yet (those the server refused among them), and the
+// pending conflicts, what this device changed that the server's version
+// stood over.
+- (NSUInteger)changesLostOnSignOut;
 
 // Who is signed in, as a User of the logbook (made when there is none
 // yet: the first sync brings them when the server has them).

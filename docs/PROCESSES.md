@@ -365,3 +365,10 @@ longest side, which syncs with it both ways, as any of its properties
 (ODataSync carries it as `Edm.Binary`, base64 in the JSON of the change
 set; Core Data keeps it in a file beside the store, and the sync's own
 bookkeeping keeps its digest, not the photo).
+
+**Signing out** deletes the logbook on the phone (it is the user's). What
+it would lose is said first: the changes not sent yet and the conflicts
+not settled, how many. Sync Now sends them, sync switched off or not, and
+signs out when that leaves nothing to lose (a conflict is still the
+user's to settle, and is said again); Sign Out Anyway loses them; Cancel
+keeps the phone signed in. With nothing to lose it signs out at once.

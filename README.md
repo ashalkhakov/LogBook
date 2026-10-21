@@ -63,7 +63,10 @@ and every minute; with sync off (a switch), what is saved waits.
 - **Vehicle:** choose one; its details; consumption at full tanks, what
   this month cost, what is due next; the owner adds a vehicle and shares it
   by email (a driver is offered no sharing); sync, what waits and what the
-  server refused; pending conflicts; the account.
+  server refused; pending conflicts; the account. Signing out deletes the
+  phone's logbook: with changes waiting (or conflicts not settled), it
+  says how many would be lost first: Sync Now (then signs out, if that
+  leaves nothing to lose), Sign Out Anyway, or Cancel.
 - **+**, over the tabs: a fill-up first (now, odometer, volume, cost, full
   tank, station, in the user's units and currency), a service and its
   items, an expense, a trip, a meter reading, an inspection (its
@@ -110,7 +113,10 @@ iPhone simulator. The self-test (`iOS/LBiOSSelfTest.h`) signs in by
 email, adds a vehicle, logs a fill-up with sync off and sends it, closes a
 schedule's reminder with a service (the server agreeing, by id), settles a
 conflict each way, shares the vehicle, checks a driver is offered no
-sharing, attaches a receipt, and meets a deontic rule and a refusal.
+sharing, attaches a receipt's photo (one bundled in the simulator's app,
+taken as the camera's would be: kept smaller, synced to the server and the
+driver's phone), meets a deontic rule and a refusal, and signs out: warned
+with changes waiting, each button as it says, and at once with none.
 
 `ODATAKIT_DEPS=<dir>` builds against other XCFrameworks of ODataKit than
 `../NativeORM2/.deps`: the sync of a record's kinds (a fill-up served in
