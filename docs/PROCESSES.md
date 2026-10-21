@@ -89,12 +89,15 @@ The service layer records the schedule:
 
 Then it makes the schedule's first reminder (2).
 
-The owner may change a schedule later: its work, its intervals, its note
-(the desktop's Edit Schedule). Its reminders have no work of their own
-("Reminder comes from Schedule", or one of the three, exclusively), so
-they are for the schedule's work as it is now, done ones included. New
-intervals count from the next reminder (5); the open one stays due where
-it is, for the owner to move (6).
+The owner may change a schedule later (the desktop's Edit Schedule): its
+intervals and its note, and its work until an event has done one of its
+reminders. Its reminders have no work of their own ("Reminder comes from
+Schedule", or one of the three, exclusively), and which events did the
+work is worked out from the schedule's work again whenever an event of the
+vehicle is saved (4): changed after one was done, the past would be
+undone (the event no longer does it). Other work is then a new schedule.
+New intervals count from the next reminder (5); the open one stays due
+where it is, for the owner to move (6).
 
 ## 2. Make a schedule's first reminder
 

@@ -9,7 +9,7 @@
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
 
-@class LBStore, User, TyreSet, Vehicle, DistanceUnit, CostKind, Attachment, LBReportsController, LBRemindersController;
+@class LBStore, User, TyreSet, Trip, Vehicle, DistanceUnit, CostKind, Attachment, LBReportsController, LBRemindersController, LBAnswersController, Record;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -30,6 +30,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet LBReportsController *reports;
 // The Reminders tab's.
 @property (nonatomic, strong) IBOutlet LBRemindersController *remindersController;
+@property (nonatomic, strong) IBOutlet LBAnswersController *answersController;
 // The chosen service's items (the Service form's list).
 @property (nonatomic, strong) IBOutlet NSArrayController *serviceItems;
 // Whom the chosen vehicle is shared with (its VehicleDrivers).
@@ -50,6 +51,8 @@ NS_ASSUME_NONNULL_BEGIN
 // and its tyre sets: what a record's form chooses from.
 @property (nonatomic, readonly, copy) NSArray<User *> *drivers;
 @property (nonatomic, readonly, copy) NSArray<TyreSet *> *tyreSets;
+// Its trips, the latest first: what an income is picked for.
+@property (nonatomic, readonly, copy) NSArray<Trip *> *trips;
 // The kinds a service may be of: the model's (CostKind's
 // lbServiceKindsInContext:).
 @property (nonatomic, readonly, copy) NSArray<CostKind *> *serviceKinds;
@@ -73,6 +76,13 @@ NS_ASSUME_NONNULL_BEGIN
 // That file: in a folder of the attachment's own in the temporary
 // directory. nil, and why, when it cannot be written (or has no content).
 - (nullable NSURL *)fileOfAttachment:(Attachment *)attachment error:(NSError **)error;
+// A file chosen in an open panel attached to the chosen record (Add…), or
+// the chosen attachment removed (Remove): saved with the record's other
+// changes.
+- (IBAction)addAttachment:(nullable id)sender;
+- (IBAction)removeAttachment:(nullable id)sender;
+// The file at the URL attached to the record: its name and its content.
+- (nullable Attachment *)attachFileAtURL:(NSURL *)url toRecord:(Record *)record error:(NSError **)error;
 
 // The vehicle chosen, when one is.
 - (nullable Vehicle *)chosenVehicle;

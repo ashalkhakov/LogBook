@@ -120,19 +120,32 @@ NSString * const LBAnyOf = @"Any of";
     return [NSSet setWithObject:NSStringFromSelector(@selector(lbDate))];
 }
 
-- (NSString *)lbCost {
-    if (!self.totalAmount) return nil;
+/* An amount of money said: "74.10 EUR". */
+static NSString *LBMoneyText(NSDecimalNumber *amount, NSString *currency) {
+    if (!amount) return nil;
     NSNumberFormatter *money = [[NSNumberFormatter alloc] init];
     money.numberStyle = NSNumberFormatterDecimalStyle;
     money.minimumFractionDigits = 2;
     money.maximumFractionDigits = 2;
-    return [NSString stringWithFormat:@"%@ %@", [money stringFromNumber:self.totalAmount], self.totalCurrency ?: @""];
+    return [NSString stringWithFormat:@"%@ %@", [money stringFromNumber:amount], currency ?: @""];
+}
+
+- (NSString *)lbCost {
+    return LBMoneyText(self.totalAmount, self.totalCurrency);
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingLbCost {
     return [NSSet setWithObjects:NSStringFromSelector(@selector(totalAmount)), NSStringFromSelector(@selector(totalCurrency)), nil];
 }
 
+@end
+
+@implementation Income (LBDisplay)
+- (NSString *)lbEarned { return LBMoneyText(self.earnedAmount, self.earnedCurrency); }
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingLbEarned {
+    return [NSSet setWithObjects:NSStringFromSelector(@selector(earnedAmount)), NSStringFromSelector(@selector(earnedCurrency)), nil];
+}
 @end
 
 @implementation Record (LBDisplayTitle)

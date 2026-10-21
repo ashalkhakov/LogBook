@@ -294,7 +294,11 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
 }
 
 /* The chosen schedule changed as the form says. Its reminders are for its
-   work, whatever it is now: they have none of their own. */
+   work, whatever it is now (they have none of their own), and which events
+   did it is worked out from that again as events are saved: so its work is
+   not changed once an event has done one of them (another work is another
+   schedule). Its intervals count from its next reminder; its note is a
+   note. */
 - (BOOL)saveScheduleChange {
     Schedule *schedule = _scheduleFor;
     NSString *task;
@@ -306,6 +310,16 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
     }
     if (!_form.every && _form.months.integerValue < 1) return [self refuse:@"A schedule recurs every so far, every so many months, or both"];
     if (_form.every && !_form.everyUnit) return [self refuse:@"Say the unit of the distance"];
+    BOOL sameWork = [task ?: @"" isEqualToString:schedule.task ?: @""] && kind == schedule.expenseKind && checklist == schedule.checklist;
+    if (!sameWork) {
+        for (Reminder *reminder in schedule.reminders) {
+            if (reminder.event && !reminder.isDeleted) {
+                return [self refuse:[NSString stringWithFormat:@"“%@” was done %@: for other work, start a new schedule (its intervals and "
+                                                                @"note can be changed here)",
+                                                               schedule.lbWork, reminder.event.lbTitle]];
+            }
+        }
+    }
     schedule.task = task;
     schedule.expenseKind = kind;
     schedule.checklist = checklist;

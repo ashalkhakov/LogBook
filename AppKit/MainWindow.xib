@@ -15,6 +15,7 @@
                 <outlet property="reports" destination="reportsController" id="reportsOutlet"/>
                 <outlet property="vehicleDrivers" destination="vehicleDrivers" id="vehicleDriversOutlet"/>
                 <outlet property="remindersController" destination="remindersController" id="remindersControllerOutlet"/>
+                <outlet property="answersController" destination="answersController" id="answersControllerOutlet"/>
                 <outlet property="serviceItems" destination="serviceItems" id="serviceItemsOutlet"/>
                 <outlet property="attachments" destination="attachments" id="attachmentsOutlet"/>
                 <outlet property="attachmentsTable" destination="attachmentsTable" id="attachmentsTableOutlet"/>
@@ -52,7 +53,7 @@
                 <binding destination="-2" name="sortDescriptors" keyPath="byTitle" id="volumeUnitsOrder"/>
             </connections>
         </arrayController>
-        <arrayController objectClassName="Attachment" editable="NO" userLabel="Attachments" id="attachments">
+        <arrayController objectClassName="Attachment" userLabel="Attachments" id="attachments">
             <connections>
                 <binding destination="records" name="contentSet" keyPath="selection.attachments" id="attachmentsContent"/>
             </connections>
@@ -99,6 +100,21 @@
                 <outlet property="windowController" destination="-2" id="serviceItemsWindowController"/>
                 <binding destination="-2" name="managedObjectContext" keyPath="context" id="serviceItemsContext"/>
                 <binding destination="ServiceForm" name="contentSet" keyPath="selection.serviceItems" id="serviceItemsContent"/>
+            </connections>
+        </arrayController>
+        <customObject customClass="LBAnswersController" userLabel="Answers Controller" id="answersController">
+            <connections>
+                <outlet property="windowController" destination="-2" id="answersWindowController"/>
+            </connections>
+        </customObject>
+        <arrayController objectClassName="LBAnswerRow" editable="YES" userLabel="Answers" id="answers">
+            <connections>
+                <binding destination="answersController" name="contentArray" keyPath="rows" id="answersContent"/>
+            </connections>
+        </arrayController>
+        <arrayController objectClassName="LBOptionChoice" editable="YES" userLabel="Answer Options" id="answerOptions">
+            <connections>
+                <binding destination="answers" name="contentArray" keyPath="selection.choices" id="answerOptionsContent"/>
             </connections>
         </arrayController>
         <customObject customClass="LBRemindersController" userLabel="Reminders Controller" id="remindersController">
@@ -723,7 +739,7 @@
                                             </tableHeaderView>
                                         </scrollView>
                                         <button verticalHuggingPriority="750" identifier="openAttachment" id="openAttachment">
-                                            <rect key="frame" x="526" y="330" width="100" height="32"/>
+                                            <rect key="frame" x="526" y="330" width="70" height="32"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                             <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="openAttachmentCell">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -732,6 +748,30 @@
                                             <connections>
                                                 <action selector="openAttachment:" target="-2" id="openAttachmentAction"/>
                                                 <binding destination="attachments" name="enabled" keyPath="selectedObjects.@count" id="openAttachmentEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="addAttachment" id="addAttachment">
+                                            <rect key="frame" x="592" y="330" width="64" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Add…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addAttachmentCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="addAttachment:" target="-2" id="addAttachmentAction"/>
+                                                <binding destination="records" name="enabled" keyPath="canRemove" id="addAttachmentEnabled"/>
+                                            </connections>
+                                        </button>
+                                        <button verticalHuggingPriority="750" identifier="removeAttachment" id="removeAttachment">
+                                            <rect key="frame" x="652" y="330" width="74" height="32"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeAttachmentCell">
+                                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <action selector="removeAttachment:" target="-2" id="removeAttachmentAction"/>
+                                                <binding destination="attachments" name="enabled" keyPath="canRemove" id="removeAttachmentEnabled"/>
                                             </connections>
                                         </button>
                                         <popUpButton verticalHuggingPriority="750" identifier="addRecord" id="addRecord">
@@ -1048,6 +1088,49 @@
                                                                 </textFieldCell>
                                                                 <connections>
                                                                     <binding destination="FillUpForm" name="value" keyPath="selection.note" id="FillUpNoteValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                                                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpChargedLabel">
+                                                                <rect key="frame" x="374" y="169" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Charged:" id="FillUpChargedLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="FillUpCharged" id="FillUpCharged">
+                                                                <rect key="frame" x="494" y="166" width="168" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="FillUpChargedCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="FillUpChargedFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="FillUpForm" name="value" keyPath="selection.chargedAmount" id="FillUpChargedValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="FillUpChargedCurrency" id="FillUpChargedCurrency">
+                                                                <rect key="frame" x="668" y="166" width="56" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="FillUpChargedCurrencyCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="FillUpForm" name="value" keyPath="selection.chargedCurrency" id="FillUpChargedCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -1606,6 +1689,49 @@
                                                                     </binding>
                                                                 </connections>
                                                             </textField>
+                                                                                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceChargedLabel">
+                                                                <rect key="frame" x="374" y="49" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Charged:" id="ServiceChargedLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="ServiceCharged" id="ServiceCharged">
+                                                                <rect key="frame" x="494" y="46" width="168" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ServiceChargedCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="ServiceChargedFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ServiceForm" name="value" keyPath="selection.chargedAmount" id="ServiceChargedValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="ServiceChargedCurrency" id="ServiceChargedCurrency">
+                                                                <rect key="frame" x="668" y="46" width="56" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ServiceChargedCurrencyCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ServiceForm" name="value" keyPath="selection.chargedCurrency" id="ServiceChargedCurrencyValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
@@ -1770,6 +1896,94 @@
                                                                 </textFieldCell>
                                                                 <connections>
                                                                     <binding destination="ExpenseForm" name="value" keyPath="selection.note" id="ExpenseNoteValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                                                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ExpenseMileageLabel">
+                                                                <rect key="frame" x="374" y="229" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Odometer:" id="ExpenseMileageLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="ExpenseMileage" id="ExpenseMileage">
+                                                                <rect key="frame" x="494" y="226" width="134" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ExpenseMileageCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="ExpenseMileageFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ExpenseForm" name="value" keyPath="selection.mileageQuantity" id="ExpenseMileageValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="ExpenseMileageUnit" id="ExpenseMileageUnit">
+                                                                <rect key="frame" x="632" y="224" width="94" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="ExpenseMileageUnitCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="ExpenseMileageUnitMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="ExpenseMileageUnitContent"/>
+                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="ExpenseMileageUnitContent" id="ExpenseMileageUnitValues"/>
+                                                                    <binding destination="ExpenseForm" name="selectedObject" keyPath="selection.mileageDistanceUnit" previousBinding="ExpenseMileageUnitValues" id="ExpenseMileageUnitChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ExpenseChargedLabel">
+                                                                <rect key="frame" x="374" y="199" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Charged:" id="ExpenseChargedLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="ExpenseCharged" id="ExpenseCharged">
+                                                                <rect key="frame" x="494" y="196" width="168" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ExpenseChargedCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="ExpenseChargedFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ExpenseForm" name="value" keyPath="selection.chargedAmount" id="ExpenseChargedValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="ExpenseChargedCurrency" id="ExpenseChargedCurrency">
+                                                                <rect key="frame" x="668" y="196" width="56" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ExpenseChargedCurrencyCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ExpenseForm" name="value" keyPath="selection.chargedCurrency" id="ExpenseChargedCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -2058,6 +2272,32 @@
                                                                     </binding>
                                                                 </connections>
                                                             </textField>
+                                                                                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="TripIncomeLabel">
+                                                                <rect key="frame" x="374" y="169" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Earned:" id="TripIncomeLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="TripIncome" id="TripIncome">
+                                                                <rect key="frame" x="494" y="166" width="230" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="NO" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="TripIncomeCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="TripForm" name="value" keyPath="selection.income.lbEarned" id="TripIncomeValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
@@ -2286,6 +2526,34 @@
                                                                     </binding>
                                                                 </connections>
                                                             </textField>
+                                                                                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="IncomeTripLabel">
+                                                                <rect key="frame" x="374" y="199" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="For trip:" id="IncomeTripLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="IncomeTrip" id="IncomeTrip">
+                                                                <rect key="frame" x="492" y="194" width="234" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="IncomeTripCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="IncomeTripMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="-2" name="content" keyPath="trips" id="IncomeTripContent"/>
+                                                                    <binding destination="-2" name="contentValues" keyPath="trips.lbTitle" previousBinding="IncomeTripContent" id="IncomeTripValues"/>
+                                                                    <binding destination="IncomeForm" name="selectedObject" keyPath="selection.trip" previousBinding="IncomeTripValues" id="IncomeTripChosen">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </popUpButton>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
@@ -2706,6 +2974,49 @@
                                                                     </binding>
                                                                 </connections>
                                                             </textField>
+                                                                                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="TyreSetChargedLabel">
+                                                                <rect key="frame" x="374" y="199" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Charged:" id="TyreSetChargedLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="TyreSetCharged" id="TyreSetCharged">
+                                                                <rect key="frame" x="494" y="196" width="168" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="TyreSetChargedCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="TyreSetChargedFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="TyreSetForm" name="value" keyPath="selection.chargedAmount" id="TyreSetChargedValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="TyreSetChargedCurrency" id="TyreSetChargedCurrency">
+                                                                <rect key="frame" x="668" y="196" width="56" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="TyreSetChargedCurrencyCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="TyreSetForm" name="value" keyPath="selection.chargedCurrency" id="TyreSetChargedCurrencyValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
@@ -2907,6 +3218,49 @@
                                                                 </textFieldCell>
                                                                 <connections>
                                                                     <binding destination="DocumentForm" name="value" keyPath="selection.note" id="DocumentNoteValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                                                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="DocumentChargedLabel">
+                                                                <rect key="frame" x="374" y="199" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Charged:" id="DocumentChargedLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="DocumentCharged" id="DocumentCharged">
+                                                                <rect key="frame" x="494" y="196" width="168" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="DocumentChargedCell">
+                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="DocumentChargedFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="DocumentForm" name="value" keyPath="selection.chargedAmount" id="DocumentChargedValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="DocumentChargedCurrency" id="DocumentChargedCurrency">
+                                                                <rect key="frame" x="668" y="196" width="56" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="DocumentChargedCurrencyCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="DocumentForm" name="value" keyPath="selection.chargedCurrency" id="DocumentChargedCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -3218,6 +3572,174 @@
                                                                     </binding>
                                                                 </connections>
                                                             </textField>
+                                                                                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="answersLabel">
+                                                                <rect key="frame" x="8" y="200" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="Answers:" id="answersLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="answersTableScroll">
+                                                                <rect key="frame" x="8" y="8" width="466" height="190"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <clipView key="contentView" id="answersTableClip">
+                                                                    <rect key="frame" x="1" y="1" width="464" height="188"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                    <subviews>
+                                                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="answersTableHeader" identifier="answersTable" id="answersTable">
+                                                                            <rect key="frame" x="0" y="0" width="464" height="165"/>
+                                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                            <size key="intercellSpacing" width="3" height="2"/>
+                                                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                            <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                                            <tableColumns>
+                                                            <tableColumn identifier="questionText" width="250" minWidth="40" maxWidth="1000" id="answersTableQuestionTextColumn">
+                                                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Question">
+                                                                    <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                                </tableHeaderCell>
+                                                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="answersTableQuestionTextCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="answers" name="value" keyPath="arrangedObjects.questionText" id="answersTableQuestionTextValue"/>
+                                                                </connections>
+                                                            </tableColumn>
+                                                            <tableColumn identifier="answerText" width="110" minWidth="40" maxWidth="1000" id="answersTableAnswerTextColumn">
+                                                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Answer">
+                                                                    <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                                </tableHeaderCell>
+                                                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="answersTableAnswerTextCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="answers" name="value" keyPath="arrangedObjects.answerText" id="answersTableAnswerTextValue"/>
+                                                                </connections>
+                                                            </tableColumn>
+                                                            <tableColumn identifier="note" width="80" minWidth="40" maxWidth="1000" id="answersTableNoteColumn">
+                                                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Note">
+                                                                    <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                                </tableHeaderCell>
+                                                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="answersTableNoteCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="answers" name="value" keyPath="arrangedObjects.note" id="answersTableNoteValue"/>
+                                                                </connections>
+                                                            </tableColumn>
+                                                                            </tableColumns>
+                                                                        </tableView>
+                                                                    </subviews>
+                                                                </clipView>
+                                                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="answersTableHScroller">
+                                                                    <rect key="frame" x="1" y="174" width="464" height="15"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                                </scroller>
+                                                                <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="answersTableVScroller">
+                                                                    <rect key="frame" x="450" y="1" width="15" height="188"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                                                </scroller>
+                                                                <tableHeaderView key="headerView" id="answersTableHeader">
+                                                                    <rect key="frame" x="0" y="0" width="464" height="23"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                                                </tableHeaderView>
+                                                            </scrollView>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="answerYesNoLabel">
+                                                                <rect key="frame" x="482" y="172" width="60" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Answer:" id="answerYesNoLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="answerYesNo" id="answerYesNo">
+                                                                <rect key="frame" x="546" y="166" width="180" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="answerYesNoCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="menu"/>
+                                                                    <menu key="menu" id="answerYesNoMenu">
+                                                                        <items>
+                                                                        <menuItem title="" id="answerYesNo0"/>
+                                                                        <menuItem title="Yes" id="answerYesNo1"/>
+                                                                        <menuItem title="No" id="answerYesNo2"/>
+                                                                        </items>
+                                                                    </menu>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="answers" name="selectedValue" keyPath="selection.yesNo" id="answerYesNoValue"/>
+                                                                    <binding destination="answers" name="enabled" keyPath="selection.isYesOrNo" id="answerYesNoEnabled"/>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="answerOptionsTableScroll">
+                                                                <rect key="frame" x="482" y="8" width="242" height="150"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <clipView key="contentView" id="answerOptionsTableClip">
+                                                                    <rect key="frame" x="1" y="1" width="240" height="148"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                    <subviews>
+                                                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="answerOptionsTableHeader" identifier="answerOptionsTable" id="answerOptionsTable">
+                                                                            <rect key="frame" x="0" y="0" width="240" height="125"/>
+                                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                            <size key="intercellSpacing" width="3" height="2"/>
+                                                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                            <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                                            <tableColumns>
+                                                            <tableColumn identifier="chosen" width="24" minWidth="20" maxWidth="40" id="answerOptionsTableChosenColumn">
+                                                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="">
+                                                                    <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                                </tableHeaderCell>
+                                                                <buttonCell key="dataCell" type="check" bezelStyle="regularSquare" imagePosition="only" alignment="center" inset="2" id="answerOptionsTableChosenCell">
+                                                                    <behavior key="behavior" changeContents="YES" lightByContents="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <binding destination="answerOptions" name="value" keyPath="arrangedObjects.chosen" id="answerOptionsTableChosenValue"/>
+                                                                </connections>
+                                                            </tableColumn>
+                                                            <tableColumn identifier="optionText" width="200" minWidth="40" maxWidth="1000" id="answerOptionsTableOptionTextColumn">
+                                                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Option">
+                                                                    <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                                </tableHeaderCell>
+                                                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="answerOptionsTableOptionTextCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="answerOptions" name="value" keyPath="arrangedObjects.optionText" id="answerOptionsTableOptionTextValue"/>
+                                                                </connections>
+                                                            </tableColumn>
+                                                                            </tableColumns>
+                                                                        </tableView>
+                                                                    </subviews>
+                                                                </clipView>
+                                                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="answerOptionsTableHScroller">
+                                                                    <rect key="frame" x="1" y="134" width="240" height="15"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                                </scroller>
+                                                                <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="answerOptionsTableVScroller">
+                                                                    <rect key="frame" x="226" y="1" width="15" height="148"/>
+                                                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                                                                </scroller>
+                                                                <tableHeaderView key="headerView" id="answerOptionsTableHeader">
+                                                                    <rect key="frame" x="0" y="0" width="240" height="23"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                                                </tableHeaderView>
+                                                            </scrollView>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>

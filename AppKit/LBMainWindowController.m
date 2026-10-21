@@ -3,6 +3,7 @@
 #import "LBDisplay.h"
 #import "LBReportsController.h"
 #import "LBRemindersController.h"
+#import "LBAnswersController.h"
 #import <ODataIncrementalStore/ODataOperationCall.h>
 #import <ODataKit/ODataError.h>
 #import "Schedule+CoreDataClass.h"
@@ -29,10 +30,14 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @property (nonatomic, readwrite, copy) NSDictionary<NSString *, id> *chosenRecords;
 @property (nonatomic, readwrite, copy) NSArray<User *> *drivers;
 @property (nonatomic, readwrite, copy) NSArray<TyreSet *> *tyreSets;
+@property (nonatomic, readwrite, copy) NSArray<Trip *> *trips;
 @property (nonatomic, readwrite, copy) NSArray<CostKind *> *serviceKinds;
 @end
 
-@implementation LBMainWindowController
+@implementation LBMainWindowController {
+    NSArray<NSString *> *_tyreSetTitles;
+    NSArray<NSString *> *_tripTitles;
+}
 
 - (instancetype)initWithStore:(LBStore *)store {
     if ((self = [super initWithWindowNibName:@"MainWindow"])) {
@@ -40,6 +45,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         _chosenRecords = @{};
         _drivers = @[];
         _tyreSets = @[];
+        _trips = @[];
         _serviceKinds = @[];
     }
     return self;
@@ -134,6 +140,20 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     self.chosenRecords = kind ? @{ kind: record } : @{};
     NSInteger form = [_recordForms indexOfTabViewItemWithIdentifier:kind ?: @"none"];
     [_recordForms selectTabViewItemAtIndex:form == NSNotFound ? 0 : form];
+    [self answersChanged];
+}
+
+/* The chosen inspection's answers shown, as they are now. */
+- (void)answersChanged {
+    NSArray *chosen = _records.selectedObjects;
+    Record *record = chosen.count == 1 ? chosen[0] : nil;
+    [_answersController showInspection:[record isKindOfClass:[Inspection class]] ? (Inspection *)record : nil];
+}
+
+/* A pick list's objects, said anew when they or what it calls them (their
+   titles, as typed since) changed. */
+- (BOOL)list:(NSArray *)list differsFrom:(NSArray *)shown titled:(NSArray<NSString *> *)titles {
+    return ![list isEqualToArray:shown] || ![[list valueForKey:NSStringFromSelector(@selector(lbTitle))] isEqualToArray:titles];
 }
 
 - (void)recordsChanged {
@@ -142,7 +162,19 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         if ([record isKindOfClass:[TyreSet class]]) [tyreSets addObject:(TyreSet *)record];
     }
     [tyreSets sortUsingDescriptors:[self byTitle]];
-    if (![tyreSets isEqualToArray:_tyreSets]) self.tyreSets = tyreSets;
+    if ([self list:tyreSets differsFrom:_tyreSets titled:_tyreSetTitles]) {
+        _tyreSetTitles = [tyreSets valueForKey:NSStringFromSelector(@selector(lbTitle))];
+        self.tyreSets = tyreSets;
+    }
+    NSMutableArray<Trip *> *trips = [NSMutableArray array];
+    for (Record *record in _records.arrangedObjects) {
+        if ([record isKindOfClass:[Trip class]]) [trips addObject:(Trip *)record];
+    }
+    [trips sortUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(timestamp)) ascending:NO] ]];
+    if ([self list:trips differsFrom:_trips titled:_tripTitles]) {
+        _tripTitles = [trips valueForKey:NSStringFromSelector(@selector(lbTitle))];
+        self.trips = trips;
+    }
 }
 
 - (IBAction)addRecord:(id)sender {
@@ -209,6 +241,35 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         return;
     }
     if (!_quiet && ![[NSWorkspace sharedWorkspace] openURL:file]) NSBeep();
+}
+
+- (IBAction)addAttachment:(id)sender {
+    Record *record = _records.selectedObjects.count == 1 ? _records.selectedObjects.firstObject : nil;
+    if (!record) return;
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    panel.canChooseDirectories = NO;
+    panel.allowsMultipleSelection = NO;
+    panel.prompt = @"Attach";
+    if ([panel runModal] != NSModalResponseOK || !panel.URL) return;
+    NSError *error = nil;
+    if (![self attachFileAtURL:panel.URL toRecord:record error:&error]) [self reportError:error];
+}
+
+- (Attachment *)attachFileAtURL:(NSURL *)url toRecord:(Record *)record error:(NSError **)error {
+    NSData *content = [NSData dataWithContentsOfURL:url options:0 error:error];
+    if (!content) return nil;
+    Attachment *attachment = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Attachment class])
+                                                           inManagedObjectContext:self.context];
+    attachment.fileName = url.lastPathComponent;
+    attachment.content = content;
+    attachment.record = record;
+    [_attachments setSelectedObjects:@[ attachment ]];
+    return attachment;
+}
+
+- (IBAction)removeAttachment:(id)sender {
+    Attachment *attachment = _attachments.selectedObjects.firstObject;
+    if (attachment) [self.context deleteObject:attachment];
 }
 
 - (NSURL *)fileOfAttachment:(Attachment *)attachment error:(NSError **)error {
@@ -303,6 +364,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (void)readAgain {
+    /* The records chosen stay chosen, wherever they now sort. */
+    NSArray *chosen = _records.selectedObjects;
     NSManagedObjectContext *context = self.context;
     Vehicle *vehicle = [self chosenVehicle];
     if (vehicle) {
@@ -326,6 +389,12 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_vehicles willChangeValueForKey:selection];
     [_vehicles didChangeValueForKey:selection];
     [_remindersController refresh];
+    NSMutableArray *still = [NSMutableArray array];
+    for (Record *record in chosen) {
+        if (!record.isDeleted && record.managedObjectContext) [still addObject:record];
+    }
+    if (still.count) [_records setSelectedObjects:still];
+    [self answersChanged];
 }
 
 - (BOOL)saveChanges {
@@ -399,8 +468,21 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     return YES;
 }
 
+/* An odometer reading typed where it may be left out (an expense's, an
+   income's) with no unit chosen: in the user's. */
+- (void)completeReadings {
+    NSMutableSet *changed = [NSMutableSet setWithSet:self.context.insertedObjects];
+    [changed unionSet:self.context.updatedObjects];
+    for (NSManagedObject *object in changed) {
+        if (![object isKindOfClass:[Event class]]) continue;
+        Event *event = (Event *)object;
+        if (event.mileageQuantity && !event.mileageDistanceUnit) event.mileageDistanceUnit = [self distanceUnit];
+    }
+}
+
 - (IBAction)save:(id)sender {
     if (![self commitEdits]) return;
+    [self completeReadings];
     NSArray<NSError *> *warnings = [[_store warnings] arrayByAddingObjectsFromArray:[self reminderWarnings]];
     if (warnings.count && !_quiet && ![self proceedDespite:warnings]) return;
     /* Saved, and what the server did as it saved read again: an event
@@ -431,6 +513,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 - (IBAction)revertChanges:(id)sender {
     [self.window makeFirstResponder:nil];
     [_store.context rollback];
+    [self answersChanged];
 }
 
 - (BOOL)shouldClose {

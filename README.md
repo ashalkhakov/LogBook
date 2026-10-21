@@ -18,8 +18,10 @@ It is built on [ORMKit](../NativeORM2):
   - a server.
 
 Early days: the model is done, the server runs it, the desktop app keeps
-a vehicle's records, its schedules and reminders, and its reports, and the
-iOS app (below) logs on the road, offline first.
+a vehicle's records of every kind (added, corrected and removed in its
+Records tab: an inspection's answers, an income's trip, what a cost was
+charged, files attached), its schedules and reminders, and its reports,
+and the iOS app (below) logs on the road, offline first.
 
 ## Schedules and reminders
 
@@ -40,7 +42,8 @@ make the same objects.
 - The desktop app, online, calls the actions from its Reminders tab: the
   chosen vehicle's schedules and reminders, the open first, overdue as the
   model's queries say, and how each was moved before. A schedule is
-  changed in place (Edit Schedule): its work, intervals and note. The
+  changed in place (Edit Schedule): its intervals and note, and its work
+  until an event has done one of its reminders. The
   kinds of expense and the checklists the forms pick from are the users'
   own, written in their own window (Expense Kinds…, Checklists…, or Edit…
   beside a pop-up), as are the exchange rates costs by month counts each
@@ -94,8 +97,9 @@ A receipt's photo is an Attachment of its record, the image its content: a
 JPEG no larger than 2000 pixels on its longest side, which syncs with the
 record (`Edm.Binary` in the sync's JSON; kept in a file beside the store,
 as Core Data keeps a large value), to the server and every other device
-of the vehicle's. The desktop app lists a record's attachments beside it
-and opens one as the system opens a file of its kind.
+of the vehicle's. The desktop app lists a record's attachments beside it,
+opens one as the system opens a file of its kind, attaches a file (Add…)
+and removes one.
 
 ### Building and running it
 
@@ -124,9 +128,7 @@ driver's phone), meets a deontic rule and a refusal, and signs out: warned
 with changes waiting, each button as it says, and at once with none.
 
 `ODATAKIT_DEPS=<dir>` builds against other XCFrameworks of ODataKit than
-`../NativeORM2/.deps`: the sync of a record's kinds (a fill-up served in
-`Records`) needs ODataKit's ashalkhakov/ODataKit#51, until a release with
-it is pinned there.
+`../NativeORM2/.deps`, to try one not released yet.
 
 ## The model
 
@@ -180,7 +182,9 @@ what it derives, one a rule refuses, an attachment's photo there and
 back, the actions and automatic completion, and who may do what, signed
 in; `Tests/sync-check.sh` syncs two devices' offline stores through one,
 a receipt's photo among what they sync (`Tests/LBSyncCheck.m`); then
-`Tests/app-check.sh` drives the desktop app against one.
+`Tests/app-check.sh` drives the desktop app against one: every kind of
+record added from its Add menu, its form typed into, saved, corrected and
+saved again, each checked at the server.
 
 ### Signing in with Keycloak (or another OpenID Connect provider)
 

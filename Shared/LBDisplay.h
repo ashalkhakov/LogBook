@@ -13,6 +13,7 @@
 #import "TyreSet+CoreDataClass.h"
 #import "Checklist+CoreDataClass.h"
 #import "Question+CoreDataClass.h"
+#import "Income+CoreDataClass.h"
 #import "Schedule+CoreDataClass.h"
 #import "Reminder+CoreDataClass.h"
 #import "Rescheduling+CoreDataClass.h"
@@ -68,6 +69,11 @@ extern NSString * const LBAnyOf;
 // The model's entities a record is of, in the order Add offers them.
 + (NSArray<NSString *> *)lbKinds;
 + (NSString *)lbKindOfEntityNamed:(NSString *)name;
+@end
+
+@interface Income (LBDisplay)
+// What it earned: "120.00 EUR"; nil when nothing.
+@property (nonatomic, readonly, nullable) NSString *lbEarned;
 @end
 
 @interface Record (LBDisplayTitle) <LBTitled>

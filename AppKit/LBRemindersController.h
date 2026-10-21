@@ -8,9 +8,10 @@
 // saved and started (Start), a one-off reminder saved, a reminder moved
 // (Reschedule), cancelled and maybe replaced (Cancel), or closed by an
 // event of its work (Complete): a reminder is done only by an event. What the server made is read back after.
-// A schedule is changed in place (Edit Schedule): its work, its intervals,
-// its note. Its reminders are for its work, as it is now; the intervals
-// count from its next reminder (the open one is moved by Reschedule).
+// A schedule is changed in place (Edit Schedule): its intervals and note,
+// and its work until an event has done one of its reminders (then other
+// work is another schedule). The intervals count from its next reminder
+// (the open one is moved by Reschedule).
 
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>

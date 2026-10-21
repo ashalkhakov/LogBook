@@ -6,11 +6,21 @@
 #import "FillUp+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "LBDisplay.h"
+#import "Answer+CoreDataClass.h"
+#import "Inspection+CoreDataClass.h"
+#import "MeterReading+CoreDataClass.h"
+#import "Document+CoreDataClass.h"
+#import "TyreChange+CoreDataClass.h"
+#import "TyreSet+CoreDataClass.h"
+#import "Income+CoreDataClass.h"
+#import "Trip+CoreDataClass.h"
+#import "Expense+CoreDataClass.h"
 #import "LBAppController.h"
 #import "LBReportData.h"
 #import "LBReportsController.h"
 #import "LBRemindersController.h"
 #import "LBListsController.h"
+#import "LBAnswersController.h"
 #import "LBProcedures.h"
 #import "Service+CoreDataClass.h"
 #import "ServiceItem+CoreDataClass.h"
@@ -223,6 +233,8 @@ static void LBAttachmentSteps(LBMainWindowController *controller, Vehicle *kept)
             error ?: controller.lastError ?: file);
 }
 
+static NSArray *LBServerObjects(Class cls, NSPredicate *predicate);
+
 /* The user's currency set in the Preferences window, as a user does. */
 static void LBPreferenceSteps(LBMainWindowController *controller) {
     [NSApp sendAction:@selector(showPreferences:) to:nil from:nil];
@@ -234,8 +246,11 @@ static void LBPreferenceSteps(LBMainWindowController *controller) {
     LBCheck(@"the Preferences window", preferences != nil, nil);
     if (!preferences) return;
     NSString *localeCurrency = [[NSLocale currentLocale] objectForKey:NSLocaleCurrencyCode] ?: @"EUR";
-    LBCheck(@"a user who preferred no currency took this Mac's at sign-in", [controller.store.user.currency isEqualToString:localeCurrency],
-            controller.store.user.currency);
+    User *there = [LBServerObjects([User class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(email)),
+                                                                controller.store.user.email]) firstObject];
+    LBCheck(@"a user who preferred no currency took this Mac's at sign-in, on the server too",
+            [controller.store.user.currency isEqualToString:localeCurrency] && [there.currency isEqualToString:localeCurrency],
+            [NSString stringWithFormat:@"here %@, there %@", controller.store.user.currency, there.currency]);
     LBType(preferences, @"currency", @"EUR");
     LBClick(preferences, @"done");
     LBCheck(@"saved and closed", !preferences.isVisible && !controller.lastError && !controller.store.context.hasChanges,
@@ -580,8 +595,8 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     Reminder *onServer = LBServerReminder(oneOff.id);
     LBCheck(@"the server has it done by the service", onServer.doneAt && [onServer.event.id isEqual:service.id], onServer);
 
-    /* The schedule changed: another task, every 6 months; its open
-       reminder (the replacement) is for its work, now that. */
+    /* The schedule changed: not its task, which the service did; every 6
+       months. */
     [tab.schedules setSelectedObjects:@[ schedule ]];
     LBSpin();
     LBClick(window, @"editSchedule");
@@ -598,23 +613,271 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     [lists close];
     [window makeKeyAndOrderFront:nil];
     LBType(window, @"scheduleTask", @"Oil and filter");
+    LBClick(window, @"scheduleSave");
+    LBCheck(@"its work is not changed once a service has done it: refused, and said",
+            [schedule.task isEqualToString:@"Oil change"] && [controller.lastError.localizedDescription containsString:@"start a new schedule"]
+                && [tab.forms.selectedTabViewItem.identifier isEqual:@"schedule"],
+            controller.lastError);
+    LBType(window, @"scheduleTask", @"Oil change");
     LBType(window, @"scheduleMonths", @"6");
     LBClick(window, @"scheduleSave");
-    LBCheck(@"the schedule changed: its work, every 15000 km or 6 months",
-            [schedule.task isEqualToString:@"Oil and filter"] && schedule.duration == 6 && schedule.intervalQuantity.integerValue == 15000
-                && !controller.lastError && [tab.forms.selectedTabViewItem.identifier isEqual:@"none"],
+    LBCheck(@"the schedule changed: every 15000 km or 6 months", schedule.duration == 6 && schedule.intervalQuantity.integerValue == 15000
+                && [tab.forms.selectedTabViewItem.identifier isEqual:@"none"],
             controller.lastError ?: schedule.lbEvery);
     Reminder *open = LBServerReminder(replacementID);
     Schedule *changed = [LBServerObjects([Schedule class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)),
                                                                         schedule.id]) firstObject];
-    LBCheck(@"the server has it, and its open reminder is for the new task", changed.duration == 6
-                && [changed.task isEqualToString:@"Oil and filter"] && open.schedule == changed
-                && [open.lbWork isEqualToString:@"Oil and filter"],
+    LBCheck(@"the server has it, and its open reminder stays due where it was", changed.duration == 6 && open.schedule == changed
+                && [open.dueDate isEqualToDate:replacementDue],
             open.lbWork);
     if (getenv("LB_SCREENSHOT")) {
         NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-reminders.png"];
         system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);
     }
+}
+
+/* A record of the Add menu's kind, added as a user adds one: chosen, its
+   form shown. */
+static Record *LBAddRecord(LBMainWindowController *controller, Class kind) {
+    NSWindow *window = controller.window;
+    NSPopUpButton *add = (NSPopUpButton *)LBControl(window.contentView, @"addRecord");
+    NSMenuItem *item = [add itemAtIndex:(NSInteger)[[Record lbKinds] indexOfObject:NSStringFromClass(kind)] + 1];
+    [NSApp sendAction:item.action to:item.target from:item];
+    LBSpin();
+    Record *record = controller.records.selectedObjects.firstObject;
+    LBCheck([NSString stringWithFormat:@"a new %@, its form shown", [Record lbKindOfEntityNamed:NSStringFromClass(kind)]],
+            [record isKindOfClass:kind] && [controller.recordForms.selectedTabViewItem.identifier isEqual:NSStringFromClass(kind)], record);
+    return record;
+}
+
+/* Saved as a user saves, and what the server has of the record. */
+static id LBSaved(LBMainWindowController *controller, Record *record, NSString *what) {
+    LBClick(controller.window, @"save");
+    LBCheck(what, !controller.store.context.hasChanges && !controller.lastError,
+            controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
+    LBCheck(@"still the one chosen", [controller.records.selectedObjects isEqualToArray:@[ record ]], controller.records.selectedObjects);
+    return [LBServerObjects([record class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)), record.id])
+        firstObject];
+}
+
+static void LBChooseRecord(LBMainWindowController *controller, Record *record) {
+    [controller.records setSelectedObjects:@[ record ]];
+    LBSpin();
+}
+
+static BOOL LBIs(NSDecimalNumber *number, NSString *value) {
+    return number && [number compare:[NSDecimalNumber decimalNumberWithString:value]] == NSOrderedSame;
+}
+
+/* Every kind of record the Add menu offers, as a user: added, its form
+   filled in, saved; then corrected, and saved again. The server has each
+   as typed. An income for a trip, an inspection's answers, a fill-up
+   charged in another currency, a file attached and removed, a record
+   removed. */
+static void LBKindSteps(LBMainWindowController *controller) {
+    NSWindow *window = controller.window;
+    NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
+    [tabs selectTabViewItemWithIdentifier:@"records"];
+    LBSpin();
+
+    Expense *expense = (Expense *)LBAddRecord(controller, [Expense class]);
+    LBChoose(window, @"ExpenseKind", @"Car wash");
+    LBType(window, @"ExpenseMileage", @"14100");
+    LBType(window, @"ExpenseTotal", @"12.50");
+    LBType(window, @"ExpenseCharged", @"13.90");
+    LBType(window, @"ExpenseChargedCurrency", @"USD");
+    Expense *keptExpense = LBSaved(controller, expense, @"the expense saved");
+    LBCheck(@"the server has it: its kind, odometer, cost and what was charged",
+            [keptExpense.expenseKind.name isEqualToString:@"Car wash"] && LBIs(keptExpense.mileageQuantity, @"14100")
+                && LBIs(keptExpense.totalAmount, @"12.5") && LBIs(keptExpense.chargedAmount, @"13.9")
+                && [keptExpense.chargedCurrency isEqualToString:@"USD"],
+            keptExpense);
+    LBChooseRecord(controller, expense);
+    LBType(window, @"ExpenseTotal", @"15");
+    keptExpense = LBSaved(controller, expense, @"the expense corrected");
+    LBCheck(@"the server has the cost corrected", LBIs(keptExpense.totalAmount, @"15"), keptExpense.totalAmount);
+
+    Trip *trip = (Trip *)LBAddRecord(controller, [Trip class]);
+    LBType(window, @"TripMileage", @"14200");
+    LBType(window, @"TripPlace", @"Berlin");
+    LBType(window, @"TripDistance", @"14450");
+    LBType(window, @"TripWentTo", @"Hamburg");
+    LBType(window, @"TripPurpose", @"Delivery");
+    Trip *keptTrip = LBSaved(controller, trip, @"the trip saved");
+    LBCheck(@"the server has it, from and to", [keptTrip.place isEqualToString:@"Berlin"] && [keptTrip.wentToPlace isEqualToString:@"Hamburg"]
+                && LBIs(keptTrip.distanceQuantity, @"14450"),
+            keptTrip);
+    LBChooseRecord(controller, trip);
+    LBType(window, @"TripPurpose", @"Customer visit");
+    keptTrip = LBSaved(controller, trip, @"the trip corrected");
+    LBCheck(@"the server has its purpose corrected", [keptTrip.purpose isEqualToString:@"Customer visit"], keptTrip.purpose);
+
+    Income *income = (Income *)LBAddRecord(controller, [Income class]);
+    LBType(window, @"IncomeKind", @"Delivery fee");
+    LBType(window, @"IncomeEarned", @"80");
+    LBType(window, @"IncomeEarnedCurrency", @"EUR");
+    LBChoose(window, @"IncomeTrip", trip.lbTitle);
+    Income *keptIncome = LBSaved(controller, income, @"the income saved");
+    LBCheck(@"the server has it, for the trip", [keptIncome.incomeKind isEqualToString:@"Delivery fee"] && LBIs(keptIncome.earnedAmount, @"80")
+                && [keptIncome.trip.id isEqual:trip.id],
+            keptIncome);
+    LBChooseRecord(controller, trip);
+    NSTextField *earned = (NSTextField *)LBControl(window.contentView, @"TripIncome");
+    LBCheck(@"the trip shows what it earned", [earned.stringValue isEqualToString:@"80.00 EUR"], earned.stringValue);
+    LBChooseRecord(controller, income);
+    LBType(window, @"IncomeEarned", @"90");
+    keptIncome = LBSaved(controller, income, @"the income corrected");
+    LBCheck(@"the server has it corrected", LBIs(keptIncome.earnedAmount, @"90"), keptIncome.earnedAmount);
+
+    TyreSet *tyres = (TyreSet *)LBAddRecord(controller, [TyreSet class]);
+    LBType(window, @"TyreSetName", @"Winter set");
+    LBType(window, @"TyreSetSeason", @"Winter");
+    LBType(window, @"TyreSetModel", @"Alpin 6");
+    LBType(window, @"TyreSetSize", @"205/55 R16");
+    LBTypeDay(window, @"TyreSetDate", LBDay([NSDate date]));
+    LBType(window, @"TyreSetTotal", @"400");
+    LBType(window, @"TyreSetTotalCurrency", @"EUR");
+    TyreSet *keptTyres = LBSaved(controller, tyres, @"the tyre set saved");
+    LBCheck(@"the server has it, bought for 400", [keptTyres.tyreSetName isEqualToString:@"Winter set"] && keptTyres.date
+                && LBIs(keptTyres.totalAmount, @"400"),
+            keptTyres);
+    LBChooseRecord(controller, tyres);
+    LBType(window, @"TyreSetModel", @"Alpin 7");
+    keptTyres = LBSaved(controller, tyres, @"the tyre set corrected");
+    LBCheck(@"the server has its model corrected", [keptTyres.tyreModel isEqualToString:@"Alpin 7"], keptTyres.tyreModel);
+
+    TyreChange *change = (TyreChange *)LBAddRecord(controller, [TyreChange class]);
+    LBType(window, @"TyreChangeMileage", @"14500");
+    LBChoose(window, @"TyreChangeTyreSet", @"Winter set");
+    LBType(window, @"TyreChangeTread", @"7.5");
+    TyreChange *keptChange = LBSaved(controller, change, @"the tyre change saved");
+    LBCheck(@"the server has it: the set fitted, its tread", [keptChange.tyreSet.id isEqual:tyres.id] && LBIs(keptChange.tread, @"7.5"),
+            keptChange);
+    LBChooseRecord(controller, change);
+    LBType(window, @"TyreChangeTread", @"7");
+    keptChange = LBSaved(controller, change, @"the tyre change corrected");
+    LBCheck(@"the server has its tread corrected", LBIs(keptChange.tread, @"7"), keptChange.tread);
+
+    Document *document = (Document *)LBAddRecord(controller, [Document class]);
+    LBType(window, @"DocumentKind", @"Insurance");
+    LBType(window, @"DocumentIssuer", @"Allianz");
+    LBType(window, @"DocumentNumber", @"P-1234");
+    LBTypeDay(window, @"DocumentDate", LBDay([NSDate date]));
+    LBTypeDay(window, @"DocumentExpires", LBAddMonths(LBDay([NSDate date]), 12));
+    LBType(window, @"DocumentTotal", @"300");
+    LBType(window, @"DocumentTotalCurrency", @"EUR");
+    Document *keptDocument = LBSaved(controller, document, @"the document saved");
+    LBCheck(@"the server has it, valid a year", [keptDocument.issuer isEqualToString:@"Allianz"] && keptDocument.expiresOnDate
+                && LBIs(keptDocument.totalAmount, @"300"),
+            keptDocument);
+    LBChooseRecord(controller, document);
+    LBType(window, @"DocumentNumber", @"P-1235");
+    keptDocument = LBSaved(controller, document, @"the document corrected");
+    LBCheck(@"the server has its number corrected", [keptDocument.documentNumber isEqualToString:@"P-1235"], keptDocument.documentNumber);
+
+    MeterReading *reading = (MeterReading *)LBAddRecord(controller, [MeterReading class]);
+    LBType(window, @"MeterReadingMileage", @"14600");
+    MeterReading *keptReading = LBSaved(controller, reading, @"the meter reading saved");
+    LBCheck(@"the server has it", LBIs(keptReading.mileageQuantity, @"14600"), keptReading);
+    LBChooseRecord(controller, reading);
+    LBType(window, @"MeterReadingMileage", @"14650");
+    keptReading = LBSaved(controller, reading, @"the meter reading corrected");
+    LBCheck(@"the server has it corrected", LBIs(keptReading.mileageQuantity, @"14650"), keptReading.mileageQuantity);
+
+    /* A file attached to it, saved; then removed. */
+    NSURL *file = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:@"odometer.txt"]];
+    [[@"14650 km" dataUsingEncoding:NSUTF8StringEncoding] writeToURL:file atomically:YES];
+    NSError *error = nil;
+    LBCheck(@"a file attached to it", [controller attachFileAtURL:file toRecord:reading error:&error] != nil, error);
+    LBSaved(controller, reading, @"saved with it");
+    NSArray *files = LBServerObjects([Attachment class], [NSPredicate predicateWithFormat:@"%K == %@",
+                                                                       NSStringFromSelector(@selector(fileName)), @"odometer.txt"]);
+    LBCheck(@"the server has the file", files.count == 1 && [[files.firstObject content] length] == 8, files);
+    LBCheck(@"listed beside it, saved", [[controller.attachments.arrangedObjects valueForKey:NSStringFromSelector(@selector(fileName))]
+                                            isEqualToArray:@[ @"odometer.txt" ]],
+            controller.attachments.arrangedObjects);
+    [controller.attachments setSelectionIndex:0];
+    LBSpin();
+    NSButton *removeFile = (NSButton *)LBControl(window.contentView, @"removeAttachment");
+    LBCheck(@"Remove enabled for the file chosen", removeFile.isEnabled,
+            [NSString stringWithFormat:@"canRemove %d, chosen %lu of %lu, button %@", controller.attachments.canRemove,
+                                       (unsigned long)controller.attachments.selectionIndexes.count,
+                                       (unsigned long)[controller.attachments.arrangedObjects count], removeFile]);
+    LBClick(window, @"removeAttachment");
+    LBSaved(controller, reading, @"saved without it");
+    LBCheck(@"the server has it no more", [LBServerObjects([Attachment class], [NSPredicate predicateWithFormat:@"%K == %@",
+                                                                                 NSStringFromSelector(@selector(fileName)), @"odometer.txt"])
+                                              count] == 0,
+            nil);
+
+    Inspection *inspection = (Inspection *)LBAddRecord(controller, [Inspection class]);
+    LBType(window, @"InspectionMileage", @"14700");
+    LBChoose(window, @"InspectionChecklist", @"Monthly check");
+    NSArray<LBAnswerRow *> *rows = controller.answersController.rows;
+    LBCheck(@"its checklist's questions, in order, to answer", rows.count == 2 && [rows[0].questionText isEqualToString:@"Which lights are out?"],
+            [rows valueForKey:NSStringFromSelector(@selector(questionText))]);
+    NSTableView *answers = (NSTableView *)LBControl(window.contentView, @"answersTable");
+    [answers selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+    LBSpin();
+    NSTableView *options = (NSTableView *)LBControl(window.contentView, @"answerOptionsTable");
+    LBCheck(@"an any-of question offers its options", options.numberOfRows == 2, @(options.numberOfRows));
+    rows[0].choices[0].chosen = YES;
+    [answers selectRowIndexes:[NSIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
+    LBSpin();
+    LBChoose(window, @"answerYesNo", @"Yes");
+    rows[1].note = @"front left worn";
+    LBCheck(@"answered: an option, and yes", [rows[0].answerText isEqualToString:@"Low beams"] && [rows[1].answerText isEqualToString:@"Yes"],
+            [rows valueForKey:NSStringFromSelector(@selector(answerText))]);
+    Inspection *keptInspection = LBSaved(controller, inspection, @"the inspection saved");
+    NSMutableDictionary *said = [NSMutableDictionary dictionary];
+    for (Answer *answer in keptInspection.answers) {
+        said[answer.question.questionText ?: @"?"] = answer.yesNo ?: [[answer.options valueForKey:@"optionText"] anyObject] ?: @"";
+    }
+    LBCheck(@"the server has its answers", [said isEqualToDictionary:(@{ @"Which lights are out?": @"Low beams", @"Are the tyres fine?": @"Yes" })],
+            said);
+    LBChooseRecord(controller, inspection);
+    [answers selectRowIndexes:[NSIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
+    LBSpin();
+    LBChoose(window, @"answerYesNo", @"No");
+    keptInspection = LBSaved(controller, inspection, @"the inspection corrected");
+    NSString *tyresFine = nil;
+    for (Answer *answer in LBServerObjects([Answer class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(inspection)),
+                                                                          keptInspection])) {
+        if ([answer.question.questionText isEqualToString:@"Are the tyres fine?"]) tyresFine = answer.yesNo;
+    }
+    LBCheck(@"the server has the answer corrected", [tyresFine isEqualToString:@"No"], tyresFine);
+
+    /* The first fill-up, corrected: what was charged for it, in dollars. */
+    FillUp *fillUp = nil;
+    for (Record *record in controller.records.arrangedObjects) {
+        if ([record isKindOfClass:[FillUp class]]) fillUp = (FillUp *)record;
+    }
+    LBChooseRecord(controller, fillUp);
+    LBType(window, @"FillUpCharged", @"65");
+    LBType(window, @"FillUpChargedCurrency", @"USD");
+    FillUp *keptFillUp = LBSaved(controller, fillUp, @"the fill-up corrected");
+    LBCheck(@"the server has what was charged", LBIs(keptFillUp.chargedAmount, @"65") && [keptFillUp.chargedCurrency isEqualToString:@"USD"],
+            keptFillUp.chargedAmount);
+
+    /* The meter reading removed, a file attached to it again: the file
+       goes with it. */
+    LBChooseRecord(controller, reading);
+    LBCheck(@"a file attached again", [controller attachFileAtURL:file toRecord:reading error:&error] != nil, error);
+    LBSaved(controller, reading, @"saved with it");
+    NSUUID *readingID = reading.id;
+    LBClick(window, @"removeRecord");
+    NSMutableArray *deleting = [NSMutableArray array];
+    for (NSManagedObject *object in controller.store.context.deletedObjects) {
+        [deleting addObject:[NSString stringWithFormat:@"%@%@", object.entity.name,
+                                                       [object isKindOfClass:[Answer class]] ? [NSString stringWithFormat:@" of %@", ((Answer *)object).inspection.entity.name] : @""]];
+    }
+    LBClick(window, @"save");
+    LBCheck(@"a record removed, its file with it, on the server too", !controller.lastError
+                && [LBServerObjects([MeterReading class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)),
+                                                                         readingID]) count] == 0
+                && [LBServerObjects([Attachment class], [NSPredicate predicateWithFormat:@"%K == %@",
+                                                                      NSStringFromSelector(@selector(fileName)), @"odometer.txt"]) count] == 0,
+            [NSString stringWithFormat:@"%@ deleting %@", controller.lastError.localizedDescription, deleting]);
 }
 
 static void LBSteps(LBMainWindowController *controller) {
@@ -657,6 +920,7 @@ static void LBSteps(LBMainWindowController *controller) {
     LBReportDataSteps(controller, @"Self-test Golf");
     LBReportSteps(controller);
     LBReminderSteps(controller, kept);
+    LBKindSteps(controller);
 }
 
 void LBRunSelfTest(LBMainWindowController *window) {
