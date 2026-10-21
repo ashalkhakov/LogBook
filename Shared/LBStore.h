@@ -1,7 +1,7 @@
 // The logbook as an app sees it: Logbook's model over a server's OData
 // service, online (ODataIncrementalStore), signed in as the server asks
 // (LBSignIn.h). The desktop app's; the iOS app keeps one of its own,
-// synced (later).
+// synced (LBLocalStore.h).
 //
 // Saving does what the server does before it saves (the generated
 // orm_prepareForSave:): what is derived worked out, every rule checked for

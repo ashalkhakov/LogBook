@@ -56,6 +56,11 @@
     _context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
     _context.persistentStoreCoordinator = _coordinator;
     _context.undoManager = [[NSUndoManager alloc] init];
+    /* What the server stamps as it saves (the sync's bookkeeping: a
+       version, a last change), and what it settles (a reminder an event
+       closed), comes back newer than the context read it: kept, beside
+       what the context changed, which goes over it. */
+    _context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy;
     return YES;
 }
 

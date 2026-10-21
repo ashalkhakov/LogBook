@@ -11772,7 +11772,12 @@ on, not one before (docs/PROCESSES.md).</orm:Text>
 		<ormDiagram:Subject ref="_2C7E073F-10CB-4429-9D8F-D072A08D2C9F" />
 	</ormDiagram:ORMDiagram>
 	<ormcd:CoreDataMappings>
-		<ormcd:Mapping id="_3B61C307-8E6D-4A2B-BBF6-0C7D1C84F1E8" Name="Logbook" Path="Logbook.xcdatamodeld" Scope="Model" ValidationPath="Constraints" FlattenSubtypes="false" AbsorbIdentifierTypes="true" />
+		<ormcd:Mapping id="_3B61C307-8E6D-4A2B-BBF6-0C7D1C84F1E8" Name="Logbook" Path="Logbook.xcdatamodeld" Scope="Model" ValidationPath="Constraints" FlattenSubtypes="false" AbsorbIdentifierTypes="true" Sync="Both">
+			<ormcd:Sync ref="_41C1A239-7FFC-4DB2-9E16-14C52E846C42" Direction="Down" />
+			<ormcd:Sync ref="_85EE3DE3-F6D0-48E6-8ACE-B4E615636FC8" Direction="Down" />
+			<ormcd:Sync ref="_D3D9EF81-F055-4F1A-A33A-E5C495D7B619" Direction="Down" />
+			<ormcd:Sync ref="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915" Direction="Down" />
+		</ormcd:Mapping>
 	</ormcd:CoreDataMappings>
 	<ormq:Queries>
 		<ormq:Query id="_53F1065B-D4F9-4A83-9220-053920F3F89B" Name="AnswerOptionsOfItsQuestion" Kind="Constraint">
