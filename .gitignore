@@ -10,3 +10,4 @@ Model/*.xcdatamodeld/
 Model/*.momd/
 Model/Constraints/
 Model/*.forml
+iOS/Local.xcconfig

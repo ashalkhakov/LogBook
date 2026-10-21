@@ -1,0 +1,19 @@
+// Logbook for iOS 15 and later, iPhone and iPad: what Makefile.apple's
+// ios targets build it with (and an Xcode project would take as it is).
+//
+// On a device it is signed with your team: DEVELOPMENT_TEAM = <your team
+// ID> in Local.xcconfig beside this file (git ignores it), then codesign
+// the app the build leaves in build/ios/iphoneos. The simulator needs
+// neither.
+
+PRODUCT_NAME = Logbook
+PRODUCT_BUNDLE_IDENTIFIER = io.github.ashalkhakov.Logbook
+IPHONEOS_DEPLOYMENT_TARGET = 15.0
+TARGETED_DEVICE_FAMILY = 1,2
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 1
+// The server the app offers first, for whoever runs one for their own
+// (the sign-in screen's address, until the user types another).
+LB_DEFAULT_SERVER = https://logbook.example.com
+
+#include? "Local.xcconfig"

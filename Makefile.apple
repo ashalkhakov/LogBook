@@ -9,9 +9,26 @@
 #   make -f Makefile.apple check    the procedures checked over a store of
 #                                   their own (Tests/LBProceduresCheck.m);
 #                                   the server run, and asked over HTTP
-#                                   (Tests/serve-and-check.py); the app
-#                                   driven from within against one
-#                                   (Tests/app-check.sh)
+#                                   (Tests/serve-and-check.py); two devices'
+#                                   offline stores synced through it
+#                                   (Tests/sync-check.sh); the app driven
+#                                   from within against one
+#                                   (Tests/app-check.sh); and where Xcode has
+#                                   an iPhone simulator, ios-check's
+#                                   self-test
+#
+#   make -f Makefile.apple ios      the iOS app (iOS/): build/ios/iphoneos
+#                                   (for a device, unsigned) and
+#                                   build/ios/iphonesimulator, Logbook.app
+#   make -f Makefile.apple ios-check   the simulator's app driven from
+#                                   within against a server of its own
+#                                   (Tests/ios-self-test.sh)
+#   make -f Makefile.apple ios-install DESTDIR=<dir>   <dir>/iphoneos and
+#                                   <dir>/iphonesimulator/Logbook.app
+#   make -f Makefile.apple ios-installcheck DESTDIR=<dir>   the installed
+#                                   simulator app's self-test
+#
+# (gnustep-release-actions' ios workflow runs the ios targets.)
 #
 # The model is Model/Logbook.orm, and nothing else: what the build needs of
 # it is generated from it by ORMKit's ormtool, into build/Model -- the Core
@@ -23,7 +40,10 @@ ORMKIT = ../NativeORM2
 comma = ,
 BUILD ?= build
 ODATAKIT = ODataKit OTelKit ODataIncrementalStore HTTPServerKit ODataService ODataSync
-ODATAKIT_DIRS = $(foreach f,$(ODATAKIT),$(abspath $(ORMKIT)/.deps/$(f).xcframework/macos-arm64_x86_64))
+# Where ODataKit's XCFrameworks are: ORMKit's, by its pins; another
+# directory of them (ODATAKIT_DEPS=...) to try a fix not released yet.
+ODATAKIT_DEPS ?= $(ORMKIT)/.deps
+ODATAKIT_DIRS = $(foreach f,$(ODATAKIT),$(abspath $(ODATAKIT_DEPS)/$(f).xcframework/macos-arm64_x86_64))
 # RDLKit's, by the version .github/pins.env names, in .deps (scripts/deps.sh
 # apple, from gnustep-release-actions); RDLKIT_DIRS names others.
 RDLKIT_DIRS ?= $(foreach f,RDLKit RDLKitUI,$(abspath .deps/$(f).xcframework/macos-arm64_x86_64))
@@ -44,9 +64,9 @@ LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(
 	-framework ORMRuntime -framework ODataSync -framework ODataService -framework HTTPServerKit \
 	-framework ODataIncrementalStore -framework OTelKit -framework ODataKit -framework CoreData -framework Foundation
 
-.PHONY: all check clean runtime
+.PHONY: all check clean runtime ios ios-check ios-install ios-installcheck ios-runtime
 APP = $(BUILD)/Logbook.app
-all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(APP) $(BUILD)/lb-procedures-check
+all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-sync-check
 
 # ORMKit's runtime, and its ormtool, which generates from the model.
 runtime $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(ORMTOOL):
@@ -90,6 +110,13 @@ $(BUILD)/lb-procedures-check: $(MODEL)/.made Tests/LBProceduresCheck.m $(PROCEDU
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) Tests/LBProceduresCheck.m $(PROCEDURES) $(GENERATED)/*.m $(LIBS) -o $@
 
+# The offline store (the iOS app's) checked against a server: two devices.
+SYNC_CHECK = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m Shared/LBDisplay.m \
+	Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+
+$(BUILD)/lb-sync-check: $(MODEL)/.made $(SYNC_CHECK) $(wildcard Shared/*.h) $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	$(CC) $(FLAGS) $(INC) $(SYNC_CHECK) $(GENERATED)/*.m $(LIBS) -o $@
+
 # The desktop app: its code, its windows (the XIBs compiled), the model and
 # its tables in its resources.
 APP_SOURCES = $(wildcard AppKit/*.m) $(wildcard Shared/*.m) $(MODEL)/Constraints/LogbookValidation.m
@@ -109,7 +136,87 @@ $(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h) $(XIBS) 
 check: all
 	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
+	Tests/sync-check.sh $(BUILD)/logbook-server $(BUILD)/lb-sync-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	Tests/app-check.sh $(BUILD)/logbook-server $(APP)/Contents/MacOS/Logbook
+	@if xcrun simctl list devices available 2>/dev/null | grep -q 'iPhone'; then \
+	  $(MAKE) -f Makefile.apple ios-check; \
+	else echo "no iPhone simulator here: the iOS self-test not run (make -f Makefile.apple ios-check)"; fi
+
+#### iOS
+
+# The app for a device and for the simulator, each linked with clang, its
+# frameworks from the XCFrameworks' iOS slices and ORMRuntime built for it
+# from ../NativeORM2, its resources compiled as Xcode does (momc, actool),
+# its settings from iOS/Logbook-iOS.xcconfig.
+IOS_SDKS = iphoneos iphonesimulator
+XCCONFIG = iOS/Logbook-iOS.xcconfig
+setting = $(shell sed -n 's/^$(1) *= *//p' $(XCCONFIG) | head -1)
+IOS_MIN := $(call setting,IPHONEOS_DEPLOYMENT_TARGET)
+IOS_BUNDLE := $(call setting,PRODUCT_BUNDLE_IDENTIFIER)
+IOS_BUILD = $(BUILD)/ios
+IOS_ORMKIT = $(abspath $(IOS_BUILD)/ORMKit)
+ios_slice = $(if $(filter iphonesimulator,$(1)),ios-arm64_x86_64-simulator,ios-arm64)
+ios_target = arm64-apple-ios$(IOS_MIN)$(if $(filter iphonesimulator,$(1)),-simulator)
+ios_destination = $(if $(filter iphonesimulator,$(1)),generic/platform=iOS Simulator,generic/platform=iOS)
+IOS_SOURCES = $(wildcard iOS/*.m) $(filter-out Shared/LBStore.m Shared/LBReportData.m,$(wildcard Shared/*.m)) \
+	$(MODEL)/Constraints/LogbookValidation.m
+IOS_FLAGS = -fobjc-arc -fmodules -g -Wall -Wno-unused-parameter -I$(MODEL)/Constraints -IShared -IiOS -I$(GENERATED)
+
+ios-runtime:
+	@test -d $(ORMKIT)/.deps/ODataKit.xcframework \
+	  || { echo "no ODataKit in $(ORMKIT)/.deps: gnustep-release-actions' scripts/deps.sh apple, there"; exit 1; }
+	for sdk in $(IOS_SDKS); do \
+	  dest='generic/platform=iOS'; [ $$sdk = iphonesimulator ] && dest='generic/platform=iOS Simulator'; \
+	  xcodebuild -workspace $(ORMKIT)/ORMKit.xcworkspace -scheme ORMRuntime -configuration Release \
+	    -destination "$$dest" -derivedDataPath $(IOS_ORMKIT) CODE_SIGNING_ALLOWED=NO build -quiet || exit 1; \
+	done
+
+ios: $(MODEL)/.made $(GENERATED)/.made $(BUILD)/Logbook.momd ios-runtime
+	@for sdk in $(IOS_SDKS); do \
+	  $(MAKE) -f Makefile.apple --no-print-directory ios-app SDK=$$sdk || exit 1; \
+	done
+
+# One SDK's app: make -f Makefile.apple ios-app SDK=iphonesimulator
+IOS_APP = $(IOS_BUILD)/$(SDK)/Logbook.app
+IOS_FRAMEWORKS = $(foreach f,$(ODATAKIT),$(abspath $(ODATAKIT_DEPS)/$(f).xcframework/$(call ios_slice,$(SDK))))
+IOS_ORMRUNTIME = $(IOS_ORMKIT)/Build/Products/Release-$(SDK)
+ios-app:
+	rm -rf $(IOS_APP) && mkdir -p $(IOS_APP)/Frameworks $(IOS_BUILD)/$(SDK)/obj
+	sed $(foreach k,PRODUCT_NAME PRODUCT_BUNDLE_IDENTIFIER MARKETING_VERSION CURRENT_PROJECT_VERSION IPHONEOS_DEPLOYMENT_TARGET LB_DEFAULT_SERVER,-e 's|$$($(k))|$(call setting,$(k))|g') \
+	  iOS/Info.plist > $(IOS_APP)/Info.plist
+	xcrun -sdk $(SDK) clang -target $(call ios_target,$(SDK)) $(IOS_FLAGS) $(addprefix -F,$(IOS_FRAMEWORKS)) -F$(IOS_ORMRUNTIME) \
+	  $(IOS_SOURCES) $(GENERATED)/*.m -framework ORMRuntime $(foreach f,$(ODATAKIT),-framework $(f)) \
+	  -framework UIKit -framework CoreData -framework Foundation -framework Security \
+	  -Xlinker -rpath -Xlinker @executable_path/Frameworks -o $(IOS_APP)/Logbook
+	rm -rf $(IOS_BUILD)/$(SDK)/Logbook.app.dSYM && mv $(IOS_APP)/Logbook.dSYM $(IOS_BUILD)/$(SDK)/Logbook.app.dSYM
+	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans $(IOS_APP)/
+	for f in $(IOS_FRAMEWORKS); do cp -R $$f/*.framework $(IOS_APP)/Frameworks/; done
+	cp -R $(IOS_ORMRUNTIME)/ORMRuntime.framework $(IOS_APP)/Frameworks/
+	xcrun actool iOS/Assets.xcassets --compile $(IOS_APP) --platform $(SDK) --minimum-deployment-target $(IOS_MIN) \
+	  --app-icon AppIcon --target-device iphone --target-device ipad \
+	  --output-partial-info-plist $(IOS_BUILD)/$(SDK)/obj/assets.plist >/dev/null
+	/usr/libexec/PlistBuddy -c "Merge $(IOS_BUILD)/$(SDK)/obj/assets.plist" $(IOS_APP)/Info.plist >/dev/null
+	plutil -convert binary1 $(IOS_APP)/Info.plist
+	printf 'APPL????' > $(IOS_APP)/PkgInfo
+	@# The simulator runs only what is signed, ad hoc will do; a device's is
+	@# signed by whoever installs it (unsigned here, as CI ships it).
+	if [ $(SDK) = iphonesimulator ]; then \
+	  for f in $(IOS_APP)/Frameworks/*.framework; do codesign --force --sign - $$f || exit 1; done; \
+	  codesign --force --sign - $(IOS_APP); \
+	fi
+
+ios-check: ios all
+	Tests/ios-self-test.sh $(BUILD)/logbook-server $(IOS_BUILD)/iphonesimulator/Logbook.app
+
+ios-install: ios
+	@test -n "$(DESTDIR)" || { echo "ios-install: give DESTDIR"; exit 1; }
+	@for sdk in $(IOS_SDKS); do \
+	  rm -rf $(DESTDIR)/$$sdk/Logbook.app; mkdir -p $(DESTDIR)/$$sdk; \
+	  ditto $(IOS_BUILD)/$$sdk/Logbook.app $(DESTDIR)/$$sdk/Logbook.app || exit 1; \
+	done
+
+ios-installcheck: $(BUILD)/logbook-server
+	Tests/ios-self-test.sh $(BUILD)/logbook-server $(DESTDIR)/iphonesimulator/Logbook.app
 
 clean:
 	rm -rf $(BUILD)
