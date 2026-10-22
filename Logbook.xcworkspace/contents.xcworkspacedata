@@ -4,7 +4,4 @@
    <FileRef
       location = "group:Logbook.xcodeproj">
    </FileRef>
-   <FileRef
-      location = "group:../NativeORM2/ORMKit.xcodeproj">
-   </FileRef>
 </Workspace>

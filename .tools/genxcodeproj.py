@@ -9,9 +9,11 @@ hand. Object ids are derived from names, so the output is stable and diffs
 stay small. The makefiles stay what builds Logbook (and all GNUstep reads);
 the project is for working on it in Xcode.
 
-The workspace holds this project and ORMKit's (../NativeORM2), whose
-ORMRuntime the targets link: Xcode builds it for the platform chosen, and
-steps into it when debugging. The Model target generates what the others
+The project holds ORMKit's (../NativeORM2/ORMKit.xcodeproj) as a
+subproject, and each target depends on its ORMRuntime by name and links its
+product: Xcode builds it for the platform chosen, before them, and steps
+into it when debugging. (A workspace's implicit dependencies did not find
+it in the Xcode app.) The Model target generates what the others
 build on from Model/Logbook.orm, by make -f Makefile.apple xcode-model (the
 makefile builds ORMKit's ormtool for that). ODataKit's frameworks are the
 XCFrameworks in ../NativeORM2/.deps, RDLKit's those in .deps, by the
@@ -174,11 +176,29 @@ def xcframework(name, directory):
 sdk = {f: sdkframework(f) for f in ("Foundation", "CoreData", "AppKit", "UIKit", "Security")}
 odatakit = {f: xcframework(f, "../NativeORM2/.deps") for f in ODATAKIT}
 rdlkit = {f: xcframework(f, ".deps") for f in RDLKIT}
-# ORMKit's project, beside this one in the workspace, builds it.
-ormruntime = add(oid("ormruntime"), "ORMRuntime.framework", [
+# ORMKit's project, a subproject of this one, builds it. Its ids are
+# those ORMKit's own generator gives (the same derivation from names).
+ORMKIT_RUNTIME_TARGET = oid("target", "ORMRuntime")
+ORMKIT_RUNTIME_PRODUCT = oid("product", "ORMRuntime")
+ormkit_project = add(oid("ormkit-project"), "ORMKit.xcodeproj", [
     ("isa", "PBXFileReference"),
-    ("explicitFileType", "wrapper.framework"),
+    ("lastKnownFileType", q("wrapper.pb-project")),
+    ("name", "ORMKit.xcodeproj"),
+    ("path", "../NativeORM2/ORMKit.xcodeproj"),
+    ("sourceTree", "SOURCE_ROOT"),
+])
+ormruntime_remote = add(oid("ormkit-proxy", "ORMRuntime.framework"), "PBXContainerItemProxy", [
+    ("isa", "PBXContainerItemProxy"),
+    ("containerPortal", "%s /* ORMKit.xcodeproj */" % ormkit_project),
+    ("proxyType", "2"),
+    ("remoteGlobalIDString", ORMKIT_RUNTIME_PRODUCT),
+    ("remoteInfo", "ORMRuntime"),
+])
+ormruntime = add(oid("ormruntime"), "ORMRuntime.framework", [
+    ("isa", "PBXReferenceProxy"),
+    ("fileType", "wrapper.framework"),
     ("path", "ORMRuntime.framework"),
+    ("remoteRef", "%s /* PBXContainerItemProxy */" % ormruntime_remote),
     ("sourceTree", "BUILT_PRODUCTS_DIR"),
 ])
 
@@ -264,10 +284,11 @@ for d in sorted({os.path.dirname(f) for f in ALL_FILES}):
     members = [f for f in ALL_FILES if os.path.dirname(f) == d]
     dir_groups.append(group(d, d, [refs[f] for f in by_stem(members)], d))
 g_docs = group("Docs", "Docs", [doc_refs[d] for d in DOCS])
-g_frameworks = group("Frameworks", "Frameworks", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT]
+g_ormkit_products = group("ORMKitProducts", "Products", [ormruntime])
+g_frameworks = group("Frameworks", "Frameworks", ODATA + [rdlkit[f] for f in RDLKIT]
                      + [sdk[f] for f in ("Foundation", "CoreData", "AppKit", "UIKit", "Security")])
 g_products = group("Products", "Products", [p_app, p_ios, p_server, p_procedures, p_sync])
-g_main = group("main", PROJECT, [g_docs] + dir_groups + [g_frameworks, g_products])
+g_main = group("main", PROJECT, [g_docs] + dir_groups + [ormkit_project, g_frameworks, g_products])
 objects[g_main] = ("", [(k, v) for k, v in objects[g_main][1] if k != "name"])
 
 
@@ -376,6 +397,21 @@ add(t_model, "Model", [
 ])
 
 
+def ormruntime_dependency(target):
+    proxy = add(oid("ormkit-proxy", target), "PBXContainerItemProxy", [
+        ("isa", "PBXContainerItemProxy"),
+        ("containerPortal", "%s /* ORMKit.xcodeproj */" % ormkit_project),
+        ("proxyType", "1"),
+        ("remoteGlobalIDString", ORMKIT_RUNTIME_TARGET),
+        ("remoteInfo", "ORMRuntime"),
+    ])
+    return add(oid("ormkit-dep", target), "PBXTargetDependency", [
+        ("isa", "PBXTargetDependency"),
+        ("name", "ORMRuntime"),
+        ("targetProxy", "%s /* PBXContainerItemProxy */" % proxy),
+    ])
+
+
 def target(name, phases, prod, ptype, base=None):
     cfglist = configs(name, TARGET_SETTINGS[name], TARGET_SETTINGS[name], base)
     return add(oid("target", name), name, [
@@ -383,7 +419,7 @@ def target(name, phases, prod, ptype, base=None):
         ("buildConfigurationList", '%s /* Build configuration list for PBXNativeTarget "%s" */' % (cfglist, name)),
         ("buildPhases", names(phases)),
         ("buildRules", []),
-        ("dependencies", names([dependency(name, t_model, "Model")])),
+        ("dependencies", names([dependency(name, t_model, "Model"), ormruntime_dependency(name)])),
         ("name", q(name)),
         ("productName", q(name)),
         ("productReference", "%s /* %s */" % (prod, objects[prod][0])),
@@ -410,6 +446,8 @@ add(project_id, "Project object", [
     ("knownRegions", ["en", "Base"]),
     ("mainGroup", g_main),
     ("productRefGroup", "%s /* Products */" % g_products),
+    ("projectReferences", ["{\n\t\t\t\t\tProductGroup = %s /* Products */;\n\t\t\t\t\tProjectRef = %s /* ORMKit.xcodeproj */;\n\t\t\t\t}"
+                           % (g_ormkit_products, ormkit_project)]),
     ("projectDirPath", '""'),
     ("projectRoot", '""'),
     ("targets", names([t_model, t_app, t_ios, t_server, t_procedures, t_sync])),
@@ -450,13 +488,12 @@ os.makedirs(os.path.join(proj, "xcshareddata", "xcschemes"), exist_ok=True)
 with open(os.path.join(proj, "project.pbxproj"), "w") as f:
     f.write(render())
 
-# The workspace: this project, and ORMKit's, whose ORMRuntime it links.
+# The workspace: this project (ORMKit's is within it, a subproject).
 workspace = os.path.join(ROOT, PROJECT + ".xcworkspace")
 os.makedirs(workspace, exist_ok=True)
 with open(os.path.join(workspace, "contents.xcworkspacedata"), "w") as f:
     f.write('<?xml version="1.0" encoding="UTF-8"?>\n<Workspace\n   version = "1.0">\n'
             '   <FileRef\n      location = "group:%s.xcodeproj">\n   </FileRef>\n'
-            '   <FileRef\n      location = "group:../NativeORM2/ORMKit.xcodeproj">\n   </FileRef>\n'
             '</Workspace>\n' % PROJECT)
 
 
