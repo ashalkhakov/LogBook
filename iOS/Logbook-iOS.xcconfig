@@ -13,7 +13,8 @@ TARGETED_DEVICE_FAMILY = 1,2
 MARKETING_VERSION = 0.1.0
 CURRENT_PROJECT_VERSION = 1
 // The server the app offers first, for whoever runs one for their own
-// (the sign-in screen's address, until the user types another).
-LB_DEFAULT_SERVER = https://logbook.example.com
+// (the sign-in screen's address, until the user types another). "//"
+// would begin a comment here: $() between the slashes is nothing.
+LB_DEFAULT_SERVER = https:/$()/logbook.example.com
 
 #include? "Local.xcconfig"

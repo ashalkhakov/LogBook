@@ -11,3 +11,7 @@ Model/*.momd/
 Model/Constraints/
 Model/*.forml
 iOS/Local.xcconfig
+# Xcode: what each person's Xcode keeps of its own.
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/project.xcworkspace/

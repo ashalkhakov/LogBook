@@ -98,6 +98,17 @@ $(GENERATED)/.made: $(MODEL)/.made
 $(BUILD)/Logbook.ormplans: $(MODEL)/.made
 	cp $(MODEL)/Constraints/Logbook.ormplans $@
 
+# What Logbook.xcodeproj's targets build on, generated (its Model target
+# runs this): the model, its classes, its tables, and the list of its
+# classes' sources that Xcode/LogbookModel.m includes, as they are the
+# model's entities and no project can name them in advance. (Not "model":
+# on a disk that ignores case that is the Model directory.)
+.PHONY: xcode-model
+xcode-model: $(MODEL)/.made $(GENERATED)/.made $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(GENERATED)/LogbookClasses.inc
+
+$(GENERATED)/LogbookClasses.inc: $(GENERATED)/.made
+	for m in $(GENERATED)/*.m; do echo "#include \"$$(basename $$m)\""; done > $@
+
 SERVER = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
 
 $(BUILD)/logbook-server: $(MODEL)/.made $(SERVER) Server/LBPermissions.h Server/LBActions.h Shared/LBProcedures.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
@@ -150,7 +161,7 @@ check: all
 # its settings from iOS/Logbook-iOS.xcconfig.
 IOS_SDKS = iphoneos iphonesimulator
 XCCONFIG = iOS/Logbook-iOS.xcconfig
-setting = $(shell sed -n 's/^$(1) *= *//p' $(XCCONFIG) | head -1)
+setting = $(shell sed -n 's/^$(1) *= *//p' $(XCCONFIG) | head -1 | sed 's/\$$()//g')
 IOS_MIN := $(call setting,IPHONEOS_DEPLOYMENT_TARGET)
 IOS_BUNDLE := $(call setting,PRODUCT_BUNDLE_IDENTIFIER)
 IOS_BUILD = $(BUILD)/ios

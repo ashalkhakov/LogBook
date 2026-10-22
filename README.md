@@ -174,6 +174,22 @@ make && make check                                          # GNUstep
 build/logbook-server -StoreURL logbook.sqlite -Port 8080 -Localhost NO
 ```
 
+### In Xcode
+
+`Logbook.xcworkspace` holds `Logbook.xcodeproj` and ORMKit's project
+(`../NativeORM2/ORMKit.xcodeproj`), whose ORMRuntime the targets link, so
+Xcode builds it for the platform chosen and steps into it. Its schemes:
+`Logbook` (the desktop app), `Logbook-iOS` (iOS's settings are
+`iOS/Logbook-iOS.xcconfig`'s), `logbook-server`, `lb-procedures-check` and
+`lb-sync-check`. Each first builds `Model`, which generates what they need
+from the model by `make -f Makefile.apple xcode-model`; the frameworks are
+the XCFrameworks in `../NativeORM2/.deps` and `.deps` (`scripts/deps.sh
+apple` from gnustep-release-actions, in each).
+
+The project is generated from the makefiles' source lists: after adding a
+file, `python3 .tools/genxcodeproj.py`, rather than editing it by hand. The
+makefiles remain what builds and checks Logbook.
+
 It builds on ORMKit's runtime from `../NativeORM2`, and on the ODataKit
 release ORMKit pins. `make check` checks the procedures over a store of
 their own (`Tests/LBProceduresCheck.m`), then `Tests/serve-and-check.py`

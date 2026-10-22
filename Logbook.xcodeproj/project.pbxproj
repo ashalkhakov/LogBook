@@ -1,0 +1,2195 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		4D7EF247F4B7258C9392CF96 /* Model */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = 695A0B58F0C2B3866D9D6A93 /* Build configuration list for PBXAggregateTarget "Model" */;
+			buildPhases = (
+				33E37FE1D461520C15F537D8 /* Generate from Model/Logbook.orm */,
+			);
+			dependencies = (
+			);
+			name = Model;
+			productName = Model;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		00FBA85C05869297B715A3D3 /* Fuel.rdl */ = {
+			isa = PBXBuildFile;
+			fileRef = EEE3822C8E2C03EB633ED3AE /* Fuel.rdl */;
+		};
+		0104234405B4305646B85B40 /* Preferences.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 4E83A3CB72FBFB07198EF507 /* Preferences.xib */;
+		};
+		040FE5A60609D06282B3282E /* ODataKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
+		};
+		08173CC207BED2C97590BBBC /* OTelKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
+		};
+		0A441C7DD4CE7A4FEEFA6A41 /* LBAnswersController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 7D121C7DECA61E76A9483A71 /* LBAnswersController.m */;
+		};
+		0DD672404585D5BF594EA084 /* ODataIncrementalStore.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
+		};
+		0E114E927C22F744FE983F89 /* LBServer.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 5495040375CD673C4E4A74CE /* LBServer.m */;
+		};
+		12D8AFDE0C7991FFC2934006 /* LBStore.m */ = {
+			isa = PBXBuildFile;
+			fileRef = FD6623DBF7BF9A8A98787107 /* LBStore.m */;
+		};
+		130ACC4A8E3B6F7BA8451590 /* AppKit.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = D9440F138977C55F58D15995 /* AppKit.framework */;
+		};
+		1DDAAAA209F502AABBD87A63 /* ODataKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
+		};
+		1DFFCB4F560559D913842944 /* ODataSync.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
+		};
+		219C4077ED0376B4D8C4619C /* ODataIncrementalStore.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		231C5DA685A4BEF1681D0474 /* LBProcedures.m */ = {
+			isa = PBXBuildFile;
+			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
+		};
+		259654FD508E5BF614256C60 /* CostsByMonth.rdl */ = {
+			isa = PBXBuildFile;
+			fileRef = 354385FB5717E232F0F7E8EE /* CostsByMonth.rdl */;
+		};
+		2676F6D6AFED89C5AB918CFF /* MainMenu.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 4FE96229781E69B34DF214C9 /* MainMenu.xib */;
+		};
+		271A1993FD12E92D99FCB018 /* LBVehicleSummary.m */ = {
+			isa = PBXBuildFile;
+			fileRef = DA69776518CC1CE3869BB9FD /* LBVehicleSummary.m */;
+		};
+		2894B8B4A38390D3572EB3C3 /* ODataService.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = CAD875D95E6BAE91C5CF6970 /* ODataService.xcframework */;
+		};
+		2AFDF0CC8E4E5805C4B5CF3E /* LogbookModel.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
+		};
+		2C1370E5E10678CAB635DFCD /* ODataSync.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
+		};
+		32DC1571D7A282CCA89980FB /* ODataIncrementalStore.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
+		};
+		341E885D3AA2F3A42B7F04CC /* LBProcedures.m */ = {
+			isa = PBXBuildFile;
+			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
+		};
+		3B87B042E25C5C6BAF69C6BF /* LBReportData.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 37F5E52039B2A71A1E5ADA60 /* LBReportData.m */;
+		};
+		3B9BA677A29F96ED7E798AF5 /* ODataSync.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
+		};
+		3CBA1DB64DCE3D349987FFEB /* ODataSync.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		3F41127A5339F1DA846D2D0A /* LBConflicts.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 690202E342F3343CCC4A45AF /* LBConflicts.m */;
+		};
+		452718B1690F227FE8DA5A4B /* ODataService.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = CAD875D95E6BAE91C5CF6970 /* ODataService.xcframework */;
+		};
+		4585977F8EC64CE45902C9E3 /* LBDisplay.m */ = {
+			isa = PBXBuildFile;
+			fileRef = B7670FC7C874BC5F07604ED6 /* LBDisplay.m */;
+		};
+		460917A477FCD0C1B56A92F3 /* OTelKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
+		};
+		4651A0F5DBC0EAFD7EA1A335 /* ODataIncrementalStore.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
+		};
+		48FC739A5FC9FF1A95FB5497 /* LogbookModel.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
+		};
+		49FFF4D6C3A4AD8EF59C7DE1 /* LBRecordForm.m */ = {
+			isa = PBXBuildFile;
+			fileRef = AB824361FAF0A8F250B5C0F2 /* LBRecordForm.m */;
+		};
+		4AF4261543FF6ED24F470557 /* LBReportsController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = AA1BB6F3704843F4C100FA9B /* LBReportsController.m */;
+		};
+		4D8955DA7D803F8FEAD540BF /* LBiOSSelfTest.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 3E3F1752022340EB917EE401 /* LBiOSSelfTest.m */;
+		};
+		5149D04F26060A2EE74ABBE5 /* ORMRuntime.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
+		};
+		528729F595FA1EDB414383AA /* Logbook.rdl */ = {
+			isa = PBXBuildFile;
+			fileRef = 3BDBA2A5A0991EDBEFB7DC21 /* Logbook.rdl */;
+		};
+		529DADF700964FC6237620B6 /* LBCurrencies.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 5F97649AA937E1D48D47004D /* LBCurrencies.m */;
+		};
+		54188C4026BE856502AAF67E /* OTelKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
+		};
+		5462B17B505D7BB83790C951 /* ODataIncrementalStore.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
+		};
+		54D6EE49D6E938F7DDAE8527 /* LBMainWindowController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = BD71F723187129CDB667A72D /* LBMainWindowController.m */;
+		};
+		55D29C133A3C05C2C743A7E5 /* LBSignIn.m */ = {
+			isa = PBXBuildFile;
+			fileRef = F202254F689402A7F179E854 /* LBSignIn.m */;
+		};
+		5674267A4EBCB2B0CA9E8ECC /* CoreData.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = 2AB66C65BE330D1517DF768E /* CoreData.framework */;
+		};
+		5713E0AD6431DEC5019FE81E /* LBSignIn.m */ = {
+			isa = PBXBuildFile;
+			fileRef = F202254F689402A7F179E854 /* LBSignIn.m */;
+		};
+		595FEC6757BD6850E90DBB02 /* LBDisplay.m */ = {
+			isa = PBXBuildFile;
+			fileRef = B7670FC7C874BC5F07604ED6 /* LBDisplay.m */;
+		};
+		5AA4112F777D647934A73C69 /* UDCalendarView.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 3F95716F05CFEC8CCCF58196 /* UDCalendarView.m */;
+		};
+		5AA80280F18D0AB92245BDCE /* HTTPServerKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		5B672684CC818796AB007ED1 /* LBPlanned.m */ = {
+			isa = PBXBuildFile;
+			fileRef = B5CA9C0E6476A3F0C41C57A8 /* LBPlanned.m */;
+		};
+		5D94A5DD7856A07B0715EA8D /* HTTPServerKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */;
+		};
+		5FE66B0D6E397A6BFAEFAD79 /* ORMRuntime.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
+		};
+		683ABFCAE020079565AED216 /* Lists.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 694E25C06D350F4886223FAB /* Lists.xib */;
+		};
+		6F4CEC1C995918B6B3F61C6F /* LogbookModel.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
+		};
+		72002D4BD2DCA11921ABE026 /* LBPermissions.m */ = {
+			isa = PBXBuildFile;
+			fileRef = B3290AF8A39A8F14A152A2F3 /* LBPermissions.m */;
+		};
+		7244EDA8B6345047E44AA6D3 /* MainWindow.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */;
+		};
+		743FCF79A5D881093D2F7D31 /* LBProceduresCheck.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 892723880096458A3BA80B0E /* LBProceduresCheck.m */;
+		};
+		76BD0C0C6014EC946C220ED3 /* LBLocalStore.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */;
+		};
+		78909C1AA41800217DC71DFF /* HTTPServerKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */;
+		};
+		79D6F3451B0238AEA7A13982 /* ODataService.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = CAD875D95E6BAE91C5CF6970 /* ODataService.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		7BBA7D3B23EBBC1300884F80 /* LBVehicleSummary.m */ = {
+			isa = PBXBuildFile;
+			fileRef = DA69776518CC1CE3869BB9FD /* LBVehicleSummary.m */;
+		};
+		7C2CCACA5EB60AEF8F9972E2 /* ORMRuntime.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		7FA6C3922445DEB120B7D596 /* CoreData.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = 2AB66C65BE330D1517DF768E /* CoreData.framework */;
+		};
+		7FC0AF83128B2DEC7D31B533 /* ODataService.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = CAD875D95E6BAE91C5CF6970 /* ODataService.xcframework */;
+		};
+		7FDC935F7177900AB0A2F4B6 /* ODataSync.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
+		};
+		80FEA4ED0CDA3F0019EB82B5 /* ORMRuntime.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
+		};
+		8384EFEECCAAA1E2433B611A /* OTelKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		897B0417CB52F98DE970B1B4 /* LBLocalStore.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */;
+		};
+		8AA2803D9B1A2747A6B16326 /* ODataIncrementalStore.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		8D6F15BAC6E1F97A4B29026F /* CoreData.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = 2AB66C65BE330D1517DF768E /* CoreData.framework */;
+		};
+		8E3F24C3CF688F42F12B96B7 /* ODataService.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = CAD875D95E6BAE91C5CF6970 /* ODataService.xcframework */;
+		};
+		8ECBB7BC40A4F45ACBFC0E2F /* LBPreferencesController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 3419A52A63B43A4BEBA68C32 /* LBPreferencesController.m */;
+		};
+		8FC1EC5C8A5111BDCDA58160 /* ODataKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		9702E8799FE21A6131A21C3D /* LBCalendar.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 1D9F102F5FD4B4919A213D1F /* LBCalendar.m */;
+		};
+		9A2330CCE28224322303C700 /* OTelKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
+		};
+		9B3FE38F441D5FFFA5161082 /* LBCalendar.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 1D9F102F5FD4B4919A213D1F /* LBCalendar.m */;
+		};
+		9B7AC02AD42B04EAABB53DF5 /* ODataKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		9E1A21028381AC3063F3B451 /* LBPlanned.m */ = {
+			isa = PBXBuildFile;
+			fileRef = B5CA9C0E6476A3F0C41C57A8 /* LBPlanned.m */;
+		};
+		9E5B773500A1D2B590B8B9E9 /* UIKit.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B7B9A497CDE38865D5D45891 /* UIKit.framework */;
+		};
+		A16F9AF36ECDBEFBD0612A4C /* HTTPServerKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */;
+		};
+		A2A340CC7CD54ABA2AE1056F /* LBRemindersController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 97554471CF37E140DE30D80A /* LBRemindersController.m */;
+		};
+		A3EAE0A410A2F53727F78C99 /* LBLocalStore.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */;
+		};
+		A705F49C2CAF45185E70DA82 /* HTTPServerKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */;
+		};
+		AB2B8692CAA5E70D9258E2B1 /* ODataKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
+		};
+		AC922E927BD3F0B59D483ADE /* LBiOSControllers.m */ = {
+			isa = PBXBuildFile;
+			fileRef = DBCAEB84C9CA0A46A31C8CE9 /* LBiOSControllers.m */;
+		};
+		AE0F26598DA7DF5B39B27E62 /* LBConflicts.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 690202E342F3343CCC4A45AF /* LBConflicts.m */;
+		};
+		AE2F5561B3A9635A2E1B6518 /* HTTPServerKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		B0322B7D65CBAABEB5609AF6 /* CoreData.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = 2AB66C65BE330D1517DF768E /* CoreData.framework */;
+		};
+		B1DADC5231D11B5B7F3AAE89 /* RDLKitUI.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 584640704EF6A5925E5FAEBF /* RDLKitUI.xcframework */;
+		};
+		B2A6FD853C4A1A21BF62732D /* ODataService.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = CAD875D95E6BAE91C5CF6970 /* ODataService.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		B3E1A2A2285935D32D76562A /* UDQuantityField.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 227D6A8CB446AED3F885D090 /* UDQuantityField.m */;
+		};
+		B4553F1526E5437B61396B97 /* ORMRuntime.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
+		};
+		B5161D2BC4CE3B16C3B19378 /* ODataIncrementalStore.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
+		};
+		B773B63B2D9EE0EACF095C02 /* LogbookModel.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
+		};
+		BE3C06A26981CB30C01B46D9 /* ORMRuntime.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
+		};
+		C151D3F90E7A8315F69EF777 /* LBConnectPanel.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */;
+		};
+		C3CE11FCB129BDCF4852DCA0 /* LBAppController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = F8733BCB1B8361C68AA2E89C /* LBAppController.m */;
+		};
+		C40A94DA57E13CEE09F665BE /* OTelKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		C602A0B55E99B81DE6C45579 /* CoreData.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = 2AB66C65BE330D1517DF768E /* CoreData.framework */;
+		};
+		CB17F011147C3CEE865BA8A2 /* Foundation.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B29454D488C4F49E273C15A0 /* Foundation.framework */;
+		};
+		CBCD7A99FF51CB117EB2FD0B /* LogbookModel.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
+		};
+		CCBC0D785B337ED738310BB1 /* ORMRuntime.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		CEACE449612154F18045B848 /* Security.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = 312C0796AADAF4AAEADBBB47 /* Security.framework */;
+		};
+		CED58ABEA9D41F3D78CB5077 /* LBProcedures.m */ = {
+			isa = PBXBuildFile;
+			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
+		};
+		D150CB72C0373BBF67E78758 /* main.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 9F9B62C3CEAF21088CC988DF /* main.m */;
+		};
+		D2078ECC2CB3D93E9B224DC0 /* ODataKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
+		};
+		D66D87A70D3592981C2035CD /* LBListsController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 8A5F3F17FFB494ABBD32CCDE /* LBListsController.m */;
+		};
+		DA0F6F0A9AD40AE88BD72E94 /* OTelKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
+		};
+		DA523C778E500B2C2E0F8561 /* ODataService.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = CAD875D95E6BAE91C5CF6970 /* ODataService.xcframework */;
+		};
+		DE8B3107DA8A2881A7B20B8E /* Foundation.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B29454D488C4F49E273C15A0 /* Foundation.framework */;
+		};
+		DFBD0FF8323401C8CF5C5DF2 /* LBSelfTest.m */ = {
+			isa = PBXBuildFile;
+			fileRef = D754F8EB42F3ADAE0E299F79 /* LBSelfTest.m */;
+		};
+		E0271BA8A232779DA9B7F057 /* Foundation.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B29454D488C4F49E273C15A0 /* Foundation.framework */;
+		};
+		E20C1F5F53018FE5F3B4A0E1 /* ODataSync.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		E289951E04B658755D707518 /* LBActions.m */ = {
+			isa = PBXBuildFile;
+			fileRef = CA222E67ADE0D04459E12ABE /* LBActions.m */;
+		};
+		E332CA1139B1D4B83688FD86 /* ODataKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
+		};
+		E442D25C9C917A769465A246 /* HTTPServerKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */;
+		};
+		E4BA5B18C5D32D44013003E9 /* RDLKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = B3BCDF809368C6B4D2C11FE7 /* RDLKit.xcframework */;
+		};
+		E4BB8CF203F232AF1CA4BAFE /* LBConflicts.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 690202E342F3343CCC4A45AF /* LBConflicts.m */;
+		};
+		E63A728CF00EB704CEB4F90E /* LBCalendarController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = DBD2673923ED329189E1D866 /* LBCalendarController.m */;
+		};
+		E6924E20DC3BFC0A2A1C8BA4 /* LBVehicleSummary.m */ = {
+			isa = PBXBuildFile;
+			fileRef = DA69776518CC1CE3869BB9FD /* LBVehicleSummary.m */;
+		};
+		E6A1498CBC948EA4D74D875C /* ConnectPanel.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = F8746362A46CB5E2C52D1A7E /* ConnectPanel.xib */;
+		};
+		E72A8983F4E6FF9801131FCA /* LBDisplay.m */ = {
+			isa = PBXBuildFile;
+			fileRef = B7670FC7C874BC5F07604ED6 /* LBDisplay.m */;
+		};
+		E73043F2D16EEE3508B1033E /* LBPlanned.m */ = {
+			isa = PBXBuildFile;
+			fileRef = B5CA9C0E6476A3F0C41C57A8 /* LBPlanned.m */;
+		};
+		E94AAE5B2D1D4E48E3B14872 /* LBProcedures.m */ = {
+			isa = PBXBuildFile;
+			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
+		};
+		EBBF24975BD9EA11CB47344D /* RDLKitUI.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 584640704EF6A5925E5FAEBF /* RDLKitUI.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		F07E09309E4B0B9E7693AC49 /* Assets.xcassets */ = {
+			isa = PBXBuildFile;
+			fileRef = DA6375B01FB8DD843C3B2050 /* Assets.xcassets */;
+		};
+		F9356E42A276A84634661374 /* ODataSync.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
+		};
+		FAF7EB020CC5CD818F33D8FE /* RDLKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = B3BCDF809368C6B4D2C11FE7 /* RDLKit.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		FBE9C65969EA729D17B38864 /* Foundation.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B29454D488C4F49E273C15A0 /* Foundation.framework */;
+		};
+		FE433AA3AAE8A451111E0982 /* main.m */ = {
+			isa = PBXBuildFile;
+			fileRef = C869049B854785B7B1E6DA73 /* main.m */;
+		};
+		FFADDF424E0E7B7F4FFF2328 /* LBSyncCheck.m */ = {
+			isa = PBXBuildFile;
+			fileRef = FBA07AE9A6C67ED83E0E1951 /* LBSyncCheck.m */;
+		};
+		FFCE4D59DC7CED3484E4D4E1 /* Foundation.framework */ = {
+			isa = PBXBuildFile;
+			fileRef = B29454D488C4F49E273C15A0 /* Foundation.framework */;
+		};
+		FFEC986A4E28F6F71BAB1EC2 /* LBProcedures.m */ = {
+			isa = PBXBuildFile;
+			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
+		};
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		28E8712AB4ACCA86AEE2759B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D7EF247F4B7258C9392CF96;
+			remoteInfo = Model;
+		};
+		7A1752B6512F162DDDCD3976 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D7EF247F4B7258C9392CF96;
+			remoteInfo = Model;
+		};
+		8BD6BF147F7310E3EAADCD6D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D7EF247F4B7258C9392CF96;
+			remoteInfo = Model;
+		};
+		CEB7D8C3AFEDD7218E25E5F4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D7EF247F4B7258C9392CF96;
+			remoteInfo = Model;
+		};
+		EB32C46758D4FB5E873C270D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4D7EF247F4B7258C9392CF96;
+			remoteInfo = Model;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		119EF15FB3A09AA0563BA05A /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7C2CCACA5EB60AEF8F9972E2 /* ORMRuntime.framework */,
+				8FC1EC5C8A5111BDCDA58160 /* ODataKit.xcframework */,
+				8384EFEECCAAA1E2433B611A /* OTelKit.xcframework */,
+				8AA2803D9B1A2747A6B16326 /* ODataIncrementalStore.xcframework */,
+				5AA80280F18D0AB92245BDCE /* HTTPServerKit.xcframework */,
+				B2A6FD853C4A1A21BF62732D /* ODataService.xcframework */,
+				E20C1F5F53018FE5F3B4A0E1 /* ODataSync.xcframework */,
+				FAF7EB020CC5CD818F33D8FE /* RDLKit.xcframework */,
+				EBBF24975BD9EA11CB47344D /* RDLKitUI.xcframework */,
+			);
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2ED274EFAA025326AB069283 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CCBC0D785B337ED738310BB1 /* ORMRuntime.framework */,
+				9B7AC02AD42B04EAABB53DF5 /* ODataKit.xcframework */,
+				C40A94DA57E13CEE09F665BE /* OTelKit.xcframework */,
+				219C4077ED0376B4D8C4619C /* ODataIncrementalStore.xcframework */,
+				AE2F5561B3A9635A2E1B6518 /* HTTPServerKit.xcframework */,
+				79D6F3451B0238AEA7A13982 /* ODataService.xcframework */,
+				3CBA1DB64DCE3D349987FFEB /* ODataSync.xcframework */,
+			);
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0198D35D1765628F70CB7962 /* LBPermissions.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBPermissions.h;
+			sourceTree = "<group>";
+		};
+		01F8AC7BACBEF80D1949781D /* Logbook.app */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = Logbook.app;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		0A6433DEAA58B45842DD06D1 /* LBReportsController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBReportsController.h;
+			sourceTree = "<group>";
+		};
+		0D9E881A6CBBB60E5366EA0B /* GNUmakefile */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text;
+			path = GNUmakefile;
+			sourceTree = "<group>";
+		};
+		13623D0A57E5BB10F9182DD5 /* LBSelfTest.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBSelfTest.h;
+			sourceTree = "<group>";
+		};
+		1858D9209D5FE7B48B58866F /* LBAnswersController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBAnswersController.h;
+			sourceTree = "<group>";
+		};
+		187038E9ACB374DBA6DA4764 /* lb-procedures-check */ = {
+			isa = PBXFileReference;
+			explicitFileType = "compiled.mach-o.executable";
+			includeInIndex = 0;
+			path = "lb-procedures-check";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		1AA616881FDF64023A455351 /* OTelKit.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = OTelKit.xcframework;
+			path = ../NativeORM2/.deps/OTelKit.xcframework;
+			sourceTree = SOURCE_ROOT;
+		};
+		1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LogbookModel.m;
+			sourceTree = "<group>";
+		};
+		1D9F102F5FD4B4919A213D1F /* LBCalendar.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBCalendar.m;
+			sourceTree = "<group>";
+		};
+		20EFFA53D963249AE8282F3B /* Info.plist */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			path = Info.plist;
+			sourceTree = "<group>";
+		};
+		227D6A8CB446AED3F885D090 /* UDQuantityField.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = UDQuantityField.m;
+			sourceTree = "<group>";
+		};
+		26F487F740C91D09AAF7869C /* LBVehicleSummary.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBVehicleSummary.h;
+			sourceTree = "<group>";
+		};
+		2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBLocalStore.m;
+			sourceTree = "<group>";
+		};
+		2AB66C65BE330D1517DF768E /* CoreData.framework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = CoreData.framework;
+			path = System/Library/Frameworks/CoreData.framework;
+			sourceTree = SDKROOT;
+		};
+		2BF486C62A308B2388CCDA61 /* LBiOSControllers.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBiOSControllers.h;
+			sourceTree = "<group>";
+		};
+		30E7D8345B87ED605821A180 /* LBCalendar.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBCalendar.h;
+			sourceTree = "<group>";
+		};
+		312C0796AADAF4AAEADBBB47 /* Security.framework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = Security.framework;
+			path = System/Library/Frameworks/Security.framework;
+			sourceTree = SDKROOT;
+		};
+		324BB6A3D9A9BE9DE4F32543 /* LBCurrencies.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBCurrencies.h;
+			sourceTree = "<group>";
+		};
+		3419A52A63B43A4BEBA68C32 /* LBPreferencesController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBPreferencesController.m;
+			sourceTree = "<group>";
+		};
+		354385FB5717E232F0F7E8EE /* CostsByMonth.rdl */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.xml;
+			path = CostsByMonth.rdl;
+			sourceTree = "<group>";
+		};
+		37F5E52039B2A71A1E5ADA60 /* LBReportData.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBReportData.m;
+			sourceTree = "<group>";
+		};
+		38FE87A9BE8D17BED843EAC5 /* LBRemindersController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBRemindersController.h;
+			sourceTree = "<group>";
+		};
+		3BDBA2A5A0991EDBEFB7DC21 /* Logbook.rdl */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.xml;
+			path = Logbook.rdl;
+			sourceTree = "<group>";
+		};
+		3E3F1752022340EB917EE401 /* LBiOSSelfTest.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBiOSSelfTest.m;
+			sourceTree = "<group>";
+		};
+		3E7094F8DD90DECD608C53E2 /* LBSignIn.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBSignIn.h;
+			sourceTree = "<group>";
+		};
+		3F95716F05CFEC8CCCF58196 /* UDCalendarView.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = UDCalendarView.m;
+			sourceTree = "<group>";
+		};
+		470AD526B3A4B8CA0ADFC09B /* README.md */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = net.daringfireball.markdown;
+			path = README.md;
+			sourceTree = "<group>";
+		};
+		4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBConnectPanel.m;
+			sourceTree = "<group>";
+		};
+		4E83A3CB72FBFB07198EF507 /* Preferences.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = Preferences.xib;
+			sourceTree = "<group>";
+		};
+		4FE96229781E69B34DF214C9 /* MainMenu.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = MainMenu.xib;
+			sourceTree = "<group>";
+		};
+		5495040375CD673C4E4A74CE /* LBServer.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBServer.m;
+			sourceTree = "<group>";
+		};
+		556E7EB7554160D265539612 /* ODataKit.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = ODataKit.xcframework;
+			path = ../NativeORM2/.deps/ODataKit.xcframework;
+			sourceTree = SOURCE_ROOT;
+		};
+		563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = ODataIncrementalStore.xcframework;
+			path = ../NativeORM2/.deps/ODataIncrementalStore.xcframework;
+			sourceTree = SOURCE_ROOT;
+		};
+		584640704EF6A5925E5FAEBF /* RDLKitUI.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = RDLKitUI.xcframework;
+			path = .deps/RDLKitUI.xcframework;
+			sourceTree = SOURCE_ROOT;
+		};
+		5B728CF15A8BCE330257348A /* Logbook.app */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = Logbook.app;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		5CCDB675BB9F8C3A38017A0D /* LBConnectPanel.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBConnectPanel.h;
+			sourceTree = "<group>";
+		};
+		5F97649AA937E1D48D47004D /* LBCurrencies.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBCurrencies.m;
+			sourceTree = "<group>";
+		};
+		685ECA4661144E07ACCA3794 /* LBPreferencesController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBPreferencesController.h;
+			sourceTree = "<group>";
+		};
+		690202E342F3343CCC4A45AF /* LBConflicts.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBConflicts.m;
+			sourceTree = "<group>";
+		};
+		694E25C06D350F4886223FAB /* Lists.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = Lists.xib;
+			sourceTree = "<group>";
+		};
+		6A1EBC28A9B6CE69C4B3F358 /* LBCalendarController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBCalendarController.h;
+			sourceTree = "<group>";
+		};
+		7123A5B32AEDE7068F8B7F8F /* lb-sync-check */ = {
+			isa = PBXFileReference;
+			explicitFileType = "compiled.mach-o.executable";
+			includeInIndex = 0;
+			path = "lb-sync-check";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		720CFEC4A9475E281A1CF956 /* LBLocalStore.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBLocalStore.h;
+			sourceTree = "<group>";
+		};
+		74A8EAB86E88544A44EE5148 /* UDCalendarView.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = UDCalendarView.h;
+			sourceTree = "<group>";
+		};
+		7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = HTTPServerKit.xcframework;
+			path = ../NativeORM2/.deps/HTTPServerKit.xcframework;
+			sourceTree = SOURCE_ROOT;
+		};
+		78A28AAA1E8F8D6377B0D29E /* LBPlanned.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBPlanned.h;
+			sourceTree = "<group>";
+		};
+		7D121C7DECA61E76A9483A71 /* LBAnswersController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBAnswersController.m;
+			sourceTree = "<group>";
+		};
+		81606360A961AF809407450F /* LBConflicts.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBConflicts.h;
+			sourceTree = "<group>";
+		};
+		81DAB9656DE4F22F4B52A58A /* Logbook.orm */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.xml;
+			path = Logbook.orm;
+			sourceTree = "<group>";
+		};
+		892723880096458A3BA80B0E /* LBProceduresCheck.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBProceduresCheck.m;
+			sourceTree = "<group>";
+		};
+		8A5F3F17FFB494ABBD32CCDE /* LBListsController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBListsController.m;
+			sourceTree = "<group>";
+		};
+		9750D2C25C5635F5B2261855 /* LBStore.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStore.h;
+			sourceTree = "<group>";
+		};
+		97554471CF37E140DE30D80A /* LBRemindersController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBRemindersController.m;
+			sourceTree = "<group>";
+		};
+		98A2B755E88C3EFD11015E07 /* LBActions.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBActions.h;
+			sourceTree = "<group>";
+		};
+		9F9B62C3CEAF21088CC988DF /* main.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = main.m;
+			sourceTree = "<group>";
+		};
+		A3647A7FA7ED738095E6DCDB /* README.md */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = net.daringfireball.markdown;
+			path = README.md;
+			sourceTree = "<group>";
+		};
+		A4F02A3C0166E04AF0057DB0 /* README.md */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = net.daringfireball.markdown;
+			path = README.md;
+			sourceTree = "<group>";
+		};
+		A6A67DB553814A5B05CEF0E5 /* logbook-server */ = {
+			isa = PBXFileReference;
+			explicitFileType = "compiled.mach-o.executable";
+			includeInIndex = 0;
+			path = "logbook-server";
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = ODataSync.xcframework;
+			path = ../NativeORM2/.deps/ODataSync.xcframework;
+			sourceTree = SOURCE_ROOT;
+		};
+		AA1BB6F3704843F4C100FA9B /* LBReportsController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBReportsController.m;
+			sourceTree = "<group>";
+		};
+		AAE85EE9A321374CF4B6CB43 /* LBAppController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBAppController.h;
+			sourceTree = "<group>";
+		};
+		AB824361FAF0A8F250B5C0F2 /* LBRecordForm.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBRecordForm.m;
+			sourceTree = "<group>";
+		};
+		ABC75EAB861F9334630A50A4 /* CSDP.md */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = net.daringfireball.markdown;
+			path = docs/CSDP.md;
+			sourceTree = "<group>";
+		};
+		ABFDBC32D4665ABB05B1F819 /* Info.plist */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			path = Info.plist;
+			sourceTree = "<group>";
+		};
+		B29454D488C4F49E273C15A0 /* Foundation.framework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = Foundation.framework;
+			path = System/Library/Frameworks/Foundation.framework;
+			sourceTree = SDKROOT;
+		};
+		B3290AF8A39A8F14A152A2F3 /* LBPermissions.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBPermissions.m;
+			sourceTree = "<group>";
+		};
+		B3BCDF809368C6B4D2C11FE7 /* RDLKit.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = RDLKit.xcframework;
+			path = .deps/RDLKit.xcframework;
+			sourceTree = SOURCE_ROOT;
+		};
+		B4B350AF69C986E38E58A1AF /* LBListsController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBListsController.h;
+			sourceTree = "<group>";
+		};
+		B4D9063116054347386970CE /* ORMRuntime.framework */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.framework;
+			path = ORMRuntime.framework;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		B5CA9C0E6476A3F0C41C57A8 /* LBPlanned.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBPlanned.m;
+			sourceTree = "<group>";
+		};
+		B7670FC7C874BC5F07604ED6 /* LBDisplay.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBDisplay.m;
+			sourceTree = "<group>";
+		};
+		B7B9A497CDE38865D5D45891 /* UIKit.framework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = UIKit.framework;
+			path = System/Library/Frameworks/UIKit.framework;
+			sourceTree = SDKROOT;
+		};
+		B8B1C287A26229CAF6783017 /* UDQuantityField.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = UDQuantityField.h;
+			sourceTree = "<group>";
+		};
+		B9015B2FA563A5832304923D /* PROCESSES.md */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = net.daringfireball.markdown;
+			path = docs/PROCESSES.md;
+			sourceTree = "<group>";
+		};
+		BD71F723187129CDB667A72D /* LBMainWindowController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBMainWindowController.m;
+			sourceTree = "<group>";
+		};
+		C08971E109305EB254D7B26D /* Makefile.apple */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text;
+			path = Makefile.apple;
+			sourceTree = "<group>";
+		};
+		C869049B854785B7B1E6DA73 /* main.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = main.m;
+			sourceTree = "<group>";
+		};
+		CA222E67ADE0D04459E12ABE /* LBActions.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBActions.m;
+			sourceTree = "<group>";
+		};
+		CAD875D95E6BAE91C5CF6970 /* ODataService.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = ODataService.xcframework;
+			path = ../NativeORM2/.deps/ODataService.xcframework;
+			sourceTree = SOURCE_ROOT;
+		};
+		CBBE62FB66CDAB94534A27DE /* LBiOSSelfTest.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBiOSSelfTest.h;
+			sourceTree = "<group>";
+		};
+		CCE2C3C58F1E04519BAA59B1 /* LBiOSApp.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBiOSApp.h;
+			sourceTree = "<group>";
+		};
+		D371E9DF0A4D53CA5C5BEBEF /* LBDisplay.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBDisplay.h;
+			sourceTree = "<group>";
+		};
+		D754F8EB42F3ADAE0E299F79 /* LBSelfTest.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBSelfTest.m;
+			sourceTree = "<group>";
+		};
+		D9440F138977C55F58D15995 /* AppKit.framework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.framework;
+			name = AppKit.framework;
+			path = System/Library/Frameworks/AppKit.framework;
+			sourceTree = SDKROOT;
+		};
+		DA6375B01FB8DD843C3B2050 /* Assets.xcassets */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder.assetcatalog;
+			path = Assets.xcassets;
+			sourceTree = "<group>";
+		};
+		DA69776518CC1CE3869BB9FD /* LBVehicleSummary.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBVehicleSummary.m;
+			sourceTree = "<group>";
+		};
+		DB4FEE932F239C5E346913BC /* Logbook-iOS.xcconfig */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.xcconfig;
+			path = "Logbook-iOS.xcconfig";
+			sourceTree = "<group>";
+		};
+		DBCAEB84C9CA0A46A31C8CE9 /* LBiOSControllers.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBiOSControllers.m;
+			sourceTree = "<group>";
+		};
+		DBD2673923ED329189E1D866 /* LBCalendarController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBCalendarController.m;
+			sourceTree = "<group>";
+		};
+		E0E116B48C451C1A3F4C444C /* LBProcedures.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBProcedures.h;
+			sourceTree = "<group>";
+		};
+		E162B1147B7C390BF620F05A /* LBMainWindowController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBMainWindowController.h;
+			sourceTree = "<group>";
+		};
+		EEE3822C8E2C03EB633ED3AE /* Fuel.rdl */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.xml;
+			path = Fuel.rdl;
+			sourceTree = "<group>";
+		};
+		F202254F689402A7F179E854 /* LBSignIn.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBSignIn.m;
+			sourceTree = "<group>";
+		};
+		F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = MainWindow.xib;
+			sourceTree = "<group>";
+		};
+		F8733BCB1B8361C68AA2E89C /* LBAppController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBAppController.m;
+			sourceTree = "<group>";
+		};
+		F8746362A46CB5E2C52D1A7E /* ConnectPanel.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = ConnectPanel.xib;
+			sourceTree = "<group>";
+		};
+		FA961075CB2A673BD7F848CD /* LBProcedures.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBProcedures.m;
+			sourceTree = "<group>";
+		};
+		FBA07AE9A6C67ED83E0E1951 /* LBSyncCheck.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBSyncCheck.m;
+			sourceTree = "<group>";
+		};
+		FD6623DBF7BF9A8A98787107 /* LBStore.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStore.m;
+			sourceTree = "<group>";
+		};
+		FF47C44BF13F9BF3086EC393 /* LBReportData.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBReportData.h;
+			sourceTree = "<group>";
+		};
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		18EF714FE9D6489071680DC5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE3C06A26981CB30C01B46D9 /* ORMRuntime.framework */,
+				AB2B8692CAA5E70D9258E2B1 /* ODataKit.xcframework */,
+				08173CC207BED2C97590BBBC /* OTelKit.xcframework */,
+				B5161D2BC4CE3B16C3B19378 /* ODataIncrementalStore.xcframework */,
+				A16F9AF36ECDBEFBD0612A4C /* HTTPServerKit.xcframework */,
+				8E3F24C3CF688F42F12B96B7 /* ODataService.xcframework */,
+				F9356E42A276A84634661374 /* ODataSync.xcframework */,
+				E4BA5B18C5D32D44013003E9 /* RDLKit.xcframework */,
+				B1DADC5231D11B5B7F3AAE89 /* RDLKitUI.xcframework */,
+				130ACC4A8E3B6F7BA8451590 /* AppKit.framework */,
+				7FA6C3922445DEB120B7D596 /* CoreData.framework */,
+				E0271BA8A232779DA9B7F057 /* Foundation.framework */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		361387F6295A0B61CC7E623B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5FE66B0D6E397A6BFAEFAD79 /* ORMRuntime.framework */,
+				D2078ECC2CB3D93E9B224DC0 /* ODataKit.xcframework */,
+				DA0F6F0A9AD40AE88BD72E94 /* OTelKit.xcframework */,
+				5462B17B505D7BB83790C951 /* ODataIncrementalStore.xcframework */,
+				E442D25C9C917A769465A246 /* HTTPServerKit.xcframework */,
+				7FC0AF83128B2DEC7D31B533 /* ODataService.xcframework */,
+				7FDC935F7177900AB0A2F4B6 /* ODataSync.xcframework */,
+				9E5B773500A1D2B590B8B9E9 /* UIKit.framework */,
+				C602A0B55E99B81DE6C45579 /* CoreData.framework */,
+				FBE9C65969EA729D17B38864 /* Foundation.framework */,
+				CEACE449612154F18045B848 /* Security.framework */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9B52CCA1D61C6C8E7E689F3D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5149D04F26060A2EE74ABBE5 /* ORMRuntime.framework */,
+				E332CA1139B1D4B83688FD86 /* ODataKit.xcframework */,
+				54188C4026BE856502AAF67E /* OTelKit.xcframework */,
+				4651A0F5DBC0EAFD7EA1A335 /* ODataIncrementalStore.xcframework */,
+				A705F49C2CAF45185E70DA82 /* HTTPServerKit.xcframework */,
+				452718B1690F227FE8DA5A4B /* ODataService.xcframework */,
+				3B9BA677A29F96ED7E798AF5 /* ODataSync.xcframework */,
+				5674267A4EBCB2B0CA9E8ECC /* CoreData.framework */,
+				FFCE4D59DC7CED3484E4D4E1 /* Foundation.framework */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAB3803D4083C48AD5A1C213 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				80FEA4ED0CDA3F0019EB82B5 /* ORMRuntime.framework */,
+				040FE5A60609D06282B3282E /* ODataKit.xcframework */,
+				9A2330CCE28224322303C700 /* OTelKit.xcframework */,
+				0DD672404585D5BF594EA084 /* ODataIncrementalStore.xcframework */,
+				78909C1AA41800217DC71DFF /* HTTPServerKit.xcframework */,
+				DA523C778E500B2C2E0F8561 /* ODataService.xcframework */,
+				2C1370E5E10678CAB635DFCD /* ODataSync.xcframework */,
+				B0322B7D65CBAABEB5609AF6 /* CoreData.framework */,
+				CB17F011147C3CEE865BA8A2 /* Foundation.framework */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FA91AD50865E392319F5B19E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B4553F1526E5437B61396B97 /* ORMRuntime.framework */,
+				1DDAAAA209F502AABBD87A63 /* ODataKit.xcframework */,
+				460917A477FCD0C1B56A92F3 /* OTelKit.xcframework */,
+				32DC1571D7A282CCA89980FB /* ODataIncrementalStore.xcframework */,
+				5D94A5DD7856A07B0715EA8D /* HTTPServerKit.xcframework */,
+				2894B8B4A38390D3572EB3C3 /* ODataService.xcframework */,
+				1DFFCB4F560559D913842944 /* ODataSync.xcframework */,
+				8D6F15BAC6E1F97A4B29026F /* CoreData.framework */,
+				DE8B3107DA8A2881A7B20B8E /* Foundation.framework */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2AC8BA37DAC32D5437812408 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5B728CF15A8BCE330257348A /* Logbook.app */,
+				01F8AC7BACBEF80D1949781D /* Logbook.app */,
+				A6A67DB553814A5B05CEF0E5 /* logbook-server */,
+				187038E9ACB374DBA6DA4764 /* lb-procedures-check */,
+				7123A5B32AEDE7068F8B7F8F /* lb-sync-check */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2B6F7E2DBE1E88B5D1B95BA6 /* Xcode */ = {
+			isa = PBXGroup;
+			children = (
+				1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */,
+			);
+			path = Xcode;
+			sourceTree = "<group>";
+		};
+		3184AC997C8F88876EF76A8C /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				892723880096458A3BA80B0E /* LBProceduresCheck.m */,
+				FBA07AE9A6C67ED83E0E1951 /* LBSyncCheck.m */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		3D3AFD72C196F5E0C5410D15 /* Server */ = {
+			isa = PBXGroup;
+			children = (
+				98A2B755E88C3EFD11015E07 /* LBActions.h */,
+				CA222E67ADE0D04459E12ABE /* LBActions.m */,
+				0198D35D1765628F70CB7962 /* LBPermissions.h */,
+				B3290AF8A39A8F14A152A2F3 /* LBPermissions.m */,
+				5495040375CD673C4E4A74CE /* LBServer.m */,
+			);
+			path = Server;
+			sourceTree = "<group>";
+		};
+		4BB4DDA056F6DB57003A27FE /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				DA6375B01FB8DD843C3B2050 /* Assets.xcassets */,
+				20EFFA53D963249AE8282F3B /* Info.plist */,
+				AB824361FAF0A8F250B5C0F2 /* LBRecordForm.m */,
+				CCE2C3C58F1E04519BAA59B1 /* LBiOSApp.h */,
+				2BF486C62A308B2388CCDA61 /* LBiOSControllers.h */,
+				DBCAEB84C9CA0A46A31C8CE9 /* LBiOSControllers.m */,
+				CBBE62FB66CDAB94534A27DE /* LBiOSSelfTest.h */,
+				3E3F1752022340EB917EE401 /* LBiOSSelfTest.m */,
+				DB4FEE932F239C5E346913BC /* Logbook-iOS.xcconfig */,
+				C869049B854785B7B1E6DA73 /* main.m */,
+			);
+			path = iOS;
+			sourceTree = "<group>";
+		};
+		4EAE695AD1F489F78EA3E1C6 = {
+			isa = PBXGroup;
+			children = (
+				F50D50AB8A3CE68E7C5DC430 /* Docs */,
+				90051324002C9E91549A10E3 /* AppKit */,
+				940241422371F7CD1058375F /* Model */,
+				6AB75619233265E391A9341E /* Reports */,
+				3D3AFD72C196F5E0C5410D15 /* Server */,
+				9D10A42589C8F5479091BEBD /* Shared */,
+				3184AC997C8F88876EF76A8C /* Tests */,
+				57D815989F1AB5B538C55DF3 /* UDCalendar */,
+				5E14CDF31B3C8DCE0631102F /* UDQuantity */,
+				2B6F7E2DBE1E88B5D1B95BA6 /* Xcode */,
+				4BB4DDA056F6DB57003A27FE /* iOS */,
+				5A559843A90E30B141C300FB /* Frameworks */,
+				2AC8BA37DAC32D5437812408 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		57D815989F1AB5B538C55DF3 /* UDCalendar */ = {
+			isa = PBXGroup;
+			children = (
+				A3647A7FA7ED738095E6DCDB /* README.md */,
+				74A8EAB86E88544A44EE5148 /* UDCalendarView.h */,
+				3F95716F05CFEC8CCCF58196 /* UDCalendarView.m */,
+			);
+			path = UDCalendar;
+			sourceTree = "<group>";
+		};
+		5A559843A90E30B141C300FB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B4D9063116054347386970CE /* ORMRuntime.framework */,
+				556E7EB7554160D265539612 /* ODataKit.xcframework */,
+				1AA616881FDF64023A455351 /* OTelKit.xcframework */,
+				563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */,
+				7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */,
+				CAD875D95E6BAE91C5CF6970 /* ODataService.xcframework */,
+				A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */,
+				B3BCDF809368C6B4D2C11FE7 /* RDLKit.xcframework */,
+				584640704EF6A5925E5FAEBF /* RDLKitUI.xcframework */,
+				B29454D488C4F49E273C15A0 /* Foundation.framework */,
+				2AB66C65BE330D1517DF768E /* CoreData.framework */,
+				D9440F138977C55F58D15995 /* AppKit.framework */,
+				B7B9A497CDE38865D5D45891 /* UIKit.framework */,
+				312C0796AADAF4AAEADBBB47 /* Security.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		5E14CDF31B3C8DCE0631102F /* UDQuantity */ = {
+			isa = PBXGroup;
+			children = (
+				A4F02A3C0166E04AF0057DB0 /* README.md */,
+				B8B1C287A26229CAF6783017 /* UDQuantityField.h */,
+				227D6A8CB446AED3F885D090 /* UDQuantityField.m */,
+			);
+			path = UDQuantity;
+			sourceTree = "<group>";
+		};
+		6AB75619233265E391A9341E /* Reports */ = {
+			isa = PBXGroup;
+			children = (
+				354385FB5717E232F0F7E8EE /* CostsByMonth.rdl */,
+				EEE3822C8E2C03EB633ED3AE /* Fuel.rdl */,
+				3BDBA2A5A0991EDBEFB7DC21 /* Logbook.rdl */,
+			);
+			path = Reports;
+			sourceTree = "<group>";
+		};
+		90051324002C9E91549A10E3 /* AppKit */ = {
+			isa = PBXGroup;
+			children = (
+				F8746362A46CB5E2C52D1A7E /* ConnectPanel.xib */,
+				ABFDBC32D4665ABB05B1F819 /* Info.plist */,
+				1858D9209D5FE7B48B58866F /* LBAnswersController.h */,
+				7D121C7DECA61E76A9483A71 /* LBAnswersController.m */,
+				AAE85EE9A321374CF4B6CB43 /* LBAppController.h */,
+				F8733BCB1B8361C68AA2E89C /* LBAppController.m */,
+				6A1EBC28A9B6CE69C4B3F358 /* LBCalendarController.h */,
+				DBD2673923ED329189E1D866 /* LBCalendarController.m */,
+				5CCDB675BB9F8C3A38017A0D /* LBConnectPanel.h */,
+				4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */,
+				324BB6A3D9A9BE9DE4F32543 /* LBCurrencies.h */,
+				5F97649AA937E1D48D47004D /* LBCurrencies.m */,
+				B4B350AF69C986E38E58A1AF /* LBListsController.h */,
+				8A5F3F17FFB494ABBD32CCDE /* LBListsController.m */,
+				E162B1147B7C390BF620F05A /* LBMainWindowController.h */,
+				BD71F723187129CDB667A72D /* LBMainWindowController.m */,
+				685ECA4661144E07ACCA3794 /* LBPreferencesController.h */,
+				3419A52A63B43A4BEBA68C32 /* LBPreferencesController.m */,
+				38FE87A9BE8D17BED843EAC5 /* LBRemindersController.h */,
+				97554471CF37E140DE30D80A /* LBRemindersController.m */,
+				0A6433DEAA58B45842DD06D1 /* LBReportsController.h */,
+				AA1BB6F3704843F4C100FA9B /* LBReportsController.m */,
+				13623D0A57E5BB10F9182DD5 /* LBSelfTest.h */,
+				D754F8EB42F3ADAE0E299F79 /* LBSelfTest.m */,
+				694E25C06D350F4886223FAB /* Lists.xib */,
+				4FE96229781E69B34DF214C9 /* MainMenu.xib */,
+				F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */,
+				4E83A3CB72FBFB07198EF507 /* Preferences.xib */,
+				9F9B62C3CEAF21088CC988DF /* main.m */,
+			);
+			path = AppKit;
+			sourceTree = "<group>";
+		};
+		940241422371F7CD1058375F /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				81DAB9656DE4F22F4B52A58A /* Logbook.orm */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		9D10A42589C8F5479091BEBD /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				30E7D8345B87ED605821A180 /* LBCalendar.h */,
+				1D9F102F5FD4B4919A213D1F /* LBCalendar.m */,
+				81606360A961AF809407450F /* LBConflicts.h */,
+				690202E342F3343CCC4A45AF /* LBConflicts.m */,
+				D371E9DF0A4D53CA5C5BEBEF /* LBDisplay.h */,
+				B7670FC7C874BC5F07604ED6 /* LBDisplay.m */,
+				720CFEC4A9475E281A1CF956 /* LBLocalStore.h */,
+				2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */,
+				78A28AAA1E8F8D6377B0D29E /* LBPlanned.h */,
+				B5CA9C0E6476A3F0C41C57A8 /* LBPlanned.m */,
+				E0E116B48C451C1A3F4C444C /* LBProcedures.h */,
+				FA961075CB2A673BD7F848CD /* LBProcedures.m */,
+				FF47C44BF13F9BF3086EC393 /* LBReportData.h */,
+				37F5E52039B2A71A1E5ADA60 /* LBReportData.m */,
+				3E7094F8DD90DECD608C53E2 /* LBSignIn.h */,
+				F202254F689402A7F179E854 /* LBSignIn.m */,
+				9750D2C25C5635F5B2261855 /* LBStore.h */,
+				FD6623DBF7BF9A8A98787107 /* LBStore.m */,
+				26F487F740C91D09AAF7869C /* LBVehicleSummary.h */,
+				DA69776518CC1CE3869BB9FD /* LBVehicleSummary.m */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		F50D50AB8A3CE68E7C5DC430 /* Docs */ = {
+			isa = PBXGroup;
+			children = (
+				470AD526B3A4B8CA0ADFC09B /* README.md */,
+				C08971E109305EB254D7B26D /* Makefile.apple */,
+				0D9E881A6CBBB60E5366EA0B /* GNUmakefile */,
+				ABC75EAB861F9334630A50A4 /* CSDP.md */,
+				B9015B2FA563A5832304923D /* PROCESSES.md */,
+			);
+			name = Docs;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1A07F9A4CA806DA3A9DE7978 /* logbook-server */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EE0F4EE899A0F51093D6A732 /* Build configuration list for PBXNativeTarget "logbook-server" */;
+			buildPhases = (
+				3E1D5CA27D90349C61EF8002 /* Sources */,
+				BADB70CB93C391472CB8E055 /* Copy the model */,
+				FA91AD50865E392319F5B19E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7A69DA12FCF2A68DB668C144 /* PBXTargetDependency */,
+			);
+			name = "logbook-server";
+			productName = "logbook-server";
+			productReference = A6A67DB553814A5B05CEF0E5 /* logbook-server */;
+			productType = "com.apple.product-type.tool";
+		};
+		3C12A36F6D6449BC9E9D3628 /* Logbook */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B9142ABA805E2C330912874 /* Build configuration list for PBXNativeTarget "Logbook" */;
+			buildPhases = (
+				EE311C9025670482F9A98911 /* Sources */,
+				8F414C81C28E4E8CC396DAB6 /* Resources */,
+				15C35FCFC12DFE3D4F901A8B /* Copy the model */,
+				18EF714FE9D6489071680DC5 /* Frameworks */,
+				119EF15FB3A09AA0563BA05A /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A5068E846D709D42D53EAC6F /* PBXTargetDependency */,
+			);
+			name = Logbook;
+			productName = Logbook;
+			productReference = 5B728CF15A8BCE330257348A /* Logbook.app */;
+			productType = "com.apple.product-type.application";
+		};
+		8DA690AD9CA00287A654834B /* lb-procedures-check */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C2AD32C9F63612C044A6C770 /* Build configuration list for PBXNativeTarget "lb-procedures-check" */;
+			buildPhases = (
+				433615D99555DBFB587E7362 /* Sources */,
+				FCEE6E7D1DEF9054A7834D0C /* Copy the model */,
+				9B52CCA1D61C6C8E7E689F3D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EC9DE446E190A2132EBD2724 /* PBXTargetDependency */,
+			);
+			name = "lb-procedures-check";
+			productName = "lb-procedures-check";
+			productReference = 187038E9ACB374DBA6DA4764 /* lb-procedures-check */;
+			productType = "com.apple.product-type.tool";
+		};
+		9C92DBD5BD94684EA0AE8434 /* lb-sync-check */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 350373B7CB38F30218850FFA /* Build configuration list for PBXNativeTarget "lb-sync-check" */;
+			buildPhases = (
+				A9AE2DE3D83254AF7E6BD7E7 /* Sources */,
+				CAE69B309776F935DA05CE53 /* Copy the model */,
+				AAB3803D4083C48AD5A1C213 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E159A7BC9B9B7FF03E88AB02 /* PBXTargetDependency */,
+			);
+			name = "lb-sync-check";
+			productName = "lb-sync-check";
+			productReference = 7123A5B32AEDE7068F8B7F8F /* lb-sync-check */;
+			productType = "com.apple.product-type.tool";
+		};
+		C62CE3FC7A6C75ED699D54C9 /* Logbook-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BE214DFC343F2DE6F88A9868 /* Build configuration list for PBXNativeTarget "Logbook-iOS" */;
+			buildPhases = (
+				A724311061C6E11B6EA30606 /* Sources */,
+				09AFAC354C2AEFC1BC484C85 /* Resources */,
+				38BF4F8E615EA1787E88F34A /* Copy the model */,
+				361387F6295A0B61CC7E623B /* Frameworks */,
+				2ED274EFAA025326AB069283 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				339087B3D73E416AD5BFD223 /* PBXTargetDependency */,
+			);
+			name = "Logbook-iOS";
+			productName = "Logbook-iOS";
+			productReference = 01F8AC7BACBEF80D1949781D /* Logbook.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		46F86FAA6BBF9AC94A7E4595 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 1600;
+			};
+			buildConfigurationList = B61A476A5531CC175278BDCF /* Build configuration list for PBXProject "Logbook" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 4EAE695AD1F489F78EA3E1C6;
+			productRefGroup = 2AC8BA37DAC32D5437812408 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4D7EF247F4B7258C9392CF96 /* Model */,
+				3C12A36F6D6449BC9E9D3628 /* Logbook */,
+				C62CE3FC7A6C75ED699D54C9 /* Logbook-iOS */,
+				1A07F9A4CA806DA3A9DE7978 /* logbook-server */,
+				8DA690AD9CA00287A654834B /* lb-procedures-check */,
+				9C92DBD5BD94684EA0AE8434 /* lb-sync-check */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		09AFAC354C2AEFC1BC484C85 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F07E09309E4B0B9E7693AC49 /* Assets.xcassets */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8F414C81C28E4E8CC396DAB6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2676F6D6AFED89C5AB918CFF /* MainMenu.xib */,
+				7244EDA8B6345047E44AA6D3 /* MainWindow.xib */,
+				E6A1498CBC948EA4D74D875C /* ConnectPanel.xib */,
+				0104234405B4305646B85B40 /* Preferences.xib */,
+				683ABFCAE020079565AED216 /* Lists.xib */,
+				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
+				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
+				528729F595FA1EDB414383AA /* Logbook.rdl */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		15C35FCFC12DFE3D4F901A8B /* Copy the model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			alwaysOutOfDate = 1;
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy the model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n";
+			showEnvVarsInLog = 0;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		33E37FE1D461520C15F537D8 /* Generate from Model/Logbook.orm */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			alwaysOutOfDate = 1;
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Generate from Model/Logbook.orm";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "# Generated by make, as on the command line, and out of Xcode's own\n# environment: the makefile builds ORMKit's ormtool with xcodebuild, which\n# the settings of this build would mislead.\nexec env -i PATH=/usr/bin:/bin:/usr/sbin:/sbin HOME=\"$HOME\" DEVELOPER_DIR=\"$DEVELOPER_DIR\" \\\n  make -C \"$SRCROOT\" -f Makefile.apple xcode-model\n";
+			showEnvVarsInLog = 0;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		38BF4F8E615EA1787E88F34A /* Copy the model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			alwaysOutOfDate = 1;
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy the model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The self-test's photo of a receipt, in the simulator's app only.\nif [ \"$PLATFORM_NAME\" = iphonesimulator ]; then cp \"$SRCROOT/Tests/receipt-photo.jpg\" \"$dest/SelfTestReceipt.jpg\"; fi\n";
+			showEnvVarsInLog = 0;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BADB70CB93C391472CB8E055 /* Copy the model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			alwaysOutOfDate = 1;
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy the model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n";
+			showEnvVarsInLog = 0;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CAE69B309776F935DA05CE53 /* Copy the model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			alwaysOutOfDate = 1;
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy the model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n";
+			showEnvVarsInLog = 0;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FCEE6E7D1DEF9054A7834D0C /* Copy the model */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			alwaysOutOfDate = 1;
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy the model";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			shellPath = /bin/sh;
+			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n";
+			showEnvVarsInLog = 0;
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3E1D5CA27D90349C61EF8002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0E114E927C22F744FE983F89 /* LBServer.m */,
+				72002D4BD2DCA11921ABE026 /* LBPermissions.m */,
+				E289951E04B658755D707518 /* LBActions.m */,
+				E94AAE5B2D1D4E48E3B14872 /* LBProcedures.m */,
+				6F4CEC1C995918B6B3F61C6F /* LogbookModel.m */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		433615D99555DBFB587E7362 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				743FCF79A5D881093D2F7D31 /* LBProceduresCheck.m */,
+				CED58ABEA9D41F3D78CB5077 /* LBProcedures.m */,
+				9E1A21028381AC3063F3B451 /* LBPlanned.m */,
+				B773B63B2D9EE0EACF095C02 /* LogbookModel.m */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A724311061C6E11B6EA30606 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				49FFF4D6C3A4AD8EF59C7DE1 /* LBRecordForm.m */,
+				AC922E927BD3F0B59D483ADE /* LBiOSControllers.m */,
+				4D8955DA7D803F8FEAD540BF /* LBiOSSelfTest.m */,
+				FE433AA3AAE8A451111E0982 /* main.m */,
+				9702E8799FE21A6131A21C3D /* LBCalendar.m */,
+				3F41127A5339F1DA846D2D0A /* LBConflicts.m */,
+				E72A8983F4E6FF9801131FCA /* LBDisplay.m */,
+				76BD0C0C6014EC946C220ED3 /* LBLocalStore.m */,
+				E73043F2D16EEE3508B1033E /* LBPlanned.m */,
+				FFEC986A4E28F6F71BAB1EC2 /* LBProcedures.m */,
+				5713E0AD6431DEC5019FE81E /* LBSignIn.m */,
+				7BBA7D3B23EBBC1300884F80 /* LBVehicleSummary.m */,
+				2AFDF0CC8E4E5805C4B5CF3E /* LogbookModel.m */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A9AE2DE3D83254AF7E6BD7E7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FFADDF424E0E7B7F4FFF2328 /* LBSyncCheck.m */,
+				897B0417CB52F98DE970B1B4 /* LBLocalStore.m */,
+				AE0F26598DA7DF5B39B27E62 /* LBConflicts.m */,
+				E6924E20DC3BFC0A2A1C8BA4 /* LBVehicleSummary.m */,
+				595FEC6757BD6850E90DBB02 /* LBDisplay.m */,
+				231C5DA685A4BEF1681D0474 /* LBProcedures.m */,
+				CBCD7A99FF51CB117EB2FD0B /* LogbookModel.m */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EE311C9025670482F9A98911 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0A441C7DD4CE7A4FEEFA6A41 /* LBAnswersController.m */,
+				C3CE11FCB129BDCF4852DCA0 /* LBAppController.m */,
+				E63A728CF00EB704CEB4F90E /* LBCalendarController.m */,
+				C151D3F90E7A8315F69EF777 /* LBConnectPanel.m */,
+				529DADF700964FC6237620B6 /* LBCurrencies.m */,
+				D66D87A70D3592981C2035CD /* LBListsController.m */,
+				54D6EE49D6E938F7DDAE8527 /* LBMainWindowController.m */,
+				8ECBB7BC40A4F45ACBFC0E2F /* LBPreferencesController.m */,
+				A2A340CC7CD54ABA2AE1056F /* LBRemindersController.m */,
+				4AF4261543FF6ED24F470557 /* LBReportsController.m */,
+				DFBD0FF8323401C8CF5C5DF2 /* LBSelfTest.m */,
+				D150CB72C0373BBF67E78758 /* main.m */,
+				5AA4112F777D647934A73C69 /* UDCalendarView.m */,
+				B3E1A2A2285935D32D76562A /* UDQuantityField.m */,
+				9B3FE38F441D5FFFA5161082 /* LBCalendar.m */,
+				E4BB8CF203F232AF1CA4BAFE /* LBConflicts.m */,
+				4585977F8EC64CE45902C9E3 /* LBDisplay.m */,
+				A3EAE0A410A2F53727F78C99 /* LBLocalStore.m */,
+				5B672684CC818796AB007ED1 /* LBPlanned.m */,
+				341E885D3AA2F3A42B7F04CC /* LBProcedures.m */,
+				3B87B042E25C5C6BAF69C6BF /* LBReportData.m */,
+				55D29C133A3C05C2C743A7E5 /* LBSignIn.m */,
+				12D8AFDE0C7991FFC2934006 /* LBStore.m */,
+				271A1993FD12E92D99FCB018 /* LBVehicleSummary.m */,
+				48FC739A5FC9FF1A95FB5497 /* LogbookModel.m */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		339087B3D73E416AD5BFD223 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D7EF247F4B7258C9392CF96 /* Model */;
+			targetProxy = EB32C46758D4FB5E873C270D /* PBXContainerItemProxy */;
+		};
+		7A69DA12FCF2A68DB668C144 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D7EF247F4B7258C9392CF96 /* Model */;
+			targetProxy = 7A1752B6512F162DDDCD3976 /* PBXContainerItemProxy */;
+		};
+		A5068E846D709D42D53EAC6F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D7EF247F4B7258C9392CF96 /* Model */;
+			targetProxy = 28E8712AB4ACCA86AEE2759B /* PBXContainerItemProxy */;
+		};
+		E159A7BC9B9B7FF03E88AB02 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D7EF247F4B7258C9392CF96 /* Model */;
+			targetProxy = 8BD6BF147F7310E3EAADCD6D /* PBXContainerItemProxy */;
+		};
+		EC9DE446E190A2132EBD2724 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4D7EF247F4B7258C9392CF96 /* Model */;
+			targetProxy = CEB7D8C3AFEDD7218E25E5F4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		08723DE70035A45CE7E33CC1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				HEADER_SEARCH_PATHS = ("$(SRCROOT)/Shared", "$(SRCROOT)/AppKit", "$(SRCROOT)/UDCalendar", "$(SRCROOT)/UDQuantity", "$(SRCROOT)/Server", "$(SRCROOT)/iOS", "$(SRCROOT)/build/Model/Constraints", "$(SRCROOT)/build/Generated");
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				WARNING_CFLAGS = "-Wall -Wno-unused-parameter";
+			};
+			name = Release;
+		};
+		4C52BA657196677304C94126 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AppKit/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.ashalkhakov.Logbook;
+				PRODUCT_NAME = Logbook;
+			};
+			name = Debug;
+		};
+		71B657BB173D6F94DBC2A00F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DB4FEE932F239C5E346913BC /* Logbook-iOS.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = iOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+			};
+			name = Debug;
+		};
+		80DB6ACE13380ADC3D86D6C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				HEADER_SEARCH_PATHS = ("$(SRCROOT)/Shared", "$(SRCROOT)/AppKit", "$(SRCROOT)/UDCalendar", "$(SRCROOT)/UDQuantity", "$(SRCROOT)/Server", "$(SRCROOT)/iOS", "$(SRCROOT)/build/Model/Constraints", "$(SRCROOT)/build/Generated");
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				WARNING_CFLAGS = "-Wall -Wno-unused-parameter";
+			};
+			name = Debug;
+		};
+		8B6652A562A262F65829D077 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path");
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		8D5AFD7B2BD8F777340AD6F3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = DB4FEE932F239C5E346913BC /* Logbook-iOS.xcconfig */;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = iOS/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+			};
+			name = Release;
+		};
+		9A5DE63A446C05A1CFD92E14 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path");
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		A402EF36A7D81F84FFC1A439 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path");
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C4F0CB390FA8CA3C3FD887CB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator";
+			};
+			name = Debug;
+		};
+		D2EC97BBC2F1F0BB5B9B5C79 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator";
+			};
+			name = Release;
+		};
+		D88FB0F17B973663F8764FF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path");
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		DA10D11323B1ED3F79B31638 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path");
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F050AA867EEC9C45AFB5B8BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = AppKit/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
+				PRODUCT_BUNDLE_IDENTIFIER = io.github.ashalkhakov.Logbook;
+				PRODUCT_NAME = Logbook;
+			};
+			name = Release;
+		};
+		F6899C339D7A80E15F4DD4F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path");
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		350373B7CB38F30218850FFA /* Build configuration list for lb-sync-check */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A402EF36A7D81F84FFC1A439 /* Debug */,
+				8B6652A562A262F65829D077 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		695A0B58F0C2B3866D9D6A93 /* Build configuration list for Model */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C4F0CB390FA8CA3C3FD887CB /* Debug */,
+				D2EC97BBC2F1F0BB5B9B5C79 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9B9142ABA805E2C330912874 /* Build configuration list for Logbook */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4C52BA657196677304C94126 /* Debug */,
+				F050AA867EEC9C45AFB5B8BE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B61A476A5531CC175278BDCF /* Build configuration list for project */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				80DB6ACE13380ADC3D86D6C5 /* Debug */,
+				08723DE70035A45CE7E33CC1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BE214DFC343F2DE6F88A9868 /* Build configuration list for Logbook-iOS */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				71B657BB173D6F94DBC2A00F /* Debug */,
+				8D5AFD7B2BD8F777340AD6F3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C2AD32C9F63612C044A6C770 /* Build configuration list for lb-procedures-check */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F6899C339D7A80E15F4DD4F8 /* Debug */,
+				D88FB0F17B973663F8764FF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EE0F4EE899A0F51093D6A732 /* Build configuration list for logbook-server */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DA10D11323B1ED3F79B31638 /* Debug */,
+				9A5DE63A446C05A1CFD92E14 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+}
