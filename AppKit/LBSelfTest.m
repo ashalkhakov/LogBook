@@ -184,10 +184,10 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBCheck(@"a new fill-up, chosen, its form shown",
             [fillUp isKindOfClass:[FillUp class]] && [controller.recordForms.selectedTabViewItem.identifier isEqual:@"FillUp"],
             controller.recordForms.selectedTabViewItem.identifier);
-    LBCheck(@"filled in: now, here (this Mac's time zone), its driver the user, in km and litres",
+    LBCheck(@"filled in: now, here (this Mac's time zone), its driver the user, in the user's units",
             fillUp.timestamp && [fillUp.timeZone isEqualToString:[NSTimeZone localTimeZone].name] && fillUp.driver == user
-                && [fillUp.mileageDistanceUnit.code isEqualToString:@"km"]
-                && [fillUp.volumeVolumeUnit.code isEqualToString:@"L"] && fillUp.vehicle && fillUp.enteredBy == user,
+                && fillUp.mileageDistanceUnit && fillUp.mileageDistanceUnit == user.distanceUnit
+                && fillUp.volumeVolumeUnit && fillUp.volumeVolumeUnit == user.volumeUnit && fillUp.vehicle && fillUp.enteredBy == user,
             [NSString stringWithFormat:@"%@ %@ %@ %@", fillUp.timestamp, fillUp.driver.email, fillUp.mileageDistanceUnit.code,
                                        fillUp.volumeVolumeUnit.code]);
     NSPopUpButton *driver = (NSPopUpButton *)LBControl(window.contentView, @"FillUpDriver");
@@ -287,11 +287,37 @@ static void LBPreferenceSteps(LBMainWindowController *controller) {
             [NSString stringWithFormat:@"here %@, there %@", controller.store.user.currency, there.currency]);
     NSString *zone = [NSTimeZone localTimeZone].name;
     LBCheck(@"and this Mac's time zone, as they had none", [there.timeZone isEqualToString:zone], there.timeZone);
+    /* As first opened: the units the user has, shown. */
+    NSPopUpButton *distance = (NSPopUpButton *)LBControl(preferences.contentView, @"distanceUnit");
+    NSPopUpButton *volume = (NSPopUpButton *)LBControl(preferences.contentView, @"volumeUnit");
+    User *user = controller.store.user;
+    NSString *system = [[NSLocale currentLocale] objectForKey:NSLocaleMeasurementSystem];
+    NSString *distanceCode = [system isEqualToString:@"U.S."] || [system isEqualToString:@"U.K."] ? @"mi" : @"km";
+    NSString *volumeCode = [system isEqualToString:@"U.S."] ? @"gal (US)" : @"L";
+    LBCheck(@"a user with no units took this Mac's at sign-in", [user.distanceUnit.code isEqualToString:distanceCode]
+                && [user.volumeUnit.code isEqualToString:volumeCode],
+            [NSString stringWithFormat:@"%@, %@ (%@)", user.distanceUnit.code, user.volumeUnit.code, system]);
+    LBCheck(@"first opened: the user's units shown", user.distanceUnit && user.volumeUnit
+                && [distance.titleOfSelectedItem isEqualToString:user.distanceUnit.lbTitle]
+                && [volume.titleOfSelectedItem isEqualToString:user.volumeUnit.lbTitle],
+            [NSString stringWithFormat:@"shown %@ and %@, the user's %@ and %@", distance.titleOfSelectedItem, volume.titleOfSelectedItem,
+                                       user.distanceUnit.lbTitle, user.volumeUnit.lbTitle]);
     LBType(preferences, @"currencyUnit", @"eur");
+    LBType(preferences, @"personName", @"Sam Driver");
     LBClick(preferences, @"done");
     LBCheck(@"saved and closed", !preferences.isVisible && !controller.lastError && !controller.store.context.hasChanges,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
     LBCheck(@"the user's currency", [controller.store.user.currency isEqualToString:@"EUR"], controller.store.user.currency);
+    there = [LBServerObjects([User class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(email)),
+                                                          controller.store.user.email]) firstObject];
+    LBCheck(@"the user's name, on the server", [there.personName isEqualToString:@"Sam Driver"], there.personName);
+    /* Opened again: what was saved, shown. */
+    [NSApp sendAction:@selector(showPreferences:) to:nil from:nil];
+    LBSpin();
+    NSTextField *name = (NSTextField *)LBControl(preferences.contentView, @"personName");
+    LBCheck(@"opened again: the name saved, shown", preferences.isVisible && [name.stringValue isEqualToString:@"Sam Driver"],
+            name.stringValue);
+    [preferences close];
 }
 
 /* The objects of an entity the server has, as the predicate says. */
@@ -523,6 +549,7 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBCheck(@"New Schedule shows its form", [tab.forms.selectedTabViewItem.identifier isEqual:@"schedule"], nil);
     LBType(window, @"scheduleTask", @"Oil change");
     LBType(window, @"scheduleEveryValue", @"15000");
+    LBType(window, @"scheduleEveryUnit", @"km");
     LBType(window, @"scheduleMonths", @"12");
     LBClick(window, @"scheduleSave");
     Schedule *schedule = [tab.schedules.arrangedObjects firstObject];
@@ -569,6 +596,7 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
             [controller reminderWarnings].count == 1 && [[controller reminderWarnings].firstObject.localizedDescription containsString:@"Oil change"],
             [controller reminderWarnings]);
     LBType(window, @"ServiceMileageValue", @"13000");
+    LBType(window, @"ServiceMileageUnit", @"km");
     LBClick(window, @"save");
     LBCheck(@"the service saved", !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);

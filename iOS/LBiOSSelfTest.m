@@ -309,7 +309,8 @@ static UIImage *LBReceiptPhoto(void) {
     FillUp *fillUp = (FillUp *)form.object;
     LBSay(!main.presentedViewController && !fillUp.isInserted && fillUp.managedObjectContext,
           [NSString stringWithFormat:@"saved, offline (%@)", [form.problems componentsJoinedByString:@"; "]]);
-    LBSay([fillUp.mileageDistanceUnit.code isEqualToString:@"km"] && [fillUp.volumeVolumeUnit.code isEqualToString:@"L"]
+    LBSay(fillUp.mileageDistanceUnit && fillUp.mileageDistanceUnit == store.user.distanceUnit
+              && fillUp.volumeVolumeUnit && fillUp.volumeVolumeUnit == store.user.volumeUnit
               && store.user.currency.length && [fillUp.totalCurrency isEqualToString:store.user.currency] && fillUp.driver == store.user,
           [NSString stringWithFormat:@"in the user's units and currency, the phone's taken at the first sync (%@), by the user, now",
                                      fillUp.totalCurrency]);

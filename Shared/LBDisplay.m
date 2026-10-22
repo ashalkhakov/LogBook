@@ -30,8 +30,30 @@ static NSString *LBLocaleCurrency(void) {
 
 - (NSString *)lbCurrency { return self.currency.length ? self.currency : LBLocaleCurrency(); }
 
+/* The unit of the entity whose code is given, among the model's (its
+   reference data). */
+static id LBUnitCoded(NSString *entity, NSString *code, NSManagedObjectContext *context) {
+    if (!context) return nil;
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:entity];
+    fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(code)), code];
+    return [[context executeFetchRequest:fetch error:NULL] firstObject];
+}
+
 - (BOOL)lbTakeDeviceSettings {
     BOOL taken = NO;
+    /* The units of the locale's measurement: metric's, the U.S.'s, or the
+       U.K.'s (miles on the road, litres at the pump). */
+    NSString *system = [[NSLocale currentLocale] objectForKey:NSLocaleMeasurementSystem];
+    BOOL miles = [system isEqualToString:@"U.S."] || [system isEqualToString:@"U.K."];
+    if (!self.distanceUnit) {
+        self.distanceUnit = LBUnitCoded(NSStringFromClass([DistanceUnit class]), miles ? @"mi" : @"km", self.managedObjectContext);
+        taken = taken || self.distanceUnit != nil;
+    }
+    if (!self.volumeUnit) {
+        self.volumeUnit = LBUnitCoded(NSStringFromClass([VolumeUnit class]), [system isEqualToString:@"U.S."] ? @"gal (US)" : @"L",
+                                      self.managedObjectContext);
+        taken = taken || self.volumeUnit != nil;
+    }
     if (!self.currency.length) {
         self.currency = LBLocaleCurrency();
         taken = YES;
