@@ -185,7 +185,9 @@
 			<orm:EntityType id="_B831ABCC-D8D4-43A8-9650-E31310C4EB36" Name="Currency" _ReferenceMode="code">
 				<orm:Notes>
 					<orm:Note id="_C80589AD-6466-4A31-AB48-B14D98110DC3">
-						<orm:Text>A currency code is ISO 4217's: three capital letters.</orm:Text>
+						<orm:Text>A currency is ISO 4217's, by its code: those in use (Foundation's
+common codes, less HRK, VEF and CUC, withdrawn). Its name and its
+decimals are the platform's, in the user's language.</orm:Text>
 					</orm:Note>
 				</orm:Notes>
 				<orm:PlayedRoles>
@@ -203,7 +205,168 @@
 					<orm:Role ref="_BC2BCB48-287A-4734-B1AE-5EF504DCC798" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_3D89D14F-EA70-4B04-93BC-F05A9F67807E" ref="_9E243C9C-F5DD-4191-BDC9-B6FD32FF1B92" Scale="0" Length="3" />
-				<ormv:Pattern>[A-Z]{3}</ormv:Pattern>
+				<orm:ValueRestriction>
+					<orm:ValueConstraint id="_19D80D69-FDF8-48C8-BAD0-B66992F3B9EC" Name="ValueTypeValueConstraint15">
+						<orm:ValueRanges>
+							<orm:ValueRange id="_3473E4CD-5508-43D7-9026-AC67460605A8" MinValue="AED" MaxValue="AED" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_78A1135E-47CD-4498-81DC-0D82DC2A465B" MinValue="AFN" MaxValue="AFN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_22798FB5-D224-49B7-9D08-6EB53F717C37" MinValue="ALL" MaxValue="ALL" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_17D0E7A1-2468-4550-B593-8696B49CC1F7" MinValue="AMD" MaxValue="AMD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_65E7F171-6573-48A9-B539-1481B3730C34" MinValue="ANG" MaxValue="ANG" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_AFC4BDB1-F92D-4F18-81CE-E8E480F4DDF7" MinValue="AOA" MaxValue="AOA" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_7C64B213-2A8D-4830-998B-338B3219A08A" MinValue="ARS" MaxValue="ARS" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_2FB8A9D8-A5F1-425F-9E4C-5278CFC92BE9" MinValue="AUD" MaxValue="AUD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_7CA815FC-6C3E-4221-81E4-93106C4CCDA4" MinValue="AWG" MaxValue="AWG" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_0C2DFEC0-B823-4B2A-B515-B630D2F9F90F" MinValue="AZN" MaxValue="AZN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_964B885C-8D24-48C2-A5D5-102B57FA8533" MinValue="BAM" MaxValue="BAM" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_312F4473-D55A-461F-A502-0E1EEC347C25" MinValue="BBD" MaxValue="BBD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_B986DC10-EA07-4131-97D8-C9974087BCF5" MinValue="BDT" MaxValue="BDT" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_EE9EF488-2877-4A33-AF02-F3E446EB0C94" MinValue="BGN" MaxValue="BGN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_91EFAD5F-9761-4B0B-9502-FD6DC2B59125" MinValue="BHD" MaxValue="BHD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_6596E7E7-D60C-48AD-938D-8EE74D924E06" MinValue="BIF" MaxValue="BIF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_74EC557D-10E1-401C-A336-224853EF3FD9" MinValue="BMD" MaxValue="BMD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_EBBF556E-19F7-4A09-850B-7124AD913DDC" MinValue="BND" MaxValue="BND" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_B6B0243B-CDBF-464D-9FC7-32E9C4779789" MinValue="BOB" MaxValue="BOB" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_0EFA6813-B0A5-42DE-B7C7-C2C075B6B48D" MinValue="BRL" MaxValue="BRL" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_23E07C35-9C88-4382-ABA4-B2CCA15D4F58" MinValue="BSD" MaxValue="BSD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_558332BA-931D-461E-8E7C-9C4C172AD23E" MinValue="BTN" MaxValue="BTN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_D39BD0A7-7985-423A-84ED-8B927B246BED" MinValue="BWP" MaxValue="BWP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_4D7BDB2F-A8BE-409F-9DAA-7584FA25C51F" MinValue="BYN" MaxValue="BYN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_E43E9601-04B6-433E-91E5-20A74581F355" MinValue="BZD" MaxValue="BZD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_3452ED10-1E84-4BEA-ACAD-054B2D0285B6" MinValue="CAD" MaxValue="CAD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_5763F690-2ECA-4227-B4A9-84E2E0730798" MinValue="CDF" MaxValue="CDF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_DA0FECD0-D4CB-4882-8C44-0D64B330770F" MinValue="CHF" MaxValue="CHF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_D846B781-3799-4DE6-985B-1F3C0E1B81BC" MinValue="CLP" MaxValue="CLP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_8C456003-2C70-4933-9E44-5B866E280719" MinValue="CNY" MaxValue="CNY" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_CEF076E7-0405-446D-AA3C-915D0181D2A2" MinValue="COP" MaxValue="COP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_C3373920-2E9C-4156-A420-194A4181EEC8" MinValue="CRC" MaxValue="CRC" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_88EED147-DCCD-40AD-BF34-B9C9DC15F3C1" MinValue="CUP" MaxValue="CUP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_929CDFEB-7DC7-4FA8-AD2D-85D0D9F44D46" MinValue="CVE" MaxValue="CVE" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_3D752A92-5B96-4629-A14E-1FD485152AB8" MinValue="CZK" MaxValue="CZK" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_0A48FC80-8B5F-4014-9EF7-65504A2D5809" MinValue="DJF" MaxValue="DJF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_42BF3AFE-0FFF-4CA5-82E9-355B4A2E7ED8" MinValue="DKK" MaxValue="DKK" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_3F1504DB-369F-4B95-B0C9-D6A0D55D5CDB" MinValue="DOP" MaxValue="DOP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_B95240DC-7F07-4634-ABA7-98CA639ADF0E" MinValue="DZD" MaxValue="DZD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_0FC1AFB9-2BD4-44EA-AAC0-E720F8A87152" MinValue="EGP" MaxValue="EGP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_D6C7993F-F660-4123-941A-37CD61836094" MinValue="ERN" MaxValue="ERN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_D0476BFB-26D0-49F2-A92D-517AC9EEB4AD" MinValue="ETB" MaxValue="ETB" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_B72BD19E-BE9A-4CB2-8627-CA48E124B6FE" MinValue="EUR" MaxValue="EUR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_CD506524-D6BF-46A6-9C7D-958494C5465F" MinValue="FJD" MaxValue="FJD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_3B276C8B-371C-40A1-AD8A-D16078411338" MinValue="FKP" MaxValue="FKP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_701D1A51-3051-48EC-A849-B95C2BEDB52D" MinValue="GBP" MaxValue="GBP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_600656DC-FB58-4049-B09A-90FF278151FB" MinValue="GEL" MaxValue="GEL" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_78BA4BE4-8D38-4D53-80C0-DB36EDE64DFC" MinValue="GHS" MaxValue="GHS" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_9340466A-F2EA-4806-8BE5-01D72A4AA321" MinValue="GIP" MaxValue="GIP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_16F67D3A-D71A-4F61-A783-EAE3E07FA5DF" MinValue="GMD" MaxValue="GMD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_1F082D7A-288C-4434-80D3-121216D6B453" MinValue="GNF" MaxValue="GNF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_79830B6C-74B0-43A6-9A1A-E5F7B281D0B4" MinValue="GTQ" MaxValue="GTQ" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_B65AFE09-4EC4-407B-BCEF-790581D20ED6" MinValue="GYD" MaxValue="GYD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_6C839363-D41A-43A7-BFA7-4BB9C08BEE24" MinValue="HKD" MaxValue="HKD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_59BBB013-31FC-44F5-9006-76E1C99A1791" MinValue="HNL" MaxValue="HNL" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_B40AD2E1-478B-4216-B485-AD270919F358" MinValue="HTG" MaxValue="HTG" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_4EECAB22-21A5-4173-A8F5-D52E66B6CA88" MinValue="HUF" MaxValue="HUF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_FE996014-8BE8-4DF9-AC4F-38F4BD3D1654" MinValue="IDR" MaxValue="IDR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_BF4CF386-0F4D-4E6F-900D-C5BE84E384E5" MinValue="ILS" MaxValue="ILS" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_9150A335-9CB6-41DC-8EE9-4931EA6CB374" MinValue="INR" MaxValue="INR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_C2B7528B-4FC6-45BA-A972-941035BECCEB" MinValue="IQD" MaxValue="IQD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_4480E37B-92E1-4D8F-90E8-643F270412C5" MinValue="IRR" MaxValue="IRR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_E8F9F3E1-5CD6-4E70-BBEC-D9C53316AA38" MinValue="ISK" MaxValue="ISK" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_02DC844E-7577-43E4-9CBB-29943A3288AF" MinValue="JMD" MaxValue="JMD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_5FF6F8A6-105D-4861-A84B-FC6A106DEC09" MinValue="JOD" MaxValue="JOD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_573F1B4B-8E7F-47DA-AF5E-C988FCB6A212" MinValue="JPY" MaxValue="JPY" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_EBFC14BB-80F0-4E1A-B584-58E2F35D2A1D" MinValue="KES" MaxValue="KES" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_84B35668-08F6-4977-9BD2-747802CC3CDA" MinValue="KGS" MaxValue="KGS" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_44A3261B-48BB-42AE-90A5-82A8C23BA612" MinValue="KHR" MaxValue="KHR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_7EE807B9-739B-4782-BE56-E91D790E45F4" MinValue="KMF" MaxValue="KMF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_4E1D5A1D-32E0-403E-9B68-A8896CFF44D5" MinValue="KPW" MaxValue="KPW" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_E7239B89-6668-4349-B202-02716D230D8C" MinValue="KRW" MaxValue="KRW" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_82C4AB84-9B59-4901-8D4C-93B40E040116" MinValue="KWD" MaxValue="KWD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_8B8E2918-1796-4D44-9FDA-83CF372771B4" MinValue="KYD" MaxValue="KYD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_16672125-15E0-498C-B9E7-0275282A600A" MinValue="KZT" MaxValue="KZT" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_A9AFE313-ADEE-4156-A0B2-B5CB10C52412" MinValue="LAK" MaxValue="LAK" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_1E625B12-6BEC-47DB-A13B-45F84BB90E98" MinValue="LBP" MaxValue="LBP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_7988352F-B075-41EB-8F37-19C893F8CA8C" MinValue="LKR" MaxValue="LKR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_2340D0ED-CCA9-418C-81CA-DFB54995858F" MinValue="LRD" MaxValue="LRD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_848B7601-3235-4E1C-85D5-2FE197C2A0E2" MinValue="LSL" MaxValue="LSL" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_B7857C14-CDC9-46B4-B78F-D38E552631FB" MinValue="LYD" MaxValue="LYD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_62A4B802-82CF-474F-87DA-C5F614831743" MinValue="MAD" MaxValue="MAD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_054C2B9C-B3A7-46FF-81C1-338526EB6C96" MinValue="MDL" MaxValue="MDL" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_6FAC6E8F-82A0-4D6F-944D-839CE57E50D2" MinValue="MGA" MaxValue="MGA" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_CD8B47F9-A6AB-495F-A624-1B2DF4F5D78A" MinValue="MKD" MaxValue="MKD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_2A363F8C-F2C1-4ED5-A4B9-1242013EBAAF" MinValue="MMK" MaxValue="MMK" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_DD25731E-9FF9-42A8-AB3B-A0B567245872" MinValue="MNT" MaxValue="MNT" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_1D9056C6-8B55-4F48-A36F-8EF2C92370AE" MinValue="MOP" MaxValue="MOP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_65ABB266-54A2-4F19-90BE-ED835343D8E0" MinValue="MRU" MaxValue="MRU" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_BDBC9A99-8892-4271-A48B-B1A8F7DDC0AE" MinValue="MUR" MaxValue="MUR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_47DA3E3C-B058-4597-B007-AC4D4BD708CB" MinValue="MVR" MaxValue="MVR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_6950A712-FB5F-495B-8BF4-9B2790801446" MinValue="MWK" MaxValue="MWK" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_97FAD07C-636F-42E6-8B4F-C81E306C9E5F" MinValue="MXN" MaxValue="MXN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_97FE601D-AC67-42CB-A6BA-08667091A438" MinValue="MYR" MaxValue="MYR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_083661AE-1B0A-4E18-85CD-C86DDDE5B559" MinValue="MZN" MaxValue="MZN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_38849E99-392F-4F49-BD99-AA5D07AE2B01" MinValue="NAD" MaxValue="NAD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_C9A535DD-8C79-411A-BA0B-21E5A7439778" MinValue="NGN" MaxValue="NGN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_4455E9FB-D15B-4E8E-B248-E172B30A9DC8" MinValue="NIO" MaxValue="NIO" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_4F496E37-5156-451F-8354-74099D4CA466" MinValue="NOK" MaxValue="NOK" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_284B9066-BB24-43AF-A421-1F59068E3F9C" MinValue="NPR" MaxValue="NPR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_AF807E7A-22AE-4822-BCAA-90FE66883F8D" MinValue="NZD" MaxValue="NZD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_3DB72D0C-C53F-4ECE-AB2E-0A9374F10D05" MinValue="OMR" MaxValue="OMR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_296E9178-B7AF-4204-AC54-BD6F94F9C884" MinValue="PAB" MaxValue="PAB" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_8176D86A-3E6E-488F-88D4-27CDF30C8438" MinValue="PEN" MaxValue="PEN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_A89F6576-D531-426E-9C82-F1C3316012D8" MinValue="PGK" MaxValue="PGK" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_0E2EA2E4-B8F9-4F01-A2DC-43087F1F4F1B" MinValue="PHP" MaxValue="PHP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_57534F10-5E70-4042-B1C8-782D53613E71" MinValue="PKR" MaxValue="PKR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_2A63A24B-748A-4069-90AC-551F3C3EFAFE" MinValue="PLN" MaxValue="PLN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_CC18FA92-21FC-488A-A7C5-B7BC5D7094AC" MinValue="PYG" MaxValue="PYG" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_652421AD-992C-477D-90E5-DEADC5898CDE" MinValue="QAR" MaxValue="QAR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_48C270EE-E177-4DAF-A476-6C89B11D059C" MinValue="RON" MaxValue="RON" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_7AB72B8D-8973-418F-9781-B73B1667D4AF" MinValue="RSD" MaxValue="RSD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_B961A2F2-2CB1-4626-A206-CB708E8FA934" MinValue="RUB" MaxValue="RUB" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_77A54BDC-B186-4E52-A75C-9484F5B5E0F4" MinValue="RWF" MaxValue="RWF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_8770241F-DD7D-4769-865E-1A0BB22BC30A" MinValue="SAR" MaxValue="SAR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_B55FEBFC-A0D9-4AD5-B8B2-6A55EB16245D" MinValue="SBD" MaxValue="SBD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_7178180C-9F36-4C96-86CE-C8A71E998A6C" MinValue="SCR" MaxValue="SCR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_BF9E5956-387A-4976-9D41-6DBE157AF0DF" MinValue="SDG" MaxValue="SDG" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_751F4FBE-0EE5-4E05-91C0-1A63C670BDDA" MinValue="SEK" MaxValue="SEK" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_99376702-5909-4829-8D1A-EA50966B2B8B" MinValue="SGD" MaxValue="SGD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_8BBFF0AB-A082-4332-A830-CA4A4DE3C227" MinValue="SHP" MaxValue="SHP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_C9A9C1D1-B041-48F6-9FE1-AB8F0A5472B7" MinValue="SLE" MaxValue="SLE" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_DE938875-8F9B-4257-91E2-9A34613B3B34" MinValue="SLL" MaxValue="SLL" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_FBDD464E-5E1D-473E-BB88-9255FC99C7AE" MinValue="SOS" MaxValue="SOS" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_41E03B47-535D-4E64-B07E-B84623CD3F3A" MinValue="SRD" MaxValue="SRD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_E9B4426E-EFCE-42B9-B913-A786BCE1E3D6" MinValue="SSP" MaxValue="SSP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_6EEEA563-01B4-44B2-8971-154D5B260AAE" MinValue="STN" MaxValue="STN" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_ABADDA67-8999-4C56-8792-E285720E30C2" MinValue="SYP" MaxValue="SYP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_10C5D1D3-617C-4B0C-8DAA-4ADE91093504" MinValue="SZL" MaxValue="SZL" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_F2864D36-793C-4A4D-A8A3-E0532818A1EE" MinValue="THB" MaxValue="THB" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_988AB3F3-86A6-4BAF-859B-6CC6F3ECBA16" MinValue="TJS" MaxValue="TJS" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_342DB76C-7510-4F2D-9094-16C900FBB23C" MinValue="TMT" MaxValue="TMT" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_5E5B8949-452F-4201-A435-37AF82272DB2" MinValue="TND" MaxValue="TND" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_F4EEA015-601E-4F0E-A81D-15E790779CA8" MinValue="TOP" MaxValue="TOP" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_00B1556F-40BA-4407-8974-380CD3740CD4" MinValue="TRY" MaxValue="TRY" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_CC613383-D6DB-4935-B361-5920DBE4EF40" MinValue="TTD" MaxValue="TTD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_72BAC282-6040-4ABD-AFF8-E45D21D2D708" MinValue="TWD" MaxValue="TWD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_9A49BE58-2945-4E8B-BE13-52A6FB39D4A9" MinValue="TZS" MaxValue="TZS" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_72362548-3773-4FE9-B743-17560A946A8D" MinValue="UAH" MaxValue="UAH" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_19DDF3B4-0855-43B0-9C04-7FBCB6642317" MinValue="UGX" MaxValue="UGX" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_1F5330E3-8044-4F50-8803-2711BEE731B7" MinValue="USD" MaxValue="USD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_85CD47E8-47ED-44FB-A17B-D25D6B877C37" MinValue="UYU" MaxValue="UYU" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_630C1912-0617-45EC-B372-426EAACD97B4" MinValue="UZS" MaxValue="UZS" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_225DE9FA-83A6-4331-AF30-A664CB08DBD5" MinValue="VES" MaxValue="VES" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_3D522372-069D-4E99-804C-DCC5D9B59F88" MinValue="VND" MaxValue="VND" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_927166D5-807A-4354-B0F6-2C0DCAA9BBD2" MinValue="VUV" MaxValue="VUV" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_4CDBBAD7-1276-4B7E-8E21-B12BE6AAE3E6" MinValue="WST" MaxValue="WST" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_31DBCB91-CC28-43CF-9053-19122B1B82BD" MinValue="XAF" MaxValue="XAF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_F0918D77-E4D2-4F30-8936-2D9EBE31FAA3" MinValue="XCD" MaxValue="XCD" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_D59A17BB-E067-4434-BC7F-78A256893A29" MinValue="XCG" MaxValue="XCG" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_8DE78526-75F6-4648-8C5F-AC0C6DA26444" MinValue="XOF" MaxValue="XOF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_1CF06D3F-6651-4549-B8D6-74109F13CF85" MinValue="XPF" MaxValue="XPF" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_F3767ECD-BDF6-436F-8488-4791EED2AA2E" MinValue="YER" MaxValue="YER" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_50C03BC0-4A56-4F45-A755-8F30E1FEF5ED" MinValue="ZAR" MaxValue="ZAR" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_5BFEA051-B5A1-4545-80B5-CEC6157998F7" MinValue="ZMW" MaxValue="ZMW" MinInclusion="NotSet" MaxInclusion="NotSet" />
+							<orm:ValueRange id="_1199FC32-4FD0-469C-9CCB-93FE48786B02" MinValue="ZWG" MaxValue="ZWG" MinInclusion="NotSet" MaxInclusion="NotSet" />
+						</orm:ValueRanges>
+					</orm:ValueConstraint>
+				</orm:ValueRestriction>
 			</orm:ValueType>
 			<orm:ValueType id="_B10C4EC0-37A3-4C21-A19C-23DD5A5D19DD" Name="Quantity">
 				<orm:PlayedRoles>

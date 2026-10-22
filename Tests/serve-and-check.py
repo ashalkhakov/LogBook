@@ -283,6 +283,12 @@ def the_rules():
     # A request's answer has each violation a detail; a batch's the message.
     message = json.dumps(body)
     check("the refusal names the rule", "removed the same TyreSet" in message, message)
+    bought = tyre_set(vehicle, "Spare set", "Summer", anna)
+    bought.update({"Date": "2026-03-01", "TotalAmount": 400, "TotalCurrency": "XYZ"})
+    status, body = request("POST", "Records", bought)
+    check("a cost in a currency ISO 4217 has none is refused", status == 400 and "Currency" in json.dumps(body), (status, body))
+    bought["TotalCurrency"] = "KZT"
+    check("in one it has, saved", request("POST", "Records", bought)[0] == 201)
     attachments(summer["Id"])
     mileage_and_reminders(anna, vehicle)
     procedures(anna)
