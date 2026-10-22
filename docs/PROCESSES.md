@@ -383,8 +383,10 @@ plans otherwise at once.
 - So far ahead: as far as what shows it asks (the calendar, to the end of
   the month it shows).
 
-The desktop's Calendar tab shows a vehicle's month: its reminders on
-their days, done (by which event, its driver; late or not), cancelled
+The desktop's Calendar tab shows a vehicle's day, week or month
+(`UDCalendar/UDCalendarView.h`, a calendar view of anything, Logbook's
+entries its data source's): its reminders on their days, what happened at
+a time (an event, a reminder done by one) at that time in a day or week, done (by which event, its driver; late or not), cancelled
 (and what replaced it), open (due, overdue, moved), and planned (in
 italics where the day is estimated); each record on its day besides; a
 day chosen, its entries listed beneath. With All Vehicles, the month is

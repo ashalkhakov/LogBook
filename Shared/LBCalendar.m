@@ -8,6 +8,7 @@
 
 @interface LBCalendarEntry ()
 @property (nonatomic, readwrite) NSDate *day;
+@property (nonatomic, readwrite, nullable) NSDate *moment;
 @property (nonatomic, readwrite) LBCalendarKind kind;
 @property (nonatomic, readwrite) NSString *kindText;
 @property (nonatomic, readwrite) NSString *title;
@@ -87,8 +88,10 @@ static NSInteger LBEntryOrder(id a, id b, void *context) {
             if (reminder.doneAt) {
                 BOOL late = reminder.dueDate && [LBDay(reminder.doneAt) compare:reminder.dueDate] == NSOrderedDescending;
                 NSString *by = reminder.event ? [NSString stringWithFormat:@"by %@", reminder.event.lbKind] : @"by hand";
-                [entries addObject:LBEntry(reminder.doneAt, LBCalendarDone, @"Done", reminder.lbWork,
-                                           LBJoined(@[ by, reminder.event.driver.lbTitle ?: @"", late ? @"late" : @"" ]), reminder)];
+                LBCalendarEntry *entry = LBEntry(reminder.doneAt, LBCalendarDone, @"Done", reminder.lbWork,
+                                                 LBJoined(@[ by, reminder.event.driver.lbTitle ?: @"", late ? @"late" : @"" ]), reminder);
+                entry.moment = reminder.doneAt;
+                [entries addObject:entry];
             } else if (reminder.cancelDate) {
                 [entries addObject:LBEntry(reminder.cancelDate, LBCalendarCancelled, @"Cancelled", reminder.lbWork,
                                            reminder.replacement ? [NSString stringWithFormat:@"replaced, due %@", reminder.replacement.lbDue]
@@ -113,8 +116,10 @@ static NSInteger LBEntryOrder(id a, id b, void *context) {
         NSDate *when = record.lbDate;
         if (!when) continue;
         NSString *driver = [record isKindOfClass:[Event class]] ? ((Event *)record).driver.lbTitle : nil;
-        [entries addObject:LBEntry(when, LBCalendarRecord, record.lbKind, record.lbKind, LBJoined(@[ record.lbCost ?: @"", driver ?: @"" ]),
-                                   record)];
+        LBCalendarEntry *entry = LBEntry(when, LBCalendarRecord, record.lbKind, record.lbKind,
+                                         LBJoined(@[ record.lbCost ?: @"", driver ?: @"" ]), record);
+        if ([record isKindOfClass:[Event class]]) entry.moment = when;
+        [entries addObject:entry];
     }
     /* What the schedules in force plan, past their open reminders. */
     for (Record *record in vehicle.records) {

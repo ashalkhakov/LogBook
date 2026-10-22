@@ -42,10 +42,10 @@ LB_ORMKIT_LIBS = $(ORMKIT)/ORMKit/$(GNUSTEP_OBJ_DIR):$(ORMKIT)/ORMRuntime/$(GNUS
 ifneq ($(LB_SERVER_ONLY),yes)
 APP_NAME = Logbook
 endif
-Logbook_OBJC_FILES = $(wildcard AppKit/*.m) $(wildcard Shared/*.m) $(LB_MODEL)/Constraints/LogbookValidation.m
+Logbook_OBJC_FILES = $(wildcard AppKit/*.m) $(wildcard UDCalendar/*.m) $(wildcard Shared/*.m) $(LB_MODEL)/Constraints/LogbookValidation.m
 Logbook_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 Logbook_COREDATA_CODEGEN = yes
-Logbook_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared -IAppKit -I$(ORMKIT) $(ODATASYNC_INCLUDE_DIRS)
+Logbook_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared -IAppKit -IUDCalendar -I$(ORMKIT) $(ODATASYNC_INCLUDE_DIRS)
 Logbook_LIB_DIRS = -L$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)
 Logbook_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
 Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit

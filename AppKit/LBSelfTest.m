@@ -22,7 +22,7 @@
 #import "LBListsController.h"
 #import "LBAnswersController.h"
 #import "LBCalendarController.h"
-#import "LBMonthView.h"
+#import "UDCalendarView.h"
 #import "LBCalendar.h"
 #import "LBProcedures.h"
 #import "Service+CoreDataClass.h"
@@ -894,6 +894,106 @@ static void LBKindSteps(LBMainWindowController *controller) {
             [NSString stringWithFormat:@"%@ deleting %@", controller.lastError.localizedDescription, deleting]);
 }
 
+/* The view drawn into a bitmap, as it is now. */
+static BOOL LBDrawn(NSView *view) {
+    NSBitmapImageRep *drawn = [view bitmapImageRepForCachingDisplayInRect:view.bounds];
+    [view cacheDisplayInRect:view.bounds toBitmapImageRep:drawn];
+    return drawn.pixelsWide > 0;
+}
+
+/* A calendar item of nothing of Logbook's, for the view alone. */
+@interface LBPlainItem : NSObject <UDCalendarItem>
+@property (nonatomic, copy) NSDate *calendarDate;
+@property (nonatomic, copy) NSString *calendarTitle;
+@property (nonatomic, strong) NSColor *calendarColor;
+@property (nonatomic) BOOL calendarAllDay;
+@end
+
+@implementation LBPlainItem
+@end
+
+@interface LBPlainItems : NSObject <UDCalendarViewDataSource>
+@property (nonatomic, copy) NSArray<LBPlainItem *> *all;
+@property (nonatomic, copy) NSDate *askedFrom;
+@property (nonatomic, copy) NSDate *askedTo;
+@end
+
+@implementation LBPlainItems
+- (NSArray<id<UDCalendarItem>> *)calendarView:(UDCalendarView *)view itemsFrom:(NSDate *)start to:(NSDate *)end {
+    self.askedFrom = start;
+    self.askedTo = end;
+    NSMutableArray *those = [NSMutableArray array];
+    for (LBPlainItem *item in _all) {
+        NSDate *day = [view dayOfItem:item];
+        if ([day compare:start] != NSOrderedAscending && [day compare:end] == NSOrderedAscending) [those addObject:item];
+    }
+    return those;
+}
+@end
+
+/* UDCalendarView alone, made in code, pointed at a data source of plain
+   items: what it asks for, shows, and draws in each mode. */
+static void LBCalendarViewAlone(void) {
+    NSCalendar *gregorian = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    gregorian.timeZone = [NSTimeZone timeZoneWithName:@"Asia/Almaty"];
+    gregorian.firstWeekday = 2;
+    NSDateComponents *parts = [[NSDateComponents alloc] init];
+    parts.year = 2026;
+    parts.month = 10;
+    parts.day = 21;
+    parts.hour = 9;
+    parts.minute = 30;
+    LBPlainItem *timed = [[LBPlainItem alloc] init];
+    timed.calendarDate = [gregorian dateFromComponents:parts];
+    timed.calendarTitle = @"Dentist";
+    timed.calendarColor = [NSColor blueColor];
+    NSCalendar *utc = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    utc.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    parts.hour = 0;
+    parts.minute = 0;
+    parts.day = 23;
+    LBPlainItem *allDay = [[LBPlainItem alloc] init];
+    allDay.calendarDate = [utc dateFromComponents:parts];
+    allDay.calendarTitle = @"Holiday";
+    allDay.calendarColor = [NSColor redColor];
+    allDay.calendarAllDay = YES;
+    LBPlainItems *source = [[LBPlainItems alloc] init];
+    source.all = @[ timed, allDay ];
+
+    UDCalendarView *view = [[UDCalendarView alloc] initWithFrame:NSMakeRect(0, 0, 700, 420)];
+    /* In a window of its own, never shown, as a view is drawn. */
+    NSWindow *host = [[NSWindow alloc] initWithContentRect:view.frame styleMask:NSWindowStyleMaskBorderless backing:NSBackingStoreBuffered
+                                                     defer:NO];
+    host.releasedWhenClosed = NO;
+    [host.contentView addSubview:view];
+    view.calendar = gregorian;
+    view.allDayTimeZone = utc.timeZone;
+    view.dataSource = source;
+    view.date = timed.calendarDate;
+    parts.day = 23;
+    LBCheck(@"alone: an all-day item's day read in its zone", [[view dayOfItem:allDay] isEqualToDate:[gregorian dateFromComponents:parts]],
+            [view dayOfItem:allDay]);
+    LBCheck(@"alone: a month asks for its six weeks, from a Monday", view.mode == UDCalendarModeMonth
+                && [gregorian component:NSCalendarUnitWeekday fromDate:source.askedFrom] == 2
+                && [gregorian components:NSCalendarUnitDay fromDate:source.askedFrom toDate:source.askedTo options:0].day == 42
+                && view.items.count == 2 && LBDrawn(view),
+            view.rangeTitle);
+    view.mode = UDCalendarModeWeek;
+    LBCheck(@"alone: a week asks for its seven days, both items in it", [gregorian components:NSCalendarUnitDay fromDate:source.askedFrom
+                                                                                       toDate:source.askedTo options:0].day == 7
+                && view.items.count == 2 && LBDrawn(view),
+            view.rangeTitle);
+    view.mode = UDCalendarModeDay;
+    LBCheck(@"alone: a day, its item at its time", view.items.count == 1 && view.items.firstObject == timed && LBDrawn(view)
+                && [view.rangeTitle containsString:@"21"],
+            view.rangeTitle);
+    [view goForward:nil];
+    [view goForward:nil];
+    LBCheck(@"alone: two days on, the all-day item", view.items.count == 1 && view.items.firstObject == allDay, view.rangeTitle);
+    [view removeFromSuperview];
+    [host close];
+}
+
 /* The kinds of the month's entries, a set. */
 static NSSet<NSNumber *> *LBKindsOf(NSArray<LBCalendarEntry *> *entries) {
     return [NSSet setWithArray:[entries valueForKey:NSStringFromSelector(@selector(kind))]];
@@ -908,7 +1008,7 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
     [tabs selectTabViewItemWithIdentifier:@"calendar"];
     LBSpin();
     LBCalendarController *calendar = controller.calendarController;
-    LBClick(window, @"thisMonth");
+    LBClick(window, @"calendarToday");
     NSArray<LBCalendarEntry *> *month = calendar.entries;
     NSSet *kinds = LBKindsOf(month);
     LBCheck(@"this month: reminders done, cancelled, and records", [kinds containsObject:@(LBCalendarDone)]
@@ -921,27 +1021,91 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
     LBCheck(@"the oil change done by the service, whose driver is said", [done.detail hasPrefix:@"by Service"]
                 && [done.detail containsString:controller.store.user.lbTitle],
             done.detail);
-    NSTextField *title = (NSTextField *)LBControl(window.contentView, @"calendarMonth");
+    NSTextField *title = (NSTextField *)LBControl(window.contentView, @"calendarTitle");
     NSTableView *list = (NSTableView *)LBControl(window.contentView, @"calendarEntries");
     LBCheck(@"its month said, its entries listed", title.stringValue.length && list.numberOfRows == (NSInteger)calendar.listed.count
                 && calendar.listed.count > 0,
             title.stringValue);
-    LBMonthView *view = calendar.monthView;
-    NSBitmapImageRep *drawn = [view bitmapImageRepForCachingDisplayInRect:view.bounds];
-    [view cacheDisplayInRect:view.bounds toBitmapImageRep:drawn];
-    LBCheck(@"the month drawn", drawn.pixelsWide > 0, nil);
-    view.chosenDay = done.day;
-    [calendar dayChosen:view];
-    LBCheck(@"a day chosen: its entries listed, only", calendar.listed.count > 0
-                && [[NSSet setWithArray:[calendar.listed valueForKey:NSStringFromSelector(@selector(day))]] isEqualToSet:[NSSet setWithObject:done.day]],
-            [calendar.listed valueForKey:NSStringFromSelector(@selector(dayText))]);
+    UDCalendarView *view = calendar.calendarView;
+    LBCheck(@"the month drawn", LBDrawn(view), nil);
+    NSDate *doneDay = [view.calendar startOfDayForDate:done.moment];
+    view.chosenDay = doneDay;
+    [calendar calendarView:view didChooseDay:doneDay];
+    BOOL onlyThatDay = calendar.listed.count > 0;
+    for (LBCalendarEntry *entry in calendar.listed) {
+        if (entry.moment && ![[view.calendar startOfDayForDate:entry.moment] isEqualToDate:doneDay]) onlyThatDay = NO;
+    }
+    LBCheck(@"a day chosen: its entries listed, only", onlyThatDay, [calendar.listed valueForKey:NSStringFromSelector(@selector(dayText))]);
+    view.chosenDay = nil;
+    [calendar calendarView:view didChooseDay:nil];
+
+    /* A week, a day: the same items at their times. */
+    NSSegmentedControl *modes = (NSSegmentedControl *)LBControl(window.contentView, @"calendarMode");
+    view.date = doneDay;
+    [modes setSelectedSegment:UDCalendarModeWeek];
+    [modes sendAction:modes.action to:modes.target];
+    LBSpin();
+    NSInteger days = [view.calendar components:NSCalendarUnitDay fromDate:view.rangeStart toDate:view.rangeEnd options:0].day;
+    BOOL timed = NO;
+    for (id<UDCalendarItem> item in view.items) {
+        if (![item respondsToSelector:@selector(calendarAllDay)] || !item.calendarAllDay) timed = YES;
+    }
+    LBCheck(@"Week: seven days, the done service and the records at their times", view.mode == UDCalendarModeWeek && days == 7 && timed
+                && LBDrawn(view) && [title.stringValue isEqualToString:view.rangeTitle],
+            title.stringValue);
+    if (getenv("LB_SCREENSHOT")) {
+        NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-week.png"];
+        system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);
+    }
+    NSDate *weekStart = view.rangeStart;
+    LBClick(window, @"calendarForward");
+    LBCheck(@"forward a week", [view.calendar components:NSCalendarUnitDay fromDate:weekStart toDate:view.rangeStart options:0].day == 7,
+            view.rangeTitle);
+    LBClick(window, @"calendarBack");
+    [modes setSelectedSegment:UDCalendarModeDay];
+    [modes sendAction:modes.action to:modes.target];
+    LBSpin();
+    days = [view.calendar components:NSCalendarUnitDay fromDate:view.rangeStart toDate:view.rangeEnd options:0].day;
+    LBCheck(@"Day: the day, its items listed", view.mode == UDCalendarModeDay && days == 1 && [view.rangeStart isEqualToDate:doneDay]
+                && calendar.listed.count == view.items.count && view.items.count > 0 && LBDrawn(view),
+            view.rangeTitle);
+    if (getenv("LB_SCREENSHOT")) {
+        NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-day.png"];
+        system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);
+    }
+    LBClick(window, @"calendarForward");
+    LBCheck(@"forward a day", [view.calendar components:NSCalendarUnitDay fromDate:doneDay toDate:view.rangeStart options:0].day == 1,
+            view.rangeTitle);
+
+    /* Back to the month; a day double-clicked there is shown. */
+    [modes setSelectedSegment:UDCalendarModeMonth];
+    [modes sendAction:modes.action to:modes.target];
+    view.date = doneDay;
+    NSPoint inDay = NSZeroPoint;
+    for (CGFloat y = 30; y < NSHeight(view.bounds) && NSEqualPoints(inDay, NSZeroPoint); y += 10) {
+        for (CGFloat x = 10; x < NSWidth(view.bounds); x += 10) {
+            if ([[view dayAtPoint:NSMakePoint(x, y)] isEqualToDate:doneDay]) {
+                inDay = NSMakePoint(x, y);
+                break;
+            }
+        }
+    }
+    NSPoint at = [view convertPoint:inDay toView:nil];
+    NSEvent *twice = [NSEvent mouseEventWithType:NSEventTypeLeftMouseDown location:at modifierFlags:0 timestamp:0
+                                     windowNumber:window.windowNumber context:nil eventNumber:0 clickCount:2 pressure:1];
+    [view mouseDown:twice];
+    LBCheck(@"a day double-clicked in the month: that day shown, the mode said", view.mode == UDCalendarModeDay
+                && [view.rangeStart isEqualToDate:doneDay] && modes.selectedSegment == UDCalendarModeDay,
+            view.rangeTitle);
+    [modes setSelectedSegment:UDCalendarModeMonth];
+    [modes sendAction:modes.action to:modes.target];
     if (getenv("LB_SCREENSHOT")) {
         NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-calendar.png"];
         system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)window.windowNumber, path].UTF8String);
     }
     NSMutableSet *ahead = [NSMutableSet set];
     for (NSInteger i = 0; i < 12; i++) {
-        LBClick(window, @"nextMonth");
+        LBClick(window, @"calendarForward");
         BOOL firstPlanned = ![ahead containsObject:@(LBCalendarPlanned)] && [LBKindsOf(calendar.entries) containsObject:@(LBCalendarPlanned)];
         [ahead unionSet:LBKindsOf(calendar.entries)];
         if (firstPlanned && getenv("LB_SCREENSHOT")) {
@@ -952,7 +1116,7 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
     LBCheck(@"months on: the open reminder, and what the schedule plans", [ahead containsObject:@(LBCalendarOpen)]
                 && [ahead containsObject:@(LBCalendarPlanned)],
             ahead);
-    LBClick(window, @"thisMonth");
+    LBClick(window, @"calendarToday");
 
     /* Another vehicle of the user's, read today elsewhere: All Vehicles
        shows both, each entry with its vehicle. */
@@ -986,8 +1150,12 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
     [controller readAgain];
     LBClick(window, @"calendarAllVehicles");
     NSSet *vehicles = [NSSet setWithArray:[calendar.entries valueForKey:NSStringFromSelector(@selector(vehicleTitle))]];
+    BOOL said = NO;
+    for (id<UDCalendarItem> item in view.items) {
+        if ([item.calendarTitle hasPrefix:@"Self-test Polo: "]) said = YES;
+    }
     LBCheck(@"All Vehicles: both vehicles' entries in the month, each said with its vehicle",
-            calendar.allVehicles && view.showsVehicles && [vehicles containsObject:@"Self-test Golf"] && [vehicles containsObject:@"Self-test Polo"],
+            calendar.allVehicles && said && [vehicles containsObject:@"Self-test Golf"] && [vehicles containsObject:@"Self-test Polo"],
             vehicles);
     if (getenv("LB_SCREENSHOT")) {
         NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-all.png"];
@@ -1040,6 +1208,7 @@ static void LBSteps(LBMainWindowController *controller) {
     LBReportSteps(controller);
     LBReminderSteps(controller, kept);
     LBKindSteps(controller);
+    LBCalendarViewAlone();
     LBCalendarSteps(controller);
 }
 

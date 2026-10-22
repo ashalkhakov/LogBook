@@ -22,6 +22,9 @@ typedef NS_ENUM(NSInteger, LBCalendarKind) {
 @interface LBCalendarEntry : NSObject
 // The day it falls on, a model day.
 @property (nonatomic, readonly) NSDate *day;
+// When on it, for what happened at a time (an event, a reminder done by
+// one); nil for what is of the whole day (due, planned, cancelled).
+@property (nonatomic, readonly, nullable) NSDate *moment;
 @property (nonatomic, readonly) LBCalendarKind kind;
 // "Done", "Cancelled", "Open", "Overdue", "Planned", or the record's kind.
 @property (nonatomic, readonly) NSString *kindText;

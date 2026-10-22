@@ -1,63 +1,76 @@
 #import "LBCalendarController.h"
 #import "LBMainWindowController.h"
-#import "LBMonthView.h"
 #import "LBCalendar.h"
-#import "LBProcedures.h"
 #import "Vehicle+CoreDataClass.h"
 
+/* An entry as the calendar view draws one. */
+@interface LBCalendarItem : NSObject <UDCalendarItem>
+@property (nonatomic, strong) LBCalendarEntry *entry;
+@property (nonatomic) BOOL saysVehicle;
+@end
+
+@implementation LBCalendarItem
+
+- (NSDate *)calendarDate {
+    return _entry.moment ?: _entry.day;
+}
+
+- (BOOL)calendarAllDay {
+    return _entry.moment == nil;
+}
+
+- (NSString *)calendarTitle {
+    return _saysVehicle ? [NSString stringWithFormat:@"%@: %@", _entry.vehicleTitle, _entry.title] : _entry.title;
+}
+
+- (NSString *)calendarDetail {
+    return _entry.detail;
+}
+
+- (BOOL)calendarTentative {
+    return _entry.estimated;
+}
+
+- (NSColor *)calendarColor {
+    switch (_entry.kind) {
+    case LBCalendarDone: return [NSColor colorWithCalibratedRed:0.20 green:0.60 blue:0.30 alpha:1];
+    case LBCalendarCancelled: return [NSColor colorWithCalibratedWhite:0.55 alpha:1];
+    case LBCalendarOpen: return [NSColor colorWithCalibratedRed:0.15 green:0.40 blue:0.85 alpha:1];
+    case LBCalendarOverdue: return [NSColor colorWithCalibratedRed:0.85 green:0.20 blue:0.20 alpha:1];
+    case LBCalendarPlanned: return [NSColor colorWithCalibratedRed:0.45 green:0.65 blue:0.95 alpha:1];
+    case LBCalendarRecord: return [NSColor textColor];
+    }
+    return [NSColor textColor];
+}
+
+@end
+
 @interface LBCalendarController ()
-@property (nonatomic, readwrite, copy) NSString *monthTitle;
+@property (nonatomic, readwrite, copy) NSString *rangeTitle;
 @property (nonatomic, readwrite, copy) NSArray<LBCalendarEntry *> *listed;
 @property (nonatomic, readwrite, copy) NSArray<LBCalendarEntry *> *entries;
 @end
 
-@implementation LBCalendarController
+@implementation LBCalendarController {
+    NSArray<LBCalendarItem *> *_items;
+}
 
 - (instancetype)init {
     if ((self = [super init])) {
-        _monthTitle = @"";
+        _rangeTitle = @"";
         _listed = @[];
         _entries = @[];
+        _items = @[];
     }
     return self;
 }
 
 - (void)awakeFromNib {
     [super awakeFromNib];
-    _monthView.target = self;
-    _monthView.action = @selector(dayChosen:);
-    [self refresh];
-}
-
-- (NSCalendar *)utc {
-    NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
-    calendar.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-    return calendar;
-}
-
-- (void)showMonth:(NSDate *)month {
-    _monthView.month = month;
-    _monthView.chosenDay = nil;
-    [self refresh];
-}
-
-- (void)moveBy:(NSInteger)months {
-    NSDateComponents *by = [[NSDateComponents alloc] init];
-    by.month = months;
-    [self showMonth:[[self utc] dateByAddingComponents:by toDate:_monthView.month options:0]];
-}
-
-- (IBAction)previousMonth:(id)sender {
-    [self moveBy:-1];
-}
-
-- (IBAction)nextMonth:(id)sender {
-    [self moveBy:1];
-}
-
-- (IBAction)thisMonth:(id)sender {
-    NSCalendar *utc = [self utc];
-    [self showMonth:[utc dateFromComponents:[utc components:NSCalendarUnitYear | NSCalendarUnitMonth fromDate:[NSDate date]]]];
+    /* A day of the model is a UTC day. */
+    _calendarView.allDayTimeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+    _calendarView.mode = UDCalendarModeMonth;
+    _modeControl.selectedSegment = UDCalendarModeMonth;
 }
 
 - (void)setAllVehicles:(BOOL)allVehicles {
@@ -65,37 +78,75 @@
     [self refresh];
 }
 
-- (IBAction)dayChosen:(id)sender {
+- (void)refresh {
+    [_calendarView reloadData];
     [self list];
 }
 
-- (void)refresh {
-    if (!_monthView) return;
-    NSDate *now = [NSDate date];
-    NSDateFormatter *title = [[NSDateFormatter alloc] init];
-    title.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
-    title.dateFormat = [NSDateFormatter dateFormatFromTemplate:@"MMMMyyyy" options:0 locale:[NSLocale currentLocale]];
-    self.monthTitle = [title stringFromDate:_monthView.month];
+- (IBAction)previous:(id)sender {
+    [_calendarView goBack:sender];
+}
+
+- (IBAction)next:(id)sender {
+    [_calendarView goForward:sender];
+}
+
+- (IBAction)today:(id)sender {
+    [_calendarView goToToday:sender];
+}
+
+- (IBAction)modeChosen:(id)sender {
+    [_calendarView takeModeFrom:sender];
+}
+
+#pragma mark The view's data source and delegate
+
+- (NSArray<id<UDCalendarItem>> *)calendarView:(UDCalendarView *)view itemsFrom:(NSDate *)start to:(NSDate *)end {
     NSArray *vehicles = _allVehicles ? _windowController.vehicles.arrangedObjects : nil;
     Vehicle *chosen = [_windowController chosenVehicle];
-    self.entries = [LBCalendar entriesOfVehicles:vehicles ?: (chosen ? @[ chosen ] : @[]) from:_monthView.firstDay to:_monthView.endDay
-                                            asOf:now];
-    _monthView.showsVehicles = _allVehicles;
-    _monthView.today = LBDay(now);
-    _monthView.entries = _entries;
+    /* The model's days around the range: a moment near midnight here may
+       be another day there. */
+    NSDate *from = [start dateByAddingTimeInterval:-24 * 60 * 60];
+    NSDate *to = [end dateByAddingTimeInterval:24 * 60 * 60];
+    NSArray<LBCalendarEntry *> *all = [LBCalendar entriesOfVehicles:vehicles ?: (chosen ? @[ chosen ] : @[]) from:from to:to
+                                                               asOf:[NSDate date]];
+    NSMutableArray<LBCalendarItem *> *items = [NSMutableArray array];
+    NSMutableArray<LBCalendarEntry *> *entries = [NSMutableArray array];
+    for (LBCalendarEntry *entry in all) {
+        LBCalendarItem *item = [[LBCalendarItem alloc] init];
+        item.entry = entry;
+        item.saysVehicle = _allVehicles;
+        NSDate *day = [view dayOfItem:item];
+        if ([day compare:start] == NSOrderedAscending || [day compare:end] != NSOrderedAscending) continue;
+        [items addObject:item];
+        [entries addObject:entry];
+    }
+    _items = items;
+    self.entries = entries;
+    return items;
+}
+
+- (void)calendarView:(UDCalendarView *)view didChooseDay:(NSDate *)day {
     [self list];
 }
 
-/* The chosen day's entries, else those of the month itself (not the days
-   of the weeks around it). */
+- (void)calendarViewDidChangeRange:(UDCalendarView *)view {
+    _modeControl.selectedSegment = view.mode;
+    [self list];
+}
+
+/* The chosen day's entries, else the range's (a month's own days only). */
 - (void)list {
-    NSDate *chosen = _monthView.chosenDay;
-    NSCalendar *utc = [self utc];
-    NSInteger month = [utc component:NSCalendarUnitMonth fromDate:_monthView.month];
+    UDCalendarView *view = _calendarView;
+    self.rangeTitle = view.rangeTitle ?: @"";
+    NSCalendar *calendar = view.calendar;
+    NSInteger month = [calendar component:NSCalendarUnitMonth fromDate:view.date];
     NSMutableArray *listed = [NSMutableArray array];
-    for (LBCalendarEntry *entry in _entries) {
-        BOOL shown = chosen ? [entry.day isEqualToDate:chosen] : [utc component:NSCalendarUnitMonth fromDate:entry.day] == month;
-        if (shown) [listed addObject:entry];
+    for (LBCalendarItem *item in _items) {
+        NSDate *day = [view dayOfItem:item];
+        BOOL shown = view.chosenDay ? [day isEqualToDate:view.chosenDay]
+                                    : view.mode != UDCalendarModeMonth || [calendar component:NSCalendarUnitMonth fromDate:day] == month;
+        if (shown) [listed addObject:item.entry];
     }
     self.listed = listed;
 }
