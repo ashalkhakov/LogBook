@@ -1,4 +1,5 @@
 #import "LBSelfTest.h"
+#import "LBConnectPanel.h"
 #import "LBMainWindowController.h"
 #import "LBStore.h"
 #import "Vehicle+CoreDataClass.h"
@@ -35,6 +36,34 @@
 #import "ExchangeRate+CoreDataClass.h"
 
 NSURL *LBSelfTestRoot;
+/* The user's saved settings as the self-test began. */
+static NSDictionary *LBSavedSettings;
+
+static NSDictionary *LBSavedSettingsNow(void) {
+    NSString *domain = [NSBundle mainBundle].bundleIdentifier;
+    return domain ? [[NSUserDefaults standardUserDefaults] persistentDomainForName:domain] ?: @{} : @{};
+}
+
+void LBSelfTestBegin(NSURL *root) {
+    LBSelfTestRoot = root;
+    LBSavedSettings = LBSavedSettingsNow();
+    /* A server with no sign-in: the user the app is, whoever the Mac's user
+       said they were. */
+    LBSetDefault(@"LBUser", @"self-test@example.org");
+}
+
+void LBSetDefault(NSString *key, id value) {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if (!LBSelfTestRoot) {
+        [defaults setObject:value forKey:key];
+        return;
+    }
+    NSMutableDictionary *run = [[defaults volatileDomainForName:NSArgumentDomain] mutableCopy] ?: [NSMutableDictionary dictionary];
+    if (value) run[key] = value;
+    else [run removeObjectForKey:key];
+    [defaults removeVolatileDomainForName:NSArgumentDomain];
+    [defaults setVolatileDomain:run forName:NSArgumentDomain];
+}
 
 static NSUInteger LBFailures;
 
@@ -1261,6 +1290,42 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
             vehicles);
 }
 
+/* What the connect panel connected to, as its delegate. */
+@interface LBConnected : NSObject <LBConnectPanelDelegate>
+@property (nonatomic, strong) ODataSignIn *signIn;
+@end
+
+@implementation LBConnected
+- (void)connectPanel:(LBConnectPanel *)panel didConnect:(ODataSignIn *)signIn {
+    self.signIn = signIn;
+}
+@end
+
+/* A server that asks no one, and an app that does not know its user: the
+   panel asks who they are, refuses what is not an email, and connects as
+   the one given, kept (for this run only, being a self-test). */
+static void LBConnectSteps(void) {
+    LBSetDefault(@"LBUser", @"");
+    LBConnectPanel *panel = [[LBConnectPanel alloc] init];
+    LBConnected *connected = [[LBConnected alloc] init];
+    panel.delegate = connected;
+    [panel showWithServer:LBSelfTestRoot.absoluteString];
+    for (int i = 0; i < 50 && [panel.emailField isHidden]; i++) LBSpin();
+    LBCheck(@"connecting to a server that asks no one, with no user known: asked for an email",
+            ![panel.emailField isHidden] && !connected.signIn, panel.statusLabel.stringValue);
+    LBType(panel.window, @"emailField", @"just a name");
+    LBClick(panel.window, @"connect");
+    LBCheck(@"what is not an email refused", !connected.signIn && [panel.statusLabel.stringValue containsString:@"not an email"],
+            panel.statusLabel.stringValue);
+    LBType(panel.window, @"emailField", @"driver@example.org");
+    LBClick(panel.window, @"connect");
+    LBCheck(@"an email given: connected, as it", connected.signIn != nil
+                && [[[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"] isEqualToString:@"driver@example.org"],
+            [[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"]);
+    [panel close];
+    LBSetDefault(@"LBUser", @"self-test@example.org");
+}
+
 static void LBSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
     controller.quiet = YES;
@@ -1305,17 +1370,35 @@ static void LBSteps(LBMainWindowController *controller) {
     LBCalendarViewAlone();
     LBCalendarSteps(controller);
     LBQuantityFieldAlone();
+    LBConnectSteps();
+    LBCheck(@"the user's saved settings as they were (the server, the user)", [LBSavedSettingsNow()[@"LBServer"] ?: @"" isEqual:LBSavedSettings[@"LBServer"] ?: @""]
+                && [LBSavedSettingsNow()[@"LBUser"] ?: @"" isEqual:LBSavedSettings[@"LBUser"] ?: @""],
+            LBSavedSettingsNow()[@"LBServer"]);
 }
 
+/* The steps run from the run loop, not from a block on the main queue:
+   spinning the run loop then lets what is sent to the main queue (a
+   sign-in's answer) run, as it does for a user. */
+@interface LBSelfTestRun : NSObject
+@property (nonatomic, strong) LBMainWindowController *window;
+@end
+
+@implementation LBSelfTestRun
+- (void)run {
+    @try {
+        LBSteps(self.window);
+    } @catch (NSException *e) {
+        LBCheck(@"no exception", NO, e.reason);
+    }
+    printf("self-test done: %lu failed\n", (unsigned long)LBFailures);
+    fflush(stdout);
+    exit(LBFailures ? 1 : 0);
+}
+@end
+
 void LBRunSelfTest(LBMainWindowController *window) {
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        @try {
-            LBSteps(window);
-        } @catch (NSException *e) {
-            LBCheck(@"no exception", NO, e.reason);
-        }
-        printf("self-test done: %lu failed\n", (unsigned long)LBFailures);
-        fflush(stdout);
-        exit(LBFailures ? 1 : 0);
-    });
+    static LBSelfTestRun *run;
+    run = [[LBSelfTestRun alloc] init];
+    run.window = window;
+    [run performSelector:@selector(run) withObject:nil afterDelay:0.5];
 }

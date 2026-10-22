@@ -1,5 +1,6 @@
 #import "LBConnectPanel.h"
 #import "LBSignIn.h"
+#import "LBSelfTest.h"
 
 @implementation LBConnectPanel {
     ODataSignIn *_signIn;
@@ -30,10 +31,37 @@
     _connectButton.enabled = !waiting;
     _codeLabel.hidden = YES;
     _openPageButton.hidden = YES;
+    _emailLabel.hidden = YES;
+    _emailField.hidden = YES;
+}
+
+/* A server that asks no one: who the user is, asked for. */
+- (void)askForEmail {
+    [self waiting:NO said:@"This server asks no one to sign in. Your email names you in the logbook, as the owner "
+                          @"of your vehicles; this Mac keeps it."];
+    _emailLabel.hidden = NO;
+    _emailField.hidden = NO;
+    [self.window makeFirstResponder:_emailField];
+}
+
+- (void)takeEmail {
+    NSString *email = [_emailField.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+    NSRange at = [email rangeOfString:@"@"];
+    if (at.location == NSNotFound || at.location == 0 || at.location + 1 == email.length) {
+        [self askForEmail];
+        _statusLabel.stringValue = @"That is not an email.";
+        return;
+    }
+    LBSetDefault(@"LBUser", email);
+    [self connected];
 }
 
 - (IBAction)connect:(id)sender {
     NSURL *root = LBServiceRootOf(_serverField.stringValue);
+    if (![_emailField isHidden] && _signIn.kind == ODataSignInNone && [_signIn.serviceRoot isEqual:root]) {
+        [self takeEmail];
+        return;
+    }
     if (!root) {
         [self waiting:NO said:@"That is not a server's address."];
         return;
@@ -52,6 +80,10 @@
     if (signIn.kind == ODataSignInOpenID && !signIn.isSignedIn) {
         [self waiting:YES said:@"Asking for a code to sign in with…"];
         [signIn begin];
+        return;
+    }
+    if (signIn.kind == ODataSignInNone && ![[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"].length) {
+        [self askForEmail];
         return;
     }
     [self connected];
@@ -75,7 +107,7 @@
 }
 
 - (void)connected {
-    [[NSUserDefaults standardUserDefaults] setObject:_signIn.serviceRoot.absoluteString forKey:@"LBServer"];
+    LBSetDefault(@"LBServer", _signIn.serviceRoot.absoluteString);
     [self close];
     [_delegate connectPanel:self didConnect:_signIn];
 }

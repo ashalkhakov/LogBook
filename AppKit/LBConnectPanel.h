@@ -1,7 +1,10 @@
 // Where the logbook is, and as whom (ConnectPanel.xib): the server's
-// address, then signed in as it asks (LBSignIn.h): with no one, or by a
-// code entered in a browser, on any device (OpenID Connect's device flow),
-// which the panel shows until the server lets the app in.
+// address, then signed in as it asks (LBSignIn.h): by a code entered in a
+// browser, on any device (OpenID Connect's device flow), which the panel
+// shows until the server lets the app in; or, a server that asks no one
+// (to try it out), as the email the user gives, asked for once and kept
+// (LBUser). The server it connected to is kept (LBServer), and offered next
+// time.
 
 #import <AppKit/AppKit.h>
 #import <ODataSync/ODataSignIn.h>
@@ -21,6 +24,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSTextField *codeLabel;
 @property (nonatomic, strong) IBOutlet NSButton *openPageButton;
 @property (nonatomic, strong) IBOutlet NSButton *connectButton;
+// Who the user is, to a server that asks no one: shown only then.
+@property (nonatomic, strong) IBOutlet NSTextField *emailLabel;
+@property (nonatomic, strong) IBOutlet NSTextField *emailField;
 @property (nonatomic, weak, nullable) id<LBConnectPanelDelegate> delegate;
 
 // Shown, the address given (nil: the last one) and, when there is one,

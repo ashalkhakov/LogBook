@@ -10,9 +10,7 @@
 int main(int argc, const char *argv[]) {
     for (int i = 1; i + 1 < argc; i++)
         if (!strcmp(argv[i], "--self-test")) {
-            LBSelfTestRoot = [NSURL URLWithString:@(argv[i + 1])];
-            /* A server with no sign-in: the user the app is, unless named. */
-            [[NSUserDefaults standardUserDefaults] registerDefaults:@{ @"LBUser": @"self-test@example.org" }];
+            LBSelfTestBegin([NSURL URLWithString:@(argv[i + 1])]);
         }
     return NSApplicationMain(argc, argv);
 }
