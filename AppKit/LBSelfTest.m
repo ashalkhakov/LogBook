@@ -23,6 +23,7 @@
 #import "LBAnswersController.h"
 #import "LBCalendarController.h"
 #import "UDCalendarView.h"
+#import "UDQuantityField.h"
 #import "LBCalendar.h"
 #import "LBProcedures.h"
 #import "Service+CoreDataClass.h"
@@ -164,19 +165,19 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBCheck(@"the driver's pop-up shows the user", driver.selectedItem.representedObject == user, driver.titleOfSelectedItem);
     NSTextField *date = (NSTextField *)LBControl(window.contentView, @"FillUpTimestamp");
     LBCheck(@"its date shown", date.stringValue.length > 0 && [date.formatter isKindOfClass:[NSDateFormatter class]], date.stringValue);
-    LBType(window, @"FillUpMileage", @"12345");
-    LBType(window, @"FillUpVolume", @"40");
+    LBType(window, @"FillUpMileageValue", @"12345");
+    LBType(window, @"FillUpVolumeValue", @"40");
     LBType(window, @"FillUpFuel", @"Petrol 95");
-    LBType(window, @"FillUpTotal", @"60");
+    LBType(window, @"FillUpTotalValue", @"60");
     LBType(window, @"FillUpStation", @"Shell");
     LBCheck(@"numbers typed are decimals of the fill-up",
             [fillUp.mileageQuantity isKindOfClass:[NSDecimalNumber class]] && fillUp.mileageQuantity.integerValue == 12345
                 && fillUp.volumeQuantity.integerValue == 40 && fillUp.totalAmount.integerValue == 60,
             [NSString stringWithFormat:@"%@ (%@) %@ %@", fillUp.mileageQuantity, [fillUp.mileageQuantity class], fillUp.volumeQuantity,
                                        fillUp.totalAmount]);
-    LBChoose(window, @"FillUpMileageUnit", @"mi");
+    LBType(window, @"FillUpMileageUnit", @"mi");
     LBCheck(@"a unit chosen is the fill-up's", [fillUp.mileageDistanceUnit.code isEqualToString:@"mi"], fillUp.mileageDistanceUnit.code);
-    LBChoose(window, @"FillUpMileageUnit", @"km");
+    LBType(window, @"FillUpMileageUnit", @"km");
     LBCheck(@"and another", [fillUp.mileageDistanceUnit.code isEqualToString:@"km"], fillUp.mileageDistanceUnit.code);
     LBCheck(@"listed with its cost", [fillUp.lbCost hasPrefix:@"60"], fillUp.lbCost);
     /* LB_SCREENSHOT=file.png: the window as it is now, to look at (macOS). */
@@ -257,7 +258,7 @@ static void LBPreferenceSteps(LBMainWindowController *controller) {
             [NSString stringWithFormat:@"here %@, there %@", controller.store.user.currency, there.currency]);
     NSString *zone = [NSTimeZone localTimeZone].name;
     LBCheck(@"and this Mac's time zone, as they had none", [there.timeZone isEqualToString:zone], there.timeZone);
-    LBType(preferences, @"currency", @"EUR");
+    LBType(preferences, @"currencyUnit", @"eur");
     LBClick(preferences, @"done");
     LBCheck(@"saved and closed", !preferences.isVisible && !controller.lastError && !controller.store.context.hasChanges,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
@@ -492,7 +493,7 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBClick(window, @"newSchedule");
     LBCheck(@"New Schedule shows its form", [tab.forms.selectedTabViewItem.identifier isEqual:@"schedule"], nil);
     LBType(window, @"scheduleTask", @"Oil change");
-    LBType(window, @"scheduleEvery", @"15000");
+    LBType(window, @"scheduleEveryValue", @"15000");
     LBType(window, @"scheduleMonths", @"12");
     LBClick(window, @"scheduleSave");
     Schedule *schedule = [tab.schedules.arrangedObjects firstObject];
@@ -533,12 +534,12 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBCheck(@"an item of it, in its currency", item && item.service == service && [item.costCurrency isEqualToString:service.currency],
             item);
     LBType(window, @"ServiceItemTask", @"Oil change");
-    LBType(window, @"ServiceItemCost", @"50");
+    LBType(window, @"ServiceItemCostValue", @"50");
     LBCheck(@"its task and cost typed", [item.task isEqualToString:@"Oil change"] && item.costAmount.integerValue == 50, item.task);
     LBCheck(@"with no odometer reading yet, a warning that no next reminder would be made",
             [controller reminderWarnings].count == 1 && [[controller reminderWarnings].firstObject.localizedDescription containsString:@"Oil change"],
             [controller reminderWarnings]);
-    LBType(window, @"ServiceMileage", @"13000");
+    LBType(window, @"ServiceMileageValue", @"13000");
     LBClick(window, @"save");
     LBCheck(@"the service saved", !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
@@ -698,10 +699,10 @@ static void LBKindSteps(LBMainWindowController *controller) {
 
     Expense *expense = (Expense *)LBAddRecord(controller, [Expense class]);
     LBChoose(window, @"ExpenseKind", @"Car wash");
-    LBType(window, @"ExpenseMileage", @"14100");
-    LBType(window, @"ExpenseTotal", @"12.50");
-    LBType(window, @"ExpenseCharged", @"13.90");
-    LBType(window, @"ExpenseChargedCurrency", @"USD");
+    LBType(window, @"ExpenseMileageValue", @"14100");
+    LBType(window, @"ExpenseTotalValue", @"12.50");
+    LBType(window, @"ExpenseChargedValue", @"13.90");
+    LBType(window, @"ExpenseChargedUnit", @"USD");
     Expense *keptExpense = LBSaved(controller, expense, @"the expense saved");
     LBCheck(@"the server has it: its kind, odometer, cost and what was charged",
             [keptExpense.expenseKind.name isEqualToString:@"Car wash"] && LBIs(keptExpense.mileageQuantity, @"14100")
@@ -709,14 +710,14 @@ static void LBKindSteps(LBMainWindowController *controller) {
                 && [keptExpense.chargedCurrency isEqualToString:@"USD"],
             keptExpense);
     LBChooseRecord(controller, expense);
-    LBType(window, @"ExpenseTotal", @"15");
+    LBType(window, @"ExpenseTotalValue", @"15");
     keptExpense = LBSaved(controller, expense, @"the expense corrected");
     LBCheck(@"the server has the cost corrected", LBIs(keptExpense.totalAmount, @"15"), keptExpense.totalAmount);
 
     Trip *trip = (Trip *)LBAddRecord(controller, [Trip class]);
-    LBType(window, @"TripMileage", @"14200");
+    LBType(window, @"TripMileageValue", @"14200");
     LBType(window, @"TripPlace", @"Berlin");
-    LBType(window, @"TripDistance", @"14450");
+    LBType(window, @"TripDistanceValue", @"14450");
     LBType(window, @"TripWentTo", @"Hamburg");
     LBType(window, @"TripPurpose", @"Delivery");
     Trip *keptTrip = LBSaved(controller, trip, @"the trip saved");
@@ -730,8 +731,8 @@ static void LBKindSteps(LBMainWindowController *controller) {
 
     Income *income = (Income *)LBAddRecord(controller, [Income class]);
     LBType(window, @"IncomeKind", @"Delivery fee");
-    LBType(window, @"IncomeEarned", @"80");
-    LBType(window, @"IncomeEarnedCurrency", @"EUR");
+    LBType(window, @"IncomeEarnedValue", @"80");
+    LBType(window, @"IncomeEarnedUnit", @"EUR");
     LBChoose(window, @"IncomeTrip", trip.lbTitle);
     Income *keptIncome = LBSaved(controller, income, @"the income saved");
     LBCheck(@"the server has it, for the trip", [keptIncome.incomeKind isEqualToString:@"Delivery fee"] && LBIs(keptIncome.earnedAmount, @"80")
@@ -741,7 +742,7 @@ static void LBKindSteps(LBMainWindowController *controller) {
     NSTextField *earned = (NSTextField *)LBControl(window.contentView, @"TripIncome");
     LBCheck(@"the trip shows what it earned", [earned.stringValue isEqualToString:@"80.00 EUR"], earned.stringValue);
     LBChooseRecord(controller, income);
-    LBType(window, @"IncomeEarned", @"90");
+    LBType(window, @"IncomeEarnedValue", @"90");
     keptIncome = LBSaved(controller, income, @"the income corrected");
     LBCheck(@"the server has it corrected", LBIs(keptIncome.earnedAmount, @"90"), keptIncome.earnedAmount);
 
@@ -751,8 +752,8 @@ static void LBKindSteps(LBMainWindowController *controller) {
     LBType(window, @"TyreSetModel", @"Alpin 6");
     LBType(window, @"TyreSetSize", @"205/55 R16");
     LBTypeDay(window, @"TyreSetDate", LBDay([NSDate date]));
-    LBType(window, @"TyreSetTotal", @"400");
-    LBType(window, @"TyreSetTotalCurrency", @"EUR");
+    LBType(window, @"TyreSetTotalValue", @"400");
+    LBType(window, @"TyreSetTotalUnit", @"EUR");
     TyreSet *keptTyres = LBSaved(controller, tyres, @"the tyre set saved");
     LBCheck(@"the server has it, bought for 400", [keptTyres.tyreSetName isEqualToString:@"Winter set"] && keptTyres.date
                 && LBIs(keptTyres.totalAmount, @"400"),
@@ -763,7 +764,7 @@ static void LBKindSteps(LBMainWindowController *controller) {
     LBCheck(@"the server has its model corrected", [keptTyres.tyreModel isEqualToString:@"Alpin 7"], keptTyres.tyreModel);
 
     TyreChange *change = (TyreChange *)LBAddRecord(controller, [TyreChange class]);
-    LBType(window, @"TyreChangeMileage", @"14500");
+    LBType(window, @"TyreChangeMileageValue", @"14500");
     LBChoose(window, @"TyreChangeTyreSet", @"Winter set");
     LBType(window, @"TyreChangeTread", @"7.5");
     TyreChange *keptChange = LBSaved(controller, change, @"the tyre change saved");
@@ -780,8 +781,8 @@ static void LBKindSteps(LBMainWindowController *controller) {
     LBType(window, @"DocumentNumber", @"P-1234");
     LBTypeDay(window, @"DocumentDate", LBDay([NSDate date]));
     LBTypeDay(window, @"DocumentExpires", LBAddMonths(LBDay([NSDate date]), 12));
-    LBType(window, @"DocumentTotal", @"300");
-    LBType(window, @"DocumentTotalCurrency", @"EUR");
+    LBType(window, @"DocumentTotalValue", @"300");
+    LBType(window, @"DocumentTotalUnit", @"EUR");
     Document *keptDocument = LBSaved(controller, document, @"the document saved");
     LBCheck(@"the server has it, issued today, valid a year", [keptDocument.issuer isEqualToString:@"Allianz"]
                 && [keptDocument.date isEqualToDate:LBDay([NSDate date])]
@@ -793,11 +794,11 @@ static void LBKindSteps(LBMainWindowController *controller) {
     LBCheck(@"the server has its number corrected", [keptDocument.documentNumber isEqualToString:@"P-1235"], keptDocument.documentNumber);
 
     MeterReading *reading = (MeterReading *)LBAddRecord(controller, [MeterReading class]);
-    LBType(window, @"MeterReadingMileage", @"14600");
+    LBType(window, @"MeterReadingMileageValue", @"14600");
     MeterReading *keptReading = LBSaved(controller, reading, @"the meter reading saved");
     LBCheck(@"the server has it", LBIs(keptReading.mileageQuantity, @"14600"), keptReading);
     LBChooseRecord(controller, reading);
-    LBType(window, @"MeterReadingMileage", @"14650");
+    LBType(window, @"MeterReadingMileageValue", @"14650");
     keptReading = LBSaved(controller, reading, @"the meter reading corrected");
     LBCheck(@"the server has it corrected", LBIs(keptReading.mileageQuantity, @"14650"), keptReading.mileageQuantity);
 
@@ -828,7 +829,7 @@ static void LBKindSteps(LBMainWindowController *controller) {
             nil);
 
     Inspection *inspection = (Inspection *)LBAddRecord(controller, [Inspection class]);
-    LBType(window, @"InspectionMileage", @"14700");
+    LBType(window, @"InspectionMileageValue", @"14700");
     LBChoose(window, @"InspectionChecklist", @"Monthly check");
     NSArray<LBAnswerRow *> *rows = controller.answersController.rows;
     LBCheck(@"its checklist's questions, in order, to answer", rows.count == 2 && [rows[0].questionText isEqualToString:@"Which lights are out?"],
@@ -870,8 +871,8 @@ static void LBKindSteps(LBMainWindowController *controller) {
         if ([record isKindOfClass:[FillUp class]]) fillUp = (FillUp *)record;
     }
     LBChooseRecord(controller, fillUp);
-    LBType(window, @"FillUpCharged", @"65");
-    LBType(window, @"FillUpChargedCurrency", @"USD");
+    LBType(window, @"FillUpChargedValue", @"65");
+    LBType(window, @"FillUpChargedUnit", @"USD");
     FillUp *keptFillUp = LBSaved(controller, fillUp, @"the fill-up corrected");
     LBCheck(@"the server has what was charged", LBIs(keptFillUp.chargedAmount, @"65") && [keptFillUp.chargedCurrency isEqualToString:@"USD"],
             keptFillUp.chargedAmount);
@@ -994,6 +995,96 @@ static void LBCalendarViewAlone(void) {
     [view goForward:nil];
     LBCheck(@"alone: two days on, the all-day item", view.items.count == 1 && view.items.firstObject == allDay, view.rangeTitle);
     [view removeFromSuperview];
+    [host close];
+}
+
+/* A quantity of nothing of Logbook's, for the field alone. */
+@interface LBPlainQuantity : NSObject
+@property (nonatomic, copy) NSDecimalNumber *amount;
+@property (nonatomic, strong) id currency;
+@end
+
+@implementation LBPlainQuantity
+@end
+
+/* UDQuantityField alone, made in code, bound to a plain object: a unit
+   typed as a code, as part of a name, or not one; the number with the
+   unit's decimals; what is typed given to the object, and what the object
+   has shown. */
+static void LBQuantityFieldAlone(void) {
+    LBPlainQuantity *quantity = [[LBPlainQuantity alloc] init];
+    quantity.amount = [NSDecimalNumber decimalNumberWithString:@"12.5"];
+    quantity.currency = @"EUR";
+    UDCurrencies *currencies = [[UDCurrencies alloc] init];
+    currencies.codes = @[ @"EUR", @"USD", @"JPY", @"GBP" ];
+
+    UDQuantityField *field = [[UDQuantityField alloc] initWithFrame:NSMakeRect(20, 20, 240, 26)];
+    field.identifier = @"alone";
+    field.units = currencies;
+    [field bind:@"value" toObject:quantity withKeyPath:@"amount" options:nil];
+    [field bind:@"unit" toObject:quantity withKeyPath:@"currency" options:nil];
+    NSWindow *host = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 280, 66) styleMask:NSWindowStyleMaskTitled
+                                                   backing:NSBackingStoreBuffered defer:NO];
+    host.releasedWhenClosed = NO;
+    [host.contentView addSubview:field];
+    [host orderBack:nil];
+    LBCheck(@"quantity alone: 12.50 EUR shown", [field.valueField.stringValue isEqualToString:@"12.50"]
+                && [field.unitBox.stringValue isEqualToString:@"EUR"],
+            [NSString stringWithFormat:@"%@ %@", field.valueField.stringValue, field.unitBox.stringValue]);
+
+    LBType(host, @"aloneUnit", @"yen");
+    LBCheck(@"quantity alone: part of a name typed, the one currency it names taken", [quantity.currency isEqual:@"JPY"]
+                && [field.unitBox.stringValue isEqualToString:@"JPY"],
+            quantity.currency);
+    LBCheck(@"quantity alone: yen have no decimals", [field.valueField.stringValue rangeOfCharacterFromSet:[NSCharacterSet punctuationCharacterSet]].location
+                == NSNotFound,
+            field.valueField.stringValue);
+
+    LBType(host, @"aloneUnit", @"gbp");
+    LBCheck(@"quantity alone: a code typed small, taken", [quantity.currency isEqual:@"GBP"], quantity.currency);
+
+    NSComboBox *box = field.unitBox;
+    [host makeFirstResponder:box];
+    NSTextView *editor = (NSTextView *)[host fieldEditor:NO forObject:box];
+    [editor selectAll:nil];
+    [editor insertText:@"u" replacementRange:NSMakeRange(NSNotFound, 0)];
+    NSInteger listed = [box.dataSource numberOfItemsInComboBox:box];
+    NSString *first = listed ? [box.dataSource comboBox:box objectValueForItemAtIndex:0] : nil;
+    LBCheck(@"quantity alone: what is typed lists those that have it, a code beginning with it first", listed >= 2 && listed < 4
+                && [first hasPrefix:@"USD"],
+            [NSString stringWithFormat:@"%ld, %@", (long)listed, first]);
+    [host makeFirstResponder:nil];
+    LBSpin();
+    LBCheck(@"quantity alone: more than one, the currency before kept", [quantity.currency isEqual:@"GBP"]
+                && [box.stringValue isEqualToString:@"GBP"] && [box.dataSource numberOfItemsInComboBox:box] == 4,
+            box.stringValue);
+
+    LBType(host, @"aloneUnit", @"XYZ");
+    LBCheck(@"quantity alone: none, the currency before kept", [quantity.currency isEqual:@"GBP"], quantity.currency);
+
+    LBType(host, @"aloneValue", @"7.5");
+    LBCheck(@"quantity alone: an amount typed, given", [quantity.amount isEqual:[NSDecimalNumber decimalNumberWithString:@"7.5"]],
+            quantity.amount);
+    quantity.amount = [NSDecimalNumber decimalNumberWithString:@"3"];
+    LBCheck(@"quantity alone: the object's amount shown, with the currency's decimals",
+            [field.valueField.stringValue isEqualToString:@"3.00"], field.valueField.stringValue);
+
+    /* Objects, said by key paths. */
+    UDKeyPathUnits *distances = [[UDKeyPathUnits alloc] init];
+    NSDictionary *km = @{ @"code" : @"km", @"name" : @"kilometres" };
+    NSDictionary *mi = @{ @"code" : @"mi", @"name" : @"miles" };
+    distances.objects = @[ km, mi ];
+    distances.codeKeyPath = @"code";
+    distances.nameKeyPath = @"name";
+    quantity.currency = km;
+    field.units = distances;
+    LBType(host, @"aloneUnit", @"mile");
+    LBCheck(@"quantity alone: units by key path, one found by its name", quantity.currency == mi
+                && [field.unitBox.stringValue isEqualToString:@"mi"],
+            quantity.currency);
+    LBCheck(@"quantity alone: drawn", LBDrawn(field), nil);
+    [field unbind:@"value"];
+    [field unbind:@"unit"];
     [host close];
 }
 
@@ -1213,6 +1304,7 @@ static void LBSteps(LBMainWindowController *controller) {
     LBKindSteps(controller);
     LBCalendarViewAlone();
     LBCalendarSteps(controller);
+    LBQuantityFieldAlone();
 }
 
 void LBRunSelfTest(LBMainWindowController *window) {

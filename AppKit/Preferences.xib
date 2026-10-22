@@ -18,6 +18,7 @@
                 <binding destination="-2" name="contentObject" keyPath="user" id="userContent"/>
             </connections>
         </objectController>
+        <customObject id="currencies" userLabel="Currencies" customClass="LBCurrencies"/>
         <arrayController mode="entity" entityName="DistanceUnit" automaticallyPreparesContent="YES" userLabel="DistanceUnit" id="distanceUnits">
             <connections>
                 <binding destination="-2" name="managedObjectContext" keyPath="context" id="distanceUnitsContext"/>
@@ -99,23 +100,21 @@
                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                         </textFieldCell>
                     </textField>
-                    <textField verticalHuggingPriority="750" identifier="currency" id="currency">
-                        <rect key="frame" x="124" y="142" width="296" height="22"/>
+                    <customView identifier="currency" id="currency" customClass="UDQuantityField">
+                        <rect key="frame" x="124" y="140" width="200" height="26"/>
                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="currencyCell">
-                            
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
+                        <userDefinedRuntimeAttributes>
+                            <userDefinedRuntimeAttribute type="boolean" keyPath="showsValue" value="NO"/>
+                        </userDefinedRuntimeAttributes>
                         <connections>
-                            <binding destination="user" name="value" keyPath="selection.currency" id="currencyValue">
+                            <outlet property="units" destination="currencies" id="currencyUnits"/>
+                            <binding destination="user" name="unit" keyPath="selection.currency" id="currencyValue">
                                 <dictionary key="options">
                                     <bool key="NSValidatesImmediately" value="YES"/>
                                 </dictionary>
                             </binding>
                         </connections>
-                    </textField>
+                    </customView>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="distanceUnitLabel">
                         <rect key="frame" x="16" y="113" width="100" height="17"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>

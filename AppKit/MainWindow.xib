@@ -214,6 +214,23 @@
                 <binding destination="-2" name="contentObject" keyPath="chosenRecords.Inspection" id="InspectionFormContent"/>
             </connections>
         </objectController>
+        <customObject id="currencies" userLabel="Currencies" customClass="LBCurrencies"/>
+        <customObject id="distanceUnitsSource" userLabel="DistanceUnitsSource" customClass="UDKeyPathUnits">
+            <userDefinedRuntimeAttributes>
+                <userDefinedRuntimeAttribute type="string" keyPath="codeKeyPath" value="lbTitle"/>
+            </userDefinedRuntimeAttributes>
+            <connections>
+                <outlet property="controller" destination="distanceUnits" id="distanceUnitsSourceController"/>
+            </connections>
+        </customObject>
+        <customObject id="volumeUnitsSource" userLabel="VolumeUnitsSource" customClass="UDKeyPathUnits">
+            <userDefinedRuntimeAttributes>
+                <userDefinedRuntimeAttribute type="string" keyPath="codeKeyPath" value="lbTitle"/>
+            </userDefinedRuntimeAttributes>
+            <connections>
+                <outlet property="controller" destination="volumeUnits" id="volumeUnitsSourceController"/>
+            </connections>
+        </customObject>
         <window title="Logbook" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookMainWindow" animationBehavior="default" id="window">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <rect key="contentRect" x="160" y="120" width="1060" height="680"/>
@@ -866,42 +883,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="FillUpMileage" id="FillUpMileage">
-                                                                <rect key="frame" x="128" y="256" width="134" height="22"/>
+                                                            <customView identifier="FillUpMileage" id="FillUpMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="254" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="FillUpMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="FillUpMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="FillUpMileageUnits"/>
                                                                     <binding destination="FillUpForm" name="value" keyPath="selection.mileageQuantity" id="FillUpMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="FillUpForm" name="unit" keyPath="selection.mileageDistanceUnit" id="FillUpMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="FillUpMileageUnit" id="FillUpMileageUnit">
-                                                                <rect key="frame" x="266" y="254" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="FillUpMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="FillUpMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="FillUpMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="FillUpMileageUnitContent" id="FillUpMileageUnitValues"/>
-                                                                    <binding destination="FillUpForm" name="selectedObject" keyPath="selection.mileageDistanceUnit" previousBinding="FillUpMileageUnitValues" id="FillUpMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpVolumeLabel">
                                                                 <rect key="frame" x="8" y="229" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -911,42 +913,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="FillUpVolume" id="FillUpVolume">
-                                                                <rect key="frame" x="128" y="226" width="134" height="22"/>
+                                                            <customView identifier="FillUpVolume" id="FillUpVolume" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="224" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="FillUpVolumeCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="FillUpVolumeFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="volumeUnitsSource" id="FillUpVolumeUnits"/>
                                                                     <binding destination="FillUpForm" name="value" keyPath="selection.volumeQuantity" id="FillUpVolumeValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="FillUpForm" name="unit" keyPath="selection.volumeVolumeUnit" id="FillUpVolumeUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="FillUpVolumeUnit" id="FillUpVolumeUnit">
-                                                                <rect key="frame" x="266" y="224" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="FillUpVolumeUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="FillUpVolumeUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="volumeUnits" name="content" keyPath="arrangedObjects" id="FillUpVolumeUnitContent"/>
-                                                                    <binding destination="volumeUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="FillUpVolumeUnitContent" id="FillUpVolumeUnitValues"/>
-                                                                    <binding destination="FillUpForm" name="selectedObject" keyPath="selection.volumeVolumeUnit" previousBinding="FillUpVolumeUnitValues" id="FillUpVolumeUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpFuelLabel">
                                                                 <rect key="frame" x="8" y="199" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -982,40 +969,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="FillUpTotal" id="FillUpTotal">
-                                                                <rect key="frame" x="128" y="166" width="168" height="22"/>
+                                                            <customView identifier="FillUpTotal" id="FillUpTotal" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="164" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="FillUpTotalCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="FillUpTotalFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="FillUpTotalUnits"/>
                                                                     <binding destination="FillUpForm" name="value" keyPath="selection.totalAmount" id="FillUpTotalValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="FillUpTotalCurrency" id="FillUpTotalCurrency">
-                                                                <rect key="frame" x="302" y="166" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="FillUpTotalCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="FillUpForm" name="value" keyPath="selection.totalCurrency" id="FillUpTotalCurrencyValue">
+                                                                    <binding destination="FillUpForm" name="unit" keyPath="selection.totalCurrency" id="FillUpTotalCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpStationLabel">
                                                                 <rect key="frame" x="374" y="289" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1116,40 +1091,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="FillUpCharged" id="FillUpCharged">
-                                                                <rect key="frame" x="494" y="166" width="168" height="22"/>
+                                                            <customView identifier="FillUpCharged" id="FillUpCharged" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="164" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="FillUpChargedCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="FillUpChargedFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="FillUpChargedUnits"/>
                                                                     <binding destination="FillUpForm" name="value" keyPath="selection.chargedAmount" id="FillUpChargedValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="FillUpChargedCurrency" id="FillUpChargedCurrency">
-                                                                <rect key="frame" x="668" y="166" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="FillUpChargedCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="FillUpForm" name="value" keyPath="selection.chargedCurrency" id="FillUpChargedCurrencyValue">
+                                                                    <binding destination="FillUpForm" name="unit" keyPath="selection.chargedCurrency" id="FillUpChargedCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
@@ -1193,42 +1156,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ServiceMileage" id="ServiceMileage">
-                                                                <rect key="frame" x="128" y="256" width="134" height="22"/>
+                                                            <customView identifier="ServiceMileage" id="ServiceMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="254" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ServiceMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="ServiceMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="ServiceMileageUnits"/>
                                                                     <binding destination="ServiceForm" name="value" keyPath="selection.mileageQuantity" id="ServiceMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ServiceForm" name="unit" keyPath="selection.mileageDistanceUnit" id="ServiceMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="ServiceMileageUnit" id="ServiceMileageUnit">
-                                                                <rect key="frame" x="266" y="254" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="ServiceMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="ServiceMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="ServiceMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="ServiceMileageUnitContent" id="ServiceMileageUnitValues"/>
-                                                                    <binding destination="ServiceForm" name="selectedObject" keyPath="selection.mileageDistanceUnit" previousBinding="ServiceMileageUnitValues" id="ServiceMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceTitleLabel">
                                                                 <rect key="frame" x="8" y="229" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1318,23 +1266,21 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ServiceCurrency" id="ServiceCurrency">
-                                                                <rect key="frame" x="128" y="136" width="230" height="22"/>
+                                                            <customView identifier="ServiceCurrency" id="ServiceCurrency" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="134" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ServiceCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="showsValue" value="NO"/>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
-                                                                    <binding destination="ServiceForm" name="value" keyPath="selection.currency" id="ServiceCurrencyValue">
+                                                                    <outlet property="units" destination="currencies" id="ServiceCurrencyUnits"/>
+                                                                    <binding destination="ServiceForm" name="unit" keyPath="selection.currency" id="ServiceCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceDiscountLabel">
                                                                 <rect key="frame" x="374" y="289" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1344,40 +1290,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ServiceDiscount" id="ServiceDiscount">
-                                                                <rect key="frame" x="494" y="286" width="168" height="22"/>
+                                                            <customView identifier="ServiceDiscount" id="ServiceDiscount" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="284" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ServiceDiscountCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="ServiceDiscountFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="ServiceDiscountUnits"/>
                                                                     <binding destination="ServiceForm" name="value" keyPath="selection.moneyAmount" id="ServiceDiscountValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ServiceDiscountCurrency" id="ServiceDiscountCurrency">
-                                                                <rect key="frame" x="668" y="286" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ServiceDiscountCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="ServiceForm" name="value" keyPath="selection.moneyCurrency" id="ServiceDiscountCurrencyValue">
+                                                                    <binding destination="ServiceForm" name="unit" keyPath="selection.moneyCurrency" id="ServiceDiscountCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceTotalLabel">
                                                                 <rect key="frame" x="374" y="259" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1387,40 +1321,29 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ServiceTotal" id="ServiceTotal">
-                                                                <rect key="frame" x="494" y="256" width="168" height="22"/>
+                                                            <customView identifier="ServiceTotal" id="ServiceTotal" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="254" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="NO" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ServiceTotalCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="ServiceTotalFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="boolean" keyPath="enabled" value="NO"/>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="ServiceTotalUnits"/>
                                                                     <binding destination="ServiceForm" name="value" keyPath="selection.totalAmount" id="ServiceTotalValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ServiceTotalCurrency" id="ServiceTotalCurrency">
-                                                                <rect key="frame" x="668" y="256" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="NO" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ServiceTotalCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="controlColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="ServiceForm" name="value" keyPath="selection.totalCurrency" id="ServiceTotalCurrencyValue">
+                                                                    <binding destination="ServiceForm" name="unit" keyPath="selection.totalCurrency" id="ServiceTotalCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServicePaymentLabel">
                                                                 <rect key="frame" x="374" y="229" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1668,40 +1591,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ServiceItemCost" id="ServiceItemCost">
-                                                                <rect key="frame" x="500" y="76" width="120" height="22"/>
+                                                            <customView identifier="ServiceItemCost" id="ServiceItemCost" customClass="UDQuantityField">
+                                                                <rect key="frame" x="500" y="74" width="182" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ServiceItemCostCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="ServiceItemCostFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="ServiceItemCostUnits"/>
                                                                     <binding destination="serviceItems" name="value" keyPath="selection.costAmount" id="ServiceItemCostValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ServiceItemCurrency" id="ServiceItemCurrency">
-                                                                <rect key="frame" x="626" y="76" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ServiceItemCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="serviceItems" name="value" keyPath="selection.costCurrency" id="ServiceItemCurrencyValue">
+                                                                    <binding destination="serviceItems" name="unit" keyPath="selection.costCurrency" id="ServiceItemCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                                                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceChargedLabel">
                                                                 <rect key="frame" x="374" y="49" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1711,40 +1622,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ServiceCharged" id="ServiceCharged">
-                                                                <rect key="frame" x="494" y="46" width="168" height="22"/>
+                                                            <customView identifier="ServiceCharged" id="ServiceCharged" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="44" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ServiceChargedCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="ServiceChargedFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="ServiceChargedUnits"/>
                                                                     <binding destination="ServiceForm" name="value" keyPath="selection.chargedAmount" id="ServiceChargedValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ServiceChargedCurrency" id="ServiceChargedCurrency">
-                                                                <rect key="frame" x="668" y="46" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ServiceChargedCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="ServiceForm" name="value" keyPath="selection.chargedCurrency" id="ServiceChargedCurrencyValue">
+                                                                    <binding destination="ServiceForm" name="unit" keyPath="selection.chargedCurrency" id="ServiceChargedCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
@@ -1827,40 +1726,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ExpenseTotal" id="ExpenseTotal">
-                                                                <rect key="frame" x="128" y="226" width="168" height="22"/>
+                                                            <customView identifier="ExpenseTotal" id="ExpenseTotal" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="224" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ExpenseTotalCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="ExpenseTotalFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="ExpenseTotalUnits"/>
                                                                     <binding destination="ExpenseForm" name="value" keyPath="selection.totalAmount" id="ExpenseTotalValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ExpenseTotalCurrency" id="ExpenseTotalCurrency">
-                                                                <rect key="frame" x="302" y="226" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ExpenseTotalCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="ExpenseForm" name="value" keyPath="selection.totalCurrency" id="ExpenseTotalCurrencyValue">
+                                                                    <binding destination="ExpenseForm" name="unit" keyPath="selection.totalCurrency" id="ExpenseTotalCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ExpenseDriverLabel">
                                                                 <rect key="frame" x="374" y="289" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1924,42 +1811,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ExpenseMileage" id="ExpenseMileage">
-                                                                <rect key="frame" x="494" y="226" width="134" height="22"/>
+                                                            <customView identifier="ExpenseMileage" id="ExpenseMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="224" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ExpenseMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="ExpenseMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="ExpenseMileageUnits"/>
                                                                     <binding destination="ExpenseForm" name="value" keyPath="selection.mileageQuantity" id="ExpenseMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ExpenseForm" name="unit" keyPath="selection.mileageDistanceUnit" id="ExpenseMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="ExpenseMileageUnit" id="ExpenseMileageUnit">
-                                                                <rect key="frame" x="632" y="224" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="ExpenseMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="ExpenseMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="ExpenseMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="ExpenseMileageUnitContent" id="ExpenseMileageUnitValues"/>
-                                                                    <binding destination="ExpenseForm" name="selectedObject" keyPath="selection.mileageDistanceUnit" previousBinding="ExpenseMileageUnitValues" id="ExpenseMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ExpenseChargedLabel">
                                                                 <rect key="frame" x="374" y="199" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -1969,40 +1841,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ExpenseCharged" id="ExpenseCharged">
-                                                                <rect key="frame" x="494" y="196" width="168" height="22"/>
+                                                            <customView identifier="ExpenseCharged" id="ExpenseCharged" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="194" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="ExpenseChargedCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="ExpenseChargedFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="ExpenseChargedUnits"/>
                                                                     <binding destination="ExpenseForm" name="value" keyPath="selection.chargedAmount" id="ExpenseChargedValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="ExpenseChargedCurrency" id="ExpenseChargedCurrency">
-                                                                <rect key="frame" x="668" y="196" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ExpenseChargedCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="ExpenseForm" name="value" keyPath="selection.chargedCurrency" id="ExpenseChargedCurrencyValue">
+                                                                    <binding destination="ExpenseForm" name="unit" keyPath="selection.chargedCurrency" id="ExpenseChargedCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
@@ -2046,42 +1906,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="TripMileage" id="TripMileage">
-                                                                <rect key="frame" x="128" y="256" width="134" height="22"/>
+                                                            <customView identifier="TripMileage" id="TripMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="254" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="TripMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="TripMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="TripMileageUnits"/>
                                                                     <binding destination="TripForm" name="value" keyPath="selection.mileageQuantity" id="TripMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="TripForm" name="unit" keyPath="selection.mileageDistanceUnit" id="TripMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="TripMileageUnit" id="TripMileageUnit">
-                                                                <rect key="frame" x="266" y="254" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="TripMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="TripMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="TripMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="TripMileageUnitContent" id="TripMileageUnitValues"/>
-                                                                    <binding destination="TripForm" name="selectedObject" keyPath="selection.mileageDistanceUnit" previousBinding="TripMileageUnitValues" id="TripMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="TripPlaceLabel">
                                                                 <rect key="frame" x="8" y="229" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -2143,42 +1988,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="TripDistance" id="TripDistance">
-                                                                <rect key="frame" x="128" y="166" width="134" height="22"/>
+                                                            <customView identifier="TripDistance" id="TripDistance" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="164" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="TripDistanceCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="TripDistanceFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="TripDistanceUnits"/>
                                                                     <binding destination="TripForm" name="value" keyPath="selection.distanceQuantity" id="TripDistanceValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="TripForm" name="unit" keyPath="selection.distanceDistanceUnit" id="TripDistanceUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="TripDistanceUnit" id="TripDistanceUnit">
-                                                                <rect key="frame" x="266" y="164" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="TripDistanceUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="TripDistanceUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="TripDistanceUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="TripDistanceUnitContent" id="TripDistanceUnitValues"/>
-                                                                    <binding destination="TripForm" name="selectedObject" keyPath="selection.distanceDistanceUnit" previousBinding="TripDistanceUnitValues" id="TripDistanceUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="TripWentToLabel">
                                                                 <rect key="frame" x="374" y="289" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -2380,40 +2210,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="IncomeEarned" id="IncomeEarned">
-                                                                <rect key="frame" x="128" y="226" width="168" height="22"/>
+                                                            <customView identifier="IncomeEarned" id="IncomeEarned" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="224" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="IncomeEarnedCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="IncomeEarnedFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="IncomeEarnedUnits"/>
                                                                     <binding destination="IncomeForm" name="value" keyPath="selection.earnedAmount" id="IncomeEarnedValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="IncomeEarnedCurrency" id="IncomeEarnedCurrency">
-                                                                <rect key="frame" x="302" y="226" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="IncomeEarnedCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="IncomeForm" name="value" keyPath="selection.earnedCurrency" id="IncomeEarnedCurrencyValue">
+                                                                    <binding destination="IncomeForm" name="unit" keyPath="selection.earnedCurrency" id="IncomeEarnedCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="IncomeMileageLabel">
                                                                 <rect key="frame" x="8" y="199" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -2423,42 +2241,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="IncomeMileage" id="IncomeMileage">
-                                                                <rect key="frame" x="128" y="196" width="134" height="22"/>
+                                                            <customView identifier="IncomeMileage" id="IncomeMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="194" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="IncomeMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="IncomeMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="IncomeMileageUnits"/>
                                                                     <binding destination="IncomeForm" name="value" keyPath="selection.mileageQuantity" id="IncomeMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="IncomeForm" name="unit" keyPath="selection.mileageDistanceUnit" id="IncomeMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="IncomeMileageUnit" id="IncomeMileageUnit">
-                                                                <rect key="frame" x="266" y="194" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="IncomeMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="IncomeMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="IncomeMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="IncomeMileageUnitContent" id="IncomeMileageUnitValues"/>
-                                                                    <binding destination="IncomeForm" name="selectedObject" keyPath="selection.mileageDistanceUnit" previousBinding="IncomeMileageUnitValues" id="IncomeMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="IncomeInstalmentsLabel">
                                                                 <rect key="frame" x="374" y="289" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -2610,42 +2413,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="TyreChangeMileage" id="TyreChangeMileage">
-                                                                <rect key="frame" x="128" y="256" width="134" height="22"/>
+                                                            <customView identifier="TyreChangeMileage" id="TyreChangeMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="254" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="TyreChangeMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="TyreChangeMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="TyreChangeMileageUnits"/>
                                                                     <binding destination="TyreChangeForm" name="value" keyPath="selection.mileageQuantity" id="TyreChangeMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="TyreChangeForm" name="unit" keyPath="selection.mileageDistanceUnit" id="TyreChangeMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="TyreChangeMileageUnit" id="TyreChangeMileageUnit">
-                                                                <rect key="frame" x="266" y="254" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="TyreChangeMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="TyreChangeMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="TyreChangeMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="TyreChangeMileageUnitContent" id="TyreChangeMileageUnitValues"/>
-                                                                    <binding destination="TyreChangeForm" name="selectedObject" keyPath="selection.mileageDistanceUnit" previousBinding="TyreChangeMileageUnitValues" id="TyreChangeMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="TyreChangeTyreSetLabel">
                                                                 <rect key="frame" x="8" y="229" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -2927,40 +2715,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="TyreSetTotal" id="TyreSetTotal">
-                                                                <rect key="frame" x="494" y="256" width="168" height="22"/>
+                                                            <customView identifier="TyreSetTotal" id="TyreSetTotal" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="254" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="TyreSetTotalCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="TyreSetTotalFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="TyreSetTotalUnits"/>
                                                                     <binding destination="TyreSetForm" name="value" keyPath="selection.totalAmount" id="TyreSetTotalValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="TyreSetTotalCurrency" id="TyreSetTotalCurrency">
-                                                                <rect key="frame" x="668" y="256" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="TyreSetTotalCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="TyreSetForm" name="value" keyPath="selection.totalCurrency" id="TyreSetTotalCurrencyValue">
+                                                                    <binding destination="TyreSetForm" name="unit" keyPath="selection.totalCurrency" id="TyreSetTotalCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="TyreSetNoteLabel">
                                                                 <rect key="frame" x="374" y="229" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -2996,40 +2772,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="TyreSetCharged" id="TyreSetCharged">
-                                                                <rect key="frame" x="494" y="196" width="168" height="22"/>
+                                                            <customView identifier="TyreSetCharged" id="TyreSetCharged" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="194" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="TyreSetChargedCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="TyreSetChargedFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="TyreSetChargedUnits"/>
                                                                     <binding destination="TyreSetForm" name="value" keyPath="selection.chargedAmount" id="TyreSetChargedValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="TyreSetChargedCurrency" id="TyreSetChargedCurrency">
-                                                                <rect key="frame" x="668" y="196" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="TyreSetChargedCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="TyreSetForm" name="value" keyPath="selection.chargedCurrency" id="TyreSetChargedCurrencyValue">
+                                                                    <binding destination="TyreSetForm" name="unit" keyPath="selection.chargedCurrency" id="TyreSetChargedCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
@@ -3177,40 +2941,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="DocumentTotal" id="DocumentTotal">
-                                                                <rect key="frame" x="494" y="256" width="168" height="22"/>
+                                                            <customView identifier="DocumentTotal" id="DocumentTotal" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="254" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="DocumentTotalCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="DocumentTotalFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="DocumentTotalUnits"/>
                                                                     <binding destination="DocumentForm" name="value" keyPath="selection.totalAmount" id="DocumentTotalValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="DocumentTotalCurrency" id="DocumentTotalCurrency">
-                                                                <rect key="frame" x="668" y="256" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="DocumentTotalCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="DocumentForm" name="value" keyPath="selection.totalCurrency" id="DocumentTotalCurrencyValue">
+                                                                    <binding destination="DocumentForm" name="unit" keyPath="selection.totalCurrency" id="DocumentTotalCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="DocumentNoteLabel">
                                                                 <rect key="frame" x="374" y="229" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -3246,40 +2998,28 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="DocumentCharged" id="DocumentCharged">
-                                                                <rect key="frame" x="494" y="196" width="168" height="22"/>
+                                                            <customView identifier="DocumentCharged" id="DocumentCharged" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="194" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="DocumentChargedCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="2" id="DocumentChargedFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="currencies" id="DocumentChargedUnits"/>
                                                                     <binding destination="DocumentForm" name="value" keyPath="selection.chargedAmount" id="DocumentChargedValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                </connections>
-                                                            </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="DocumentChargedCurrency" id="DocumentChargedCurrency">
-                                                                <rect key="frame" x="668" y="196" width="56" height="22"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="DocumentChargedCurrencyCell">
-                                                                    
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
-                                                                <connections>
-                                                                    <binding destination="DocumentForm" name="value" keyPath="selection.chargedCurrency" id="DocumentChargedCurrencyValue">
+                                                                    <binding destination="DocumentForm" name="unit" keyPath="selection.chargedCurrency" id="DocumentChargedCurrencyValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
                                                                 </connections>
-                                                            </textField>
+                                                            </customView>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
@@ -3323,42 +3063,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="MeterReadingMileage" id="MeterReadingMileage">
-                                                                <rect key="frame" x="128" y="256" width="134" height="22"/>
+                                                            <customView identifier="MeterReadingMileage" id="MeterReadingMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="254" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="MeterReadingMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="MeterReadingMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="MeterReadingMileageUnits"/>
                                                                     <binding destination="MeterReadingForm" name="value" keyPath="selection.mileageQuantity" id="MeterReadingMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="MeterReadingForm" name="unit" keyPath="selection.mileageDistanceUnit" id="MeterReadingMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="MeterReadingMileageUnit" id="MeterReadingMileageUnit">
-                                                                <rect key="frame" x="266" y="254" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="MeterReadingMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="MeterReadingMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="MeterReadingMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="MeterReadingMileageUnitContent" id="MeterReadingMileageUnitValues"/>
-                                                                    <binding destination="MeterReadingForm" name="selectedObject" keyPath="selection.mileageDistanceUnit" previousBinding="MeterReadingMileageUnitValues" id="MeterReadingMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="MeterReadingDriverLabel">
                                                                 <rect key="frame" x="374" y="289" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -3456,42 +3181,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="InspectionMileage" id="InspectionMileage">
-                                                                <rect key="frame" x="128" y="256" width="134" height="22"/>
+                                                            <customView identifier="InspectionMileage" id="InspectionMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="254" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="InspectionMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="InspectionMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="InspectionMileageUnits"/>
                                                                     <binding destination="InspectionForm" name="value" keyPath="selection.mileageQuantity" id="InspectionMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="InspectionForm" name="unit" keyPath="selection.mileageDistanceUnit" id="InspectionMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="InspectionMileageUnit" id="InspectionMileageUnit">
-                                                                <rect key="frame" x="266" y="254" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="InspectionMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="InspectionMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="InspectionMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="InspectionMileageUnitContent" id="InspectionMileageUnitValues"/>
-                                                                    <binding destination="InspectionForm" name="selectedObject" keyPath="selection.mileageDistanceUnit" previousBinding="InspectionMileageUnitValues" id="InspectionMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="InspectionChecklistLabel">
                                                                 <rect key="frame" x="8" y="229" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -4230,42 +3940,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="scheduleEvery" id="scheduleEvery">
-                                                                <rect key="frame" x="96" y="332" width="80" height="22"/>
+                                                            <customView identifier="scheduleEvery" id="scheduleEvery" customClass="UDQuantityField">
+                                                                <rect key="frame" x="96" y="330" width="178" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="scheduleEveryCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="scheduleEveryFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="scheduleEveryUnits"/>
                                                                     <binding destination="ScheduleFormController" name="value" keyPath="selection.every" id="scheduleEveryValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ScheduleFormController" name="unit" keyPath="selection.everyUnit" id="scheduleEveryUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="scheduleEveryUnit" id="scheduleEveryUnit">
-                                                                <rect key="frame" x="180" y="330" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="scheduleEveryUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="scheduleEveryUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="scheduleEveryUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleEveryUnitContent" id="scheduleEveryUnitValues"/>
-                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.everyUnit" previousBinding="scheduleEveryUnitValues" id="scheduleEveryUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleMonthsLabel">
                                                                 <rect key="frame" x="0" y="305" width="90" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -4334,44 +4029,28 @@
                                                                     <binding destination="ScheduleFormController" name="hidden" keyPath="selection.editing" id="scheduleMileageLabelHidden"/>
                                                                 </connections>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="scheduleMileage" id="scheduleMileage">
-                                                                <rect key="frame" x="96" y="242" width="80" height="22"/>
+                                                            <customView identifier="scheduleMileage" id="scheduleMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="96" y="240" width="178" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="scheduleMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="scheduleMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="scheduleMileageUnits"/>
                                                                     <binding destination="ScheduleFormController" name="value" keyPath="selection.mileage" id="scheduleMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ScheduleFormController" name="unit" keyPath="selection.unit" id="scheduleMileageUnitChosen"/>
                                                                     <binding destination="ScheduleFormController" name="hidden" keyPath="selection.editing" id="scheduleMileageHidden"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="scheduleMileageUnit" id="scheduleMileageUnit">
-                                                                <rect key="frame" x="180" y="240" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="scheduleMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="scheduleMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="scheduleMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleMileageUnitContent" id="scheduleMileageUnitValues"/>
-                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.unit" previousBinding="scheduleMileageUnitValues" id="scheduleMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                    <binding destination="ScheduleFormController" name="hidden" keyPath="selection.editing" id="scheduleMileageUnitHidden"/>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleNoteLabel">
                                                                 <rect key="frame" x="0" y="215" width="90" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -4569,42 +4248,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="reminderMileage" id="reminderMileage">
-                                                                <rect key="frame" x="96" y="302" width="80" height="22"/>
+                                                            <customView identifier="reminderMileage" id="reminderMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="96" y="300" width="178" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="reminderMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="reminderMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="reminderMileageUnits"/>
                                                                     <binding destination="ReminderFormController" name="value" keyPath="selection.mileage" id="reminderMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ReminderFormController" name="unit" keyPath="selection.unit" id="reminderMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="reminderMileageUnit" id="reminderMileageUnit">
-                                                                <rect key="frame" x="180" y="300" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="reminderMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="reminderMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="reminderMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="reminderMileageUnitContent" id="reminderMileageUnitValues"/>
-                                                                    <binding destination="ReminderFormController" name="selectedObject" keyPath="selection.unit" previousBinding="reminderMileageUnitValues" id="reminderMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reminderNoteLabel">
                                                                 <rect key="frame" x="0" y="275" width="90" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -4698,42 +4362,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="rescheduleMileage" id="rescheduleMileage">
-                                                                <rect key="frame" x="96" y="392" width="80" height="22"/>
+                                                            <customView identifier="rescheduleMileage" id="rescheduleMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="96" y="390" width="178" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="rescheduleMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="rescheduleMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="rescheduleMileageUnits"/>
                                                                     <binding destination="RescheduleFormController" name="value" keyPath="selection.mileage" id="rescheduleMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="RescheduleFormController" name="unit" keyPath="selection.unit" id="rescheduleMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="rescheduleMileageUnit" id="rescheduleMileageUnit">
-                                                                <rect key="frame" x="180" y="390" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="rescheduleMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="rescheduleMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="rescheduleMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="rescheduleMileageUnitContent" id="rescheduleMileageUnitValues"/>
-                                                                    <binding destination="RescheduleFormController" name="selectedObject" keyPath="selection.unit" previousBinding="rescheduleMileageUnitValues" id="rescheduleMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="rescheduleNoteLabel">
                                                                 <rect key="frame" x="0" y="365" width="90" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -4864,42 +4513,27 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                             </textField>
-                                                            <textField verticalHuggingPriority="750" identifier="cancelReplacementMileage" id="cancelReplacementMileage">
-                                                                <rect key="frame" x="96" y="332" width="80" height="22"/>
+                                                            <customView identifier="cancelReplacementMileage" id="cancelReplacementMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="96" y="330" width="178" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="cancelReplacementMileageCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="cancelReplacementMileageFormatter"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                                </textFieldCell>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
                                                                 <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="cancelReplacementMileageUnits"/>
                                                                     <binding destination="CancelFormController" name="value" keyPath="selection.replacementMileage" id="cancelReplacementMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="CancelFormController" name="unit" keyPath="selection.replacementUnit" id="cancelReplacementMileageUnitChosen"/>
                                                                 </connections>
-                                                            </textField>
-                                                            <popUpButton verticalHuggingPriority="750" identifier="cancelReplacementMileageUnit" id="cancelReplacementMileageUnit">
-                                                                <rect key="frame" x="180" y="330" width="94" height="26"/>
-                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="cancelReplacementMileageUnitCell">
-                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                    <menu key="menu" id="cancelReplacementMileageUnitMenu"/>
-                                                                </popUpButtonCell>
-                                                                <connections>
-                                                                    <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="cancelReplacementMileageUnitContent"/>
-                                                                    <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="cancelReplacementMileageUnitContent" id="cancelReplacementMileageUnitValues"/>
-                                                                    <binding destination="CancelFormController" name="selectedObject" keyPath="selection.replacementUnit" previousBinding="cancelReplacementMileageUnitValues" id="cancelReplacementMileageUnitChosen">
-                                                                        <dictionary key="options">
-                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
-                                                                            <string key="NSNullPlaceholder">None</string>
-                                                                        </dictionary>
-                                                                    </binding>
-                                                                </connections>
-                                                            </popUpButton>
+                                                            </customView>
                                                             <button verticalHuggingPriority="750" identifier="cancelSave" id="cancelSave">
                                                                 <rect key="frame" x="176" y="294" width="96" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>

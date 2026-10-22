@@ -58,7 +58,7 @@ MODEL = $(BUILD)/Model
 ORMTOOL = $(ORMKIT_PRODUCTS)/ormtool
 # ODataKit's frameworks first: Xcode copies the ones ORMRuntime was built
 # against beside it, which a pin moved since would make stale.
-INC = -I$(MODEL)/Constraints -IShared -IAppKit -IUDCalendar -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
+INC = -I$(MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
 LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(ODATAKIT_DIRS)) \
 	-F$(ORMKIT_PRODUCTS) -Wl,-rpath,$(ORMKIT_PRODUCTS) \
 	-framework ORMRuntime -framework ODataSync -framework ODataService -framework HTTPServerKit \
@@ -119,11 +119,11 @@ $(BUILD)/lb-sync-check: $(MODEL)/.made $(SYNC_CHECK) $(wildcard Shared/*.h) $(GE
 
 # The desktop app: its code, its windows (the XIBs compiled), the model and
 # its tables in its resources.
-APP_SOURCES = $(wildcard AppKit/*.m) $(wildcard UDCalendar/*.m) $(wildcard Shared/*.m) $(MODEL)/Constraints/LogbookValidation.m
+APP_SOURCES = $(wildcard AppKit/*.m) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard Shared/*.m) $(MODEL)/Constraints/LogbookValidation.m
 XIBS = $(wildcard AppKit/*.xib)
 APP_LIBS = $(addprefix -F,$(RDLKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(RDLKIT_DIRS)) \
 	-framework RDLKitUI -framework RDLKit -framework AppKit
-$(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalendar/*.h) $(XIBS) $(wildcard Reports/*.rdl) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
+$(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalendar/*.h UDQuantity/*.h) $(XIBS) $(wildcard Reports/*.rdl) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	rm -rf $@ && mkdir -p $@/Contents/MacOS $@/Contents/Resources
 	cp AppKit/Info.plist $@/Contents/

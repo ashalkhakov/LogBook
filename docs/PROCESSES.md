@@ -98,6 +98,17 @@ closes a reminder from the day it was set (the owner's day), a next is
 counted from its event's day, a reminder cancelled now is cancelled on the
 owner's today.
 
+## Amounts and currencies
+
+Money is an amount and a currency (Currency is a value type of the
+model's: the ISO 4217 codes in use, listed as its possible values, so the
+server refuses any other). A form enters both in one field
+(`UDQuantity/UDQuantityField.h`): the amount, and beside it the currency,
+typed as its code or as part of its name ("yen") and picked from the list
+that narrows as it is typed; the codes are the model's, the names and the
+decimals (2 for EUR, 0 for JPY) the user's locale's. A distance or a volume
+and its unit are entered the same way.
+
 ## 1. Set up a schedule
 
 The owner plans recurring work for a vehicle: a task (an oil change), a
