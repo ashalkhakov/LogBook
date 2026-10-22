@@ -503,10 +503,12 @@ def reference(target_id, name, path):
             % (target_id, path, name, PROJECT))
 
 
-def scheme(name, builds, run=None, arguments=()):
+def scheme(name, builds, run=None, arguments=(), directory=None):
     entries = "".join('<BuildActionEntry buildForTesting = "YES" buildForRunning = "YES" buildForProfiling = "YES" '
                       'buildForArchiving = "YES" buildForAnalyzing = "YES">%s</BuildActionEntry>' % b for b in builds)
     runnable = '<BuildableProductRunnable runnableDebuggingMode = "0">%s</BuildableProductRunnable>' % run if run else ""
+    workdir = ('useCustomWorkingDirectory = "YES" customWorkingDirectory = "%s"' % directory if directory
+               else 'useCustomWorkingDirectory = "NO"')
     args = ""
     if arguments:
         args = "<CommandLineArguments>%s</CommandLineArguments>" % "".join(
@@ -519,13 +521,13 @@ def scheme(name, builds, run=None, arguments=()):
            '<Testables></Testables></TestAction>'
            '<LaunchAction buildConfiguration = "Debug" selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB" '
            'selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB" launchStyle = "0" '
-           'useCustomWorkingDirectory = "NO" ignoresPersistentStateOnLaunch = "NO" debugDocumentVersioning = "YES" '
+           '%s ignoresPersistentStateOnLaunch = "NO" debugDocumentVersioning = "YES" '
            'debugServiceExtension = "internal" allowLocationSimulation = "YES">%s%s</LaunchAction>'
            '<ProfileAction buildConfiguration = "Release" shouldUseLaunchSchemeArgsEnv = "YES" savedToolIdentifier = "" '
            'useCustomWorkingDirectory = "NO" debugDocumentVersioning = "YES"></ProfileAction>'
            '<AnalyzeAction buildConfiguration = "Debug"></AnalyzeAction>'
            '<ArchiveAction buildConfiguration = "Release" revealArchiveInOrganizer = "YES"></ArchiveAction>'
-           '</Scheme>\n') % (entries, runnable, args)
+           '</Scheme>\n') % (entries, workdir, runnable, args)
     with open(os.path.join(proj, "xcshareddata", "xcschemes", name + ".xcscheme"), "w") as f:
         f.write(xml)
 
@@ -539,7 +541,10 @@ sync_ref = reference(t_sync, "lb-sync-check", "lb-sync-check")
 scheme("Model", [model_ref])
 scheme("Logbook", [app_ref], run=app_ref)
 scheme("Logbook-iOS", [ios_ref], run=ios_ref)
-scheme("logbook-server", [server_ref], run=server_ref)
+# Its store in build/ (the default's place is the working directory), on
+# the port the apps offer first; anonymous requests allowed, to try it.
+scheme("logbook-server", [server_ref], run=server_ref, directory="$(SRCROOT)/build",
+       arguments=["-StoreURL", "$(SRCROOT)/build/Logbook.sqlite", "-Port", "8080"])
 scheme("lb-procedures-check", [procedures_ref], run=procedures_ref,
        arguments=["$(BUILT_PRODUCTS_DIR)/Logbook.momd", "$(BUILT_PRODUCTS_DIR)/Logbook.ormplans"])
 scheme("lb-sync-check", [sync_ref], run=sync_ref)
