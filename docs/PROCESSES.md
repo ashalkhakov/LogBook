@@ -72,6 +72,32 @@ its queries' `date()` and `addMonths()` have it.
 
 The facts below are the model's, as the verbalizer says them.
 
+## Days and time zones
+
+A moment (when a fill-up was, when a reminder was done or set) is the same
+moment everywhere; the model keeps it as one. A day (due on, cancelled on,
+bought, issued, expires) is a date on the calendar, no time and no zone;
+the model keeps it as midnight UTC of that date, a form of it, and the
+apps read and write it so (a form's day field, the calendar's all-day
+items), never through the zone they are in.
+
+A day taken from a moment is taken somewhere. An event is of the day it
+was where it happened: "Event happened in TimeZone" (an IANA name), the
+zone of the device it was logged on, recorded as it is logged; one of no
+zone (logged before, or by a client that says none) is of the day where
+its vehicle's owner lives: "User lives in TimeZone", taken from their
+device as they sign in, as their currency. Neither known, UTC. So an oil
+change at 02:30 on 1 June in Almaty (21:30 on 31 May in UTC) is of
+1 June, and what it makes due is counted from 1 June.
+
+The model's queries take days so (`dateIn`, `monthIn`, `todayIn`): an
+event's while the vehicle is kept, a tyre set's bought before it is
+fitted, the sale date, a schedule's next due, overdue (today where the
+owner lives), late, costs by month. The procedures do the same: an event
+closes a reminder from the day it was set (the owner's day), a next is
+counted from its event's day, a reminder cancelled now is cancelled on the
+owner's today.
+
 ## 1. Set up a schedule
 
 The owner plans recurring work for a vehicle: a task (an oil change), a

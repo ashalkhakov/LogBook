@@ -154,8 +154,9 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBCheck(@"a new fill-up, chosen, its form shown",
             [fillUp isKindOfClass:[FillUp class]] && [controller.recordForms.selectedTabViewItem.identifier isEqual:@"FillUp"],
             controller.recordForms.selectedTabViewItem.identifier);
-    LBCheck(@"filled in: now, its driver the user, in km and litres",
-            fillUp.timestamp && fillUp.driver == user && [fillUp.mileageDistanceUnit.code isEqualToString:@"km"]
+    LBCheck(@"filled in: now, here (this Mac's time zone), its driver the user, in km and litres",
+            fillUp.timestamp && [fillUp.timeZone isEqualToString:[NSTimeZone localTimeZone].name] && fillUp.driver == user
+                && [fillUp.mileageDistanceUnit.code isEqualToString:@"km"]
                 && [fillUp.volumeVolumeUnit.code isEqualToString:@"L"] && fillUp.vehicle && fillUp.enteredBy == user,
             [NSString stringWithFormat:@"%@ %@ %@ %@", fillUp.timestamp, fillUp.driver.email, fillUp.mileageDistanceUnit.code,
                                        fillUp.volumeVolumeUnit.code]);
@@ -254,6 +255,8 @@ static void LBPreferenceSteps(LBMainWindowController *controller) {
     LBCheck(@"a user who preferred no currency took this Mac's at sign-in, on the server too",
             [controller.store.user.currency isEqualToString:localeCurrency] && [there.currency isEqualToString:localeCurrency],
             [NSString stringWithFormat:@"here %@, there %@", controller.store.user.currency, there.currency]);
+    NSString *zone = [NSTimeZone localTimeZone].name;
+    LBCheck(@"and this Mac's time zone, as they had none", [there.timeZone isEqualToString:zone], there.timeZone);
     LBType(preferences, @"currency", @"EUR");
     LBClick(preferences, @"done");
     LBCheck(@"saved and closed", !preferences.isVisible && !controller.lastError && !controller.store.context.hasChanges,

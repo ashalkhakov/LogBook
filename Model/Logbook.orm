@@ -15,6 +15,7 @@
 					<orm:Role ref="_2A70C8CB-45ED-4672-B0D8-1ADE420CF521" />
 					<orm:Role ref="_1A7914F4-A252-4E35-8311-53F7A2A49589" />
 					<orm:Role ref="_207601EB-763D-4FF7-BF8B-AD346F45E684" />
+					<orm:Role ref="_634AF22C-0860-473C-AA64-A9DFF1564320" />
 				</orm:PlayedRoles>
 				<orm:PreferredIdentifier ref="_1B982383-4388-47AA-AB8D-C953113B822C" />
 			</orm:EntityType>
@@ -527,6 +528,7 @@ ServiceKind). A user adds kinds of expense of their own.</orm:Text>
 					<orm:SupertypeMetaRole ref="_E3089AC0-3754-4FC8-8E86-D4CFF836E2FD" />
 					<orm:Role ref="_D8C59329-7495-427A-BC65-8A43D64A15D1" />
 					<orm:Role ref="_F57F012E-C765-4E66-B443-E7812562A4D6" />
+					<orm:Role ref="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" />
 				</orm:PlayedRoles>
 			</orm:EntityType>
 			<orm:EntityType id="_8302E203-13F7-4C5A-938A-C2A4BD091E8B" Name="MeteredEvent" _ReferenceMode="">
@@ -1198,6 +1200,19 @@ reminder keeps what it is due at now.</orm:Text>
 					<orm:Role ref="_68E9FDAD-E1F5-404C-B36F-2E277A88BFBA" />
 				</orm:PlayedRoles>
 				<orm:ConceptualDataType id="_63E62507-7D65-43B5-A4CC-B8174868AD81" ref="_1FA1B312-6B20-45DD-9D6A-C58BFE38FAD1" Scale="0" Length="0" />
+			</orm:ValueType>
+			<orm:ValueType id="_4D51C1FA-82FE-43BB-9D1C-CCB35BEDCF10" Name="TimeZone">
+				<orm:Notes>
+					<orm:Note id="_C1AF214E-0341-4971-80D3-7A53C7BD65BD">
+						<orm:Text>A time zone, by its IANA name ("Asia/Almaty"): where a moment's day is
+taken. A moment is the same moment wherever it is; its day is not.</orm:Text>
+					</orm:Note>
+				</orm:Notes>
+				<orm:PlayedRoles>
+					<orm:Role ref="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" />
+					<orm:Role ref="_64D97A37-0326-4655-ABDD-32CE2665B1A5" />
+				</orm:PlayedRoles>
+				<orm:ConceptualDataType id="_03AA26A0-3531-4DE2-AC56-F3A90C003A49" ref="_380AB1C0-186E-4409-B484-09338C079516" Scale="0" Length="0" />
 			</orm:ValueType>
 		</orm:Objects>
 		<orm:Facts>
@@ -2461,40 +2476,81 @@ reminder keeps what it is due at now.</orm:Text>
 					<orm:UniquenessConstraint ref="_8283BC42-F142-4F7F-B903-2A8B0BF10AB0" />
 				</orm:InternalConstraints>
 				<orm:DerivationRule>
-					<orm:FactTypeDerivationPath id="_CC82EADE-2CB1-42B8-B3E3-2C20E31A50B9" DerivationStorage="Stored">
+					<orm:FactTypeDerivationPath id="_8F05D96A-891A-4C5A-943F-44E2B55B78E8">
 						<orm:PathComponents>
-							<orm:RolePath id="_CC6F1F39-3E5C-D364-E5A4-68BDEDE67691">
-								<orm:RootObjectType id="_5E9B96E3-AF1E-B915-2D71-B67A6B2C4E5A" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
-								<orm:PathedRoles>
-									<orm:PathedRole id="_3A58F8EF-2258-B898-408B-5FA04421B84F" ref="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2" Purpose="PostInnerJoin" />
-									<orm:PathedRole id="_D4B54E32-6385-460F-FE24-56E009F08DBC" ref="_9E39171D-A1A8-4494-9AEF-2FBC80042310" Purpose="SameFactType" />
-									<orm:PathedRole id="_BBF95E01-A2D6-0474-2306-1404566023E7" ref="_A9366C8F-304C-4984-A137-0D71A63310AD" Purpose="PostInnerJoin" />
-									<orm:PathedRole id="_B9849D50-F282-F98A-881D-EB0AF1D6E251" ref="_9EE052E5-C881-4AE1-A581-371DF6DF6907" Purpose="SameFactType" />
-								</orm:PathedRoles>
+							<orm:RolePath id="_BFC2CB5C-BEE7-6013-45E4-342F799DE1BE">
+								<orm:RootObjectType id="_BA4B1A40-94DB-E499-1CC6-B7696E6A9FFA" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" />
 								<orm:SubPaths>
-									<orm:SubPath id="_ED607F75-8DD3-2522-D054-F05686DB22B5">
+									<orm:SubPath id="_9EF0E0C1-D88A-51D1-374D-C29169C82602">
 										<orm:PathedRoles>
-											<orm:PathedRole id="_7E8A9916-1FCE-55CF-42C8-64F5B9C6F828" ref="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A" Purpose="PostInnerJoin" />
-											<orm:PathedRole id="_35FF9324-39C9-471D-86ED-DE4EE987969A" ref="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Purpose="SameFactType" />
+											<orm:PathedRole id="_9344A33C-86C7-E1A4-7405-EDD5B26DAC2F" ref="_A887735F-F812-4607-9B18-891CD9B47891" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_5159F198-FECF-1008-DF75-54D504322C53" ref="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E" Purpose="SameFactType" />
+											<orm:PathedRole id="_CD3AD0EC-051F-037C-6ACD-92A8FA170777" ref="_634AF22C-0860-473C-AA64-A9DFF1564320" Purpose="PostOuterJoin" />
+											<orm:PathedRole id="_49E0F966-F351-01A1-C376-8B0A3054D0D2" ref="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" Purpose="SameFactType" />
 										</orm:PathedRoles>
 									</orm:SubPath>
-									<orm:SubPath id="_711469EE-B87F-16DD-A8A7-F0E90945704E">
+									<orm:SubPath id="_043528BA-2023-BE1B-14E8-29B97E3F5A24">
 										<orm:PathedRoles>
-											<orm:PathedRole id="_1DB2B1EA-24D1-7E60-9EE1-A78E4FD9DF3B" ref="_E3089AC0-3754-4FC8-8E86-D4CFF836E2FD" Purpose="PostInnerJoin" />
-											<orm:PathedRole id="_0E48DAB0-466C-0FF6-391E-242C45039799" ref="_6AE7639E-4244-4C19-976D-FA8DB15BC246" Purpose="SameFactType" />
-											<orm:PathedRole id="_0D31F38F-630E-FD73-1D98-2EDB95C1F5B0" ref="_7843B3E4-CC98-4724-987D-EF6E7C5C93D4" Purpose="PostInnerJoin" />
-											<orm:PathedRole id="_8875393E-4AB3-3128-7F23-AEE4173DF6AF" ref="_DB2DDF9F-925C-4AE7-BF17-9D2895B458FB" Purpose="SameFactType" />
+											<orm:PathedRole id="_8C54D5DD-D0D9-15C2-4D60-1337180D656D" ref="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_E816F9CD-3DE9-89E3-AA0E-EBC06ABF688C" ref="_9E39171D-A1A8-4494-9AEF-2FBC80042310" Purpose="SameFactType" />
+											<orm:PathedRole id="_0451E2C3-4E90-BA10-6B8F-6BFE794C9EE3" ref="_A9366C8F-304C-4984-A137-0D71A63310AD" Purpose="PostInnerJoin" />
+											<orm:PathedRole id="_4037BC80-A40E-5F38-F540-D3D24C367EAF" ref="_9EE052E5-C881-4AE1-A581-371DF6DF6907" Purpose="SameFactType" />
 										</orm:PathedRoles>
+										<orm:SubPaths>
+											<orm:SubPath id="_FBEA060D-4B9A-F717-B1FE-6190081DE530">
+												<orm:PathedRoles>
+													<orm:PathedRole id="_4564DBED-1A01-CE0E-30EA-0DB532EFB1E9" ref="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_4A8746B4-9706-89CB-15A9-22990B7A8A10" ref="_29AE2287-AC15-42D4-AA20-BE1C9F364295" Purpose="SameFactType" />
+												</orm:PathedRoles>
+											</orm:SubPath>
+											<orm:SubPath id="_47F6EF44-9DCE-5E82-6DA8-787142F11F39">
+												<orm:PathedRoles>
+													<orm:PathedRole id="_6B78B6FD-94CE-9CAF-DD53-0382299295BC" ref="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" Purpose="PostOuterJoin" />
+													<orm:PathedRole id="_737C9778-8C01-DC04-5683-8CA93D9ABD93" ref="_64D97A37-0326-4655-ABDD-32CE2665B1A5" Purpose="SameFactType" />
+												</orm:PathedRoles>
+											</orm:SubPath>
+											<orm:SubPath id="_1EFFCDA4-DCFC-E43F-7F84-7B7AE6323F7C">
+												<orm:PathedRoles>
+													<orm:PathedRole id="_C68DE2D5-2C3D-CE46-6662-41E92EB479F5" ref="_E3089AC0-3754-4FC8-8E86-D4CFF836E2FD" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_24361F51-B683-DF62-5490-D20E3088D7F5" ref="_6AE7639E-4244-4C19-976D-FA8DB15BC246" Purpose="SameFactType" />
+													<orm:PathedRole id="_6CAD25FE-85B3-7F35-D46E-755604319B62" ref="_7843B3E4-CC98-4724-987D-EF6E7C5C93D4" Purpose="PostInnerJoin" />
+													<orm:PathedRole id="_9E72EA4E-7826-EED2-05EE-1E69B53D5DE1" ref="_DB2DDF9F-925C-4AE7-BF17-9D2895B458FB" Purpose="SameFactType" />
+												</orm:PathedRoles>
+											</orm:SubPath>
+										</orm:SubPaths>
 									</orm:SubPath>
 								</orm:SubPaths>
 								<orm:CalculatedValues>
-									<orm:CalculatedValue id="_432DD0D4-9E02-72CC-923A-75311450A7DB">
-										<orm:Function ref="_920E0B14-DE1A-36E9-8745-F5ABBFC8A6CC" />
+									<orm:CalculatedValue id="_8A1F6492-235A-C8D0-EA56-D445F5BF0FEB">
+										<orm:Function ref="_726A34DE-AFA7-E00A-5758-3A9EE6BC2C93" />
 										<orm:Inputs>
-											<orm:Input id="_3D9C1D68-26D2-E637-DF0C-78D62AFFBD4E">
-												<orm:Parameter ref="_EF655B33-5A89-9ABA-7FEE-1D8ED7CCD129" />
+											<orm:Input id="_3E05D7DC-35C4-17CB-50C3-46031DA0843E">
+												<orm:Parameter ref="_F30E7035-8661-26EF-A0F0-B5F9A68A00BA" />
 												<orm:Source>
-													<orm:PathedRole ref="_35FF9324-39C9-471D-86ED-DE4EE987969A" />
+													<orm:PathedRole ref="_737C9778-8C01-DC04-5683-8CA93D9ABD93" />
+												</orm:Source>
+											</orm:Input>
+											<orm:Input id="_3E05D6DC-35C4-1618-50C3-47031DA085F1">
+												<orm:Parameter ref="_9F65AC49-E3BD-4923-9816-C517482BB030" />
+												<orm:Source>
+													<orm:PathedRole ref="_49E0F966-F351-01A1-C376-8B0A3054D0D2" />
+												</orm:Source>
+											</orm:Input>
+										</orm:Inputs>
+									</orm:CalculatedValue>
+									<orm:CalculatedValue id="_A4624F89-2148-1E18-79BD-67658F466F13">
+										<orm:Function ref="_03E0717D-3DE2-144A-844A-B321EFD3DF63" />
+										<orm:Inputs>
+											<orm:Input id="_340F469C-960A-5F33-38F9-4A3B851C76A6">
+												<orm:Parameter ref="_B7B5F149-B2D1-9DBB-AD01-2C39C9316660" />
+												<orm:Source>
+													<orm:PathedRole ref="_4A8746B4-9706-89CB-15A9-22990B7A8A10" />
+												</orm:Source>
+											</orm:Input>
+											<orm:Input id="_340F459C-960A-5D80-38F9-4B3B851C7859">
+												<orm:Parameter ref="_F27B3A52-57AC-AE31-19E8-FD515F97D792" />
+												<orm:Source>
+													<orm:CalculatedValue ref="_8A1F6492-235A-C8D0-EA56-D445F5BF0FEB" />
 												</orm:Source>
 											</orm:Input>
 										</orm:Inputs>
@@ -2503,22 +2559,22 @@ reminder keeps what it is due at now.</orm:Text>
 							</orm:RolePath>
 						</orm:PathComponents>
 						<orm:DerivationProjections>
-							<orm:DerivationProjection id="_A61E812B-F84C-EE46-D749-A4A15920A827" ref="_CC6F1F39-3E5C-D364-E5A4-68BDEDE67691">
-								<orm:RoleProjection id="_6637DA49-5933-1561-2568-25EF6094F684" ref="_2A73B8AF-BF83-4744-9DAF-37268BC21B98">
+							<orm:DerivationProjection id="_2229D10E-9904-5669-4F0E-305107570508" ref="_BFC2CB5C-BEE7-6013-45E4-342F799DE1BE">
+								<orm:RoleProjection id="_0273C755-4C15-3D6E-0210-45C331A152DB" ref="_2A73B8AF-BF83-4744-9DAF-37268BC21B98">
 									<orm:DerivationSource>
-										<orm:PathRoot ref="_5E9B96E3-AF1E-B915-2D71-B67A6B2C4E5A" />
+										<orm:PathRoot ref="_BA4B1A40-94DB-E499-1CC6-B7696E6A9FFA" />
 									</orm:DerivationSource>
 								</orm:RoleProjection>
-								<orm:RoleProjection id="_05AC1E82-222F-0179-1165-5248F8B4F90C" ref="_59F74FAC-6A81-4639-9615-6377FAF96626">
+								<orm:RoleProjection id="_7B618635-5A29-EA0E-4BD6-F16DF4F77D9B" ref="_59F74FAC-6A81-4639-9615-6377FAF96626">
 									<orm:DerivationSource>
-										<orm:CalculatedValue ref="_432DD0D4-9E02-72CC-923A-75311450A7DB" />
+										<orm:CalculatedValue ref="_A4624F89-2148-1E18-79BD-67658F466F13" />
 									</orm:DerivationSource>
 								</orm:RoleProjection>
 							</orm:DerivationProjection>
 						</orm:DerivationProjections>
 						<orm:InformalRule>
-							<orm:DerivationNote id="_97C8F89F-9AFD-4B6E-9CA6-498F02C1FCBF">
-								<orm:Body>For each Vehicle and Day, that Vehicle was sold on Day if and only if some Record is of that Vehicle and that Record is an Event that was at some Moment and that Event is an Income that is a CarSale and Day is the date of that Moment.</orm:Body>
+							<orm:DerivationNote id="_CEBA0FBA-0DD8-4678-9A9E-DA95AC5D71B3">
+								<orm:Body>For each Vehicle and Day, that Vehicle was sold on Day if and only if that Vehicle is owned by some User that possibly lives in some TimeZone1 and some Record is of that Vehicle and that Record is an Event that was at some Moment and possibly that Event happened in some TimeZone2 and that Event is an Income that is a CarSale and Day is the date of that Moment in TimeZone2, or TimeZone1 where there is none.</orm:Body>
 							</orm:DerivationNote>
 						</orm:InformalRule>
 					</orm:FactTypeDerivationPath>
@@ -7133,6 +7189,78 @@ when it is due; counted again when the schedule goes on in another.</orm:Text>
 					<orm:UniquenessConstraint ref="_3343C306-5D64-4CA6-A3AE-E3FC779D4920" />
 				</orm:InternalConstraints>
 			</orm:Fact>
+			<orm:Fact id="_02E9642E-F491-4F07-80A9-EF9449A0FE34" _Name="UserLivesInTimeZone">
+				<orm:Notes>
+					<orm:Note id="_886AEF00-8E03-47ED-AC53-C5A8AC316E4E">
+						<orm:Text>Where the user is: their today, the day of what they log with no zone
+of its own; taken from their device as they sign in, as their currency.</orm:Text>
+					</orm:Note>
+				</orm:Notes>
+				<orm:FactRoles>
+					<orm:Role id="_634AF22C-0860-473C-AA64-A9DFF1564320" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
+						<orm:RolePlayer ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" />
+					</orm:Role>
+					<orm:Role id="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+						<orm:RolePlayer ref="_4D51C1FA-82FE-43BB-9D1C-CCB35BEDCF10" />
+					</orm:Role>
+				</orm:FactRoles>
+				<orm:ReadingOrders>
+					<orm:ReadingOrder id="_B19A7107-9B42-4496-B6AF-96B39287573B">
+						<orm:Readings>
+							<orm:Reading id="_1D5B785F-8862-47C8-AF97-149753CDA798">
+								<orm:Data>{0} lives in {1}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" lives in " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_634AF22C-0860-473C-AA64-A9DFF1564320" />
+							<orm:Role ref="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+				</orm:ReadingOrders>
+				<orm:InternalConstraints>
+					<orm:UniquenessConstraint ref="_070FF578-1FF2-4F12-8732-8D8B0B6A3D4A" />
+				</orm:InternalConstraints>
+			</orm:Fact>
+			<orm:Fact id="_473A0203-4AA7-4DD0-8CCF-DED391BB674F" _Name="EventHappenedInTimeZone">
+				<orm:Notes>
+					<orm:Note id="_FD687564-C882-4FC4-8AC2-B6F10DD073FE">
+						<orm:Text>Where it happened: the zone of the device it was logged on, as it was
+logged. Its day is taken there (an oil change at 02:00 on 1 June in
+Almaty is of 1 June, though it was 31 May in UTC); one of no zone is
+taken where its vehicle's owner lives.</orm:Text>
+					</orm:Note>
+				</orm:Notes>
+				<orm:FactRoles>
+					<orm:Role id="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
+						<orm:RolePlayer ref="_890D546C-1996-4726-98DB-4A4151CA6089" />
+					</orm:Role>
+					<orm:Role id="_64D97A37-0326-4655-ABDD-32CE2665B1A5" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="">
+						<orm:RolePlayer ref="_4D51C1FA-82FE-43BB-9D1C-CCB35BEDCF10" />
+					</orm:Role>
+				</orm:FactRoles>
+				<orm:ReadingOrders>
+					<orm:ReadingOrder id="_3CEE4ACC-5C31-42EC-85E0-1FA67258BCCF">
+						<orm:Readings>
+							<orm:Reading id="_59A0BB52-5DF9-486F-9378-0F86B9CED714">
+								<orm:Data>{0} happened in {1}</orm:Data>
+								<orm:ExpandedData>
+									<orm:RoleText RoleIndex="0" FollowingText=" happened in " />
+								</orm:ExpandedData>
+							</orm:Reading>
+						</orm:Readings>
+						<orm:RoleSequence>
+							<orm:Role ref="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" />
+							<orm:Role ref="_64D97A37-0326-4655-ABDD-32CE2665B1A5" />
+						</orm:RoleSequence>
+					</orm:ReadingOrder>
+				</orm:ReadingOrders>
+				<orm:InternalConstraints>
+					<orm:UniquenessConstraint ref="_783217D3-8163-48FE-8E63-05D83CA5A346" />
+				</orm:InternalConstraints>
+			</orm:Fact>
 		</orm:Facts>
 		<orm:Constraints>
 			<orm:UniquenessConstraint id="_1FEF91CF-70BC-4EDF-9E47-39016ED2922D" Name="InternalUniquenessConstraint1" IsInternal="true">
@@ -7257,6 +7385,7 @@ when it is due; counted again when the schedule goes on in another.</orm:Text>
 					<orm:Role id="_BB31A31F-330F-46DD-AC5A-94677FA11771" ref="_2A70C8CB-45ED-4672-B0D8-1ADE420CF521" />
 					<orm:Role id="_66033404-62CD-4C9A-ABDD-E197770545BB" ref="_1A7914F4-A252-4E35-8311-53F7A2A49589" />
 					<orm:Role id="_973ADA22-EC8B-4237-B8FD-D5E1E7A46E76" ref="_207601EB-763D-4FF7-BF8B-AD346F45E684" />
+					<orm:Role id="_E4E6AD37-408F-4540-A383-9E55DA33FF4E" ref="_634AF22C-0860-473C-AA64-A9DFF1564320" />
 				</orm:RoleSequence>
 				<orm:ImpliedByObjectType ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" />
 			</orm:MandatoryConstraint>
@@ -10056,6 +10185,23 @@ when it is due; counted again when the schedule goes on in another.</orm:Text>
 					</orm:RoleSequence>
 				</orm:RoleSequences>
 			</orm:SubsetConstraint>
+			<orm:MandatoryConstraint id="_022FD8DD-2E29-443B-8A88-089A4906D981" Name="ImpliedMandatoryConstraint92" IsImplied="true">
+				<orm:RoleSequence>
+					<orm:Role id="_3CC87D2D-4BB6-44B7-B574-AEE06B5BFA6A" ref="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" />
+					<orm:Role id="_5D5385F5-868F-4F70-8B18-96CE7B341673" ref="_64D97A37-0326-4655-ABDD-32CE2665B1A5" />
+				</orm:RoleSequence>
+				<orm:ImpliedByObjectType ref="_4D51C1FA-82FE-43BB-9D1C-CCB35BEDCF10" />
+			</orm:MandatoryConstraint>
+			<orm:UniquenessConstraint id="_070FF578-1FF2-4F12-8732-8D8B0B6A3D4A" Name="InternalUniquenessConstraint230" IsInternal="true">
+				<orm:RoleSequence>
+					<orm:Role id="_06AA3CD7-B994-407D-839B-D11102DCD846" ref="_634AF22C-0860-473C-AA64-A9DFF1564320" />
+				</orm:RoleSequence>
+			</orm:UniquenessConstraint>
+			<orm:UniquenessConstraint id="_783217D3-8163-48FE-8E63-05D83CA5A346" Name="InternalUniquenessConstraint231" IsInternal="true">
+				<orm:RoleSequence>
+					<orm:Role id="_9D74CCAA-6C66-42A2-BBE8-627AE489FFA4" ref="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" />
+				</orm:RoleSequence>
+			</orm:UniquenessConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:UnspecifiedDataType id="_75EA85C2-1A83-415B-A49C-FCBB218BCD3B" />
@@ -10099,6 +10245,18 @@ when it is due; counted again when the schedule goes on in another.</orm:Text>
 				<orm:Parameters>
 					<orm:Parameter id="_BBDA5C80-912E-8D04-31A8-19EE9C6884C3" Name="left" />
 					<orm:Parameter id="_9467AB82-FB45-4051-ACCA-5FFD8692874C" Name="right" />
+				</orm:Parameters>
+			</orm:Function>
+			<orm:Function id="_726A34DE-AFA7-E00A-5758-3A9EE6BC2C93" Name="coalesce">
+				<orm:Parameters>
+					<orm:Parameter id="_F30E7035-8661-26EF-A0F0-B5F9A68A00BA" Name="first" />
+					<orm:Parameter id="_9F65AC49-E3BD-4923-9816-C517482BB030" Name="second" />
+				</orm:Parameters>
+			</orm:Function>
+			<orm:Function id="_03E0717D-3DE2-144A-844A-B321EFD3DF63" Name="dateIn">
+				<orm:Parameters>
+					<orm:Parameter id="_B7B5F149-B2D1-9DBB-AD01-2C39C9316660" Name="moment" />
+					<orm:Parameter id="_F27B3A52-57AC-AE31-19E8-FD515F97D792" Name="zone" />
 				</orm:Parameters>
 			</orm:Function>
 		</orm:Functions>
@@ -10278,6 +10436,21 @@ when it is due; counted again when the schedule goes on in another.</orm:Text>
 			<ormDiagram:ObjectTypeShape id="_093172C1-D36F-436F-B0C1-628E68710E32" IsExpanded="true" AbsoluteBounds="8.472222222222221, 0.8888888888888888, 0.505, 0.22944444444444445">
 				<ormDiagram:Subject ref="_528B4C28-ED93-44C3-97C7-3ED4EC417B7E" />
 			</ormDiagram:ObjectTypeShape>
+			<ormDiagram:ObjectTypeShape id="_25E1CE16-747E-45EF-ADDC-643601E211B2" IsExpanded="true" AbsoluteBounds="9.694444444444445, 0.8888888888888888, 0.56, 0.22944444444444445">
+				<ormDiagram:Subject ref="_4D51C1FA-82FE-43BB-9D1C-CCB35BEDCF10" />
+			</ormDiagram:ObjectTypeShape>
+			<ormDiagram:FactTypeShape id="_B32421FF-DB77-4A99-BE81-C469300201DB" IsExpanded="true" AbsoluteBounds="6.444444444444445, 1.9861111111111112, 0.3838888889923692, 0.24388888899236916">
+				<ormDiagram:RelativeShapes>
+					<ormDiagram:ReadingShape id="_9EEF7561-84EC-47B4-AD45-02FD37C2944E" IsExpanded="true" AbsoluteBounds="6.444444444444445, 2.2947000001034805, 1.1, 0.1295030266046524">
+						<ormDiagram:Subject ref="_B19A7107-9B42-4496-B6AF-96B39287573B" />
+					</ormDiagram:ReadingShape>
+				</ormDiagram:RelativeShapes>
+				<ormDiagram:Subject ref="_02E9642E-F491-4F07-80A9-EF9449A0FE34" />
+				<ormDiagram:RoleDisplayOrder>
+					<ormDiagram:Role ref="_634AF22C-0860-473C-AA64-A9DFF1564320" />
+					<ormDiagram:Role ref="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" />
+				</ormDiagram:RoleDisplayOrder>
+			</ormDiagram:FactTypeShape>
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_2C7E073F-10CB-4429-9D8F-D072A08D2C9F" />
 	</ormDiagram:ORMDiagram>
@@ -10843,6 +11016,21 @@ when it is due; counted again when the schedule goes on in another.</orm:Text>
 				<ormDiagram:RoleDisplayOrder>
 					<ormDiagram:Role ref="_B090573E-76FF-42DD-A08E-1A8E387328E6" />
 					<ormDiagram:Role ref="_68E9FDAD-E1F5-404C-B36F-2E277A88BFBA" />
+				</ormDiagram:RoleDisplayOrder>
+			</ormDiagram:FactTypeShape>
+			<ormDiagram:ObjectTypeShape id="_695425D8-7899-49F8-A7D5-2C1062F0EBF1" IsExpanded="true" AbsoluteBounds="13.152777777777779, 1.5416666666666667, 0.56, 0.22944444444444445">
+				<ormDiagram:Subject ref="_4D51C1FA-82FE-43BB-9D1C-CCB35BEDCF10" />
+			</ormDiagram:ObjectTypeShape>
+			<ormDiagram:FactTypeShape id="_E3DAA009-0F23-4FAF-8C47-2CA2BD1CA44C" IsExpanded="true" AbsoluteBounds="8.13888888888889, 2.486111111111111, 0.3838888889923692, 0.24388888899236916">
+				<ormDiagram:RelativeShapes>
+					<ormDiagram:ReadingShape id="_A70ECFC5-D05F-499C-B7C3-2737E2327B6F" IsExpanded="true" AbsoluteBounds="8.13888888888889, 2.7947000001034805, 1.3, 0.1295030266046524">
+						<ormDiagram:Subject ref="_3CEE4ACC-5C31-42EC-85E0-1FA67258BCCF" />
+					</ormDiagram:ReadingShape>
+				</ormDiagram:RelativeShapes>
+				<ormDiagram:Subject ref="_473A0203-4AA7-4DD0-8CCF-DED391BB674F" />
+				<ormDiagram:RoleDisplayOrder>
+					<ormDiagram:Role ref="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" />
+					<ormDiagram:Role ref="_64D97A37-0326-4655-ABDD-32CE2665B1A5" />
 				</ormDiagram:RoleDisplayOrder>
 			</ormDiagram:FactTypeShape>
 		</ormDiagram:Shapes>
@@ -12426,42 +12614,6 @@ reading; fill-ups in other units are left out until they convert
 				<ormq:Value id="_3425CD8F-9654-46DE-9805-A276D8727896" ref="_B10C4EC0-37A3-4C21-A19C-23DD5A5D19DD" Name="Consumption" Expression="round(multiply(divide(#_4E6471D7-E01B-4957-BB44-F084E9004724, subtract(#_35C49D44-AB06-492E-92DC-849BDBFAF75E, #_B6B645FF-FC50-433F-AE50-1559A04E0236)), 100), 2)" Projected="true" />
 			</ormq:Node>
 		</ormq:Query>
-		<ormq:Query id="_C938CC04-2EA9-4E57-AAE3-F8125FCE4248" Name="ReminderNextDue">
-			<ormq:Note>When a done reminder's schedule is next due by date: the day it was
-done, and the schedule's months.</ormq:Note>
-			<ormq:Node id="_BE92CF9D-FBEB-4408-9D80-ADEA8C605245" ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" Projected="true">
-				<ormq:Step id="_E7C536AF-BD4C-4966-B34A-3393A07AF01A" ref="_32B05AAD-BC11-491C-A0FF-7EE672CBA187" Role="_DA621017-953F-4CA7-8B10-1FC5B35191D2">
-					<ormq:Node id="_9A763D52-4146-494A-97F6-9459B9D62B33" Role="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
-				</ormq:Step>
-				<ormq:Step id="_B26869D0-9E09-4A77-B7B8-8A1FDFF23696" ref="_8FA60450-3E5F-4CCA-A106-6CAD11AF1A79" Role="_17961EBF-66AC-4859-A326-3566DAF9D99E">
-					<ormq:Node id="_5FCF75A1-4607-40B2-BDD6-F529ADD8A202" Role="_855A0C39-9802-4DDC-A04E-A94B39C4D3BA" Projected="true">
-						<ormq:Step id="_64DDC6B8-B710-465E-8D88-6054BCDFFB22" ref="_5CD490D7-46DC-44B2-A45E-1D337B3921C8" Role="_BCEA6059-0167-4ECE-ADD7-442E26071231">
-							<ormq:Node id="_03D2A720-EA04-48E8-B20D-83A45AD285E5" Role="_05C4E797-E847-40C3-A868-633E6DC427B0" />
-						</ormq:Step>
-					</ormq:Node>
-				</ormq:Step>
-				<ormq:Value id="_6DBB34BA-420D-4FC4-B577-ED3C65E4CA87" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="NextDue" Expression="addMonths(date(#_9A763D52-4146-494A-97F6-9459B9D62B33), #_03D2A720-EA04-48E8-B20D-83A45AD285E5)" Projected="true" />
-			</ormq:Node>
-		</ormq:Query>
-		<ormq:Query id="_872106E8-3CEE-4A07-814E-56DEA39C6445" Name="EventsWhileKept" Kind="Constraint" Modality="Deontic">
-			<ormq:Note>Events fall while the vehicle is kept: not before the day it was
-acquired, nor after the day it was sold (its sale date derived from its
-car sale, and stored). Ought: the owner may log what came before or
-after.</ormq:Note>
-			<ormq:Node id="_01E481C6-A46C-4712-9881-116A0B0421CA" ref="_890D546C-1996-4726-98DB-4A4151CA6089" Projected="true">
-				<ormq:Step id="_76A45310-4A63-4192-9BE7-F1B7208F6854" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
-					<ormq:Node id="_33F7BB5E-2AE4-45F0-BF8E-F70A2FA93152" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
-				</ormq:Step>
-				<ormq:Step id="_CF38072C-475D-46C3-A2CF-19097DBCDC20" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
-					<ormq:Node id="_750D99BB-BC57-41CF-A0F7-E40631FD140A" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
-						<ormq:Step id="_074405F1-02D8-4317-B8C2-45F38BC51C59" ref="_9BA78440-8F49-4C89-9B17-A32099992386" Role="_A174D171-F286-4AC6-8833-3AB2ED9C8536">
-							<ormq:Node id="_F8FBEB55-FA6B-4DFC-86DC-2EB791646246" Role="_C24D2C45-9232-438A-9969-2FC1D89D213E" Label="1" />
-						</ormq:Step>
-					</ormq:Node>
-				</ormq:Step>
-				<ormq:Value id="_53D51862-A495-419F-A7D6-B90EB13A4E20" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="date(#_33F7BB5E-2AE4-45F0-BF8E-F70A2FA93152)" Comparison="&lt;" CompareTo="_F8FBEB55-FA6B-4DFC-86DC-2EB791646246" />
-			</ormq:Node>
-		</ormq:Query>
 		<ormq:Query id="_BF667244-BEDD-4338-83DE-9EF456B1190C" Name="MeterGoesUp" Kind="Constraint" Modality="Deontic">
 			<ormq:Note>The meter goes up: a vehicle's later reading, in kilometres whatever
 its unit, ought not to be lower. Ought: the owner may enter history out
@@ -12620,58 +12772,6 @@ has none), whatever units its readings are in.</ormq:Note>
 				</ormq:Step>
 			</ormq:Node>
 		</ormq:Query>
-		<ormq:Query id="_DC66F535-3D53-4321-9364-32F64276932E" Name="CostsByMonth">
-			<ormq:Note>What each vehicle cost each month, in its owner's currency, the latest
-month first: each cost at the latest rate on or before its day, one in
-that currency as it is (one in a currency with no rate, as it is too).</ormq:Note>
-			<ormq:Node id="_B11E5ECF-F568-4C46-B32C-4501CFDAF6E7" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" Projected="true">
-				<ormq:Step id="_3125B141-DCE7-4F1A-AFC5-5A04B9CD4D33" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_A887735F-F812-4607-9B18-891CD9B47891">
-					<ormq:Node id="_9BDBBA45-C93C-4EAF-84DA-8A519CD9590A" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
-						<ormq:Step id="_1C186595-440B-40CD-89FE-93BE61ADA2F3" ref="_9B5BABA3-6561-4A73-92E5-7E247BE0218C" Role="_D2A31F07-3ED3-4E6B-8289-95F80E11F40C">
-							<ormq:Node id="_EC1FDBC1-E328-4661-B61D-EEEACEEFB430" Role="_6C0C5EDB-89DA-4DDE-AA0D-8366EF8CF338" Projected="true" Label="2" />
-						</ormq:Step>
-					</ormq:Node>
-				</ormq:Step>
-				<ormq:Step id="_D92E0ECA-EC56-42BA-881C-75B790400F54" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
-					<ormq:Node id="_546C16A8-669E-4F1B-A872-594DAC53B558" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
-						<ormq:Step id="_9EEE14B8-97C7-4749-AB5B-8680B8CB7C4A" ref="_91438FE4-8D6B-46B9-88B0-108182FCF9FE" Role="_A9366C8F-304C-4984-A137-0D71A63310AD">
-							<ormq:Node id="_A54B1AAB-AC16-4E8E-8848-56E96416719B" Role="_9EE052E5-C881-4AE1-A581-371DF6DF6907">
-								<ormq:Step id="_6E385CA1-EE7E-4376-90C5-FFF7633E32FB" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
-									<ormq:Node id="_E845751D-1F3C-4511-B892-BA38560786F1" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
-								</ormq:Step>
-							</ormq:Node>
-						</ormq:Step>
-						<ormq:Step id="_255F039A-A139-4530-B29C-583ED69CFEA0" ref="_B309B12B-DF14-4BE4-A2AD-8B566F2F7870" Role="_9EC441CE-644A-430F-A60C-96232379B58F">
-							<ormq:Node id="_CB424A0E-6EC1-48BE-A4CD-057B3F564661" Role="_68FA7D37-B900-4D63-AE45-133F36637805">
-								<ormq:Step id="_5FF0B7A5-8B4F-4975-B82A-CE60D58F31B2" ref="_35078FD3-0C55-4B6F-BF86-9B815AFD0D2C" Role="_BBB4CA81-4788-428A-8881-9CF87E882F71">
-									<ormq:Node id="_6FEEC5FD-121F-4FEB-B142-C4C6FA83F536" Role="_7AC633A0-DF28-4732-B77D-A55A82EF6A84" />
-								</ormq:Step>
-								<ormq:Step id="_6B312EB5-D817-4498-B8AF-AA9F37F26255" ref="_81A2CCB8-26B1-44A3-BEE7-16A70064FBB1" Role="_7BAA2193-CD89-4DD8-AE4E-633CA6DC513A">
-									<ormq:Node id="_B91B099B-7647-40D5-B446-7370CF4C5AE9" Role="_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9" Label="1">
-										<ormq:Step id="_F8AAB377-07C7-4E28-B5ED-61E1E662457D" ref="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915" Role="_E2A00A69-B2F3-4669-84BB-2F9CBF174124" Operator="Maybe">
-											<ormq:Node id="_93F13177-7475-4A8A-9EBC-1526DE5B078E" Role="_70558562-29FC-41A0-89BD-D2172CB60696" Label="1" />
-											<ormq:Node id="_E82CA512-6200-41AB-8216-C9335265EF04" Role="_99FC0383-55CE-4596-8C30-B323ED480337" Label="2" />
-											<ormq:Node id="_6A115DC2-C60B-4A9A-A7FC-A06C89F87867" Role="_F980A95F-97E0-4D49-A496-345447A658AA" Label="1" Comparison="&lt;=" CompareTo="_F317DFBF-63BA-4377-AEEB-F6BD25D855CE" />
-										</ormq:Step>
-										<ormq:Step id="_7CB751DE-3041-4428-8D45-DC67A684E408" ref="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915" Role="_E2A00A69-B2F3-4669-84BB-2F9CBF174124" Operator="Maybe">
-											<ormq:Node id="_C7026A9A-B23D-4F37-B98D-1137C77C976F" Role="_70558562-29FC-41A0-89BD-D2172CB60696" Label="2" />
-											<ormq:Node id="_CAF9509C-5D0D-4886-872A-7306271D1207" Role="_99FC0383-55CE-4596-8C30-B323ED480337" Label="2" />
-											<ormq:Node id="_E1F9FF64-67EF-4E00-A9C3-EACBA9054DC7" Role="_F980A95F-97E0-4D49-A496-345447A658AA" Label="2" Comparison="=" CompareTo="_78B68962-2231-40FF-AE3B-CA96B7996C83" />
-										</ormq:Step>
-									</ormq:Node>
-								</ormq:Step>
-							</ormq:Node>
-						</ormq:Step>
-						<ormq:Value id="_F317DFBF-63BA-4377-AEEB-F6BD25D855CE" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="date(#_E845751D-1F3C-4511-B892-BA38560786F1)" />
-						<ormq:Value id="_78B68962-2231-40FF-AE3B-CA96B7996C83" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="RateDay" Expression="max(#_6A115DC2-C60B-4A9A-A7FC-A06C89F87867) for #_546C16A8-669E-4F1B-A872-594DAC53B558" />
-						<ormq:Value id="_A1F1144F-C559-4EE8-8C4D-FB0CEBB3EC67" ref="_9ECFB556-1615-4B7B-A00C-4DD25A965CBA" Name="Rate" Expression="max(#_C7026A9A-B23D-4F37-B98D-1137C77C976F) for #_546C16A8-669E-4F1B-A872-594DAC53B558" />
-						<ormq:Value id="_87ED26A6-0B33-4F33-9CF9-8FFD5171F368" ref="_64C7769B-046B-495E-B2CD-AD0522B51F56" Name="Month" Expression="month(#_E845751D-1F3C-4511-B892-BA38560786F1)" Projected="true" Sort="Descending" />
-						<ormq:Value id="_26A41EF3-BE20-4A54-A044-0518BABDCD4C" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Converted" Expression="multiply(#_6FEEC5FD-121F-4FEB-B142-C4C6FA83F536, coalesce(#_A1F1144F-C559-4EE8-8C4D-FB0CEBB3EC67, 1))" />
-						<ormq:Value id="_AD4839D6-5269-4522-8E97-A4B9B51509BD" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Total" Expression="total(#_26A41EF3-BE20-4A54-A044-0518BABDCD4C) for #_B11E5ECF-F568-4C46-B32C-4501CFDAF6E7, #_87ED26A6-0B33-4F33-9CF9-8FFD5171F368" Projected="true" />
-					</ormq:Node>
-				</ormq:Step>
-			</ormq:Node>
-		</ormq:Query>
 		<ormq:Query id="_91F2C2E7-8B4A-4EB1-9D69-6BD2BF963DFE" Name="ServiceCost" Kind="Derivation" Of="_B309B12B-DF14-4BE4-A2AD-8B566F2F7870">
 			<ormq:Note>A service's cost: the sum of its items' costs, in its currency, less
 its discount. Partly derived and stored ("++" above): worked out at save
@@ -12715,31 +12815,6 @@ for a service with items; any other record keeps the cost entered.</ormq:Note>
 				</ormq:Step>
 				<ormq:Value id="_680293E5-CEA5-4730-9E9A-D70258FC5706" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Items" Expression="total(#_334B0311-A15F-409E-8163-1BE55D1C9285) for #_BBF62D85-7AFC-4308-85B1-C97210CA4567" />
 				<ormq:Value id="_0D75A298-E55C-43A9-87A7-3663AA8E857F" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Amount" Expression="subtract(#_680293E5-CEA5-4730-9E9A-D70258FC5706, coalesce(#_B783FAB9-D2E9-4C2D-AE75-06A5A664EADF, 0))" Projected="true" />
-			</ormq:Node>
-		</ormq:Query>
-		<ormq:Query id="_183FF8F7-5471-4AAB-A248-C5B7FF0EC68B" Name="SaleDate" Kind="Derivation" Of="_93972F6B-A0E6-4399-A219-C842BF2153B0">
-			<ormq:Note>A vehicle is sold at most once: "Vehicle was sold on Date" is unique
-for the vehicle, and derived from its car sales.</ormq:Note>
-			<ormq:Node id="_68A67803-87A1-4ADB-BE9D-C4F4EAEC73F7" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" Projected="true">
-				<ormq:Step id="_8765A289-6810-4DC1-A4A8-DAEDF06328BF" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
-					<ormq:Node id="_FD6F13C3-EADF-4096-9BFA-05C6E11E121B" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
-						<ormq:Step id="_21D05FD3-9E4E-428D-9F90-A38410DFA842" ref="_91438FE4-8D6B-46B9-88B0-108182FCF9FE" Role="_A9366C8F-304C-4984-A137-0D71A63310AD">
-							<ormq:Node id="_ABD853D1-2AB8-46C1-A6DD-FF852FFA3937" Role="_9EE052E5-C881-4AE1-A581-371DF6DF6907">
-								<ormq:Step id="_8CEDF60B-1957-41F3-AEB0-ACBCA1BCB557" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
-									<ormq:Node id="_8331A3E8-84AB-4775-ACA7-0F07FAE61AC7" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
-								</ormq:Step>
-								<ormq:Step id="_92AB448F-6A75-48BD-82EC-4DE5C0FEA897" ref="_17F76D56-3B42-45BB-B565-5025CF583DA5" Role="_E3089AC0-3754-4FC8-8E86-D4CFF836E2FD">
-									<ormq:Node id="_B10E7E44-B4DB-454C-B235-1024473939C5" Role="_6AE7639E-4244-4C19-976D-FA8DB15BC246">
-										<ormq:Step id="_7A075A38-2EE1-4AC6-9FB4-7E0B7B74D9DD" ref="_F2DE22FA-0ACC-41C5-982F-AF13480BEBDD" Role="_7843B3E4-CC98-4724-987D-EF6E7C5C93D4">
-											<ormq:Node id="_291AF067-4AC1-47AD-8825-7C4A966AFB45" Role="_DB2DDF9F-925C-4AE7-BF17-9D2895B458FB" />
-										</ormq:Step>
-									</ormq:Node>
-								</ormq:Step>
-								<ormq:Value id="_D6F402CD-4A18-4C1D-BE16-6CD4F2410319" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="date(#_8331A3E8-84AB-4775-ACA7-0F07FAE61AC7)" Projected="true" />
-							</ormq:Node>
-						</ormq:Step>
-					</ormq:Node>
-				</ormq:Step>
 			</ormq:Node>
 		</ormq:Query>
 		<ormq:Query id="_0581876F-007A-44EC-B6C6-A21B1473D922" Name="SellingPrice" Kind="Derivation" Of="_B32EE5C4-7724-40D2-A321-5C0C1A5CCECF">
@@ -12822,37 +12897,6 @@ fitted.</ormq:Note>
 		<ormq:Query id="_38899324-B0F5-4CBD-A02A-3B7538CD9E01" Name="ServiceKindRule" Kind="Derivation" Of="_E2A6BACB-870C-4087-AC76-629EFE2BFAC4">
 			<ormq:Node id="_D6EF703D-D68F-43BF-963E-D1569E53FDB5" ref="_D3D9EF81-F055-4F1A-A33A-E5C495D7B619" Projected="true" Comparison="in" Value="'Maintenance', 'Repair'" />
 		</ormq:Query>
-		<ormq:Query id="_2678FEAA-5C67-405D-AB6A-392CCEFE49A4" Name="EventsBeforeSale" Kind="Constraint" Modality="Deontic">
-			<ormq:Node id="_25058C22-EC05-4BAF-8AE5-2D059AEBD731" ref="_890D546C-1996-4726-98DB-4A4151CA6089" Projected="true">
-				<ormq:Step id="_C008C5C5-7DDC-4F02-BE8A-5BCE46785D92" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
-					<ormq:Node id="_31A318FA-F081-4EC1-8CB1-5A6FA9193605" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
-				</ormq:Step>
-				<ormq:Step id="_C082EC19-E8E3-4149-8D53-BB4F18ABEC80" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
-					<ormq:Node id="_3BF13E94-158C-400C-850E-1EE8070DF229" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
-						<ormq:Step id="_D0B6D3C8-E28C-4DC2-92FD-59C30C386ABB" ref="_93972F6B-A0E6-4399-A219-C842BF2153B0" Role="_2A73B8AF-BF83-4744-9DAF-37268BC21B98">
-							<ormq:Node id="_8C58D11F-3DE8-47C6-9C8E-FA8993370051" Role="_59F74FAC-6A81-4639-9615-6377FAF96626" Label="2" />
-						</ormq:Step>
-					</ormq:Node>
-				</ormq:Step>
-				<ormq:Value id="_7A6ADE57-A5BB-4F7C-A4BC-69E8AF0E507E" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="date(#_31A318FA-F081-4EC1-8CB1-5A6FA9193605)" Comparison="&gt;" CompareTo="_8C58D11F-3DE8-47C6-9C8E-FA8993370051" />
-			</ormq:Node>
-		</ormq:Query>
-		<ormq:Query id="_C7537146-ACC6-4674-AB5C-035E814BAE85" Name="TyresBoughtBeforeFitted" Kind="Constraint">
-			<ormq:Note>A tyre set is bought no later than the day it is first fitted.</ormq:Note>
-			<ormq:Node id="_EC17D5E4-2B0B-40EC-994A-2B485302E602" ref="_BE6F548A-112F-49F9-B626-C776869E9ABE" Projected="true">
-				<ormq:Step id="_8630D795-4904-4307-A1D1-3DD2C9A82630" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
-					<ormq:Node id="_4C0AF631-429D-4550-8973-2112980DAAD4" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
-				</ormq:Step>
-				<ormq:Step id="_968BB1F5-B241-4322-9FCB-557274FC86F2" ref="_1F0001DF-E039-4787-A53B-9E52C1A33F63" Role="_137C339E-A19E-49CB-9AE9-6E74F9438577">
-					<ormq:Node id="_037CC9E5-31B3-4707-8B4D-F4DB7A1F5FBD" Role="_C254ACAC-A996-46CB-B77F-A33CE3EC77D7">
-						<ormq:Step id="_48049DD4-89F3-44E8-82B5-944CF190B7B7" ref="_F9172140-0AC1-44C1-A983-079D8E7DCE98" Role="_E65F024B-0200-4C81-A476-7585C3F61D92">
-							<ormq:Node id="_3BBEC9D3-D8A6-4852-9005-77F65092F17E" Role="_69985A53-5D64-4E8D-8A26-91CC079C7823" Label="1" />
-						</ormq:Step>
-					</ormq:Node>
-				</ormq:Step>
-				<ormq:Value id="_FD1CD007-E307-4356-9441-680FD1BF4B5F" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="date(#_4C0AF631-429D-4550-8973-2112980DAAD4)" Comparison="&lt;" CompareTo="_3BBEC9D3-D8A6-4852-9005-77F65092F17E" />
-			</ormq:Node>
-		</ormq:Query>
 		<ormq:Query id="_1A071E76-29E6-4056-B975-25A586844941" Name="OwnerDrives" Kind="Derivation" Of="_EBBE620E-37E7-49D4-9C21-A2CE7D5AEDF5">
 			<ormq:Node id="_59C0F5EC-8A46-47D9-B3A7-3E27A93F1E47" ref="_1660F6CB-8F66-4035-A24B-1114041EB14B" Projected="true">
 				<ormq:Step id="_9D490639-CE47-43A5-92CE-0867EAF6079E" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
@@ -12913,22 +12957,6 @@ vehicle may have several, of its schedules and one-offs.</ormq:Note>
 				</ormq:Step>
 			</ormq:Node>
 		</ormq:Query>
-		<ormq:Query id="_EC706FCE-565F-4926-9A70-E32C9EF6F07F" Name="OverdueReminders">
-			<ormq:Note>Overdue: open, and due on a day gone by; or at a distance the vehicle
-has reached, in kilometres whatever the units.</ormq:Note>
-			<ormq:Node id="_DD50AD19-58F0-4F99-82B7-E6EC0BFC5862" ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" Projected="true">
-				<ormq:Step id="_781FC909-8D0A-4E51-96E7-CE66D70B1BDF" ref="_57BE76BF-31AF-46AA-8CAC-964D3F0EA642" Role="_AFA2DA89-0AC3-4D85-A57C-10562A1E33A8">
-					<ormq:Node id="_CDBF6656-3213-4D95-9A7D-728C6A860B87" Role="_19DC41CC-EE71-4CBD-B07E-F03EDB0D2163" Projected="true" Label="1" />
-				</ormq:Step>
-				<ormq:Step id="_D8213B4C-D006-45DC-8762-A15A4B874E08" ref="_32B05AAD-BC11-491C-A0FF-7EE672CBA187" Role="_DA621017-953F-4CA7-8B10-1FC5B35191D2" Operator="Not">
-					<ormq:Node id="_212D05E3-61C2-4BD6-825C-A0B991E8960C" Role="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
-				</ormq:Step>
-				<ormq:Step id="_F6FB2F4C-C64D-4010-A22C-E776B2A275B5" ref="_5C698426-97EE-4664-9535-8543287F790F" Role="_489C8174-6A29-418D-9B7D-FA38DE37448C" Operator="Not">
-					<ormq:Node id="_AF4F4AF4-4E57-4614-96C5-D578B4D5AA16" Role="_1F7BF1FD-76AB-48F4-9045-36975DC76505" Label="2" />
-				</ormq:Step>
-				<ormq:Value id="_1F4087CC-E39E-4A8C-990D-62D1929D3547" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Today" Expression="today()" Comparison="&gt;" CompareTo="_CDBF6656-3213-4D95-9A7D-728C6A860B87" />
-			</ormq:Node>
-		</ormq:Query>
 		<ormq:Query id="_A879A650-7E87-4E1C-A64A-3DB1A8EB19A0" Name="OverdueByMileage">
 			<ormq:Node id="_B6B7987A-19F5-466C-B27A-8E8705813048" ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" Projected="true">
 				<ormq:Step id="_459A1C44-FE28-48C3-95CC-41EB6E491B5F" ref="_BB5CEE67-ECDC-42D0-9AED-001652E366D5" Role="_8A7DB6D3-360D-4465-8140-5B26D4D5BA42">
@@ -12982,22 +13010,6 @@ has reached, in kilometres whatever the units.</ormq:Note>
 				<ormq:Value id="_34F187C4-4946-4E02-A99A-B471292DE773" ref="_B10C4EC0-37A3-4C21-A19C-23DD5A5D19DD" Name="Due" Expression="multiply(#_A6195A84-9B88-4158-BAED-B3442D36938E, #_BBF44811-4853-405B-88AC-30D04125F9CF)" Comparison="&lt;=" CompareTo="_462D9CC9-82D7-4429-956C-9E90CA32307A" />
 			</ormq:Node>
 		</ormq:Query>
-		<ormq:Query id="_593C4347-DCCD-4EE9-9DB8-8891C5C79EB7" Name="LateReminders">
-			<ormq:Note>Late: done or cancelled after the day it was due; done past the
-distance it was due at.</ormq:Note>
-			<ormq:Node id="_C2A8AAF0-246C-4A87-BAFF-F34E29206979" ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" Projected="true">
-				<ormq:Step id="_017E4C00-7AD1-43A8-82B7-FD94910F25FF" ref="_57BE76BF-31AF-46AA-8CAC-964D3F0EA642" Role="_AFA2DA89-0AC3-4D85-A57C-10562A1E33A8">
-					<ormq:Node id="_FE9A2FA1-D2E0-4268-83C2-638755D0FBC7" Role="_19DC41CC-EE71-4CBD-B07E-F03EDB0D2163" Projected="true" Label="1" />
-				</ormq:Step>
-				<ormq:Step id="_A01C992D-856D-4B74-A59E-38FD5B5D5917" ref="_32B05AAD-BC11-491C-A0FF-7EE672CBA187" Role="_DA621017-953F-4CA7-8B10-1FC5B35191D2" Operator="Maybe">
-					<ormq:Node id="_C194B921-38CD-4E2A-9A49-57BD35AE9CA4" Role="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
-				</ormq:Step>
-				<ormq:Step id="_9884D42B-DD87-4D3E-BC71-3442F25FAB74" ref="_5C698426-97EE-4664-9535-8543287F790F" Role="_489C8174-6A29-418D-9B7D-FA38DE37448C" Operator="Maybe">
-					<ormq:Node id="_BDE0C1A9-78A9-45BE-92C7-27ED86F8D33A" Role="_1F7BF1FD-76AB-48F4-9045-36975DC76505" Label="2" />
-				</ormq:Step>
-				<ormq:Value id="_65DD113C-839A-43FC-8AC5-522E34B0F459" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Closed" Expression="coalesce(date(#_C194B921-38CD-4E2A-9A49-57BD35AE9CA4), #_BDE0C1A9-78A9-45BE-92C7-27ED86F8D33A)" Projected="true" Comparison="&gt;" CompareTo="_FE9A2FA1-D2E0-4268-83C2-638755D0FBC7" />
-			</ormq:Node>
-		</ormq:Query>
 		<ormq:Query id="_C1583B18-ED23-407B-8593-C486393E8FB8" Name="DoneLateByMileage">
 			<ormq:Node id="_AF6D2518-7E64-4929-A3C1-153FEA9C8FAD" ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" Projected="true">
 				<ormq:Step id="_BA947907-6789-4288-98B9-994E9F880BED" ref="_BB5CEE67-ECDC-42D0-9AED-001652E366D5" Role="_8A7DB6D3-360D-4465-8140-5B26D4D5BA42">
@@ -13048,6 +13060,282 @@ on with it, or was cancelled.</ormq:Note>
 								</ormq:Step>
 							</ormq:Node>
 						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_27AD512A-BE3F-4AFE-BBFB-12786B8DD4F2" Name="EventsWhileKept" Kind="Constraint" Modality="Deontic">
+			<ormq:Note>Events fall while the vehicle is kept: not before the day it was
+acquired, nor after the day it was sold (its sale date derived from its
+car sale, and stored), each on its day where it happened. Ought: the
+owner may log what came before or after.</ormq:Note>
+			<ormq:Node id="_3DCC2611-6C5B-4CF7-BBF6-8242AE369049" ref="_890D546C-1996-4726-98DB-4A4151CA6089" Projected="true">
+				<ormq:Step id="_5E15C985-3292-4E4D-9EBD-FEDDEF387C8A" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+					<ormq:Node id="_AA69CAD7-5545-41CC-9ECE-F5DF318DDE57" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
+				</ormq:Step>
+				<ormq:Step id="_3965D4F1-D9FC-4526-80C0-74C406FA8159" ref="_473A0203-4AA7-4DD0-8CCF-DED391BB674F" Role="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" Operator="Maybe">
+					<ormq:Node id="_EB1E1C58-947C-46F4-B4E9-9A008372ED99" Role="_64D97A37-0326-4655-ABDD-32CE2665B1A5" Label="1" />
+				</ormq:Step>
+				<ormq:Step id="_62272DAA-0974-45CB-83A5-1D6E735D1B47" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+					<ormq:Node id="_0A97C41A-F091-42E1-A12C-02FEFAD0AF9E" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+						<ormq:Step id="_A502D3E9-B9F3-45C4-B68D-BBD746C70CBB" ref="_9BA78440-8F49-4C89-9B17-A32099992386" Role="_A174D171-F286-4AC6-8833-3AB2ED9C8536">
+							<ormq:Node id="_47A66A36-FB8C-4F68-90A7-060DE77C9B52" Role="_C24D2C45-9232-438A-9969-2FC1D89D213E" Label="1" />
+						</ormq:Step>
+						<ormq:Step id="_8B5039BD-A38B-4827-95B5-47A674C0BDCF" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_A887735F-F812-4607-9B18-891CD9B47891">
+							<ormq:Node id="_92D1A83B-901A-41CD-B17D-CB3120FA175C" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
+								<ormq:Step id="_D4014BEA-34EA-445C-BE51-48A5B9D1EC46" ref="_02E9642E-F491-4F07-80A9-EF9449A0FE34" Role="_634AF22C-0860-473C-AA64-A9DFF1564320" Operator="Maybe">
+									<ormq:Node id="_63C1409C-C383-47C5-8321-B23F2E420B77" Role="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" Label="2" />
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_85E3DDD2-2819-4EC6-A3B2-4C7282C7EB10" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="dateIn(#_AA69CAD7-5545-41CC-9ECE-F5DF318DDE57, coalesce(#_EB1E1C58-947C-46F4-B4E9-9A008372ED99, #_63C1409C-C383-47C5-8321-B23F2E420B77))" Comparison="&lt;" CompareTo="_47A66A36-FB8C-4F68-90A7-060DE77C9B52" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_3DE65DD5-CA8F-430D-BA4A-340A0A162F0B" Name="EventsBeforeSale" Kind="Constraint" Modality="Deontic">
+			<ormq:Node id="_E1528382-2F7A-4191-BE13-FE7C79215397" ref="_890D546C-1996-4726-98DB-4A4151CA6089" Projected="true">
+				<ormq:Step id="_E6544FCF-AF02-4C39-9440-06F14C46C653" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+					<ormq:Node id="_772CE4E5-FE1E-453B-8970-BFB7F7D81420" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
+				</ormq:Step>
+				<ormq:Step id="_A85EA3B0-B223-4DDB-8FFB-27CCBD603CED" ref="_473A0203-4AA7-4DD0-8CCF-DED391BB674F" Role="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" Operator="Maybe">
+					<ormq:Node id="_4B531011-65CF-41BB-92A2-FA5D93DD6461" Role="_64D97A37-0326-4655-ABDD-32CE2665B1A5" Label="1" />
+				</ormq:Step>
+				<ormq:Step id="_67F82AFE-C447-43E2-9D36-D422912FD75C" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+					<ormq:Node id="_D708F032-961D-4B7B-867F-0BFFF1DE2C27" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+						<ormq:Step id="_296A82CB-F9C4-40B9-AB3A-1EB2AD8BC04B" ref="_93972F6B-A0E6-4399-A219-C842BF2153B0" Role="_2A73B8AF-BF83-4744-9DAF-37268BC21B98">
+							<ormq:Node id="_00082FAC-FBE7-418E-B0FA-D53CEF9A30C6" Role="_59F74FAC-6A81-4639-9615-6377FAF96626" Label="2" />
+						</ormq:Step>
+						<ormq:Step id="_F6505E47-228B-4FE6-BF65-49B90C47FE85" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_A887735F-F812-4607-9B18-891CD9B47891">
+							<ormq:Node id="_6D31B5A3-ADB7-4DA8-8E1D-2EB300037E6B" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
+								<ormq:Step id="_DCF7F89B-8C76-447F-8F73-BB3A2AD94AC1" ref="_02E9642E-F491-4F07-80A9-EF9449A0FE34" Role="_634AF22C-0860-473C-AA64-A9DFF1564320" Operator="Maybe">
+									<ormq:Node id="_28FC032C-50CC-42FA-BB0B-B5573DB6E0DF" Role="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" Label="2" />
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_D6510C87-D0BE-400E-8686-121FAE944327" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="dateIn(#_772CE4E5-FE1E-453B-8970-BFB7F7D81420, coalesce(#_4B531011-65CF-41BB-92A2-FA5D93DD6461, #_28FC032C-50CC-42FA-BB0B-B5573DB6E0DF))" Comparison="&gt;" CompareTo="_00082FAC-FBE7-418E-B0FA-D53CEF9A30C6" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_44B07D36-A7ED-4686-9F75-140F09A2BF3B" Name="TyresBoughtBeforeFitted" Kind="Constraint">
+			<ormq:Note>A tyre set is bought no later than the day it is first fitted.</ormq:Note>
+			<ormq:Node id="_6983A2E1-880A-4878-8F09-4ACFC0A1F16A" ref="_BE6F548A-112F-49F9-B626-C776869E9ABE" Projected="true">
+				<ormq:Step id="_A91EC845-D1CF-4484-A79C-DDC6D6A51AF3" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+					<ormq:Node id="_91129D14-574A-4E4D-BD5A-CDC7E8491FF0" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
+				</ormq:Step>
+				<ormq:Step id="_AE89B525-6914-4E42-9DB4-1DD78F863ED7" ref="_473A0203-4AA7-4DD0-8CCF-DED391BB674F" Role="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" Operator="Maybe">
+					<ormq:Node id="_B5756020-97F3-4C49-ACE5-79FD62310CC9" Role="_64D97A37-0326-4655-ABDD-32CE2665B1A5" Label="1" />
+				</ormq:Step>
+				<ormq:Step id="_BB612A69-F550-4B30-A47A-9FBC7483D122" ref="_1F0001DF-E039-4787-A53B-9E52C1A33F63" Role="_137C339E-A19E-49CB-9AE9-6E74F9438577">
+					<ormq:Node id="_3A266A29-BF54-4891-B09A-43E18937BC9F" Role="_C254ACAC-A996-46CB-B77F-A33CE3EC77D7">
+						<ormq:Step id="_833AA586-CF30-4A04-90EB-059D7E0C4101" ref="_F9172140-0AC1-44C1-A983-079D8E7DCE98" Role="_E65F024B-0200-4C81-A476-7585C3F61D92">
+							<ormq:Node id="_2AC06BEE-10BA-4BCD-B20B-012FB27483A2" Role="_69985A53-5D64-4E8D-8A26-91CC079C7823" Label="1" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Step id="_EB8C13D9-4A7F-441C-BDFE-F20DD8CA99F5" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+					<ormq:Node id="_1F950B09-C87E-40B5-8BD8-142F1D388F43" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+						<ormq:Step id="_02415B84-0E2A-4E6A-9106-FF679B9C62F4" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_A887735F-F812-4607-9B18-891CD9B47891">
+							<ormq:Node id="_BDE67C08-3BC3-47D3-ADAD-3B5F0AA90731" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
+								<ormq:Step id="_17CC6F28-F091-4E4C-A83F-A61546FADCB9" ref="_02E9642E-F491-4F07-80A9-EF9449A0FE34" Role="_634AF22C-0860-473C-AA64-A9DFF1564320" Operator="Maybe">
+									<ormq:Node id="_74CA5D51-B9A8-49DF-8068-D6FD13241E99" Role="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" Label="2" />
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_019AB19D-71AF-4EBF-8C1A-554F0A9C7C64" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="dateIn(#_91129D14-574A-4E4D-BD5A-CDC7E8491FF0, coalesce(#_B5756020-97F3-4C49-ACE5-79FD62310CC9, #_74CA5D51-B9A8-49DF-8068-D6FD13241E99))" Comparison="&lt;" CompareTo="_2AC06BEE-10BA-4BCD-B20B-012FB27483A2" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_F71B3D19-F7B3-4CDC-AFE5-B8977F3CCFB3" Name="SaleDate" Kind="Derivation" Of="_93972F6B-A0E6-4399-A219-C842BF2153B0">
+			<ormq:Note>A vehicle is sold at most once: "Vehicle was sold on Date" is unique
+for the vehicle, and derived from its car sales, the day it was sold
+where it was.</ormq:Note>
+			<ormq:Node id="_B6C35E36-3EEF-40D3-8ACB-27BD0ADFDB21" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" Projected="true">
+				<ormq:Step id="_703CAC84-592A-4332-99B6-C12CFE06FBC4" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_A887735F-F812-4607-9B18-891CD9B47891">
+					<ormq:Node id="_AA454AF0-5528-489F-BF96-6297A61255FA" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
+						<ormq:Step id="_35F126E6-0D93-4BEE-8CCC-D02AC88E32F4" ref="_02E9642E-F491-4F07-80A9-EF9449A0FE34" Role="_634AF22C-0860-473C-AA64-A9DFF1564320" Operator="Maybe">
+							<ormq:Node id="_F494BA1E-B059-495E-8037-35F8CB7BD906" Role="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" Label="2" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Step id="_ADE55A13-C003-442E-9903-6C2A1438D556" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+					<ormq:Node id="_EB087286-15B8-47B4-B671-5B9FD425A331" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+						<ormq:Step id="_2123BA86-6461-4FA0-8FF4-3C7BA66DC87D" ref="_91438FE4-8D6B-46B9-88B0-108182FCF9FE" Role="_A9366C8F-304C-4984-A137-0D71A63310AD">
+							<ormq:Node id="_A7D4DAED-AF75-4670-9B81-22E718BA5F39" Role="_9EE052E5-C881-4AE1-A581-371DF6DF6907">
+								<ormq:Step id="_536712B6-BF21-48CF-B0D3-6653300207D0" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+									<ormq:Node id="_7A7A3997-4081-4EDE-8862-92A5EFDAB1B7" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
+								</ormq:Step>
+								<ormq:Step id="_50EE4978-9584-4C83-821E-4BB2F5862372" ref="_473A0203-4AA7-4DD0-8CCF-DED391BB674F" Role="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" Operator="Maybe">
+									<ormq:Node id="_A66AFE78-7842-4463-BB6F-A74AF8A8E63C" Role="_64D97A37-0326-4655-ABDD-32CE2665B1A5" Label="1" />
+								</ormq:Step>
+								<ormq:Step id="_E856DF74-1B62-4B95-A5DD-3A52E97077B3" ref="_17F76D56-3B42-45BB-B565-5025CF583DA5" Role="_E3089AC0-3754-4FC8-8E86-D4CFF836E2FD">
+									<ormq:Node id="_3414CF61-334F-4826-A833-3AB2B8182A02" Role="_6AE7639E-4244-4C19-976D-FA8DB15BC246">
+										<ormq:Step id="_C08052B7-B9D9-427A-BD0D-D55353D8176D" ref="_F2DE22FA-0ACC-41C5-982F-AF13480BEBDD" Role="_7843B3E4-CC98-4724-987D-EF6E7C5C93D4">
+											<ormq:Node id="_EA51F2DB-BFFF-4A8F-B592-33DF353FC501" Role="_DB2DDF9F-925C-4AE7-BF17-9D2895B458FB" />
+										</ormq:Step>
+									</ormq:Node>
+								</ormq:Step>
+								<ormq:Value id="_E63F1D9D-A816-40B5-A1BA-25D2137FEEB3" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="dateIn(#_7A7A3997-4081-4EDE-8862-92A5EFDAB1B7, coalesce(#_A66AFE78-7842-4463-BB6F-A74AF8A8E63C, #_F494BA1E-B059-495E-8037-35F8CB7BD906))" Projected="true" />
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_1A1112E9-5EE7-4CB8-A732-72458982DB89" Name="ReminderNextDue">
+			<ormq:Note>When a done reminder's schedule is next due by date: the day it was
+done where the event that did it happened, and the schedule's months.</ormq:Note>
+			<ormq:Node id="_F8F817EE-1330-434C-BF5C-29F4C28D0739" ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" Projected="true">
+				<ormq:Step id="_7F044A5B-4FDF-4F31-92C3-5BC25B600B34" ref="_32B05AAD-BC11-491C-A0FF-7EE672CBA187" Role="_DA621017-953F-4CA7-8B10-1FC5B35191D2">
+					<ormq:Node id="_6121FDC9-2857-4F8D-9E96-66391B87D3B6" Role="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
+				</ormq:Step>
+				<ormq:Step id="_A80DA0FB-199C-421B-9045-12F52D76BD7C" ref="_2C49A5F9-BF7F-4EE3-81DB-5892ACE8F180" Role="_018B6151-5214-44CE-B407-C682E26A2C4D" Operator="Maybe">
+					<ormq:Node id="_CBF9FDF5-FAFF-4F7F-B618-1E0643DF0E07" Role="_D8C59329-7495-427A-BC65-8A43D64A15D1">
+						<ormq:Step id="_597689BB-17E3-47DA-8AE9-1AB3DF09EB3E" ref="_473A0203-4AA7-4DD0-8CCF-DED391BB674F" Role="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" Operator="Maybe">
+							<ormq:Node id="_BADFFA24-CAA0-41AE-814D-633DD7F59EA8" Role="_64D97A37-0326-4655-ABDD-32CE2665B1A5" Label="1" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Step id="_9EAD12E4-67F3-4588-9A89-2B4B1E444F56" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+					<ormq:Node id="_0CFE8A99-E842-48A8-84F7-4B63D1AA5A82" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+						<ormq:Step id="_70F63D0C-539C-4736-820C-F79677B11519" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_A887735F-F812-4607-9B18-891CD9B47891">
+							<ormq:Node id="_B26D32B1-983A-4116-B436-C8F48862E319" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
+								<ormq:Step id="_18CE6122-9C1A-4901-A26D-27DFFDCC19F9" ref="_02E9642E-F491-4F07-80A9-EF9449A0FE34" Role="_634AF22C-0860-473C-AA64-A9DFF1564320" Operator="Maybe">
+									<ormq:Node id="_69935C15-D779-41A7-ADD6-EB87FDA95939" Role="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" Label="2" />
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Step id="_99EDDC78-B411-4ECC-866D-088DAC558F69" ref="_8FA60450-3E5F-4CCA-A106-6CAD11AF1A79" Role="_17961EBF-66AC-4859-A326-3566DAF9D99E">
+					<ormq:Node id="_50DCA632-305F-4D5C-9338-DB4586A7BA70" Role="_855A0C39-9802-4DDC-A04E-A94B39C4D3BA" Projected="true">
+						<ormq:Step id="_623F5E28-B3FC-4392-9FF3-9444B837F050" ref="_5CD490D7-46DC-44B2-A45E-1D337B3921C8" Role="_BCEA6059-0167-4ECE-ADD7-442E26071231">
+							<ormq:Node id="_91732344-86E5-4FCE-B86F-54321D1EA4BF" Role="_05C4E797-E847-40C3-A868-633E6DC427B0" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_8E1A2029-EF7E-4B1D-A3DB-C6D3751DBB99" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="NextDue" Expression="addMonths(dateIn(#_6121FDC9-2857-4F8D-9E96-66391B87D3B6, coalesce(#_BADFFA24-CAA0-41AE-814D-633DD7F59EA8, #_69935C15-D779-41A7-ADD6-EB87FDA95939)), #_91732344-86E5-4FCE-B86F-54321D1EA4BF)" Projected="true" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_B85DAE98-A8E7-4738-88C0-D4C2D453963D" Name="OverdueReminders">
+			<ormq:Note>Overdue: open, and due on a day gone by where its vehicle's owner is;
+or at a distance the vehicle has reached, in kilometres whatever the
+units.</ormq:Note>
+			<ormq:Node id="_91C82D2F-91DF-4B27-9601-5CFE3A8EB58F" ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" Projected="true">
+				<ormq:Step id="_8FF7D657-D80A-445C-8F87-85F8AB94BDCB" ref="_57BE76BF-31AF-46AA-8CAC-964D3F0EA642" Role="_AFA2DA89-0AC3-4D85-A57C-10562A1E33A8">
+					<ormq:Node id="_2F0A1307-7A76-4582-AD49-5C61EC060969" Role="_19DC41CC-EE71-4CBD-B07E-F03EDB0D2163" Projected="true" Label="1" />
+				</ormq:Step>
+				<ormq:Step id="_A77CBA86-8176-4B41-9230-0F11E1AED008" ref="_32B05AAD-BC11-491C-A0FF-7EE672CBA187" Role="_DA621017-953F-4CA7-8B10-1FC5B35191D2" Operator="Not">
+					<ormq:Node id="_FE1D6243-0440-4E36-9842-872839C51FB4" Role="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
+				</ormq:Step>
+				<ormq:Step id="_500E87FA-8CD1-4EF8-9311-03948B12EFFB" ref="_5C698426-97EE-4664-9535-8543287F790F" Role="_489C8174-6A29-418D-9B7D-FA38DE37448C" Operator="Not">
+					<ormq:Node id="_C23E65A7-4EEE-41A0-B285-5410739EC6BC" Role="_1F7BF1FD-76AB-48F4-9045-36975DC76505" Label="2" />
+				</ormq:Step>
+				<ormq:Step id="_33C01313-8208-4D73-8DED-CF57F8795EB2" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+					<ormq:Node id="_5B6A4816-2349-4F80-A8FF-EEC78CC7DC56" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+						<ormq:Step id="_1BEFDE2A-02E5-40D9-AA1E-4B6B55C7A095" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_A887735F-F812-4607-9B18-891CD9B47891">
+							<ormq:Node id="_197532F9-67D8-440A-8ADC-7D543E181A0C" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
+								<ormq:Step id="_1A876780-06A0-482F-9642-E3073C93EA2B" ref="_02E9642E-F491-4F07-80A9-EF9449A0FE34" Role="_634AF22C-0860-473C-AA64-A9DFF1564320" Operator="Maybe">
+									<ormq:Node id="_009C2470-123C-418F-B343-418ECE72B438" Role="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" />
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_5391451B-D605-4E88-BF35-F2ADC19FD1D5" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Today" Expression="todayIn(#_009C2470-123C-418F-B343-418ECE72B438)" Comparison="&gt;" CompareTo="_2F0A1307-7A76-4582-AD49-5C61EC060969" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_49CF2A0C-859C-4A47-86AF-4EA89A4FA2A0" Name="LateReminders">
+			<ormq:Note>Late: done or cancelled after the day it was due; done past the
+distance it was due at.</ormq:Note>
+			<ormq:Node id="_BF8D51A2-46A2-4932-A9D1-DC4B08086D4E" ref="_66C78B16-140E-4A92-A0A6-2E08441358FE" Projected="true">
+				<ormq:Step id="_A557BE55-1CE1-4DC9-B423-C3828CABADD7" ref="_57BE76BF-31AF-46AA-8CAC-964D3F0EA642" Role="_AFA2DA89-0AC3-4D85-A57C-10562A1E33A8">
+					<ormq:Node id="_50D3D274-F849-4F9F-BD3F-AE38777368F9" Role="_19DC41CC-EE71-4CBD-B07E-F03EDB0D2163" Projected="true" Label="1" />
+				</ormq:Step>
+				<ormq:Step id="_E5FCDEE5-68EA-4BCE-9B3F-E81927EA866C" ref="_32B05AAD-BC11-491C-A0FF-7EE672CBA187" Role="_DA621017-953F-4CA7-8B10-1FC5B35191D2" Operator="Maybe">
+					<ormq:Node id="_D1F05B48-1E3C-440F-9473-709DC9CABF7B" Role="_E4CD3A6D-0016-40F5-83A1-17F66A7D6713" />
+				</ormq:Step>
+				<ormq:Step id="_2C560002-193B-49E0-851D-8B6A05409B5A" ref="_2C49A5F9-BF7F-4EE3-81DB-5892ACE8F180" Role="_018B6151-5214-44CE-B407-C682E26A2C4D" Operator="Maybe">
+					<ormq:Node id="_895FC1FB-E450-4C7B-9181-7D5D962B3148" Role="_D8C59329-7495-427A-BC65-8A43D64A15D1">
+						<ormq:Step id="_3118F1B3-088D-411C-8973-D9013267174C" ref="_473A0203-4AA7-4DD0-8CCF-DED391BB674F" Role="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" Operator="Maybe">
+							<ormq:Node id="_C55B5A7A-7492-41B2-AF25-AFC9A8F6AECE" Role="_64D97A37-0326-4655-ABDD-32CE2665B1A5" Label="1" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Step id="_62F25602-C9CB-407A-AD16-2FC050D04852" ref="_5C698426-97EE-4664-9535-8543287F790F" Role="_489C8174-6A29-418D-9B7D-FA38DE37448C" Operator="Maybe">
+					<ormq:Node id="_F9B7DAD2-18BD-4C22-974A-8BEF1830D5BC" Role="_1F7BF1FD-76AB-48F4-9045-36975DC76505" Label="2" />
+				</ormq:Step>
+				<ormq:Step id="_713EA336-4273-4ADD-9F9E-27AB4517BCCC" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+					<ormq:Node id="_82497CA0-FEC4-45E6-87E5-60B5F7B9E2B3" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+						<ormq:Step id="_801D596A-498C-4C95-8848-50F93824F1AA" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_A887735F-F812-4607-9B18-891CD9B47891">
+							<ormq:Node id="_F96E2D96-02D2-4153-8DEC-C9EFEAE40BCB" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
+								<ormq:Step id="_9A435135-662E-4372-91B7-C93B022290C3" ref="_02E9642E-F491-4F07-80A9-EF9449A0FE34" Role="_634AF22C-0860-473C-AA64-A9DFF1564320" Operator="Maybe">
+									<ormq:Node id="_707C09B2-E2BA-4132-9B14-3397BF941D96" Role="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" Label="2" />
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Value id="_DF9DF7C7-42DF-454F-8D42-8F3EE0753258" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Closed" Expression="coalesce(dateIn(#_D1F05B48-1E3C-440F-9473-709DC9CABF7B, coalesce(#_C55B5A7A-7492-41B2-AF25-AFC9A8F6AECE, #_707C09B2-E2BA-4132-9B14-3397BF941D96)), #_F9B7DAD2-18BD-4C22-974A-8BEF1830D5BC)" Projected="true" Comparison="&gt;" CompareTo="_50D3D274-F849-4F9F-BD3F-AE38777368F9" />
+			</ormq:Node>
+		</ormq:Query>
+		<ormq:Query id="_72298659-16E4-4C39-9976-5C0B5C22480F" Name="CostsByMonth">
+			<ormq:Note>What each vehicle cost each month, in its owner's currency, the latest
+month first: each cost at the latest rate on or before its day, one in
+that currency as it is (one in a currency with no rate, as it is too);
+each cost's day and month where it was paid.</ormq:Note>
+			<ormq:Node id="_88002EA2-5E19-47B8-8E3F-34D409F50066" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" Projected="true">
+				<ormq:Step id="_E1AF44AB-F7F7-4AB9-A0B0-33BE6794B960" ref="_BB719737-8048-4700-8E5D-3AF85A80213C" Role="_A887735F-F812-4607-9B18-891CD9B47891">
+					<ormq:Node id="_C4C7F75B-EA97-404B-B8DF-0CF5FE7B58A7" Role="_F9B5DA9B-DD9B-481F-8BE4-BF860DA9E96E">
+						<ormq:Step id="_5582B086-5368-475F-B25C-0A26DC14E8F8" ref="_9B5BABA3-6561-4A73-92E5-7E247BE0218C" Role="_D2A31F07-3ED3-4E6B-8289-95F80E11F40C">
+							<ormq:Node id="_3F5D36A3-AA15-4128-A3F2-A0DD9333D86B" Role="_6C0C5EDB-89DA-4DDE-AA0D-8366EF8CF338" Projected="true" Label="2" />
+						</ormq:Step>
+						<ormq:Step id="_8BE85B48-7D4B-4EB4-BFCA-B4FB520EEA83" ref="_02E9642E-F491-4F07-80A9-EF9449A0FE34" Role="_634AF22C-0860-473C-AA64-A9DFF1564320" Operator="Maybe">
+							<ormq:Node id="_87596D17-095E-4D19-867D-C3DCD1AC37E9" Role="_4C790D56-FE15-4C35-B8F4-02E6A5ED10CE" Label="2" />
+						</ormq:Step>
+					</ormq:Node>
+				</ormq:Step>
+				<ormq:Step id="_89DDF1EB-774A-4936-AF26-1F8AD193D79C" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_1E8B7CC6-AAE1-4775-A92B-5A310F8A5AA2">
+					<ormq:Node id="_24185B1B-D474-4F10-967F-41EF785BB8A4" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">
+						<ormq:Step id="_232CFF55-2090-463A-8E37-368B73FF600A" ref="_91438FE4-8D6B-46B9-88B0-108182FCF9FE" Role="_A9366C8F-304C-4984-A137-0D71A63310AD">
+							<ormq:Node id="_234DF36E-0EAB-4153-ABBF-9B9191500AA7" Role="_9EE052E5-C881-4AE1-A581-371DF6DF6907">
+								<ormq:Step id="_0D99473A-3CD1-426A-BCFA-E0B95DDA9F13" ref="_FF7DA975-165E-41C5-9B8B-B07C20486CC8" Role="_4B6B8783-65C9-4D37-ADEA-C90CD70E116A">
+									<ormq:Node id="_EAD37133-B4BB-45FF-B1E3-126CC7BBAE96" Role="_29AE2287-AC15-42D4-AA20-BE1C9F364295" />
+								</ormq:Step>
+								<ormq:Step id="_64FB620D-D304-42A3-AC22-0E01725DEBFC" ref="_473A0203-4AA7-4DD0-8CCF-DED391BB674F" Role="_11D73C55-3FC2-4B1D-8732-0FAA09A14FCF" Operator="Maybe">
+									<ormq:Node id="_892B4ED4-CCFC-4C3E-A9E7-8C1799D86F51" Role="_64D97A37-0326-4655-ABDD-32CE2665B1A5" Label="1" />
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+						<ormq:Step id="_C3CA20D2-8814-4132-9753-F44214706D60" ref="_B309B12B-DF14-4BE4-A2AD-8B566F2F7870" Role="_9EC441CE-644A-430F-A60C-96232379B58F">
+							<ormq:Node id="_0D85EBD4-3F10-4F5E-8F11-C3394BEB2851" Role="_68FA7D37-B900-4D63-AE45-133F36637805">
+								<ormq:Step id="_BFEF3C82-EA7E-4B50-9685-641807F189B1" ref="_35078FD3-0C55-4B6F-BF86-9B815AFD0D2C" Role="_BBB4CA81-4788-428A-8881-9CF87E882F71">
+									<ormq:Node id="_E73EF05C-E630-4520-8ECC-74EA358557C6" Role="_7AC633A0-DF28-4732-B77D-A55A82EF6A84" />
+								</ormq:Step>
+								<ormq:Step id="_95A5AFD5-D441-476B-9394-63A2A57D5750" ref="_81A2CCB8-26B1-44A3-BEE7-16A70064FBB1" Role="_7BAA2193-CD89-4DD8-AE4E-633CA6DC513A">
+									<ormq:Node id="_D1E8175C-9E12-4C9F-BBD1-95EAA68C96C0" Role="_C9BDA0B4-CF28-48A3-B56E-8170007BE3E9" Label="1">
+										<ormq:Step id="_1E47E21F-8A6F-428D-9B7E-EF0C6478A81B" ref="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915" Role="_E2A00A69-B2F3-4669-84BB-2F9CBF174124" Operator="Maybe">
+											<ormq:Node id="_B61266A6-FE2E-421B-ADBA-603353CBCF80" Role="_70558562-29FC-41A0-89BD-D2172CB60696" Label="1" />
+											<ormq:Node id="_DC9579D5-95D4-4F8C-910C-10BD6704B07A" Role="_99FC0383-55CE-4596-8C30-B323ED480337" Label="2" />
+											<ormq:Node id="_90ACABD1-A8F3-48D8-ADE2-E9541ABC45A3" Role="_F980A95F-97E0-4D49-A496-345447A658AA" Label="1" Comparison="&lt;=" CompareTo="_8B48A2D9-F0BB-4BB1-BCD2-CF2807656CD6" />
+										</ormq:Step>
+										<ormq:Step id="_653F69B1-0DAC-4907-89D1-4FC2CD24AF7F" ref="_BB69BB51-97D0-4E60-A2C5-A5FBA0C6B915" Role="_E2A00A69-B2F3-4669-84BB-2F9CBF174124" Operator="Maybe">
+											<ormq:Node id="_9DD553C9-4970-41C7-A2CB-167E0FF1B01E" Role="_70558562-29FC-41A0-89BD-D2172CB60696" Label="2" />
+											<ormq:Node id="_33F3DCB5-94F1-47CE-A6D6-D807F3291201" Role="_99FC0383-55CE-4596-8C30-B323ED480337" Label="2" />
+											<ormq:Node id="_F47CA2F5-2C81-4621-919B-9BA5385C1D8D" Role="_F980A95F-97E0-4D49-A496-345447A658AA" Label="2" Comparison="=" CompareTo="_F56FBC46-D207-461D-8A2C-99B597F36D34" />
+										</ormq:Step>
+									</ormq:Node>
+								</ormq:Step>
+							</ormq:Node>
+						</ormq:Step>
+						<ormq:Value id="_8B48A2D9-F0BB-4BB1-BCD2-CF2807656CD6" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="Day" Expression="dateIn(#_EAD37133-B4BB-45FF-B1E3-126CC7BBAE96, coalesce(#_892B4ED4-CCFC-4C3E-A9E7-8C1799D86F51, #_87596D17-095E-4D19-867D-C3DCD1AC37E9))" />
+						<ormq:Value id="_F56FBC46-D207-461D-8A2C-99B597F36D34" ref="_67FD5796-7C42-46A0-9F2C-5823CBC7A81D" Name="RateDay" Expression="max(#_90ACABD1-A8F3-48D8-ADE2-E9541ABC45A3) for #_24185B1B-D474-4F10-967F-41EF785BB8A4" />
+						<ormq:Value id="_C93F0554-B384-4D56-90C2-B8E41E5AD460" ref="_9ECFB556-1615-4B7B-A00C-4DD25A965CBA" Name="Rate" Expression="max(#_9DD553C9-4970-41C7-A2CB-167E0FF1B01E) for #_24185B1B-D474-4F10-967F-41EF785BB8A4" />
+						<ormq:Value id="_70E2D3D2-B054-449E-97B2-CA810048943C" ref="_64C7769B-046B-495E-B2CD-AD0522B51F56" Name="Month" Expression="monthIn(#_EAD37133-B4BB-45FF-B1E3-126CC7BBAE96, coalesce(#_892B4ED4-CCFC-4C3E-A9E7-8C1799D86F51, #_87596D17-095E-4D19-867D-C3DCD1AC37E9))" Projected="true" Sort="Descending" />
+						<ormq:Value id="_05BE4AE8-84F7-469C-9F7B-8B14153A1E83" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Converted" Expression="multiply(#_E73EF05C-E630-4520-8ECC-74EA358557C6, coalesce(#_C93F0554-B384-4D56-90C2-B8E41E5AD460, 1))" />
+						<ormq:Value id="_04327241-7732-4D41-85A4-0E59C7817970" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Total" Expression="total(#_05BE4AE8-84F7-469C-9F7B-8B14153A1E83) for #_88002EA2-5E19-47B8-8E3F-34D409F50066, #_70E2D3D2-B054-449E-97B2-CA810048943C" Projected="true" />
 					</ormq:Node>
 				</ormq:Step>
 			</ormq:Node>

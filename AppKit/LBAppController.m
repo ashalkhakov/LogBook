@@ -107,9 +107,9 @@
         return;
     }
     _store = store;
-    /* A user who prefers no currency takes this Mac's: what their costs by
-       month are reported in. */
-    if ([store.user lbTakeLocaleCurrency] && ![store save:&error]) NSLog(@"Logbook: the currency not kept: %@", error.localizedDescription);
+    /* What a user has not said (a currency, a time zone) taken from this
+       Mac. */
+    if ([store.user lbTakeDeviceSettings] && ![store save:&error]) NSLog(@"Logbook: the user's settings not kept: %@", error.localizedDescription);
     _window = [[LBMainWindowController alloc] initWithStore:store];
     [_window showWindow:nil];
     if (LBSelfTestRoot) LBRunSelfTest(_window);

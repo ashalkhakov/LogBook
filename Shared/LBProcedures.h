@@ -59,7 +59,17 @@ FOUNDATION_EXPORT NSString * const LBNextRemindersErrorKey;
 // uuid.uuid5(namespace, name).
 FOUNDATION_EXPORT NSUUID *LBNamedUUID(NSString *name);
 // The day of a moment, as the model's date() has it: its start, in UTC.
+// A day (a model day, midnight UTC) is its own.
 FOUNDATION_EXPORT NSDate *LBDay(NSDate *moment);
+// The day of a moment where the zone named is, as dateIn() has it: that
+// day as a model day; UTC's for no zone, or a name no zone has.
+FOUNDATION_EXPORT NSDate *LBDayIn(NSDate *moment, NSString *_Nullable zone);
+// An event's day: where it happened, else where its vehicle's owner lives
+// (docs/PROCESSES.md: Days and time zones).
+FOUNDATION_EXPORT NSDate *LBEventDay(Event *event);
+// A moment's day where the vehicle's owner lives: today there; the day a
+// reminder was set.
+FOUNDATION_EXPORT NSDate *LBOwnerDay(Vehicle *_Nullable vehicle, NSDate *moment);
 // A day so many months on, as addMonths() has it.
 FOUNDATION_EXPORT NSDate *LBAddMonths(NSDate *day, NSInteger months);
 

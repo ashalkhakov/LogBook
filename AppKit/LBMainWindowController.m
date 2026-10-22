@@ -441,6 +441,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     if ([record isKindOfClass:[Event class]]) {
         Event *event = (Event *)record;
         event.timestamp = [NSDate date];
+        /* Where it happens: its day is taken there. */
+        event.timeZone = [NSTimeZone localTimeZone].name;
         event.driver = user;
     }
     /* A metered event's odometer, in their unit (any event may have one:

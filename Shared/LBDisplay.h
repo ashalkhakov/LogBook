@@ -31,9 +31,11 @@ NS_ASSUME_NONNULL_BEGIN
 // What the user's costs are in: the currency they prefer, else this
 // device's locale's.
 - (NSString *)lbCurrency;
-// A user who prefers no currency given this device's locale's (what costs
-// by month are reported in): YES when it was.
-- (BOOL)lbTakeLocaleCurrency;
+// What a user has not said, taken from this device: the locale's currency
+// (what costs by month are reported in), the time zone (where their today
+// is, and the day of what they log with no zone of its own). YES when one
+// was taken.
+- (BOOL)lbTakeDeviceSettings;
 @end
 @interface DistanceUnit (LBDisplay) <LBTitled>
 @end

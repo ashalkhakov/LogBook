@@ -809,6 +809,34 @@ static void LBPlanning(void) {
             [undated valueForKey:@"dueMileage"]);
 }
 
+/* Days where they are (PROCESSES.md: Days and time zones): an oil change
+   at 02:30 on 1 June in Almaty, 21:30 on 31 May in UTC, is of 1 June, and
+   so is what it makes due; the same moment logged in Berlin is of 31 May. */
+static void LBTimeZones(void) {
+    LBWorld *world = LBNewWorld();
+    world.anna.timeZone = @"Asia/Almaty";
+    Schedule *oil = LBOilSchedule(world, 10);
+    LBSave(world.context, @"a schedule, its owner in Almaty");
+    Reminder *first = [oil lb_startFrom:LBMoment(@"2026-01-10 10:00") mileage:LBNumber(@"140000") unit:world.km by:world.anna
+                                     at:LBMoment(@"2026-01-11 10:00") error:NULL];
+    Service *service = LBService(world, nil, 30, @"2026-05-31 21:30", @"150000", @[ @"Oil change" ]);
+    LBSave(world.context, @"an oil change at 02:30 in Almaty");
+    LBCheck(@"an event of no zone of its own: its day where its owner lives", [LBEventDay(service) isEqualToDate:LBMoment(@"2026-06-01")],
+            LBText(LBEventDay(service)));
+    Reminder *next = first.lb_nextReminder;
+    LBCheck(@"what it makes due counted from that day: 1 June, 12 months on",
+            [next.countedFromDate isEqualToDate:LBMoment(@"2026-06-01")] && [next.dueDate isEqualToDate:LBMoment(@"2027-06-01")],
+            LBDue(next));
+    service.timeZone = @"Europe/Berlin";
+    LBCheck(@"the same moment logged in Berlin: 31 May", [LBEventDay(service) isEqualToDate:LBMoment(@"2026-05-31")],
+            LBText(LBEventDay(service)));
+    LBCheck(@"the owner's today: where they live", [LBOwnerDay(world.golf, LBMoment(@"2026-05-31 21:30")) isEqualToDate:LBMoment(@"2026-06-01")],
+            nil);
+    LBCheck(@"a day given is its own, whatever the zone", [LBDayIn(LBMoment(@"2026-06-01"), @"America/Los_Angeles") isEqualToDate:LBMoment(@"2026-05-31")]
+                && [LBDay(LBMoment(@"2026-06-01")) isEqualToDate:LBMoment(@"2026-06-01")],
+            nil);
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -836,6 +864,7 @@ int main(int argc, const char *argv[]) {
         LBMoveCancelDiscard();
         LBContinue();
         LBPlanning();
+        LBTimeZones();
         printf("procedures: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

@@ -217,7 +217,7 @@ static NSString *LBCount(NSUInteger n) {
            would still be going when the user next saves. */
         NSError *saveError = nil;
         _savingQuietly = YES;
-        if ([[self user] lbTakeLocaleCurrency] && ![self save:&saveError]) NSLog(@"Logbook: the currency not kept: %@", saveError.localizedDescription);
+        if ([[self user] lbTakeDeviceSettings] && ![self save:&saveError]) NSLog(@"Logbook: the user's settings not kept: %@", saveError.localizedDescription);
         _savingQuietly = NO;
     }
     /* A change refused while what came with it was still on its way (a

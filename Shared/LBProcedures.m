@@ -101,6 +101,22 @@ NSDate *LBDay(NSDate *moment) {
     return [calendar dateFromComponents:parts];
 }
 
+NSDate *LBDayIn(NSDate *moment, NSString *zone) {
+    NSCalendar *there = LBUTCCalendar();
+    NSTimeZone *named = zone.length ? [NSTimeZone timeZoneWithName:zone] : nil;
+    if (named) there.timeZone = named;
+    return [LBUTCCalendar() dateFromComponents:[there components:NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay
+                                                         fromDate:moment]];
+}
+
+NSDate *LBEventDay(Event *event) {
+    return LBDayIn(event.timestamp, event.timeZone.length ? event.timeZone : event.vehicle.owner.timeZone);
+}
+
+NSDate *LBOwnerDay(Vehicle *vehicle, NSDate *moment) {
+    return LBDayIn(moment, vehicle.owner.timeZone);
+}
+
 NSDate *LBAddMonths(NSDate *day, NSInteger months) {
     NSDateComponents *by = [[NSDateComponents alloc] init];
     by.month = months;
@@ -201,18 +217,18 @@ static Event *LBLatestMetered(Vehicle *vehicle, NSDate *moment) {
     return latest;
 }
 
-/* Where a schedule's reminder counted from the moment and distance is due:
+/* Where a schedule's reminder counted from the day and distance is due:
    the day plus its months, where it recurs after some; the distance (else
    the vehicle's latest at the moment) plus its interval, in that distance's
    unit, where it recurs after one and a distance is known. */
-static void LBDueAfter(Schedule *schedule, Vehicle *vehicle, NSDate *moment, NSDecimalNumber *mileage, DistanceUnit *unit,
+static void LBDueAfter(Schedule *schedule, Vehicle *vehicle, NSDate *day, NSDecimalNumber *mileage, DistanceUnit *unit,
                        NSDate **dueDate, NSDecimalNumber **dueMileage, DistanceUnit **dueUnit) {
-    *dueDate = schedule.duration > 0 ? LBAddMonths(LBDay(moment), schedule.duration) : nil;
+    *dueDate = schedule.duration > 0 ? LBAddMonths(day, schedule.duration) : nil;
     *dueMileage = nil;
     *dueUnit = nil;
     if (!schedule.intervalQuantity || !schedule.intervalDistanceUnit) return;
     if (!mileage || !unit) {
-        Event *latest = LBLatestMetered(vehicle, moment);
+        Event *latest = LBLatestMetered(vehicle, day);
         mileage = latest.mileageQuantity;
         unit = latest.mileageDistanceUnit;
     }
@@ -221,11 +237,11 @@ static void LBDueAfter(Schedule *schedule, Vehicle *vehicle, NSDate *moment, NSD
     *dueUnit = unit;
 }
 
-/* Where a schedule's reminder is counted from: the day of the moment; the
-   distance, where the schedule recurs after one and a distance is known. */
-static void LBCountFrom(Reminder *reminder, NSDate *moment, NSDecimalNumber *mileage, DistanceUnit *unit) {
+/* Where a schedule's reminder is counted from: the day; the distance,
+   where the schedule recurs after one and a distance is known. */
+static void LBCountFrom(Reminder *reminder, NSDate *day, NSDecimalNumber *mileage, DistanceUnit *unit) {
     BOOL byDistance = reminder.schedule.intervalQuantity && reminder.schedule.intervalDistanceUnit && mileage && unit;
-    reminder.countedFromDate = LBDay(moment);
+    reminder.countedFromDate = day;
     reminder.countedFromMileageQuantity = byDistance ? mileage : nil;
     reminder.countedFromMileageDistanceUnit = byDistance ? unit : nil;
 }
@@ -258,7 +274,10 @@ static User *LBActorOf(Event *event) {
 
 - (BOOL)lb_mayCloseReminder:(Reminder *)reminder {
     if (self.isDeleted || reminder.isDeleted || !self.vehicle || self.vehicle != reminder.vehicle || reminder.cancelDate) return NO;
-    if (!self.timestamp || !reminder.setAt || [LBDay(reminder.setAt) compare:LBDay(self.timestamp)] == NSOrderedDescending) return NO;
+    if (!self.timestamp || !reminder.setAt
+        || [LBOwnerDay(reminder.vehicle, reminder.setAt) compare:LBEventDay(self)] == NSOrderedDescending) {
+        return NO;
+    }
     return [self lb_doesWorkOfReminder:reminder];
 }
 
@@ -303,16 +322,23 @@ static User *LBActorOf(Event *event) {
         LBFail(error, @"A distance is a quantity and its unit");
         return nil;
     }
+    /* Counted from the day given; else the day the work was last done,
+       where it was; else today where the owner is. */
     NSDate *from = lastDone;
+    NSDate *day = lastDone ? LBDay(lastDone) : nil;
     if (!from) {
         Event *last = self.lb_lastDoneBy;
         from = last.timestamp;
+        day = last ? LBEventDay(last) : nil;
         if (last && !mileage && last.mileageQuantity && last.mileageDistanceUnit) {
             mileage = last.mileageQuantity;
             unit = last.mileageDistanceUnit;
         }
     }
-    if (!from) from = now;
+    if (!from) {
+        from = now;
+        day = LBOwnerDay(self.vehicle, now);
+    }
     if ((!mileage || !unit) && self.intervalQuantity && self.intervalDistanceUnit) {
         Event *latest = LBLatestMetered(self.vehicle, from);
         mileage = latest.mileageQuantity;
@@ -321,7 +347,7 @@ static User *LBActorOf(Event *event) {
     NSDate *dueDate;
     NSDecimalNumber *dueMileage;
     DistanceUnit *dueUnit;
-    LBDueAfter(self, self.vehicle, from, mileage, unit, &dueDate, &dueMileage, &dueUnit);
+    LBDueAfter(self, self.vehicle, day, mileage, unit, &dueDate, &dueMileage, &dueUnit);
     if (!dueDate && !dueMileage) {
         LBFail(error, @"There is no distance to count the schedule from: say the distance it was last done at");
         return nil;
@@ -343,7 +369,7 @@ static User *LBActorOf(Event *event) {
     first.dueDate = dueDate;
     first.dueMileageQuantity = dueMileage;
     first.dueMileageDistanceUnit = dueUnit;
-    LBCountFrom(first, from, mileage, unit);
+    LBCountFrom(first, day, mileage, unit);
     return first;
 }
 
@@ -398,7 +424,7 @@ static User *LBActorOf(Event *event) {
     if (open && !open.lb_isTouched) {
         /* The same reminder, planned by the new rule from where it is
            counted from. */
-        NSDate *from = open.countedFromDate ?: LBDay(open.setAt);
+        NSDate *from = open.countedFromDate ?: LBOwnerDay(self.vehicle, open.setAt);
         NSDecimalNumber *mileage = open.countedFromMileageQuantity;
         DistanceUnit *mileageUnit = open.countedFromMileageDistanceUnit;
         if ((!mileage || !mileageUnit) && interval) {
@@ -427,7 +453,7 @@ static User *LBActorOf(Event *event) {
     DistanceUnit *mileageUnit = nil;
     if (open) {
         /* Touched: what the owner decided was for the old rule. */
-        open.cancelDate = LBDay(now);
+        open.cancelDate = LBOwnerDay(self.vehicle, now);
         if (cancelled) *cancelled = open;
         from = open.countedFromDate;
         mileage = open.countedFromMileageQuantity;
@@ -451,7 +477,7 @@ static User *LBActorOf(Event *event) {
    unit. NO, and nothing is made, for a schedule that recurs after a
    distance and an event at none. */
 static BOOL LBNextDue(Schedule *schedule, Event *event, NSDate **dueDate, NSDecimalNumber **dueMileage, DistanceUnit **dueUnit) {
-    *dueDate = schedule.duration > 0 ? LBAddMonths(LBDay(event.timestamp), schedule.duration) : nil;
+    *dueDate = schedule.duration > 0 ? LBAddMonths(LBEventDay(event), schedule.duration) : nil;
     *dueMileage = nil;
     *dueUnit = nil;
     if (schedule.intervalQuantity && schedule.intervalDistanceUnit) {
@@ -619,7 +645,7 @@ static void LBDoneBy(Reminder *reminder, Event *event) {
         made.dueMileageDistanceUnit = mileage ? unit : nil;
         made.replaced = self;
     }
-    self.cancelDate = LBDay(day ?: now);
+    self.cancelDate = day ? LBDay(day) : LBOwnerDay(self.vehicle, now);
     if (replacement) *replacement = made;
     return YES;
 }
@@ -737,8 +763,9 @@ static void LBDeleteReminder(Reminder *reminder) {
         if (!slot) break;
         if ([theirs containsObject:event]) continue;
         if (!LBDoesWork(event, schedule.task, schedule.expenseKind, schedule.checklist)) continue;
-        NSDate *setAt = slot.reminder ? slot.reminder.setAt : slot.source.event.timestamp;
-        if (!setAt || [LBDay(setAt) compare:LBDay(event.timestamp)] == NSOrderedDescending) continue;
+        NSDate *setOn = slot.reminder ? (slot.reminder.setAt ? LBOwnerDay(schedule.vehicle, slot.reminder.setAt) : nil)
+                                      : (slot.source.event ? LBEventDay(slot.source.event) : nil);
+        if (!setOn || [setOn compare:LBEventDay(event)] == NSOrderedDescending) continue;
         slot.event = event;
         NSDate *dueDate;
         NSDecimalNumber *dueMileage;
@@ -806,7 +833,7 @@ static void LBDeleteReminder(Reminder *reminder) {
             reminder.dueDate = dueDate;
             reminder.dueMileageQuantity = dueMileage;
             reminder.dueMileageDistanceUnit = dueUnit;
-            LBCountFrom(reminder, source.timestamp, source.mileageQuantity, source.mileageDistanceUnit);
+            LBCountFrom(reminder, LBEventDay(source), source.mileageQuantity, source.mileageDistanceUnit);
         }
         if (slot.fixed || !reminder || LBDoneAsBy(reminder, slot.event)) continue;
         if (slot.event) {
@@ -842,7 +869,7 @@ static void LBDeleteReminder(Reminder *reminder) {
    one cancelled, or done with no event, as it is. */
 static Event *LBFirstCloser(Reminder *reminder, NSArray<Event *> *events) {
     for (Event *event in events) {
-        if (!reminder.setAt || [LBDay(reminder.setAt) compare:LBDay(event.timestamp)] == NSOrderedDescending) continue;
+        if (!reminder.setAt || [LBOwnerDay(reminder.vehicle, reminder.setAt) compare:LBEventDay(event)] == NSOrderedDescending) continue;
         if (LBDoesWork(event, reminder.task, reminder.expenseKind, reminder.checklist)) return event;
     }
     return nil;

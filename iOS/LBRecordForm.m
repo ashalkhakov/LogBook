@@ -147,6 +147,8 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
     if ([record isKindOfClass:[Event class]]) {
         Event *event = (Event *)record;
         event.timestamp = LBNow();
+        /* Where it happens: its day is taken there. */
+        event.timeZone = [NSTimeZone localTimeZone].name;
         event.driver = user;
     }
     if ([record isKindOfClass:[FillUp class]]) {

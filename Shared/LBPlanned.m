@@ -85,7 +85,7 @@ static NSDate *LBEarlier(NSDate *a, NSDate *b) {
     if (!rate || !latest || isnan(target)) return nil;
     double ahead = target - LBKilometres(latest.mileageQuantity, latest.mileageDistanceUnit);
     double days = ahead > 0 ? ceil(ahead / rate.doubleValue) : 0;
-    return LBDay([latest.timestamp dateByAddingTimeInterval:days * LBDaySeconds]);
+    return LBOwnerDay(self, [latest.timestamp dateByAddingTimeInterval:days * LBDaySeconds]);
 }
 
 @end

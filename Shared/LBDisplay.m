@@ -30,10 +30,17 @@ static NSString *LBLocaleCurrency(void) {
 
 - (NSString *)lbCurrency { return self.currency.length ? self.currency : LBLocaleCurrency(); }
 
-- (BOOL)lbTakeLocaleCurrency {
-    if (self.currency.length) return NO;
-    self.currency = LBLocaleCurrency();
-    return YES;
+- (BOOL)lbTakeDeviceSettings {
+    BOOL taken = NO;
+    if (!self.currency.length) {
+        self.currency = LBLocaleCurrency();
+        taken = YES;
+    }
+    if (!self.timeZone.length) {
+        self.timeZone = [NSTimeZone localTimeZone].name;
+        taken = YES;
+    }
+    return taken;
 }
 @end
 
