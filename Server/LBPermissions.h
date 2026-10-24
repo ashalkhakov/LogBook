@@ -25,6 +25,16 @@
 //   whoever drives its vehicle; a schedule started, a reminder cancelled
 //   and a record discarded by the vehicle's owner alone.
 //
+// Stock (docs/STOCK.md, Who may): a catalog is its maker's, its owner's;
+// it and all of it is seen by its owner and its warehouses' staff. Its
+// owner alone writes its items, kits, categories, contacts, warehouses
+// and staff; a manager (of any of its warehouses) its orders, (of a
+// warehouse) that warehouse's locations and reorder rules; a keeper (of a
+// warehouse, or its manager) the moves, holdings, receipts, shipments,
+// assemblies and counts there, which only a manager there, or the owner,
+// changes or removes. Order and count numbers left out are given, the
+// next of their kind. The procedures (LBStockActions.h) the same.
+//
 // An anonymous request (AllowAnonymous) is let do anything, as before a
 // sign-in is set.
 
@@ -33,7 +43,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class User, Vehicle;
+@class User, Vehicle, Catalog, Warehouse;
 
 // The signed-in user's email: the principal's email claim, else its
 // subject; nil for no one (an anonymous request).
@@ -44,6 +54,15 @@ FOUNDATION_EXPORT User *_Nullable LBUserNamed(NSManagedObjectContext *context, N
 // a driver of it.
 FOUNDATION_EXPORT BOOL LBOwns(Vehicle *_Nullable vehicle, NSString *email);
 FOUNDATION_EXPORT BOOL LBDrives(Vehicle *_Nullable vehicle, NSString *email);
+// Of a catalog: whether the user of the email owns it; owns it or is of the
+// staff of one of its warehouses (sees it); owns it or manages one of its
+// warehouses. Of a warehouse: owns its catalog or manages it; owns its
+// catalog or is of its staff.
+FOUNDATION_EXPORT BOOL LBOwnsCatalog(Catalog *_Nullable catalog, NSString *email);
+FOUNDATION_EXPORT BOOL LBSeesCatalog(Catalog *_Nullable catalog, NSString *email);
+FOUNDATION_EXPORT BOOL LBManagesIn(Catalog *_Nullable catalog, NSString *email);
+FOUNDATION_EXPORT BOOL LBManages(Warehouse *_Nullable warehouse, NSString *email);
+FOUNDATION_EXPORT BOOL LBKeeps(Warehouse *_Nullable warehouse, NSString *email);
 
 // Each entity set kept to the permissions; before ODataSyncService is made
 // (it keeps a handler that is already an ODataSyncSetHandler).

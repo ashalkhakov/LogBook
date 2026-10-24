@@ -71,6 +71,9 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // A new purchase order, a draft: from the supplier, placed on the day,
 // numbered the next in the catalog.
 - (PurchaseOrder *)lb_newPurchaseOrderFrom:(Supplier *)supplier on:(NSDate *)day;
+// The next running number of the documents (orders of the catalog, a
+// warehouse's counts, an order's shipments): one more than the highest.
+- (int32_t)lb_nextNumberOf:(NSSet *)documents;
 // A document's number as people read it: the app's prefix for its kind,
 // the catalog's own where it has one, the running number (SO-GAR-0042).
 - (NSString *)lb_numberOfKind:(NSString *)kind running:(int32_t)number;

@@ -138,6 +138,10 @@ static int32_t LBNextOf(NSSet *documents) {
     return order;
 }
 
+- (int32_t)lb_nextNumberOf:(NSSet *)documents {
+    return LBNextOf(documents);
+}
+
 - (NSString *)lb_numberOfKind:(NSString *)kind running:(int32_t)number {
     return LBNumber(self, kind, number);
 }

@@ -302,10 +302,22 @@ devices make it.
 ## Platforms
 
 - **The server** runs every procedure as an action bound to what it acts
-  on: `Confirm`, `Close`, `Cancel`, `Reopen` on an order; `Receive` and
-  `Ship` on an order (parameters: the location, the day, the lines and
-  quantities); `Transfer`, `Adjust` on an item; `Count` on a location;
-  `Assemble`, `Disassemble` on a kit; `Reorder` on a warehouse.
+  on (`Server/LBStockActions.h`), saved whole or refused (400, the
+  procedure's words), each by whom the table above lets:
+
+  | Action | Bound to | Parameters | Answers |
+  |---|---|---|---|
+  | `Confirm`, `Close`, `Cancel`, `Reopen` | an order | | the order |
+  | `ExpandKits` | a sale order | | the order |
+  | `Ship` | a sale order | `Lines` {line id: quantity}, `From`, `Day` | the shipment |
+  | `Receive` | a purchase order | `Lines` {line id: quantity}, `At`, `Day` | the receipt |
+  | `Transfer` | an item | `Quantity`, `From`, `To` | the move |
+  | `Adjust` | an item | `Quantity` (less than none: out), `At`, `Reason`, `Note` | the move |
+  | `Assemble` | a kit | `Batches`, `At`, `Day`, `Disassemble` | the assembly |
+  | `Count` | a warehouse | `Location` (none: all of it), `Found` [{Item, Location, Quantity}], `Day` | the count |
+  | `Reorder` | a warehouse | `Day` | the drafts |
+
+  An order or a count posted with no number is given the next.
 - **The desktop app** has a Stock window: a sidebar (Items, Purchases,
   Sales, Changelog, Counts, Overview, Setup), a list, and the selected
   one's form beside it; it calls the actions, as its Reminders tab does.
@@ -343,7 +355,9 @@ Made (`lb-stock-check` checks each), as the design above needs them:
    `lb-stock-check`: holdings made by moves, transfer and adjust, assemble
    and take apart, orders numbered, confirmed (expanded), closed,
    cancelled and reopened, receive and ship, count, reorder.
-3. The server's actions and permissions.
+3. Done: the server's actions and permissions (`Server/LBStockActions.h`,
+   `Server/LBPermissions.h`), checked over HTTP by
+   `Tests/serve-and-check.py`.
 4. The desktop Stock window: items and the item card, then orders,
    receiving and shipping, then the changelog, counts, overview, setup.
 5. The iOS tabs.

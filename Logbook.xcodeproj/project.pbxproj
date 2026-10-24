@@ -49,6 +49,10 @@
 			isa = PBXBuildFile;
 			fileRef = 5495040375CD673C4E4A74CE /* LBServer.m */;
 		};
+		12C05C6C77089D0DBA1BF697 /* LBStockActions.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 8FFC2E603D7AF3D2D3036778 /* LBStockActions.m */;
+		};
 		12D8AFDE0C7991FFC2934006 /* LBStore.m */ = {
 			isa = PBXBuildFile;
 			fileRef = FD6623DBF7BF9A8A98787107 /* LBStore.m */;
@@ -528,6 +532,10 @@
 			fileRef = 584640704EF6A5925E5FAEBF /* RDLKitUI.xcframework */;
 			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
 		};
+		ED0682A83722AC2571A66BC4 /* LBStockProcedures.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 9E4DA9E6FA751F2E5CD4DA94 /* LBStockProcedures.m */;
+		};
 		F07E09309E4B0B9E7693AC49 /* Assets.xcassets */ = {
 			isa = PBXBuildFile;
 			fileRef = DA6375B01FB8DD843C3B2050 /* Assets.xcassets */;
@@ -887,6 +895,12 @@
 			path = MainMenu.xib;
 			sourceTree = "<group>";
 		};
+		51DCC5F4B817A5A8F196A22C /* LBStockActions.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStockActions.h;
+			sourceTree = "<group>";
+		};
 		5495040375CD673C4E4A74CE /* LBServer.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -1023,6 +1037,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBListsController.m;
+			sourceTree = "<group>";
+		};
+		8FFC2E603D7AF3D2D3036778 /* LBStockActions.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStockActions.m;
 			sourceTree = "<group>";
 		};
 		9750D2C25C5635F5B2261855 /* LBStore.h */ = {
@@ -1454,6 +1474,8 @@
 				0198D35D1765628F70CB7962 /* LBPermissions.h */,
 				B3290AF8A39A8F14A152A2F3 /* LBPermissions.m */,
 				5495040375CD673C4E4A74CE /* LBServer.m */,
+				51DCC5F4B817A5A8F196A22C /* LBStockActions.h */,
+				8FFC2E603D7AF3D2D3036778 /* LBStockActions.m */,
 			);
 			path = Server;
 			sourceTree = "<group>";
@@ -1946,7 +1968,9 @@
 				0E114E927C22F744FE983F89 /* LBServer.m */,
 				72002D4BD2DCA11921ABE026 /* LBPermissions.m */,
 				E289951E04B658755D707518 /* LBActions.m */,
+				12C05C6C77089D0DBA1BF697 /* LBStockActions.m */,
 				E94AAE5B2D1D4E48E3B14872 /* LBProcedures.m */,
+				ED0682A83722AC2571A66BC4 /* LBStockProcedures.m */,
 				6F4CEC1C995918B6B3F61C6F /* LogbookModel.m */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

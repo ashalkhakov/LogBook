@@ -109,9 +109,10 @@ xcode-model: $(MODEL)/.made $(GENERATED)/.made $(BUILD)/Logbook.momd $(BUILD)/Lo
 $(GENERATED)/LogbookClasses.inc: $(GENERATED)/.made
 	for m in $(GENERATED)/*.m; do echo "#include \"$$(basename $$m)\""; done > $@
 
-SERVER = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+SERVER = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Server/LBStockActions.m Shared/LBProcedures.m \
+	Shared/LBStockProcedures.m $(MODEL)/Constraints/LogbookValidation.m
 
-$(BUILD)/logbook-server: $(MODEL)/.made $(SERVER) Server/LBPermissions.h Server/LBActions.h Shared/LBProcedures.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+$(BUILD)/logbook-server: $(MODEL)/.made $(SERVER) Server/LBPermissions.h Server/LBActions.h Server/LBStockActions.h Shared/LBProcedures.h Shared/LBStockProcedures.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) $(SERVER) $(GENERATED)/*.m $(LIBS) -o $@
 
 # The procedures checked over a store of the model's own.

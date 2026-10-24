@@ -54,7 +54,8 @@ Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/Connec
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 
 TOOL_NAME = logbook-server lb-procedures-check lb-stock-check lb-sync-check
-logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Shared/LBProcedures.m \
+logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Server/LBStockActions.m \
+	Shared/LBProcedures.m Shared/LBStockProcedures.m \
 	$(LB_MODEL)/Constraints/LogbookValidation.m
 logbook-server_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 # Vehicle+CoreDataClass and the rest, generated from the model as it builds,

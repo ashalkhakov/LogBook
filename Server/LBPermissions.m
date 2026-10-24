@@ -15,6 +15,8 @@
 #import "Option+CoreDataClass.h"
 #import "Reminder+CoreDataClass.h"
 #import "Rescheduling+CoreDataClass.h"
+#import "LBStockProcedures.h"
+#import "WarehouseStaff+CoreDataClass.h"
 
 /* The name of a property as a write's values and a predicate have it: the
    generated class's, so that the compiler knows it. */
@@ -55,6 +57,58 @@ BOOL LBDrives(Vehicle *vehicle, NSString *email) {
         if ([driver.user.email isEqualToString:email]) return YES;
     }
     return NO;
+}
+
+#pragma mark Catalogs
+
+BOOL LBOwnsCatalog(Catalog *catalog, NSString *email) {
+    return [catalog isKindOfClass:[Catalog class]] && [catalog.catalogOwner.email isEqualToString:email];
+}
+
+/* The user's role at the warehouse: nil for none. */
+static NSString *LBRoleAt(Warehouse *warehouse, NSString *email) {
+    for (WarehouseStaff *staff in [warehouse isKindOfClass:[Warehouse class]] ? warehouse.warehouseStaffs : nil) {
+        if ([staff.user.email isEqualToString:email]) return staff.staffRole;
+    }
+    return nil;
+}
+
+BOOL LBSeesCatalog(Catalog *catalog, NSString *email) {
+    if (LBOwnsCatalog(catalog, email)) return YES;
+    for (Warehouse *warehouse in [catalog isKindOfClass:[Catalog class]] ? catalog.warehouses : nil) {
+        if (LBRoleAt(warehouse, email)) return YES;
+    }
+    return NO;
+}
+
+BOOL LBManagesIn(Catalog *catalog, NSString *email) {
+    if (LBOwnsCatalog(catalog, email)) return YES;
+    for (Warehouse *warehouse in [catalog isKindOfClass:[Catalog class]] ? catalog.warehouses : nil) {
+        if ([LBRoleAt(warehouse, email) isEqualToString:@"Manager"]) return YES;
+    }
+    return NO;
+}
+
+BOOL LBManages(Warehouse *warehouse, NSString *email) {
+    if (![warehouse isKindOfClass:[Warehouse class]]) return NO;
+    return LBOwnsCatalog(warehouse.catalog, email) || [LBRoleAt(warehouse, email) isEqualToString:@"Manager"];
+}
+
+BOOL LBKeeps(Warehouse *warehouse, NSString *email) {
+    if (![warehouse isKindOfClass:[Warehouse class]]) return NO;
+    return LBOwnsCatalog(warehouse.catalog, email) || LBRoleAt(warehouse, email) != nil;
+}
+
+/* The catalogs one sees, from where the key path goes to one (nil: the
+   catalogs themselves). */
+static NSPredicate *LBCatalogSeen(NSString *path, NSString *email) {
+    NSString *at = path.length ? [path stringByAppendingString:@"."] : @"";
+    NSString *owner = [NSString stringWithFormat:@"%@%@.%@", at, LBKey(catalogOwner), LBKey(email)];
+    /* Two to-many steps, warehouses then their staff: a subquery each,
+       as the store takes no key path through both. */
+    NSString *format = [NSString stringWithFormat:@"%%K == %%@ OR SUBQUERY(%@%@, $w, ANY $w.%@.%@.%@ == %%@).@count > 0", at,
+                                                  LBKey(warehouses), LBKey(warehouseStaffs), LBKey(user), LBKey(email)];
+    return [NSPredicate predicateWithFormat:format, owner, email, email];
 }
 
 /* The vehicles one drives, from where the key path goes to one (nil: the
@@ -246,10 +300,18 @@ static Record *LBRecordOf(NSManagedObject *object) {
 }
 
 - (NSPredicate *)visibleTo:(NSString *)email request:(ODataRequest *)request {
-    return LBDriven([[self recordKey] stringByAppendingFormat:@".%@", LBKey(vehicle)], email);
+    NSPredicate *driven = LBDriven([[self recordKey] stringByAppendingFormat:@".%@", LBKey(vehicle)], email);
+    if (![self.entity.name isEqualToString:LBEntity(Attachment)]) return driven;
+    /* A photo of a stock item: whoever sees its catalog. */
+    NSPredicate *pictured = LBCatalogSeen([LBKey(stockItem) stringByAppendingFormat:@".%@", LBKey(catalog)], email);
+    return [NSCompoundPredicate orPredicateWithSubpredicates:@[ driven, pictured ]];
 }
 
 - (NSString *)whyNotAdd:(NSDictionary<NSString *, id> *)values email:(NSString *)email {
+    StockItem *pictured = values[LBKey(stockItem)];
+    if ([pictured isKindOfClass:[StockItem class]] && !values[[self recordKey]]) {
+        return LBOwnsCatalog(pictured.catalog, email) ? nil : @"Only a catalog's owner adds photos of its items";
+    }
     Record *record = values[[self recordKey]];
     if (![record isKindOfClass:[Record class]]) return [NSString stringWithFormat:@"It names its %@", [self recordKey]];
     BOOL theirsNew = record.isInserted && [record.enteredBy.email isEqualToString:email];
@@ -258,6 +320,10 @@ static Record *LBRecordOf(NSManagedObject *object) {
 }
 
 - (NSString *)whyNotChange:(NSManagedObject *)object values:(NSDictionary<NSString *, id> *)values email:(NSString *)email {
+    StockItem *pictured = [object isKindOfClass:[Attachment class]] ? ((Attachment *)object).stockItem : nil;
+    if (pictured && !LBRecordOf(object)) {
+        return LBOwnsCatalog(pictured.catalog, email) ? nil : @"Only a catalog's owner changes photos of its items";
+    }
     return LBOwns(LBRecordOf(object).vehicle, email) ? nil : @"Only a vehicle's owner changes what is recorded of it";
 }
 
@@ -411,6 +477,158 @@ static Checklist *LBChecklistOf(id object) {
 
 @end
 
+
+#pragma mark Stock
+
+/* Who writes a stock set's rows: a catalog's owner; a manager, of the
+   row's warehouse or (none said) of one of the catalog's; a keeper of the
+   row's warehouse, a manager there changing or removing them. */
+typedef NS_ENUM(NSInteger, LBStockWriter) {
+    LBStockOwner,
+    LBStockManager,
+    LBStockKeeper,
+};
+
+/* A row's, or a write's values': what a key path from it reaches, the
+   first key from the values, the rest from what that is. */
+static id LBFollow(id from, NSString *path) {
+    NSArray *keys = [path componentsSeparatedByString:@"."];
+    id at = [from isKindOfClass:[NSDictionary class]] ? from[keys.firstObject] : [from valueForKey:keys.firstObject];
+    for (NSUInteger i = 1; i < keys.count && at; i++) {
+        at = [at isKindOfClass:[NSManagedObject class]] ? [at valueForKey:keys[i]] : nil;
+    }
+    return at;
+}
+
+/* A stock set: seen by whoever sees its catalog, written as its writer
+   says. */
+@interface LBStockHandler : LBPermissionHandler
+@property (nonatomic, copy) NSString *catalogPath;           /* nil: a catalog */
+@property (nonatomic, copy) NSArray<NSString *> *warehousePaths;  /* each must be kept, managed */
+@property (nonatomic) LBStockWriter writer;
+@end
+
+@implementation LBStockHandler
+
+- (NSPredicate *)visibleTo:(NSString *)email request:(ODataRequest *)request {
+    return LBCatalogSeen(self.catalogPath, email);
+}
+
+- (Catalog *)catalogOf:(id)row {
+    return self.catalogPath ? LBFollow(row, self.catalogPath) : ([row isKindOfClass:[Catalog class]] ? row : nil);
+}
+
+/* Why the user may not write the row (a write's values, or a row): nil
+   when they may. Changing, a keeper's row is a manager's. */
+- (NSString *)whyNot:(id)row email:(NSString *)email changing:(BOOL)changing {
+    Catalog *catalog = [self catalogOf:row];
+    if (!catalog) return self.catalogPath ? @"It names what catalog it is of" : nil;
+    switch (self.writer) {
+    case LBStockOwner:
+        return LBOwnsCatalog(catalog, email) ? nil : @"Only a catalog's owner writes that";
+    case LBStockManager:
+    case LBStockKeeper: {
+        BOOL manager = self.writer == LBStockManager || changing;
+        if (self.warehousePaths.count == 0) {
+            return LBManagesIn(catalog, email) ? nil : @"Only a catalog's owner or managers write that";
+        }
+        BOOL any = NO;
+        for (NSString *path in self.warehousePaths) {
+            Warehouse *warehouse = LBFollow(row, path);
+            if (!warehouse) continue;
+            any = YES;
+            if (warehouse.catalog != catalog) return @"That warehouse is of another catalog";
+            if (manager ? !LBManages(warehouse, email) : !LBKeeps(warehouse, email)) {
+                return manager ? @"Only a warehouse's managers, or its catalog's owner, do that there"
+                               : @"Only a warehouse's staff, or its catalog's owner, do that there";
+            }
+        }
+        return any ? nil : @"It names where it is";
+    }
+    }
+    return nil;
+}
+
+- (NSString *)whyNotAdd:(NSDictionary<NSString *, id> *)values email:(NSString *)email {
+    return [self whyNot:values email:email changing:NO];
+}
+
+- (NSString *)whyNotChange:(NSManagedObject *)object values:(NSDictionary<NSString *, id> *)values email:(NSString *)email {
+    NSString *why = [self whyNot:object email:email changing:YES];
+    if (why || values.count == 0) return why;
+    /* Moved to another catalog or warehouse: theirs to write there too. */
+    NSMutableDictionary *after = [NSMutableDictionary dictionary];
+    for (NSPropertyDescription *property in object.entity.properties) {
+        id value = values[property.name] ?: [object valueForKey:property.name];
+        if (value) after[property.name] = value;
+    }
+    return [self whyNot:after email:email changing:YES];
+}
+
+- (void)made:(NSManagedObject *)made by:(NSString *)email {
+    if ([made isKindOfClass:[Catalog class]]) ((Catalog *)made).catalogOwner = LBUserNamed(made.managedObjectContext, email, YES);
+}
+
+/* An order or count with no number is given the next of its kind. */
+- (NSManagedObject *)insertObjectWithValues:(NSDictionary<NSString *, id> *)values request:(ODataRequest *)request reply:(ODataReply *)reply {
+    NSManagedObject *made = [super insertObjectWithValues:values request:request reply:reply];
+    if ([made isKindOfClass:[SaleOrder class]] && ((SaleOrder *)made).runningNumber == 0) {
+        SaleOrder *order = (SaleOrder *)made;
+        order.runningNumber = [order.catalog lb_nextNumberOf:order.catalog.saleOrders];
+    } else if ([made isKindOfClass:[PurchaseOrder class]] && ((PurchaseOrder *)made).runningNumber == 0) {
+        PurchaseOrder *order = (PurchaseOrder *)made;
+        order.runningNumber = [order.catalog lb_nextNumberOf:order.catalog.purchaseOrders];
+    } else if ([made isKindOfClass:[StockCount class]] && ((StockCount *)made).runningNumber == 0) {
+        StockCount *count = (StockCount *)made;
+        count.runningNumber = [count.warehouse.catalog lb_nextNumberOf:count.warehouse.stockCounts];
+    }
+    return made;
+}
+
+@end
+
+/* The stock sets: the path to each one's catalog, where its rows are, and
+   who writes them. */
+static void LBServeStock(ODataService *service, NSMutableDictionary<NSString *, id> *handlers) {
+    NSString *catalog = LBKey(catalog);
+    NSArray *stock = @[
+        @[ LBEntity(Catalog), [NSNull null], @[], @(LBStockOwner) ],
+        @[ LBEntity(StockItem), catalog, @[], @(LBStockOwner) ],
+        @[ @"Category", catalog, @[], @(LBStockOwner) ],
+        @[ LBEntity(Contact), catalog, @[], @(LBStockOwner) ],
+        @[ LBEntity(Customer), catalog, @[], @(LBStockOwner) ],
+        @[ LBEntity(Supplier), catalog, @[], @(LBStockOwner) ],
+        @[ @"Address", @"contact.catalog", @[], @(LBStockOwner) ],
+        @[ @"ItemAttribute", catalog, @[], @(LBStockOwner) ],
+        @[ @"ItemAttributeValue", @"stockItem.catalog", @[], @(LBStockOwner) ],
+        @[ LBEntity(KitLine), @"kit.catalog", @[], @(LBStockOwner) ],
+        @[ LBEntity(Warehouse), catalog, @[], @(LBStockOwner) ],
+        @[ LBEntity(WarehouseStaff), @"warehouse.catalog", @[], @(LBStockOwner) ],
+        @[ LBEntity(Location), @"warehouse.catalog", @[ @"warehouse" ], @(LBStockManager) ],
+        @[ LBEntity(ReorderRule), @"warehouse.catalog", @[ @"warehouse" ], @(LBStockManager) ],
+        @[ LBEntity(SaleOrder), catalog, @[], @(LBStockManager) ],
+        @[ LBEntity(SaleLine), @"saleOrder.catalog", @[], @(LBStockManager) ],
+        @[ LBEntity(PurchaseOrder), catalog, @[], @(LBStockManager) ],
+        @[ LBEntity(PurchaseLine), @"purchaseOrder.catalog", @[], @(LBStockManager) ],
+        @[ LBEntity(Holding), @"stockItem.catalog", @[ @"location.warehouse" ], @(LBStockKeeper) ],
+        @[ LBEntity(Move), @"stockItem.catalog", @[ @"source.warehouse", @"destination.warehouse" ], @(LBStockKeeper) ],
+        @[ LBEntity(Shipment), @"saleOrder.catalog", @[ @"shippedFrom.warehouse" ], @(LBStockKeeper) ],
+        @[ LBEntity(Receipt), @"purchaseOrder.catalog", @[ @"receivedAt.warehouse" ], @(LBStockKeeper) ],
+        @[ LBEntity(Assembly), @"assembled.catalog", @[ @"assembledAt.warehouse" ], @(LBStockKeeper) ],
+        @[ LBEntity(StockCount), @"warehouse.catalog", @[ @"warehouse" ], @(LBStockKeeper) ],
+    ];
+    for (NSArray *each in stock) {
+        NSEntityDescription *entity = service.model.entitiesByName[each[0]];
+        NSString *set = entity.userInfo[@"OData.entitySet"];
+        if (!set.length) continue;
+        LBStockHandler *handler = [[LBStockHandler alloc] initWithEntity:entity];
+        handler.catalogPath = each[1] == [NSNull null] ? nil : each[1];
+        handler.warehousePaths = each[2];
+        handler.writer = [each[3] integerValue];
+        handlers[each[0]] = handler;
+    }
+}
+
 void LBServePermissions(ODataService *service) {
     /* Each root entity's set, by what it is. */
     NSDictionary<NSString *, Class> *kinds = @{
@@ -431,9 +649,15 @@ void LBServePermissions(ODataService *service) {
         @"CostKind": [LBAddOnlyHandler class],
         @"ExchangeRate": [LBAddOnlyHandler class],
     };
+    NSMutableDictionary *stock = [NSMutableDictionary dictionary];
+    LBServeStock(service, stock);
     for (NSEntityDescription *entity in service.model.entities) {
         NSString *set = entity.userInfo[@"OData.entitySet"];
         if (entity.superentity || !set.length) continue;
+        if (stock[entity.name]) {
+            [service setHandler:stock[entity.name] forEntitySet:set];
+            continue;
+        }
         Class kind = kinds[entity.name];
         if (!kind) {
             NSLog(@"permissions: %@ (%@) is no one's: read only to anyone signed in", entity.name, set);

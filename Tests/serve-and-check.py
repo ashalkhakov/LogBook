@@ -49,6 +49,12 @@ Anna owns a vehicle and shares it with Ben; Cid is no one to it.
 - the procedures: whoever drives the vehicle closes and moves its
   reminders, its owner alone starts its schedules, cancels its reminders and
   discards its records; Ben's oil change closes Anna's reminder.
+- stock (docs/STOCK.md, Who may): Anna's catalog is hers; Ben keeps its
+  garage, Dee manages it, Cid is no one to it. Cid sees none of it; Ben
+  sees it, adds no items or warehouses, and adjusts, transfers, ships and
+  counts in the garage, but orders nothing and changes no move; Dee orders
+  (numbered, given none) and confirms, reorders, and corrects a move;
+  the actions refuse in the procedures' words.
 
 The procedures, as the server's actions (Server/LBActions.h), with no one
 signed in: a schedule started (its first reminder named by it, due from
@@ -680,6 +686,7 @@ def who_may():
     status, body = request("DELETE", "CostKinds('Maintenance')", user=anna)
     check("nor the model's kinds", status == 403, (status, body))
     procedures_who_may(anna, ben, cid, vehicle)
+    stock_who_may(anna, ben, cid, "dee@example.org")
 
 
 def procedures_who_may(anna, ben, cid, vehicle):
@@ -728,6 +735,91 @@ def procedures_who_may(anna, ben, cid, vehicle):
     status, body = action("Records(%s)" % first_id, "Cancel", user=anna)
     check("a done one is not cancelled", status == 400, (status, body))
 
+
+
+def stock_who_may(anna, ben, cid, dee):
+    """Who may see and write a catalog's stock, and call its actions."""
+    catalog = {"Id": str(uuid.uuid4()), "CatalogName": "Workshop", "DocumentPrefix": "GAR", "Currency": "USD"}
+    status, body = request("POST", "Catalogs", catalog, user=anna)
+    check("a catalog is its maker's", status == 201, (status, body))
+    cat = "Catalogs(%s)" % catalog["Id"]
+    status, owner = request("GET", cat + "/CatalogOwner", user=anna)
+    check("Anna owns it", status == 200 and owner.get("Email") == anna, (status, owner))
+    garage = {"Id": str(uuid.uuid4()), "WarehouseName": "Garage", "Catalog@odata.bind": cat}
+    check("Anna's garage", request("POST", "Warehouses", garage, user=anna)[0] == 201)
+    shelves = []
+    for name in ("Shelf A", "Shelf B"):
+        shelf = {"Id": str(uuid.uuid4()), "LocationName": name, "Warehouse@odata.bind": "Warehouses(%s)" % garage["Id"]}
+        check("its " + name, request("POST", "Locations", shelf, user=anna)[0] == 201)
+        shelves.append(shelf["Id"])
+    a, b = ("Locations(%s)" % shelf for shelf in shelves)
+    for user, role in ((ben, "Keeper"), (dee, "Manager")):
+        staff = {"Id": str(uuid.uuid4()), "StaffRole": role, "User@odata.bind": "Users('%s')" % user,
+                 "Warehouse@odata.bind": "Warehouses(%s)" % garage["Id"]}
+        status, body = request("POST", "WarehouseStaffs", staff, user=anna)
+        check("%s works there, %s" % (user, role.lower()), status == 201, (status, body))
+    status, body = request("POST", "Warehouses", dict(garage, Id=str(uuid.uuid4())), user=ben)
+    check("Ben, of its staff, makes no warehouse of hers", status == 403, (status, body))
+    status, body = request("GET", "Catalogs", user=cid)
+    check("Cid sees no catalog of Anna's", status == 200 and body["value"] == [], (status, body))
+    status, body = request("GET", "Catalogs", user=ben)
+    check("Ben, of its staff, sees it", status == 200 and [c["Id"].lower() for c in body["value"]] == [catalog["Id"]],
+          (status, body))
+    bolt = {"Id": str(uuid.uuid4()), "ItemName": "Bolt", "Created": now(), "Catalog@odata.bind": cat}
+    check("Anna's bolts", request("POST", "StockItems", bolt, user=anna)[0] == 201)
+    status, body = request("POST", "StockItems", dict(bolt, Id=str(uuid.uuid4()), ItemName="Nut"), user=ben)
+    check("Ben adds no items", status == 403, (status, body))
+    item = "StockItems(%s)" % bolt["Id"]
+
+    status, body = action(item, "Adjust", {"Quantity": 20, "At": {"@odata.id": a}, "Reason": "Opening"}, user=ben)
+    check("Ben brings 20 bolts in", status == 200 and body.get("Moved") == 20, (status, body))
+    status, held = request("GET", "Holdings(%s)" % named("%s at %s" % (bolt["Id"], shelves[0])), user=ben)
+    check("their holding, named by item and shelf: 20", status == 200 and held.get("Quantity") == 20, (status, held))
+    status, body = action(item, "Adjust", {"Quantity": 1, "At": {"@odata.id": a}, "Reason": "Found"}, user=cid)
+    check("Cid adjusts nothing", status in (403, 404), (status, body))
+    status, body = action(item, "Transfer", {"Quantity": 25, "From": {"@odata.id": a}, "To": {"@odata.id": b}}, user=ben)
+    check("25 bolts of 20 moved is refused, said so", status == 400 and "holds 20" in body["error"]["message"], (status, body))
+    status, moved = action(item, "Transfer", {"Quantity": 5, "From": {"@odata.id": a}, "To": {"@odata.id": b}}, user=ben)
+    check("Ben moves 5 to B", status == 200, (status, moved))
+    status, body = request("PATCH", "Moves(%s)" % moved["Id"], {"Note": "mine"}, user=ben)
+    check("and changes no move: a manager's", status == 403, (status, body))
+    status, body = request("PATCH", "Moves(%s)" % moved["Id"], {"Note": "checked"}, user=dee)
+    check("Dee, managing there, notes it", status in (200, 204), (status, body))
+
+    contact = {"Id": str(uuid.uuid4()), "ContactName": "Bob's Garage", "Catalog@odata.bind": cat}
+    check("Anna's contact", request("POST", "Contacts", contact, user=anna)[0] == 201)
+    customer = {"Id": str(uuid.uuid4()), "Contact@odata.bind": "Contacts(%s)" % contact["Id"], "Catalog@odata.bind": cat}
+    check("a customer of hers", request("POST", "Customers", customer, user=anna)[0] == 201)
+    order = {"Id": str(uuid.uuid4()), "SaleOrdered": now(), "OrderState": "Draft", "Catalog@odata.bind": cat,
+             "Customer@odata.bind": "Customers(%s)" % customer["Id"]}
+    status, body = request("POST", "SaleOrders", order, user=ben)
+    check("Ben orders nothing", status == 403, (status, body))
+    status, body = request("POST", "SaleOrders", order, user=dee)
+    check("Dee does: numbered, given none", status == 201 and body.get("RunningNumber") == 1, (status, body))
+    line = {"Id": str(uuid.uuid4()), "Quantity": 3, "LinePriceAmount": 2, "LinePriceCurrency": "USD",
+            "SaleOrder@odata.bind": "SaleOrders(%s)" % order["Id"], "StockItem@odata.bind": item}
+    check("its line, 3 bolts", request("POST", "SaleLines", line, user=dee)[0] == 201)
+    sale = "SaleOrders(%s)" % order["Id"]
+    status, body = action(sale, "Confirm", user=ben)
+    check("Ben confirms none", status == 403, (status, body))
+    status, body = action(sale, "Confirm", user=dee)
+    check("Dee confirms it", status == 200 and body.get("OrderState") == "Confirmed", (status, body))
+    status, body = action(sale, "Ship", {"Lines": {line["Id"]: 3}, "From": {"@odata.id": b}}, user=ben)
+    check("3 from B, of 5: Ben ships them", status == 200 and body.get("RunningNumber") == 1, (status, body))
+    status, shipped = request("GET", sale, user=dee)
+    check("the order fully shipped", status == 200 and shipped.get("IsFullyShipped") is True, (status, shipped))
+    status, body = action(sale, "Ship", {"Lines": {line["Id"]: 1}, "From": {"@odata.id": b}}, user=cid)
+    check("Cid ships nothing", status in (403, 404), (status, body))
+
+    found = [{"Item": bolt["Id"], "Location": shelves[0], "Quantity": 14}]
+    status, body = action("Warehouses(%s)" % garage["Id"], "Count", {"Location": {"@odata.id": a}, "Found": found}, user=ben)
+    check("Ben counts shelf A: 14 of 15", status == 200 and body.get("RunningNumber") == 1, (status, body))
+    status, held = request("GET", "Holdings(%s)" % named("%s at %s" % (bolt["Id"], shelves[0])), user=ben)
+    check("A holds 14", status == 200 and held.get("Quantity") == 14, (status, held))
+    status, body = action("Warehouses(%s)" % garage["Id"], "Reorder", user=ben)
+    check("Ben reorders nothing", status == 403, (status, body))
+    status, body = action("Warehouses(%s)" % garage["Id"], "Reorder", user=dee)
+    check("Dee reorders: nothing due", status == 200 and body.get("value") == [], (status, body))
 
 try:
     server = serve()
