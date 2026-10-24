@@ -5,13 +5,17 @@
 //
 //   lb-stock-check build/Logbook.momd build/Logbook.ormplans
 //
+// - holdings: what the moves leave; a move out of more than is there, or
+//   where its item has no holding, refused;
 // - kits: how many each can make, whole batches of its scarcest component
 //   times its yield; what it contains; one containing itself refused;
 // - a phantom kit is never moved;
 // - a phantom kit's sale line expanded into its components' lines, shipped
 //   in part and then in full: the kits shipped worked back from them
 //   (contracted), what is outstanding, and the order partly, then fully,
-//   shipped.
+//   shipped;
+// - committed, incoming, available and short, and a reorder rule due;
+// - a count's adjustments, and adjustments of reason Count only in one.
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
@@ -28,6 +32,12 @@
 #import "SaleLine+CoreDataClass.h"
 #import "Shipment+CoreDataClass.h"
 #import "Move+CoreDataClass.h"
+#import "Contact+CoreDataClass.h"
+#import "Supplier+CoreDataClass.h"
+#import "PurchaseOrder+CoreDataClass.h"
+#import "PurchaseLine+CoreDataClass.h"
+#import "StockCount+CoreDataClass.h"
+#import "ReorderRule+CoreDataClass.h"
 
 static NSUInteger LBFailures;
 static NSManagedObjectModel *LBModel;
@@ -101,6 +111,7 @@ typedef struct {
     __unsafe_unretained NSManagedObjectContext *context;
     __unsafe_unretained User *anna;
     __unsafe_unretained Catalog *catalog;
+    __unsafe_unretained Warehouse *warehouse;
     __unsafe_unretained Location *shelf;
 } LBStock;
 
@@ -120,11 +131,38 @@ static KitLine *LBTakes(LBStock *stock, StockItem *kit, NSString *perBatch, Stoc
     return line;
 }
 
-static void LBKeep(LBStock *stock, StockItem *item, NSString *quantity) {
+/* The item's holding on the shelf: made where there is none. */
+static Holding *LBHolding(LBStock *stock, StockItem *item) {
+    for (Holding *holding in item.holdings) {
+        if (holding.location == stock->shelf) return holding;
+    }
     Holding *holding = LBInsert([Holding class], stock->context);
     holding.stockItem = item;
     holding.location = stock->shelf;
-    holding.quantity = LBN(quantity);
+    return holding;
+}
+
+/* An adjustment on the shelf: so many in (more than none) or out (less),
+   for the reason. */
+static Move *LBAdjust(LBStock *stock, StockItem *item, NSString *quantity, NSString *reason) {
+    LBHolding(stock, item);
+    Move *move = LBInsert([Move class], stock->context);
+    move.stockItem = item;
+    BOOL out = [quantity hasPrefix:@"-"];
+    move.moved = LBN(out ? [quantity substringFromIndex:1] : quantity);
+    if (out) move.source = stock->shelf; else move.destination = stock->shelf;
+    move.moment = [NSDate date];
+    move.user = stock->anna;
+    move.adjustmentReason = reason;
+    return move;
+}
+
+static void LBKeep(LBStock *stock, StockItem *item, NSString *quantity) {
+    LBAdjust(stock, item, quantity, @"Opening");
+}
+
+static NSDecimalNumber *LBHeld(LBStock *stock, StockItem *item) {
+    return LBHolding(stock, item).quantity;
 }
 
 static Move *LBShip(LBStock *stock, Shipment *shipment, SaleLine *line, NSString *quantity) {
@@ -141,7 +179,7 @@ static Move *LBShip(LBStock *stock, Shipment *shipment, SaleLine *line, NSString
 
 static void LBKits(void) {
     NSManagedObjectContext *context = LBNewStore();
-    LBStock stock = { context, nil, nil, nil };
+    LBStock stock = { context, nil, nil, nil, nil };
     User *anna = LBInsert([User class], context);
     anna.email = @"anna@example.org";
     stock.anna = anna;
@@ -152,6 +190,7 @@ static void LBKits(void) {
     Warehouse *warehouse = LBInsert([Warehouse class], context);
     warehouse.warehouseName = @"Garage";
     warehouse.catalog = catalog;
+    stock.warehouse = warehouse;
     Location *shelf = LBInsert([Location class], context);
     shelf.locationName = @"Shelf A";
     shelf.warehouse = warehouse;
@@ -176,7 +215,8 @@ static void LBKits(void) {
     LBKeep(&stock, bracket, @"3");
     LBKeep(&stock, roll, @"2");
     NSString *why = nil;
-    LBCheck(@"kits saved", LBSave(context, &why), why);
+    LBCheck(@"kits saved, their stock come in", LBSave(context, &why), why);
+    LBCheck(@"the bolts' holding: 10, as their move left it", LBSame(LBHeld(&stock, bolt), @"10"), LBHeld(&stock, bolt));
     LBCheck(@"a mount: 2, the bolts' whole batches (10 / 4), fewer than the brackets' 3", LBSame(mount.makeable, @"2"),
             mount.makeable);
     LBCheck(@"pieces: 2 rolls, 20 each", LBSame(piece.makeable, @"40"), piece.makeable);
@@ -186,11 +226,28 @@ static void LBKits(void) {
             [mount.containeds valueForKey:@"itemName"]);
 
     /* None of its components gone: a kit makes none. */
-    for (Holding *holding in bracket.holdings) holding.quantity = LBN(@"0");
-    LBCheck(@"brackets used up: saved", LBSave(context, &why), why);
+    LBAdjust(&stock, bracket, @"-3", @"Damaged");
+    LBCheck(@"brackets damaged, all three: saved", LBSave(context, &why), why);
+    LBCheck(@"none held", LBSame(LBHeld(&stock, bracket), @"0"), LBHeld(&stock, bracket));
     LBCheck(@"then a mount makes none", LBSame(mount.makeable, @"0"), mount.makeable);
-    for (Holding *holding in bracket.holdings) holding.quantity = LBN(@"3");
-    LBCheck(@"brackets back: saved", LBSave(context, &why), why);
+    LBAdjust(&stock, bracket, @"3", @"Found");
+    LBCheck(@"brackets found: saved", LBSave(context, &why), why);
+
+    /* Out of more than is there; where nothing is held. */
+    LBAdjust(&stock, bolt, @"-11", @"Lost");
+    why = nil;
+    LBCheck(@"11 bolts lost of 10 is refused", !LBSave(context, &why), nil);
+    printf("     (%s)\n", why.UTF8String);
+    Move *nowhere = LBInsert([Move class], context);
+    nowhere.stockItem = mount;
+    nowhere.moved = LBN(@"1");
+    nowhere.destination = shelf;
+    nowhere.moment = [NSDate date];
+    nowhere.user = anna;
+    nowhere.adjustmentReason = @"Found";
+    why = nil;
+    LBCheck(@"a mount found where it has no holding is refused", !LBSave(context, &why), nil);
+    printf("     (%s)\n", why.UTF8String);
 
     /* A kit inside itself, through another. */
     LBTakes(&stock, bolt, @"1", mount);
@@ -211,12 +268,17 @@ static void LBKits(void) {
     printf("     (%s)\n", why.UTF8String);
 
     /* Three bundles sold: the line expanded into 3 brackets and 6 bolts. */
+    Contact *bobs = LBInsert([Contact class], context);
+    bobs.contactName = @"Bob's Garage";
+    bobs.isACompany = YES;
+    bobs.catalog = catalog;
     Customer *bob = LBInsert([Customer class], context);
-    bob.customerName = @"Bob";
+    bob.contact = bobs;
     bob.catalog = catalog;
     SaleOrder *order = LBInsert([SaleOrder class], context);
     order.catalog = catalog;
     order.customer = bob;
+    order.runningNumber = 1;
     order.saleOrdered = [NSDate date];
     order.orderState = @"Confirmed";
     SaleLine *kitLine = LBInsert([SaleLine class], context);
@@ -241,12 +303,18 @@ static void LBKits(void) {
     LBCheck(@"its outstanding 3", LBSame([kitLine valueForKey:@"backorderedQuantity"], @"3"),
             [kitLine valueForKey:@"backorderedQuantity"]);
     LBCheck(@"the order neither partly nor fully shipped", !order.isPartlyShipped && !order.isFullyShipped, nil);
+    LBCheck(@"committed: its 3 brackets and 6 bolts", LBSame(bracket.committed, @"3") && LBSame(bolt.committed, @"6"),
+            @[ bracket.committed ?: @"none", bolt.committed ?: @"none" ]);
+    LBCheck(@"available: no brackets, 4 bolts", bracket.available == nil && LBSame(bolt.available, @"4"),
+            @[ bracket.available ?: @"none", bolt.available ?: @"none" ]);
+    LBCheck(@"nothing short", bracket.shortage == nil && bolt.shortage == nil, nil);
 
     /* Two brackets and all six bolts go out: two bundles' worth. */
     Shipment *first = LBInsert([Shipment class], context);
     first.saleOrder = order;
     first.shipped = [NSDate date];
     first.shippedFrom = shelf;
+    first.runningNumber = 1;
     LBShip(&stock, first, brackets, @"2");
     LBShip(&stock, first, bolts, @"6");
     LBCheck(@"the first shipment saved", LBSave(context, &why), why);
@@ -264,10 +332,83 @@ static void LBKits(void) {
     second.saleOrder = order;
     second.shipped = [NSDate date];
     second.shippedFrom = shelf;
+    second.runningNumber = 2;
     LBShip(&stock, second, brackets, @"1");
     LBCheck(@"the second shipment saved", LBSave(context, &why), why);
     LBCheck(@"contracted: all 3 bundles shipped", LBSame(kitLine.kitsShipped, @"3"), kitLine.kitsShipped);
     LBCheck(@"the order fully shipped", order.isFullyShipped && !order.isPartlyShipped, nil);
+    LBCheck(@"shipped: brackets and bolts held no more, none committed",
+            LBSame(LBHeld(&stock, bracket), @"0") && LBSame(LBHeld(&stock, bolt), @"4") && bracket.committed == nil
+                && bolt.committed == nil,
+            @[ LBHeld(&stock, bracket), LBHeld(&stock, bolt), bracket.committed ?: @"none" ]);
+
+    /* Ten brackets more sold: seven short of what is kept... */
+    SaleOrder *more = LBInsert([SaleOrder class], context);
+    more.catalog = catalog;
+    more.customer = bob;
+    more.runningNumber = 2;
+    more.saleOrdered = [NSDate date];
+    more.orderState = @"Confirmed";
+    SaleLine *tenBrackets = LBInsert([SaleLine class], context);
+    tenBrackets.saleOrder = more;
+    tenBrackets.stockItem = bracket;
+    tenBrackets.quantity = LBN(@"10");
+    tenBrackets.linePriceAmount = LBN(@"2");
+    tenBrackets.linePriceCurrency = @"USD";
+    LBCheck(@"ten brackets sold, none held: saved", LBSave(context, &why), why);
+    LBCheck(@"brackets short by 10", LBSame(bracket.shortage, @"10"), bracket.shortage);
+
+    /* ...and twelve bought, coming. */
+    Contact *parts = LBInsert([Contact class], context);
+    parts.contactName = @"Parts Ltd";
+    parts.catalog = catalog;
+    Supplier *supplier = LBInsert([Supplier class], context);
+    supplier.contact = parts;
+    supplier.catalog = catalog;
+    PurchaseOrder *purchase = LBInsert([PurchaseOrder class], context);
+    purchase.catalog = catalog;
+    purchase.supplier = supplier;
+    purchase.runningNumber = 1;
+    purchase.ordered = [NSDate date];
+    purchase.orderState = @"Draft";
+    PurchaseLine *twelve = LBInsert([PurchaseLine class], context);
+    twelve.purchaseOrder = purchase;
+    twelve.stockItem = bracket;
+    twelve.quantity = LBN(@"12");
+    twelve.lineUnitCostAmount = LBN(@"1");
+    twelve.lineUnitCostCurrency = @"USD";
+    ReorderRule *rule = LBInsert([ReorderRule class], context);
+    rule.stockItem = bracket;
+    rule.warehouse = warehouse;
+    rule.reorderPoint = LBN(@"5");
+    rule.reorderLevel = LBN(@"20");
+    LBCheck(@"a purchase drafted, a reorder rule: saved", LBSave(context, &why), why);
+    LBCheck(@"a draft brings nothing: none incoming", bracket.incoming == nil, bracket.incoming);
+    LBCheck(@"brackets due for reorder: none available or coming, below 5", rule.isDue, nil);
+    purchase.orderState = @"Confirmed";
+    LBCheck(@"the purchase confirmed: saved", LBSave(context, &why), why);
+    LBCheck(@"12 brackets incoming", LBSame(bracket.incoming, @"12"), bracket.incoming);
+    LBCheck(@"due no more: 12 coming is not below 5", !rule.isDue, nil);
+
+    /* A count: one bolt more found than held. */
+    StockCount *count = LBInsert([StockCount class], context);
+    count.warehouse = warehouse;
+    count.countedOn = [NSDate date];
+    count.counter = anna;
+    count.runningNumber = 1;
+    Move *found = LBAdjust(&stock, bolt, @"1", @"Count");
+    found.stockCount = count;
+    LBCheck(@"a count, a bolt more: saved", LBSave(context, &why), why);
+    LBCheck(@"5 bolts held", LBSame(LBHeld(&stock, bolt), @"5"), LBHeld(&stock, bolt));
+    LBAdjust(&stock, bolt, @"1", @"Count");
+    why = nil;
+    LBCheck(@"a Count adjustment of no count is refused", !LBSave(context, &why), nil);
+    printf("     (%s)\n", why.UTF8String);
+    Move *wrong = LBAdjust(&stock, bolt, @"1", @"Found");
+    wrong.stockCount = count;
+    why = nil;
+    LBCheck(@"a count's adjustment of another reason is refused", !LBSave(context, &why), nil);
+    printf("     (%s)\n", why.UTF8String);
 }
 
 int main(int argc, const char *argv[]) {

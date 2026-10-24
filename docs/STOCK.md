@@ -71,8 +71,15 @@ calls, so it can be generated once forms are.
 ## Setup
 
 **Catalog** (KiWi's group): its name, its currency, its weight and size
-units; the categories (a tree), the suppliers, the customers, the item
-attributes it uses. A user owns their catalogs; KiWi's "Reset quantities to
+units, its own prefix for document numbers; the categories (a tree), the
+contacts, the item attributes it uses.
+
+**Contacts:** a person or a company the catalog deals with: its name,
+email, phone, note, and its addresses, one of them where it is shipped
+to and one where it is billed. Being a customer or a supplier is a part a
+contact plays; a company both is one contact, its addresses kept once. A
+sale order takes its customer's addresses as they were when it was made;
+a shipment says where it went. A user owns their catalogs; KiWi's "Reset quantities to
 zero" becomes a count of everything to zero ([Counts](#counts)), not a
 setting.
 
@@ -307,7 +314,7 @@ devices make it.
 
 ## Changes to the model
 
-What the design above needs that the model does not say yet:
+Made (`lb-stock-check` checks each), as the design above needs them:
 1. **A holding's quantity derived from the moves,** stored: its moves to
    its location less those from it, of its item. (Of its lot too, once
    there are [lots](#lots-serials-and-expiry): the holding should be
@@ -321,12 +328,17 @@ What the design above needs that the model does not say yet:
    (`PO`, `SO`, `RC` a receipt, `SH` a shipment, `CT` a count), the
    catalog's own prefix as its owner types it in setup (`GAR`), and a
    running number of that kind in the catalog: `PO-GAR-0042`. The running
-   number is the model's (unique per catalog and kind); the text is made
-   from it. A supplier's or customer's own reference is a fact of its own.
+   number is the model's (`RunningNumber`: unique per catalog for orders,
+   per order for receipts and shipments, per warehouse for counts); the
+   text is made from it. A supplier's or customer's own reference is a
+   fact of its own.
+6. **Contacts:** `Contact` and `Address`; `Customer` and `Supplier` each of
+   one contact, in its catalog; a sale order's ship-to and bill-to, a
+   shipment's ship-to.
 
 ## Steps
 
-1. The model's changes above, and `lb-stock-check` for each.
+1. Done: the model's changes above, and `lb-stock-check` for each.
 2. The procedures, in `LBStockProcedures`, checked by `lb-stock-check`:
    holdings by moves first, then transfer and adjust, receive and ship,
    confirm and expand, count, assemble, reorder.
