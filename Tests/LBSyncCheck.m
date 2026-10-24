@@ -90,6 +90,13 @@ static BOOL LBSync(LBLocalStore *store, NSString *what) {
     return ok;
 }
 
+/* A sync the store began of itself (some seconds after a save) let end,
+   before sync is turned off: one running then still sends what is saved
+   meanwhile. */
+static void LBSyncEnded(LBLocalStore *store) {
+    for (int i = 0; i < 300 && store.isSyncing; i++) [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.1]];
+}
+
 static BOOL LBSave(LBLocalStore *store, NSString *what) {
     NSError *error = nil;
     BOOL ok = [store save:&error];
@@ -235,6 +242,7 @@ int main(int argc, const char *argv[]) {
         LBCheck(@"Ben has the vehicle, Anna's", [golfThere.owner.email isEqualToString:@"anna@example.org"], golfThere.owner.email);
 
         /* Offline. */
+        LBSyncEnded(anna);
         anna.syncEnabled = NO;
         FillUp *fillUp = LBFillUp(anna, golf, @"148000");
         LBSave(anna, @"a fill-up saved, sync off");

@@ -935,7 +935,8 @@ static void LBKindSteps(LBMainWindowController *controller) {
             keptFillUp.chargedAmount);
 
     /* The meter reading removed, a file attached to it again: the file
-       goes with it. */
+       stays, of nothing, an orphan (a process clears orphans away, or asks
+       about them). */
     LBChooseRecord(controller, reading);
     LBCheck(@"a file attached again", [controller attachFileAtURL:file toRecord:reading error:&error] != nil, error);
     LBSaved(controller, reading, @"saved with it");
@@ -947,11 +948,12 @@ static void LBKindSteps(LBMainWindowController *controller) {
                                                        [object isKindOfClass:[Answer class]] ? [NSString stringWithFormat:@" of %@", ((Answer *)object).inspection.entity.name] : @""]];
     }
     LBClick(window, @"save");
-    LBCheck(@"a record removed, its file with it, on the server too", !controller.lastError
+    LBCheck(@"a record removed, on the server too; its file left, an orphan", !controller.lastError
                 && [LBServerObjects([MeterReading class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)),
                                                                          readingID]) count] == 0
-                && [LBServerObjects([Attachment class], [NSPredicate predicateWithFormat:@"%K == %@",
-                                                                      NSStringFromSelector(@selector(fileName)), @"odometer.txt"]) count] == 0,
+                && [LBServerObjects([Attachment class], [NSPredicate predicateWithFormat:@"%K == %@ AND %K == nil",
+                                                                      NSStringFromSelector(@selector(fileName)), @"odometer.txt",
+                                                                      NSStringFromSelector(@selector(record))]) count] == 1,
             [NSString stringWithFormat:@"%@ deleting %@", controller.lastError.localizedDescription, deleting]);
 }
 
