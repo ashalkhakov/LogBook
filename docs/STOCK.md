@@ -26,9 +26,9 @@ garage of parts, or a small shop, should find it no more work than KiWi.
 | Looking back | an item's history, the changelog, statistics | [Overview](#overview-and-history) |
 
 Not in the first version, as agreed: barcodes, PDF and CSV export, alerts
-and passwords. Not yet designed: returns, picking and packing as steps of
-their own, serial and lot numbers, costing beyond the item's unit cost
-([Extensions](#extensions)).
+and passwords. Designed to come after it: returns, picking and packing as
+steps of their own, lots and serial numbers, fulfilment orders, costing
+beyond the item's unit cost ([Extensions](#extensions)).
 
 ## The ideas it rests on
 
