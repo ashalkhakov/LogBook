@@ -34,6 +34,8 @@
 #import "ExpenseKind+CoreDataClass.h"
 #import "Option+CoreDataClass.h"
 #import "ExchangeRate+CoreDataClass.h"
+#import "LBStockWindowController.h"
+#import "LBStockDisplay.h"
 
 NSURL *LBSelfTestRoot;
 /* The user's saved settings as the self-test began. */
@@ -748,6 +750,131 @@ static BOOL LBIs(NSDecimalNumber *number, NSString *value) {
    as typed. An income for a trip, an inspection's answers, a fill-up
    charged in another currency, a file attached and removed, a record
    removed. */
+/* The window as drawn, written as a TIFF named so into the folder
+   LB_SNAPSHOTS names, when it names one: to look at, and for the docs. */
+static void LBSnapshot(NSWindow *window, NSString *name) {
+    NSString *folder = [NSProcessInfo processInfo].environment[@"LB_SNAPSHOTS"];
+    if (!folder.length) return;
+    /* The frame view: it draws the window's background, which the
+       content's text is drawn over. */
+    NSView *view = [window.contentView superview] ?: window.contentView;
+    NSBitmapImageRep *image = [view bitmapImageRepForCachingDisplayInRect:view.bounds];
+    [view cacheDisplayInRect:view.bounds toBitmapImageRep:image];
+    [[image TIFFRepresentation] writeToFile:[folder stringByAppendingPathComponent:[name stringByAppendingPathExtension:@"tiff"]]
+                                 atomically:YES];
+}
+
+static NSWindow *LBStockWindow(void) {
+    for (NSWindow *window in NSApp.windows) {
+        if (window.isVisible && [window.windowController isKindOfClass:[LBStockWindowController class]]) return window;
+    }
+    return nil;
+}
+
+/* The chosen catalog's item of the name, as the stock window lists it. */
+static StockItem *LBStockItemNamed(LBStockWindowController *stock, NSString *name) {
+    for (StockItem *item in [stock.chosenCatalog stockItems]) {
+        if ([item.itemName isEqualToString:name]) return item;
+    }
+    return nil;
+}
+
+/* A new item of the chosen catalog, named so, saved. */
+static StockItem *LBAddStockItem(LBStockWindowController *stock, NSString *name) {
+    NSWindow *window = stock.window;
+    LBClick(window, @"addItem");
+    LBType(window, @"itemNameField", name);
+    LBClick(window, @"save");
+    StockItem *item = LBStockItemNamed(stock, name);
+    LBCheck([NSString stringWithFormat:@"%@ added, chosen and saved", name],
+            item && stock.chosenItem == item && !stock.context.hasChanges && !stock.lastError,
+            stock.lastError.localizedRecoverySuggestion ?: stock.lastError);
+    return item;
+}
+
+/* Stock moved as a user does: how many typed, the reason chosen, the
+   button clicked. */
+static void LBMoveStock(LBStockWindowController *stock, NSString *button, NSString *quantity, NSString *reason) {
+    NSWindow *window = stock.window;
+    LBType(window, @"stockQuantity", quantity);
+    if (reason) LBChoose(window, @"stockReason", reason);
+    LBClick(window, button);
+}
+
+/* The stock window (docs/STOCK.md): a catalog made and named, with its
+   warehouse and location; an item added and priced; its stock brought in
+   by an adjustment, an adjustment out of more than is there refused; a
+   kit of two components, assembled, its stock and what it can make; the
+   list searched. Each saved, and the server's. */
+static void LBStockSteps(LBMainWindowController *controller) {
+    [NSApp sendAction:@selector(showStock:) to:nil from:nil];
+    LBSpin();
+    NSWindow *window = LBStockWindow();
+    LBStockWindowController *stock = window.windowController;
+    LBCheck(@"the stock window", window != nil, nil);
+    if (!window) return;
+    stock.quiet = YES;
+    LBClick(window, @"newCatalog");
+    LBType(window, @"catalogName", @"Self-test Workshop");
+    Catalog *catalog = stock.chosenCatalog;
+    LBCheck(@"a new catalog, chosen, its one location offered", [catalog.catalogName isEqualToString:@"Self-test Workshop"]
+                                                                   && stock.locations.count == 1 && stock.stockAt == stock.locations[0],
+            [NSString stringWithFormat:@"%@, %@", catalog.catalogName, stock.locations]);
+    LBClick(window, @"save");
+    LBCheck(@"saved", !stock.context.hasChanges && !stock.lastError, stock.lastError.localizedRecoverySuggestion ?: stock.lastError);
+    NSPredicate *named = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(catalogName)), @"Self-test Workshop"];
+    Catalog *kept = [LBServerObjects([Catalog class], named) firstObject];
+    LBCheck(@"the server has it, the user's, with its warehouse Main and its Default location",
+            [kept.catalogOwner.email isEqualToString:stock.store.user.email]
+                && [[[kept.warehouses anyObject] warehouseName] isEqualToString:@"Main"]
+                && [[[[[kept.warehouses anyObject] locations] anyObject] locationName] isEqualToString:@"Default"],
+            kept);
+
+    StockItem *bolt = LBAddStockItem(stock, @"Bolt");
+    LBType(window, @"itemPrice", @"0.5");
+    LBClick(window, @"save");
+    LBCheck(@"its price kept, in the catalog's currency", LBIs(bolt.priceAmount, @"0.5")
+                                                             && [bolt.priceCurrency isEqualToString:catalog.currency ?: @""],
+            [NSString stringWithFormat:@"%@ %@", bolt.priceAmount, bolt.priceCurrency]);
+    LBMoveStock(stock, @"adjust", @"20", @"Opening");
+    LBCheck(@"20 bolts brought in: on hand, held at Default, the move listed", LBIs(bolt.totalQuantity, @"20")
+                && [stock.holdings.arrangedObjects count] == 1 && [stock.moves.arrangedObjects count] == 1
+                && [[[stock.moves.arrangedObjects firstObject] lbWhat] isEqualToString:@"Adjustment: Opening"],
+            stock.lastError ?: bolt.totalQuantity);
+    LBMoveStock(stock, @"adjust", @"-25", @"Lost");
+    LBCheck(@"25 lost of 20 refused, in the procedure's words", [stock.lastError.localizedDescription containsString:@"holds 20"]
+                                                                    && LBIs(bolt.totalQuantity, @"20"),
+            stock.lastError);
+
+    StockItem *bracket = LBAddStockItem(stock, @"Bracket");
+    LBMoveStock(stock, @"adjust", @"5", @"Opening");
+    StockItem *mount = LBAddStockItem(stock, @"Mount");
+    LBCheck(@"a kit takes the catalog's other items", [stock.components containsObject:bolt] && ![stock.components containsObject:mount],
+            stock.components);
+    LBClick(window, @"addKitLine");
+    LBChoose(window, @"kitComponent", @"Bolt");
+    LBClick(window, @"addKitLine");
+    LBChoose(window, @"kitComponent", @"Bracket");
+    LBClick(window, @"save");
+    LBCheck(@"its recipe saved: a bolt and a bracket; it can make 5", mount.kitLinesAsKit.count == 2 && LBIs(mount.makeable, @"5")
+                                                                         && !stock.lastError,
+            stock.lastError.localizedRecoverySuggestion ?: mount.makeable);
+    LBMoveStock(stock, @"assemble", @"2", nil);
+    LBCheck(@"two assembled: 2 mounts, 18 bolts, 3 brackets", LBIs(mount.totalQuantity, @"2") && LBIs(bolt.totalQuantity, @"18")
+                                                                  && LBIs(bracket.totalQuantity, @"3"),
+            stock.lastError ?: [NSString stringWithFormat:@"%@ %@ %@", mount.totalQuantity, bolt.totalQuantity, bracket.totalQuantity]);
+    LBType(window, @"itemSearch", @"mo");
+    [stock search:nil];
+    LBCheck(@"the list searched: Mount alone", [[stock.items.arrangedObjects valueForKey:@"itemName"] isEqualToArray:@[ @"Mount" ]],
+            [stock.items.arrangedObjects valueForKey:@"itemName"]);
+    LBType(window, @"itemSearch", @"");
+    [stock search:nil];
+    [stock.items setSelectedObjects:@[ mount ]];
+    LBSpin();
+    LBSnapshot(window, @"stock-items");
+    [window close];
+}
+
 static void LBKindSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
     NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
@@ -1397,6 +1524,7 @@ static void LBSteps(LBMainWindowController *controller) {
     LBReportSteps(controller);
     LBReminderSteps(controller, kept);
     LBKindSteps(controller);
+    LBStockSteps(controller);
     LBCalendarViewAlone();
     LBCalendarSteps(controller);
     LBQuantityFieldAlone();

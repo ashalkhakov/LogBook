@@ -64,6 +64,10 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 @end
 
 @interface Catalog (LBStock)
+// A new catalog, the user's, named so, priced in their currency, with one
+// warehouse ("Main") and one location in it ("Default"): a person with one
+// shelf need never see either.
++ (Catalog *)lb_newCatalogNamed:(NSString *)name owner:(User *)owner inContext:(NSManagedObjectContext *)context;
 // A new sale order, a draft: to the customer, placed on the day, numbered
 // the next in the catalog, shipped to and billed at the customer's
 // contact's addresses as they are.

@@ -151,6 +151,10 @@
 			isa = PBXBuildFile;
 			fileRef = AB824361FAF0A8F250B5C0F2 /* LBRecordForm.m */;
 		};
+		4A7C39DF8D06BBC66581C911 /* LBStockWindowController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 0909862880AB1C4AD4F5EE4E /* LBStockWindowController.m */;
+		};
 		4AF4261543FF6ED24F470557 /* LBReportsController.m */ = {
 			isa = PBXBuildFile;
 			fileRef = AA1BB6F3704843F4C100FA9B /* LBReportsController.m */;
@@ -286,6 +290,10 @@
 		83BAF198A28BAB6D44A6A1F0 /* LBStockProcedures.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 9E4DA9E6FA751F2E5CD4DA94 /* LBStockProcedures.m */;
+		};
+		840AEC8AE6CB6EE50306F090 /* LBStockDisplay.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 87A06910E93B88B1492B7095 /* LBStockDisplay.m */;
 		};
 		8800FD168A2C69561DAD95C9 /* LBStockProcedures.m */ = {
 			isa = PBXBuildFile;
@@ -532,6 +540,10 @@
 			fileRef = 584640704EF6A5925E5FAEBF /* RDLKitUI.xcframework */;
 			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
 		};
+		EC78B9EAEEC42F90EBCC9844 /* LBStockDisplay.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 87A06910E93B88B1492B7095 /* LBStockDisplay.m */;
+		};
 		ED0682A83722AC2571A66BC4 /* LBStockProcedures.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 9E4DA9E6FA751F2E5CD4DA94 /* LBStockProcedures.m */;
@@ -543,6 +555,10 @@
 		F9356E42A276A84634661374 /* ODataSync.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
+		};
+		F9CCF7411FAEB452FA65A48A /* StockWindow.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = F32AA887B6CB0E32A179DED7 /* StockWindow.xib */;
 		};
 		FAF7EB020CC5CD818F33D8FE /* RDLKit.xcframework */ = {
 			isa = PBXBuildFile;
@@ -703,6 +719,12 @@
 			includeInIndex = 0;
 			path = Logbook.app;
 			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		0909862880AB1C4AD4F5EE4E /* LBStockWindowController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStockWindowController.m;
+			sourceTree = "<group>";
 		};
 		0A6433DEAA58B45842DD06D1 /* LBReportsController.h */ = {
 			isa = PBXFileReference;
@@ -1027,6 +1049,12 @@
 			path = Logbook.orm;
 			sourceTree = "<group>";
 		};
+		87A06910E93B88B1492B7095 /* LBStockDisplay.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStockDisplay.m;
+			sourceTree = "<group>";
+		};
 		892723880096458A3BA80B0E /* LBProceduresCheck.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -1231,6 +1259,12 @@
 			path = LBiOSApp.h;
 			sourceTree = "<group>";
 		};
+		D090AFF26F4A18054D8494CB /* LBStockWindowController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStockWindowController.h;
+			sourceTree = "<group>";
+		};
 		D371E9DF0A4D53CA5C5BEBEF /* LBDisplay.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1304,6 +1338,12 @@
 			path = LBSignIn.m;
 			sourceTree = "<group>";
 		};
+		F32AA887B6CB0E32A179DED7 /* StockWindow.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = StockWindow.xib;
+			sourceTree = "<group>";
+		};
 		F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
@@ -1320,6 +1360,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
 			path = ConnectPanel.xib;
+			sourceTree = "<group>";
+		};
+		FA64ED383FFB91BEFF498056 /* LBStockDisplay.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStockDisplay.h;
 			sourceTree = "<group>";
 		};
 		FA961075CB2A673BD7F848CD /* LBProcedures.m */ = {
@@ -1594,10 +1640,13 @@
 				AA1BB6F3704843F4C100FA9B /* LBReportsController.m */,
 				13623D0A57E5BB10F9182DD5 /* LBSelfTest.h */,
 				D754F8EB42F3ADAE0E299F79 /* LBSelfTest.m */,
+				D090AFF26F4A18054D8494CB /* LBStockWindowController.h */,
+				0909862880AB1C4AD4F5EE4E /* LBStockWindowController.m */,
 				694E25C06D350F4886223FAB /* Lists.xib */,
 				4FE96229781E69B34DF214C9 /* MainMenu.xib */,
 				F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */,
 				4E83A3CB72FBFB07198EF507 /* Preferences.xib */,
+				F32AA887B6CB0E32A179DED7 /* StockWindow.xib */,
 				9F9B62C3CEAF21088CC988DF /* main.m */,
 			);
 			path = AppKit;
@@ -1630,6 +1679,8 @@
 				37F5E52039B2A71A1E5ADA60 /* LBReportData.m */,
 				3E7094F8DD90DECD608C53E2 /* LBSignIn.h */,
 				F202254F689402A7F179E854 /* LBSignIn.m */,
+				FA64ED383FFB91BEFF498056 /* LBStockDisplay.h */,
+				87A06910E93B88B1492B7095 /* LBStockDisplay.m */,
 				5B7F51455579DF785326F8BE /* LBStockProcedures.h */,
 				9E4DA9E6FA751F2E5CD4DA94 /* LBStockProcedures.m */,
 				9750D2C25C5635F5B2261855 /* LBStore.h */,
@@ -1829,6 +1880,7 @@
 				E6A1498CBC948EA4D74D875C /* ConnectPanel.xib */,
 				0104234405B4305646B85B40 /* Preferences.xib */,
 				683ABFCAE020079565AED216 /* Lists.xib */,
+				F9CCF7411FAEB452FA65A48A /* StockWindow.xib */,
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
 				528729F595FA1EDB414383AA /* Logbook.rdl */,
@@ -2001,6 +2053,7 @@
 				E73043F2D16EEE3508B1033E /* LBPlanned.m */,
 				FFEC986A4E28F6F71BAB1EC2 /* LBProcedures.m */,
 				5713E0AD6431DEC5019FE81E /* LBSignIn.m */,
+				840AEC8AE6CB6EE50306F090 /* LBStockDisplay.m */,
 				83BAF198A28BAB6D44A6A1F0 /* LBStockProcedures.m */,
 				7BBA7D3B23EBBC1300884F80 /* LBVehicleSummary.m */,
 				2AFDF0CC8E4E5805C4B5CF3E /* LogbookModel.m */,
@@ -2036,6 +2089,7 @@
 				A2A340CC7CD54ABA2AE1056F /* LBRemindersController.m */,
 				4AF4261543FF6ED24F470557 /* LBReportsController.m */,
 				DFBD0FF8323401C8CF5C5DF2 /* LBSelfTest.m */,
+				4A7C39DF8D06BBC66581C911 /* LBStockWindowController.m */,
 				D150CB72C0373BBF67E78758 /* main.m */,
 				5AA4112F777D647934A73C69 /* UDCalendarView.m */,
 				B3E1A2A2285935D32D76562A /* UDQuantityField.m */,
@@ -2047,6 +2101,7 @@
 				341E885D3AA2F3A42B7F04CC /* LBProcedures.m */,
 				3B87B042E25C5C6BAF69C6BF /* LBReportData.m */,
 				55D29C133A3C05C2C743A7E5 /* LBSignIn.m */,
+				EC78B9EAEEC42F90EBCC9844 /* LBStockDisplay.m */,
 				8800FD168A2C69561DAD95C9 /* LBStockProcedures.m */,
 				12D8AFDE0C7991FFC2934006 /* LBStore.m */,
 				271A1993FD12E92D99FCB018 /* LBVehicleSummary.m */,

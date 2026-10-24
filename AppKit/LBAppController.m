@@ -5,6 +5,7 @@
 #import "LBSelfTest.h"
 #import "LBPreferencesController.h"
 #import "LBListsController.h"
+#import "LBStockWindowController.h"
 
 @implementation LBAppController {
     LBConnectPanel *_panel;
@@ -12,6 +13,7 @@
     LBMainWindowController *_window;
     LBPreferencesController *_preferences;
     LBListsController *_lists;
+    LBStockWindowController *_stock;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
@@ -26,6 +28,7 @@
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+    if (_stock && ![_stock shouldClose]) return NSTerminateCancel;
     return !_window || [_window shouldClose] ? NSTerminateNow : NSTerminateCancel;
 }
 
@@ -72,12 +75,18 @@
     [self showLists:@"exchangeRates"];
 }
 
+- (IBAction)showStock:(id)sender {
+    if (!_window) return;
+    if (!_stock) _stock = [[LBStockWindowController alloc] initWithStore:_store];
+    [_stock showWindow:sender];
+}
+
 /* Preferences and lists only while there is a logbook, whose user they
    are. */
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     SEL action = item.action;
     BOOL needsLogbook = action == @selector(showPreferences:) || action == @selector(showExpenseKinds:) || action == @selector(showChecklists:)
-                        || action == @selector(showExchangeRates:);
+                        || action == @selector(showExchangeRates:) || action == @selector(showStock:);
     return !needsLogbook || _window != nil;
 }
 
@@ -86,6 +95,8 @@
     _preferences = nil;
     [_lists close];
     _lists = nil;
+    [_stock close];
+    _stock = nil;
     LBMainWindowController *window = _window;
     _window = nil;
     _store = nil;

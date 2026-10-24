@@ -26,6 +26,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)showExpenseKinds:(nullable id)sender;
 - (IBAction)showChecklists:(nullable id)sender;
 - (IBAction)showExchangeRates:(nullable id)sender;
+// The stock window (LBStockWindowController.h): the catalogs, their items
+// and their stock, over the same server.
+- (IBAction)showStock:(nullable id)sender;
 @end
 
 NS_ASSUME_NONNULL_END

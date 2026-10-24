@@ -137,6 +137,12 @@
                                     <action selector="performMiniaturize:" target="-1" id="minimizeAction"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="windowSeparator1"/>
+                            <menuItem title="Stock" keyEquivalent="2" id="stockItem">
+                                <connections>
+                                    <action selector="showStock:" target="appController" id="stockItemAction"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>

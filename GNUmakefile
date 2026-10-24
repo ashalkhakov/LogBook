@@ -49,7 +49,7 @@ Logbook_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared -IAppKit -IUDCalendar 
 Logbook_LIB_DIRS = -L$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)
 Logbook_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
 Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit
-Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib AppKit/Preferences.xib AppKit/Lists.xib \
+Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib AppKit/Preferences.xib AppKit/Lists.xib AppKit/StockWindow.xib \
 	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl)
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 

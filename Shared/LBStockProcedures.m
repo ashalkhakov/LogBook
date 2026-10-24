@@ -116,6 +116,20 @@ static int32_t LBNextOf(NSSet *documents) {
 
 @implementation Catalog (LBStock)
 
++ (Catalog *)lb_newCatalogNamed:(NSString *)name owner:(User *)owner inContext:(NSManagedObjectContext *)context {
+    Catalog *catalog = LBNew([Catalog class], context, nil);
+    catalog.catalogName = name;
+    catalog.catalogOwner = owner;
+    catalog.currency = owner.currency;
+    Warehouse *main = LBNew([Warehouse class], context, nil);
+    main.warehouseName = @"Main";
+    main.catalog = catalog;
+    Location *place = LBNew([Location class], context, nil);
+    place.locationName = @"Default";
+    place.warehouse = main;
+    return catalog;
+}
+
 - (SaleOrder *)lb_newSaleOrderTo:(Customer *)customer on:(NSDate *)day {
     SaleOrder *order = LBNew([SaleOrder class], self.managedObjectContext, nil);
     order.runningNumber = LBNextOf(self.saleOrders);
