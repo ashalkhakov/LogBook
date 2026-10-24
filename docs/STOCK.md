@@ -1,0 +1,351 @@
+# Stock: what the app does with it
+
+The model's stock section ([`Model/Logbook.orm`](../Model/Logbook.orm), the
+Stock diagram) says what may be recorded of catalogs, items, kits, orders,
+shipments, receipts, moves and holdings, and what must hold of it. This is
+the design of what the apps do with it: the screens people work in, and the
+procedures that change stock, as [PROCESSES.md](PROCESSES.md) is for
+reminders. It is a design; [Steps](#steps) says in what order it would be
+built, and [Open questions](#open-questions) what is not settled.
+
+The app is a clone of KiWi Stock Control (screenshots in `stock/`), grown
+toward what warehouse systems do, without becoming one: a person with a
+garage of parts, or a small shop, should find it no more work than KiWi.
+
+## What it covers
+
+| Area | What people do | Where |
+|---|---|---|
+| Setup | catalogs, their currency and units; warehouses, locations within them; who works where | [Setup](#setup) |
+| Catalog | items, categories, suppliers, customers, attributes; kits and their recipes | [Items](#items), [Kits](#kits) |
+| Orders | purchase and sale orders, their lines, confirmed, closed or cancelled | [Orders](#orders) |
+| Fulfilment | receiving purchases, shipping sales, in parts, phantom kits expanded | [Receiving](#receiving), [Shipping](#shipping) |
+| Stock | holdings per location; transfers, adjustments, counts; assemblies | [Holdings](#holdings), [Moves](#moves-transfers-and-adjustments), [Counts](#counts), [Assembly](#assembly) |
+| Planning | what is committed, available, coming; what to reorder | [Available](#on-hand-committed-available), [Reorder](#reorder) |
+| Looking back | an item's history, the changelog, statistics | [Overview](#overview-and-history) |
+
+Not in the first version, as agreed: barcodes, PDF and CSV export, alerts
+and passwords. Not yet designed: returns, picking and packing as steps of
+their own, serial and lot numbers, costing beyond the item's unit cost
+([Later](#later)).
+
+## The ideas it rests on
+
+**Every change of stock is a move.** A move is so many of an item, from a
+location, to a location, or both; nothing else changes how many are kept.
+A move says what made it: a receipt, a shipment, an assembly, a count, or
+an adjustment and its reason (the model allows one of these at most; a move
+of none is a transfer). The moves are the ledger; everything else about
+quantities is worked out from them.
+
+**A holding is what the moves leave.** How many of an item are at a
+location is the moves into it less the moves out of it. The model should
+say so: "Holding has Quantity" derived from the moves, and stored
+([Holdings](#holdings)). Then no screen sets a quantity by hand, a holding
+can never disagree with its history, and since a quantity is never below
+zero, a move out of more than is there is refused, as the rule it breaks
+says.
+
+**What is worked out is the model's, not the app's.** A line's shipped and
+outstanding quantities, an order partly or fully shipped, what a kit can
+make, what is committed and available: derived fact types, stored, kept up
+to date at every save on the server and on the phone alike
+(ORMKit's `docs/DERIVATION.md`). The apps show them;
+they never compute them.
+
+**What happens is procedure.** Confirming an order, expanding a phantom
+kit, receiving, shipping, counting, assembling: each is a procedure in
+`Shared/LBProcedures.h` (or a new `LBStockProcedures.h`) on the generated
+classes, run by the server as an OData action and by the iOS app in its
+own store, as reminders' are. What a procedure makes is named by what it is
+made of, so two devices that do the same make the same objects
+([Names](#names)).
+
+**A screen is a form.** Each screen is anchored on one object (an item, an
+order, a shipment) and shows some of its facts, as
+ORMKit's `docs/FORMS.md` has it. Built by hand for now,
+each is written down here as the facts it shows and the procedures it
+calls, so it can be generated once forms are.
+
+## Setup
+
+**Catalog** (KiWi's group): its name, its currency, its weight and size
+units; the categories (a tree), the suppliers, the customers, the item
+attributes it uses. A user owns their catalogs; KiWi's "Reset quantities to
+zero" becomes a count of everything to zero ([Counts](#counts)), not a
+setting.
+
+**Warehouses and locations.** A catalog has warehouses; a warehouse has
+locations, nested (a room, its shelves, a shelf's bins). Each warehouse
+says when it was last counted and when it is next to be. A new catalog gets
+one warehouse with one location ("Main", "Default"), so a person with one
+shelf never sees either until they want a second.
+
+**Who works where.** A warehouse's staff: a user and their role, keeper or
+manager. The catalog's owner may do anything; a manager what keepers may,
+and orders, counts and the warehouse's locations; a keeper receives, ships,
+moves, counts and assembles at their warehouses. Nobody else sees the
+catalog. ([Who may](#who-may) has the table.)
+
+## Items
+
+**The item list** (KiWi's Items): each item's name, its category path, how
+many are kept in all, and a mark when it is below its reorder point;
+searched by name, tag, description; filtered by category, supplier,
+warehouse; the catalog chosen above it.
+
+**The item** (KiWi's item card), its sections:
+- what it is: name, category, description, tag, photos, note, supplier,
+  count unit, the catalog's attributes it has;
+- money: its price and unit cost, in the catalog's currency;
+- quantities: on hand, committed, available, incoming
+  ([below](#on-hand-committed-available)), and each location's holding;
+  each holding opens its moves;
+- weight and size: as KiWi has them, and the totals for what is kept;
+- dates: created, purchased, expires;
+- reordering: each warehouse's reorder point and level;
+- a kit's recipe and what it can make ([Kits](#kits));
+- history: its moves, newest first, each with what made it and by whom;
+  its open order lines.
+
+Deleting an item that has moves or order lines is refused (the model's
+rules); one with neither is deleted with its holdings at zero.
+
+## Kits
+
+An item becomes a kit when it is given a recipe: lines of so many of other
+items, for a batch of it, and the batch's yield. Its card then shows the
+recipe and how many it can make, from its components as kept. It is
+assembled (made ahead and kept) or a phantom (never kept: sold as its
+components), chosen once; a phantom's holdings, moves and assemblies are
+refused by the model.
+
+The recipe is edited on the item; a component that would make the kit
+contain itself is refused (the model's ring rule).
+
+## On hand, committed, available
+
+What warehouse systems show of an item, and what the model should derive
+(stored, per item; per warehouse where it says so):
+
+| Quantity | Is | In the model |
+|---|---|---|
+| on hand | what the holdings keep | `StockItem totals Quantity` (there) |
+| committed | what confirmed sale orders still want of it: their lines' outstanding | to add |
+| available | on hand less committed | to add |
+| incoming | what confirmed purchase orders still bring: their lines' outstanding | to add |
+| can make | a kit's, from its components on hand | `StockItem can make Quantity` (there) |
+
+A phantom kit's available is what it can make from its components'
+available; its committed is its components' lines'.
+
+## Orders
+
+**The order lists:** purchases and sales apart, each order's number,
+supplier or customer, date placed, state, how far filled (nothing yet,
+partly, fully), its total; the open first.
+
+**An order:** its supplier or customer, number, date, note; its lines, each
+an item, a quantity, a price (sales) or unit cost (purchases), and for an
+open order what is received or shipped and what is outstanding; its
+receipts or shipments. A sale line of a phantom kit shows its component
+lines under it, unpriced.
+
+**Its states,** as the model has them: a draft, confirmed, closed, or
+cancelled. The procedures:
+
+| Action | Does | From |
+|---|---|---|
+| `Confirm` | a draft confirmed: its phantom kits' lines expanded ([below](#expand)); what it wants now committed | draft |
+| `Close` | done with, whatever is outstanding: no longer committed or incoming | confirmed |
+| `Cancel` | never to be filled: refused once something is received or shipped | draft, confirmed |
+| `Reopen` | a closed one confirmed again | closed |
+
+A draft's lines are changed freely; a confirmed order's too, but a line
+cannot go below what is already received or shipped.
+
+### Expand
+
+When a sale order is confirmed, or a phantom kit's line is added to a
+confirmed one, its line is given a line for each component: so many as its
+kits take in whole batches (⌈kits ÷ yield⌉ × so many per batch, as the
+model's rule says), named by the kit line and the component. Changing the
+kit line's quantity changes them; deleting it deletes them. What a kit line
+has shipped is contracted back from them by the model, whole batches of the
+least shipped.
+
+## Receiving
+
+A **receipt** is what came in of a purchase order at once: a day, a
+location, and for each line received, how many. The receive screen opens
+from the order with each outstanding line's quantity offered, to be
+lowered for what did not come; `Receive` makes the receipt and a move into
+the location for each line, in one save. A receipt received in part leaves
+the rest outstanding; the order is partly received until none is.
+
+## Shipping
+
+A **shipment** is what went out of a sale order at once: a day, a
+location, and for each line shipped, how many. The ship screen opens from
+the order with each outstanding line's quantity offered (a phantom kit's
+as its components' lines), lowered to what is available at the location;
+`Ship` makes the shipment and a move out of the location for each line.
+Shipping more than is there is refused by the holding's quantity; more
+than a line is for is warned of (the model's deontic rule). The order is
+partly shipped until nothing is outstanding.
+
+Picking and packing are not steps of their own in the first version
+([Later](#later)).
+
+## Holdings
+
+A holding is an item at a location and how many are there. Its quantity,
+derived from the moves, changes only as they do; a holding is made by the
+first move into its location and kept at zero after the last out, so its
+history stays reachable. The item card and the location's screen list
+holdings; neither edits a quantity.
+
+## Moves: transfers and adjustments
+
+**A transfer** moves so many of an item from one location to another (a
+shelf to another, a warehouse to another): `Transfer`, one move with both.
+
+**An adjustment** adds or takes away outside any order, with a reason:
+opening (the stock an item starts with), found, damaged, lost, expired,
+other. `Adjust` makes one move, to or from the location.
+
+**The changelog** (KiWi's): every move, newest first: when, the item, the
+location's quantity before and after, what made it, by whom; filtered by
+item, location, reason, what made it, a span of days.
+
+## Counts
+
+A **count** is a stock take: at a warehouse or one of its locations, on a
+day, by a user, how many of each item were found. `Count` compares each
+with its holding and makes an adjustment of the difference (reason
+"Count"), and sets the warehouse's last counted day when the whole
+warehouse was counted. A count of a location lists its holdings with their
+quantities hidden or shown, as the counter chooses; an item found that
+was not expected is added.
+
+Counts should be objects of their own in the model, as shipments are:
+`StockCount` (of a location, on a day, by a user), each move of it part of
+it ([Changes to the model](#changes-to-the-model)).
+
+## Assembly
+
+`Assemble` makes so many batches of an assembled kit at a location: a move
+out of each component, so many per batch, and a move in of the kit, its
+yield per batch; refused where a component is short. `Disassemble` the
+other way round. The screen opens from the kit's card, with what it can
+make offered.
+
+## Reorder
+
+Each item may have, per warehouse, a reorder point and a level. When what
+is available and incoming there falls below the point, the item is due: the
+overview lists those due, and `Reorder` makes draft purchase orders, one
+per supplier, of a line each for the level less what is available and
+incoming. Nothing is ordered until a person confirms the drafts. ("Due" is
+a derived fact type: [Changes](#changes-to-the-model).)
+
+## Overview and history
+
+**Overview** (KiWi's): the catalog's statistics (items, total quantity,
+total value at price and at cost, total weight and volume, categories,
+locations, suppliers), the items due for reorder, the open orders, the
+next counts due.
+
+**An item's history**, a location's, an order's: their moves, as the
+changelog shows them.
+
+## Who may
+
+| | Owner | Manager | Keeper |
+|---|---|---|---|
+| catalog, items, kits, categories, suppliers, customers | yes | | |
+| warehouses, locations, staff | yes | locations of theirs | |
+| orders: make, confirm, close, cancel | yes | yes | |
+| receive, ship, transfer, adjust, count, assemble | yes | at theirs | at theirs |
+| see the catalog | yes | yes | yes |
+
+The server checks each request against it (`Server/LBPermissions.h`); the
+model's rules check what each leaves.
+
+## Names
+
+What a procedure makes is named, as reminders' are (a name-based UUID in
+Logbook's namespace):
+
+| What is made | Its name |
+|---|---|
+| a phantom kit line's component line | `<kit line id> component <item id>` |
+| a receipt, a shipment | `<order id> receipt <n>`, `<order id> shipment <n>` (n counted up) |
+| a receipt's or shipment's move | `<receipt or shipment id> for <line id>` |
+| an assembly's moves | `<assembly id> uses <item id>`, `<assembly id> makes` |
+| a count's adjustment | `<count id> for <item id> at <location id>` |
+| a holding | `<item id> at <location id>` |
+| a reorder's draft order, its lines | `reorder <rule date> from <supplier id>`, `<order id> for <item id>` |
+
+A holding named by its item and location is one holding however many
+devices make it.
+
+## Platforms
+
+- **The server** runs every procedure as an action bound to what it acts
+  on: `Confirm`, `Close`, `Cancel`, `Reopen` on an order; `Receive` and
+  `Ship` on an order (parameters: the location, the day, the lines and
+  quantities); `Transfer`, `Adjust` on an item; `Count` on a location;
+  `Assemble`, `Disassemble` on a kit; `Reorder` on a warehouse.
+- **The desktop app** has a Stock window: a sidebar (Items, Purchases,
+  Sales, Changelog, Counts, Overview, Setup), a list, and the selected
+  one's form beside it; it calls the actions, as its Reminders tab does.
+- **The iOS app** has KiWi's tabs (Items, Orders, Overview, Settings), runs
+  the procedures in its own store, and syncs.
+
+## Changes to the model
+
+What the design above needs that the model does not say yet:
+1. **A holding's quantity derived from the moves,** stored: its moves to
+   its location less those from it, of its item.
+2. **Committed, available, incoming,** per item (and per warehouse for
+   reordering), derived and stored.
+3. **A count:** `StockCount` of a location, on a day, by a user, a move
+   part of at most one, those moves adjustments of reason "Count".
+4. **Due for reorder:** `ReorderRule is due`, derived (available and
+   incoming below its point).
+5. **Order numbers:** each order's number unique in its catalog, given by
+   the app (next after the highest) where a person gives none.
+
+## Steps
+
+1. The model's changes above, and `lb-stock-check` for each.
+2. The procedures, in `LBStockProcedures`, checked by `lb-stock-check`:
+   holdings by moves first, then transfer and adjust, receive and ship,
+   confirm and expand, count, assemble, reorder.
+3. The server's actions and permissions.
+4. The desktop Stock window: items and the item card, then orders,
+   receiving and shipping, then the changelog, counts, overview, setup.
+5. The iOS tabs.
+
+## Later
+
+- **Returns:** a customer's goods back against the sale line they went out
+  on (a receipt of a sale), and goods back to a supplier.
+- **Picking and packing:** a shipment picked to a staging location, packed,
+  then shipped, each a step with its moves; carriers and tracking.
+- **Lots, serials, expiry per lot.**
+- **Costing:** average or last cost per item, the stock's value at it.
+- **Fulfilment orders,** Shopify's: what of an order ships from which
+  warehouse, when one order ships from several.
+
+## Open questions
+
+1. A holding's quantity derived from moves (recommended), or set by the
+   procedures that make moves?
+2. Counts as `StockCount` objects (recommended), or adjustments alone?
+3. Committed and available per warehouse as well as per item, or per item
+   only for now?
+4. Order numbers given by the app, or always by the person?
+5. The desktop app's stock in a window of its own (recommended), or tabs in
+   the main window beside Records and Reminders?

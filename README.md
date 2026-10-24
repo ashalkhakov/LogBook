@@ -52,6 +52,14 @@ make the same objects.
 - The iOS app runs the same procedures in its own store as it saves,
   offline or not, and syncs what they made ([iOS](#the-ios-app)).
 
+## Stock
+
+A clone of KiWi Stock Control in the same model: catalogs, items and kits,
+purchase and sale orders received and shipped in parts, holdings kept by
+moves, counts and adjustments. What the apps do with it, its screens and
+procedures, is designed in [docs/STOCK.md](docs/STOCK.md); the model's
+derivations and rules are checked by `lb-stock-check`.
+
 ## The iOS app
 
 `iOS/`: a driver's logbook in the pocket, for the drivers and the owner;
