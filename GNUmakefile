@@ -53,7 +53,7 @@ Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/Connec
 	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl)
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 
-TOOL_NAME = logbook-server lb-procedures-check lb-sync-check
+TOOL_NAME = logbook-server lb-procedures-check lb-stock-check lb-sync-check
 logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Shared/LBProcedures.m \
 	$(LB_MODEL)/Constraints/LogbookValidation.m
 logbook-server_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
@@ -73,6 +73,15 @@ lb-procedures-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
 lb-procedures-check_LIB_DIRS = $(logbook-server_LIB_DIRS)
 lb-procedures-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
 lb-procedures-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
+
+# The stock model's derivations and rules checked over a store of its own.
+lb-stock-check_OBJC_FILES = Tests/LBStockCheck.m $(LB_MODEL)/Constraints/LogbookValidation.m
+lb-stock-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
+lb-stock-check_COREDATA_CODEGEN = yes
+lb-stock-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
+lb-stock-check_LIB_DIRS = $(logbook-server_LIB_DIRS)
+lb-stock-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
+lb-stock-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 
 # The offline store (the iOS app's) against a server: two devices.
 lb-sync-check_OBJC_FILES = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m \
@@ -134,6 +143,7 @@ LB_RUN = LD_LIBRARY_PATH="$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)$${LD_LIBRARY_P
 
 check:: all
 	$(LB_RUN) obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
+	$(LB_RUN) obj/lb-stock-check obj/Logbook.momd obj/Logbook.ormplans
 	$(LB_RUN) python3 Tests/serve-and-check.py obj/logbook-server
 	$(LB_RUN) Tests/sync-check.sh obj/logbook-server obj/lb-sync-check obj/Logbook.momd obj/Logbook.ormplans
 ifneq ($(LB_SERVER_ONLY),yes)

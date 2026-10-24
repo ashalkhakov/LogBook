@@ -66,7 +66,7 @@ LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(
 
 .PHONY: all check clean runtime ios ios-check ios-install ios-installcheck ios-runtime
 APP = $(BUILD)/Logbook.app
-all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-sync-check
+all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-stock-check $(BUILD)/lb-sync-check
 
 # ORMKit's runtime, and its ormtool, which generates from the model.
 runtime $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(ORMTOOL):
@@ -121,6 +121,10 @@ $(BUILD)/lb-procedures-check: $(MODEL)/.made Tests/LBProceduresCheck.m $(PROCEDU
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) Tests/LBProceduresCheck.m $(PROCEDURES) $(GENERATED)/*.m $(LIBS) -o $@
 
+# The stock model's derivations and rules checked over a store of its own.
+$(BUILD)/lb-stock-check: $(MODEL)/.made Tests/LBStockCheck.m $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	$(CC) $(FLAGS) $(INC) Tests/LBStockCheck.m $(MODEL)/Constraints/LogbookValidation.m $(GENERATED)/*.m $(LIBS) -o $@
+
 # The offline store (the iOS app's) checked against a server: two devices.
 SYNC_CHECK = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m Shared/LBDisplay.m \
 	Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
@@ -146,6 +150,7 @@ $(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalenda
 
 check: all
 	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
+	$(BUILD)/lb-stock-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
 	Tests/sync-check.sh $(BUILD)/logbook-server $(BUILD)/lb-sync-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	Tests/app-check.sh $(BUILD)/logbook-server $(APP)/Contents/MacOS/Logbook
