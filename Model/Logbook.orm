@@ -16373,6 +16373,12 @@ most.</orm:Text>
 					</orm:RoleSequence>
 				</orm:RoleSequences>
 			</orm:SubsetConstraint>
+			<orm:RingConstraint id="_95A4F875-4420-4E1A-8EAC-B9EF10633F7E" Name="RingConstraint4" Type="Acyclic">
+				<orm:RoleSequence>
+					<orm:Role id="_40F9044D-64CD-4580-A41D-38A500822D97" ref="_977B15B4-E14D-445E-A524-6996DF708D82" />
+					<orm:Role id="_349B0DD9-ED5A-4CFC-9394-28BFA7F75F26" ref="_44C02B42-0D49-44AD-A37A-CBEAE1ECA364" />
+				</orm:RoleSequence>
+			</orm:RingConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:UnspecifiedDataType id="_75EA85C2-1A83-415B-A49C-FCBB218BCD3B" />
@@ -19844,6 +19850,9 @@ most.</orm:Text>
 			<ormDiagram:ExternalConstraintShape id="_4BCBA83D-B233-4136-8C16-52889D3AF0FD" IsExpanded="true" AbsoluteBounds="12.652777777777779, 10.11111111111111, 0.16, 0.16">
 				<ormDiagram:Subject ref="_6933DBED-E6D3-42C9-BF92-DECE3A1FBC7C" />
 			</ormDiagram:ExternalConstraintShape>
+			<ormDiagram:RingConstraintShape id="_E8100F07-AE04-4732-9601-56FE4B931FC7" IsExpanded="true" AbsoluteBounds="10.61111111111111, 19.63888888888889, 0.213333333, 0.213333333">
+				<ormDiagram:Subject ref="_95A4F875-4420-4E1A-8EAC-B9EF10633F7E" />
+			</ormDiagram:RingConstraintShape>
 		</ormDiagram:Shapes>
 		<ormDiagram:Subject ref="_2C7E073F-10CB-4429-9D8F-D072A08D2C9F" />
 	</ormDiagram:ORMDiagram>
