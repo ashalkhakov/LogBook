@@ -339,9 +339,10 @@ Made (`lb-stock-check` checks each), as the design above needs them:
 ## Steps
 
 1. Done: the model's changes above, and `lb-stock-check` for each.
-2. The procedures, in `LBStockProcedures`, checked by `lb-stock-check`:
-   holdings by moves first, then transfer and adjust, receive and ship,
-   confirm and expand, count, assemble, reorder.
+2. Done: the procedures, in `Shared/LBStockProcedures.h`, checked by
+   `lb-stock-check`: holdings made by moves, transfer and adjust, assemble
+   and take apart, orders numbered, confirmed (expanded), closed,
+   cancelled and reopened, receive and ship, count, reorder.
 3. The server's actions and permissions.
 4. The desktop Stock window: items and the item card, then orders,
    receiving and shipping, then the changelog, counts, overview, setup.

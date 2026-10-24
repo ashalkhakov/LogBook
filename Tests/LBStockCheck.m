@@ -15,11 +15,16 @@
 //   (contracted), what is outstanding, and the order partly, then fully,
 //   shipped;
 // - committed, incoming, available and short, and a reorder rule due;
-// - a count's adjustments, and adjustments of reason Count only in one.
+// - a count's adjustments, and adjustments of reason Count only in one;
+// - the procedures (Shared/LBStockProcedures.h): adjust, transfer, assemble
+//   and take apart; orders numbered, confirmed (phantom kits expanded),
+//   shipped and received in parts, closed, cancelled; counts; reordering;
+//   each refusal; what they make named by what it is made of.
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 #import "LogbookValidation.h"
+#import "LBStockProcedures.h"
 #import "User+CoreDataClass.h"
 #import "Catalog+CoreDataClass.h"
 #import "Customer+CoreDataClass.h"
@@ -411,6 +416,281 @@ static void LBKits(void) {
     printf("     (%s)\n", why.UTF8String);
 }
 
+#pragma mark The procedures
+
+/* Refused, and why said; nothing changed. */
+static void LBRefused(NSString *what, BOOL done, NSError *error, NSManagedObjectContext *context) {
+    LBCheck(what, !done && error.code == LBProceduresErrorRefused, error);
+    if (!done) printf("     (%s)\n", error.localizedDescription.UTF8String);
+    LBCheck([what stringByAppendingString:@": nothing changed"], !context.hasChanges || !done, nil);
+}
+
+static NSUUID *LBNamed(NSString *format, ...) NS_FORMAT_FUNCTION(1, 2);
+static NSUUID *LBNamed(NSString *format, ...) {
+    va_list arguments;
+    va_start(arguments, format);
+    NSString *name = [[NSString alloc] initWithFormat:format arguments:arguments];
+    va_end(arguments);
+    return LBNamedUUID(name);
+}
+
+static NSString *LBId(NSManagedObject *object) {
+    return [[[object valueForKey:@"id"] UUIDString] lowercaseString];
+}
+
+static void LBStockProcedures(void) {
+    NSManagedObjectContext *context = LBNewStore();
+    LBStock stock = { context, nil, nil, nil, nil };
+    NSDate *now = [NSDate date];
+    NSError *error = nil;
+    NSString *why = nil;
+    User *anna = LBInsert([User class], context);
+    anna.email = @"anna@example.org";
+    stock.anna = anna;
+    Catalog *catalog = LBInsert([Catalog class], context);
+    catalog.catalogName = @"Workshop";
+    catalog.catalogOwner = anna;
+    catalog.documentPrefix = @"GAR";
+    catalog.currency = @"USD";
+    stock.catalog = catalog;
+    Warehouse *garage = LBInsert([Warehouse class], context);
+    garage.warehouseName = @"Garage";
+    garage.catalog = catalog;
+    stock.warehouse = garage;
+    Location *a = LBInsert([Location class], context);
+    a.locationName = @"Shelf A";
+    a.warehouse = garage;
+    stock.shelf = a;
+    Location *b = LBInsert([Location class], context);
+    b.locationName = @"Shelf B";
+    b.warehouse = garage;
+    Contact *parts = LBInsert([Contact class], context);
+    parts.contactName = @"Parts Ltd";
+    parts.catalog = catalog;
+    Supplier *supplier = LBInsert([Supplier class], context);
+    supplier.contact = parts;
+    supplier.catalog = catalog;
+    Contact *bobs = LBInsert([Contact class], context);
+    bobs.contactName = @"Bob's Garage";
+    bobs.catalog = catalog;
+    Address *yard = LBInsert([Address class], context);
+    yard.contact = bobs;
+    yard.addressLines = @"1 Yard Lane";
+    bobs.shippingAddress = yard;
+    Customer *bob = LBInsert([Customer class], context);
+    bob.contact = bobs;
+    bob.catalog = catalog;
+    StockItem *bolt = LBItem(&stock, @"Bolt");
+    bolt.supplier = supplier;
+    bolt.unitCostAmount = LBN(@"0.25");
+    bolt.unitCostCurrency = @"USD";
+    StockItem *bracket = LBItem(&stock, @"Bracket");
+    StockItem *mount = LBItem(&stock, @"Mount");
+    LBTakes(&stock, mount, @"4", bolt);
+    LBTakes(&stock, mount, @"1", bracket);
+    StockItem *bundle = LBItem(&stock, @"Bundle");
+    LBTakes(&stock, bundle, @"2", bolt);
+    LBTakes(&stock, bundle, @"1", bracket);
+    bundle.isAPhantomKit = YES;
+    LBCheck(@"procedures: the catalog saved", LBSave(context, &why), why);
+
+    /* Adjustments: stock comes in, named holdings made. */
+    LBCheck(@"20 bolts in: an opening adjustment",
+            [bolt lb_adjust:LBN(@"20") at:a reason:@"Opening" note:nil by:anna at:now error:&error] != nil, error);
+    LBCheck(@"5 brackets in", [bracket lb_adjust:LBN(@"5") at:a reason:@"Opening" note:nil by:anna at:now error:&error] != nil, error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    Holding *bolts = [a lb_holdingOf:bolt];
+    LBCheck(@"the bolts' holding: 20, named by item and shelf",
+            LBSame(bolts.quantity, @"20") && [bolts.id isEqual:LBNamed(@"%@ at %@", LBId(bolt), LBId(a))], bolts.quantity);
+    error = nil;
+    LBRefused(@"an adjustment of none is refused",
+              [bolt lb_adjust:LBN(@"0") at:a reason:@"Found" note:nil by:anna at:now error:&error] != nil, error, context);
+    error = nil;
+    LBRefused(@"21 bolts lost of 20 is refused",
+              [bolt lb_adjust:LBN(@"-21") at:a reason:@"Lost" note:nil by:anna at:now error:&error] != nil, error, context);
+    error = nil;
+    LBRefused(@"an adjustment for Count is refused: counts count",
+              [bolt lb_adjust:LBN(@"1") at:a reason:@"Count" note:nil by:anna at:now error:&error] != nil, error, context);
+    error = nil;
+    LBRefused(@"a phantom adjusted is refused",
+              [bundle lb_adjust:LBN(@"1") at:a reason:@"Found" note:nil by:anna at:now error:&error] != nil, error, context);
+
+    /* Transfers. */
+    LBCheck(@"5 bolts from shelf A to B", [bolt lb_transfer:LBN(@"5") from:a to:b by:anna at:now error:&error] != nil, error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    LBCheck(@"15 on A, 5 on B", LBSame([a lb_holdingOf:bolt].quantity, @"15") && LBSame([b lb_holdingOf:bolt].quantity, @"5"),
+            @[ [a lb_holdingOf:bolt].quantity ?: @"none", [b lb_holdingOf:bolt].quantity ?: @"none" ]);
+    error = nil;
+    LBRefused(@"a transfer to where it is is refused", [bolt lb_transfer:LBN(@"1") from:a to:a by:anna at:now error:&error] != nil,
+              error, context);
+    error = nil;
+    LBRefused(@"6 bolts from B, of 5, is refused", [bolt lb_transfer:LBN(@"6") from:b to:a by:anna at:now error:&error] != nil, error,
+              context);
+
+    /* Assembly: 2 mounts take 8 bolts and 2 brackets; one taken apart. */
+    Assembly *made = [mount lb_assemble:LBN(@"2") at:a on:now disassemble:NO by:anna at:now error:&error];
+    LBCheck(@"2 mounts assembled on A", made != nil, error);
+    LBCheck(@"saved, the recipe kept", LBSave(context, &why), why);
+    LBCheck(@"A: 7 bolts, 3 brackets, 2 mounts",
+            LBSame([a lb_holdingOf:bolt].quantity, @"7") && LBSame([a lb_holdingOf:bracket].quantity, @"3")
+                && LBSame([a lb_holdingOf:mount].quantity, @"2"),
+            @[ [a lb_holdingOf:bolt].quantity, [a lb_holdingOf:bracket].quantity, [a lb_holdingOf:mount].quantity ]);
+    LBCheck(@"its moves named: it uses bolts, it makes mounts",
+            [[made.moves valueForKey:@"id"] containsObject:LBNamed(@"%@ uses %@", LBId(made), LBId(bolt))]
+                && [[made.moves valueForKey:@"id"] containsObject:LBNamed(@"%@ makes", LBId(made))],
+            nil);
+    error = nil;
+    LBRefused(@"2 more mounts, of 7 bolts on A, is refused",
+              [mount lb_assemble:LBN(@"2") at:a on:now disassemble:NO by:anna at:now error:&error] != nil, error, context);
+    error = nil;
+    LBRefused(@"a bolt assembled is refused: no kit",
+              [bolt lb_assemble:LBN(@"1") at:a on:now disassemble:NO by:anna at:now error:&error] != nil, error, context);
+    error = nil;
+    LBRefused(@"a phantom assembled is refused",
+              [bundle lb_assemble:LBN(@"1") at:a on:now disassemble:NO by:anna at:now error:&error] != nil, error, context);
+    LBCheck(@"one mount taken apart", [mount lb_assemble:LBN(@"1") at:a on:now disassemble:YES by:anna at:now error:&error] != nil,
+            error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    LBCheck(@"A: 11 bolts, 4 brackets, 1 mount",
+            LBSame([a lb_holdingOf:bolt].quantity, @"11") && LBSame([a lb_holdingOf:bracket].quantity, @"4")
+                && LBSame([a lb_holdingOf:mount].quantity, @"1"),
+            nil);
+
+    /* A sale: numbered, to the customer's address; 3 bundles and a bracket. */
+    SaleOrder *order = [catalog lb_newSaleOrderTo:bob on:now];
+    LBCheck(@"the first sale is SO-GAR-0001, shipped to Bob's yard",
+            [order.lb_number isEqualToString:@"SO-GAR-0001"] && order.shipTo == yard, order.lb_number);
+    SaleLine *kits = LBInsert([SaleLine class], context);
+    kits.saleOrder = order;
+    kits.stockItem = bundle;
+    kits.quantity = LBN(@"3");
+    kits.linePriceAmount = LBN(@"12");
+    kits.linePriceCurrency = @"USD";
+    SaleLine *single = LBInsert([SaleLine class], context);
+    single.saleOrder = order;
+    single.stockItem = bracket;
+    single.quantity = LBN(@"1");
+    single.linePriceAmount = LBN(@"3");
+    single.linePriceCurrency = @"USD";
+    LBCheck(@"confirmed", [order lb_confirm:&error], error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    SaleLine *kitBolts = nil, *kitBrackets = nil;
+    for (SaleLine *line in kits.saleLinesAsExpandedFrom) {
+        if (line.stockItem == bolt) kitBolts = line;
+        if (line.stockItem == bracket) kitBrackets = line;
+    }
+    LBCheck(@"the bundles expanded: 6 bolts, 3 brackets, named by the kit line and component",
+            LBSame(kitBolts.quantity, @"6") && LBSame(kitBrackets.quantity, @"3")
+                && [kitBolts.id isEqual:LBNamed(@"%@ component %@", LBId(kits), LBId(bolt))],
+            @[ kitBolts.quantity ?: @"none", kitBrackets.quantity ?: @"none" ]);
+    LBCheck(@"a second sale is SO-GAR-0002", [[catalog lb_newSaleOrderTo:bob on:now].lb_number isEqualToString:@"SO-GAR-0002"], nil);
+    [context rollback];
+    error = nil;
+    LBRefused(@"confirmed again is refused", [order lb_confirm:&error], error, context);
+    kits.quantity = LBN(@"2");
+    LBCheck(@"the bundles down to 2: expanded again", [order lb_expandKits:&error], error);
+    LBCheck(@"4 bolts, 2 brackets, the same lines",
+            LBSame(kitBolts.quantity, @"4") && LBSame(kitBrackets.quantity, @"2") && kits.saleLinesAsExpandedFrom.count == 2, nil);
+    LBCheck(@"saved", LBSave(context, &why), why);
+
+    /* Shipping: refused for the kit's own line, and more than is there. */
+    error = nil;
+    LBRefused(@"the bundle line shipped is refused: ship its components",
+              [order lb_shipLines:@{ kits.id: LBN(@"1") } from:a on:now by:anna at:now error:&error] != nil, error, context);
+    error = nil;
+    LBRefused(@"4 bolts and 2 brackets from B, which has no brackets, is refused",
+              [order lb_shipLines:@{ kitBolts.id: LBN(@"4"), kitBrackets.id: LBN(@"2") } from:b on:now by:anna at:now error:&error] != nil,
+              error, context);
+    Shipment *first = [order lb_shipLines:@{ kitBolts.id: LBN(@"4"), kitBrackets.id: LBN(@"1"), single.id: LBN(@"1") } from:a on:now
+                                       by:anna at:now error:&error];
+    LBCheck(@"4 bolts, a bracket for the bundles, the single bracket: shipped from A", first != nil, error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    LBCheck(@"shipment 1 of the order, named so, to Bob's yard",
+            first.runningNumber == 1 && [first.id isEqual:LBNamed(@"%@ shipment 1", LBId(order))] && first.shippedTo == yard, nil);
+    LBCheck(@"1 bundle shipped, contracted; the order partly shipped",
+            LBSame(kits.kitsShipped, @"1") && order.isPartlyShipped, kits.kitsShipped);
+    error = nil;
+    LBRefused(@"cancelled, once shipped, is refused", [order lb_cancel:&error], error, context);
+    Shipment *second = [order lb_shipLines:@{ kitBrackets.id: LBN(@"1") } from:a on:now by:anna at:now error:&error];
+    LBCheck(@"the last bracket shipped: shipment 2", second.runningNumber == 2, error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    LBCheck(@"2 bundles shipped; the order fully shipped", LBSame(kits.kitsShipped, @"2") && order.isFullyShipped, kits.kitsShipped);
+    LBCheck(@"closed", [order lb_close:&error], error);
+    LBCheck(@"reopened", [order lb_reopen:&error], error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+
+    /* A purchase: received in two parts. */
+    PurchaseOrder *purchase = [catalog lb_newPurchaseOrderFrom:supplier on:now];
+    PurchaseLine *line = LBInsert([PurchaseLine class], context);
+    line.purchaseOrder = purchase;
+    line.stockItem = bracket;
+    line.quantity = LBN(@"10");
+    line.lineUnitCostAmount = LBN(@"1");
+    line.lineUnitCostCurrency = @"USD";
+    LBCheck(@"the first purchase is PO-GAR-0001", [purchase.lb_number isEqualToString:@"PO-GAR-0001"], purchase.lb_number);
+    error = nil;
+    LBCheck(@"a draft received is refused", ![purchase lb_receiveLines:@{ line.id: LBN(@"1") } at:a on:now by:anna at:now error:&error]
+                                                && error.code == LBProceduresErrorRefused,
+            error);
+    LBCheck(@"confirmed", [purchase lb_confirm:&error], error);
+    Receipt *part = [purchase lb_receiveLines:@{ line.id: LBN(@"6") } at:b on:now by:anna at:now error:&error];
+    LBCheck(@"6 brackets received at B", part != nil, error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    LBCheck(@"4 outstanding, partly received", LBSame(line.outstandingQuantity, @"4") && purchase.isPartlyReceived,
+            line.outstandingQuantity);
+    LBCheck(@"the rest received: receipt 2",
+            [purchase lb_receiveLines:@{ line.id: LBN(@"4") } at:b on:now by:anna at:now error:&error].runningNumber == 2, error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    LBCheck(@"fully received; B holds 10 brackets", purchase.isFullyReceived && LBSame([b lb_holdingOf:bracket].quantity, @"10"), nil);
+
+    /* A count of shelf A: 10 bolts found of 7, no brackets (2 held). */
+    NSDecimalNumber *boltsOnA = [a lb_heldOf:bolt];
+    StockCount *count = [garage lb_countLocation:a found:@[ [LBCounted countedItem:bolt at:a quantity:LBN(@"10")] ] on:now by:anna
+                                              at:now error:&error];
+    LBCheck(@"shelf A counted", count != nil, error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    LBCheck(@"A holds 10 bolts; its brackets and mount, held and not found, none: three adjustments for Count",
+            LBSame([a lb_holdingOf:bolt].quantity, @"10") && LBSame([a lb_holdingOf:bracket].quantity, @"0")
+                && LBSame([a lb_holdingOf:mount].quantity, @"0") && count.moves.count == 3,
+            @[ boltsOnA, [a lb_holdingOf:bolt].quantity, [a lb_holdingOf:bracket].quantity, @(count.moves.count) ]);
+    LBCheck(@"a location counted: the warehouse's last count not set", garage.lastInventory == nil, garage.lastInventory);
+    LBCheck(@"the whole garage counted, as it is", [garage lb_countLocation:nil found:@[] on:now by:anna at:now error:&error] != nil,
+            error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    LBCheck(@"the garage counted today, nothing found: everything out", garage.lastInventory != nil
+                                                                             && LBSame([b lb_holdingOf:bracket].quantity, @"0"),
+            nil);
+    error = nil;
+    Warehouse *other = LBInsert([Warehouse class], context);
+    other.warehouseName = @"Shop";
+    other.catalog = catalog;
+    LBRefused(@"a count of the shop at shelf A is refused",
+              [other lb_countLocation:a found:@[] on:now by:anna at:now error:&error] != nil, error, context);
+    [context rollback];
+
+    /* Reordering: bolts below 100, to 120; brackets due, of no supplier. */
+    ReorderRule *bolting = LBInsert([ReorderRule class], context);
+    bolting.stockItem = bolt;
+    bolting.warehouse = garage;
+    bolting.reorderPoint = LBN(@"100");
+    bolting.reorderLevel = LBN(@"120");
+    ReorderRule *bracketing = LBInsert([ReorderRule class], context);
+    bracketing.stockItem = bracket;
+    bracketing.warehouse = garage;
+    bracketing.reorderPoint = LBN(@"5");
+    LBCheck(@"reorder rules saved, both due", LBSave(context, &why) && bolting.isDue && bracketing.isDue, why);
+    NSArray *skipped = nil;
+    NSArray *drafts = [garage lb_reorderOn:now skipped:&skipped error:&error];
+    PurchaseLine *reorder = [[drafts.firstObject purchaseLines] anyObject];
+    LBCheck(@"one draft, from Parts Ltd: 120 bolts at 0.25", drafts.count == 1 && [drafts.firstObject supplier] == supplier
+                                                                && LBSame(reorder.quantity, @"120")
+                                                                && LBSame(reorder.lineUnitCostAmount, @"0.25"),
+            @[ @(drafts.count), reorder.quantity ?: @"none" ]);
+    LBCheck(@"brackets left: no supplier", [skipped isEqualToArray:@[ bracket ]], skipped);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    LBCheck(@"its draft PO-GAR-0002", [[drafts.firstObject lb_number] isEqualToString:@"PO-GAR-0002"], [drafts.firstObject lb_number]);
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -428,6 +708,7 @@ int main(int argc, const char *argv[]) {
         }
         [ORMTables registerTables:tables named:@"Logbook"];
         LBKits();
+        LBStockProcedures();
         printf("stock: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

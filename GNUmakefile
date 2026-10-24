@@ -75,7 +75,8 @@ lb-procedures-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
 lb-procedures-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 
 # The stock model's derivations and rules checked over a store of its own.
-lb-stock-check_OBJC_FILES = Tests/LBStockCheck.m $(LB_MODEL)/Constraints/LogbookValidation.m
+lb-stock-check_OBJC_FILES = Tests/LBStockCheck.m Shared/LBStockProcedures.m Shared/LBProcedures.m \
+	$(LB_MODEL)/Constraints/LogbookValidation.m
 lb-stock-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 lb-stock-check_COREDATA_CODEGEN = yes
 lb-stock-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)

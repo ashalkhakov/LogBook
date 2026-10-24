@@ -279,6 +279,14 @@
 			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
 			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
 		};
+		83BAF198A28BAB6D44A6A1F0 /* LBStockProcedures.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 9E4DA9E6FA751F2E5CD4DA94 /* LBStockProcedures.m */;
+		};
+		8800FD168A2C69561DAD95C9 /* LBStockProcedures.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 9E4DA9E6FA751F2E5CD4DA94 /* LBStockProcedures.m */;
+		};
 		897B0417CB52F98DE970B1B4 /* LBLocalStore.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */;
@@ -776,6 +784,12 @@
 			path = System/Library/Frameworks/CoreData.framework;
 			sourceTree = SDKROOT;
 		};
+		2B558B9276F354D18EF708FE /* STOCK.md */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = net.daringfireball.markdown;
+			path = docs/STOCK.md;
+			sourceTree = "<group>";
+		};
 		2BF486C62A308B2388CCDA61 /* LBiOSControllers.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -907,6 +921,12 @@
 			path = Logbook.app;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		5B7F51455579DF785326F8BE /* LBStockProcedures.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStockProcedures.h;
+			sourceTree = "<group>";
+		};
 		5CCDB675BB9F8C3A38017A0D /* LBConnectPanel.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1021,6 +1041,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = LBActions.h;
+			sourceTree = "<group>";
+		};
+		9E4DA9E6FA751F2E5CD4DA94 /* LBStockProcedures.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStockProcedures.m;
 			sourceTree = "<group>";
 		};
 		9F9B62C3CEAF21088CC988DF /* main.m */ = {
@@ -1582,6 +1608,8 @@
 				37F5E52039B2A71A1E5ADA60 /* LBReportData.m */,
 				3E7094F8DD90DECD608C53E2 /* LBSignIn.h */,
 				F202254F689402A7F179E854 /* LBSignIn.m */,
+				5B7F51455579DF785326F8BE /* LBStockProcedures.h */,
+				9E4DA9E6FA751F2E5CD4DA94 /* LBStockProcedures.m */,
 				9750D2C25C5635F5B2261855 /* LBStore.h */,
 				FD6623DBF7BF9A8A98787107 /* LBStore.m */,
 				26F487F740C91D09AAF7869C /* LBVehicleSummary.h */,
@@ -1606,6 +1634,7 @@
 				0D9E881A6CBBB60E5366EA0B /* GNUmakefile */,
 				ABC75EAB861F9334630A50A4 /* CSDP.md */,
 				B9015B2FA563A5832304923D /* PROCESSES.md */,
+				2B558B9276F354D18EF708FE /* STOCK.md */,
 			);
 			name = Docs;
 			sourceTree = "<group>";
@@ -1948,6 +1977,7 @@
 				E73043F2D16EEE3508B1033E /* LBPlanned.m */,
 				FFEC986A4E28F6F71BAB1EC2 /* LBProcedures.m */,
 				5713E0AD6431DEC5019FE81E /* LBSignIn.m */,
+				83BAF198A28BAB6D44A6A1F0 /* LBStockProcedures.m */,
 				7BBA7D3B23EBBC1300884F80 /* LBVehicleSummary.m */,
 				2AFDF0CC8E4E5805C4B5CF3E /* LogbookModel.m */,
 			);
@@ -1993,6 +2023,7 @@
 				341E885D3AA2F3A42B7F04CC /* LBProcedures.m */,
 				3B87B042E25C5C6BAF69C6BF /* LBReportData.m */,
 				55D29C133A3C05C2C743A7E5 /* LBSignIn.m */,
+				8800FD168A2C69561DAD95C9 /* LBStockProcedures.m */,
 				12D8AFDE0C7991FFC2934006 /* LBStore.m */,
 				271A1993FD12E92D99FCB018 /* LBVehicleSummary.m */,
 				48FC739A5FC9FF1A95FB5497 /* LogbookModel.m */,

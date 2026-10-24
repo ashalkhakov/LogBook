@@ -122,8 +122,11 @@ $(BUILD)/lb-procedures-check: $(MODEL)/.made Tests/LBProceduresCheck.m $(PROCEDU
 	$(CC) $(FLAGS) $(INC) Tests/LBProceduresCheck.m $(PROCEDURES) $(GENERATED)/*.m $(LIBS) -o $@
 
 # The stock model's derivations and rules checked over a store of its own.
-$(BUILD)/lb-stock-check: $(MODEL)/.made Tests/LBStockCheck.m $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
-	$(CC) $(FLAGS) $(INC) Tests/LBStockCheck.m $(MODEL)/Constraints/LogbookValidation.m $(GENERATED)/*.m $(LIBS) -o $@
+STOCK = Shared/LBStockProcedures.m Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+
+$(BUILD)/lb-stock-check: $(MODEL)/.made Tests/LBStockCheck.m $(STOCK) Shared/LBStockProcedures.h $(GENERATED)/.made \
+		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	$(CC) $(FLAGS) $(INC) Tests/LBStockCheck.m $(STOCK) $(GENERATED)/*.m $(LIBS) -o $@
 
 # The offline store (the iOS app's) checked against a server: two devices.
 SYNC_CHECK = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m Shared/LBDisplay.m \
