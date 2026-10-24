@@ -337,9 +337,10 @@ What the design above needs that the model does not say yet:
 
 ## Extensions
 
-How the design grows toward a warehouse system, each in the model's terms.
-None is in the first version; each is drawn so the first does not have to
-be undone for it.
+How the design grows toward a warehouse system, each in the model's terms,
+each approved. None is in the first version; each is drawn so the first
+does not have to be undone for it. Picking and packing and lots are as
+ShipStream has them; fulfilment orders are Shopify's.
 
 ### Returns
 
@@ -394,8 +395,9 @@ Shipment was shipped on Date.                -- now optional: planned first
   line, its weight and size; a packing slip lists them.
 - **Shipped:** on the day it goes, a move of each line out of the staging
   area, and its tracking numbers.
-- Its state is derived, as an order's is: planned, picked (every line
-  picked), packed (every line packed), shipped (it has its day).
+- Its state is derived and stored, as an order's is, so lists and queries
+  read it: planned, picked (every line picked), packed (every line
+  packed), shipped (it has its day).
 - For a small shop it stays one step: `Ship` picks, packs nothing and ships
   at once, as in the first version.
 
