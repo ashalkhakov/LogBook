@@ -6,7 +6,8 @@ shipments, receipts, moves and holdings, and what must hold of it. This is
 the design of what the apps do with it: the screens people work in, and the
 procedures that change stock, as [PROCESSES.md](PROCESSES.md) is for
 reminders. It is a design; [Steps](#steps) says in what order it would be
-built, and [Open questions](#open-questions) what is not settled.
+built, [Decisions](#decisions) what was settled, and
+[Extensions](#extensions) how it grows toward a warehouse system.
 
 The app is a clone of KiWi Stock Control (screenshots in `stock/`), grown
 toward what warehouse systems do, without becoming one: a person with a
@@ -27,7 +28,7 @@ garage of parts, or a small shop, should find it no more work than KiWi.
 Not in the first version, as agreed: barcodes, PDF and CSV export, alerts
 and passwords. Not yet designed: returns, picking and packing as steps of
 their own, serial and lot numbers, costing beyond the item's unit cost
-([Later](#later)).
+([Extensions](#extensions)).
 
 ## The ideas it rests on
 
@@ -125,8 +126,9 @@ contain itself is refused (the model's ring rule).
 
 ## On hand, committed, available
 
-What warehouse systems show of an item, and what the model should derive
-(stored, per item; per warehouse where it says so):
+What warehouse systems show of an item, and what the model should derive,
+stored, per item (per warehouse is for later: [fulfilment
+orders](#fulfilment-orders) give it):
 
 | Quantity | Is | In the model |
 |---|---|---|
@@ -195,7 +197,7 @@ than a line is for is warned of (the model's deontic rule). The order is
 partly shipped until nothing is outstanding.
 
 Picking and packing are not steps of their own in the first version
-([Later](#later)).
+([Extensions](#extensions)).
 
 ## Holdings
 
@@ -228,9 +230,9 @@ warehouse was counted. A count of a location lists its holdings with their
 quantities hidden or shown, as the counter chooses; an item found that
 was not expected is added.
 
-Counts should be objects of their own in the model, as shipments are:
-`StockCount` (of a location, on a day, by a user), each move of it part of
-it ([Changes to the model](#changes-to-the-model)).
+A count is an object of its own in the model, as a shipment is:
+`StockCount` (of a location, on a day, by a user), grouping its
+adjustments ([Changes to the model](#changes-to-the-model)).
 
 ## Assembly
 
@@ -307,15 +309,20 @@ devices make it.
 
 What the design above needs that the model does not say yet:
 1. **A holding's quantity derived from the moves,** stored: its moves to
-   its location less those from it, of its item.
-2. **Committed, available, incoming,** per item (and per warehouse for
-   reordering), derived and stored.
+   its location less those from it, of its item. (Of its lot too, once
+   there are [lots](#lots-serials-and-expiry): the holding should be
+   designed for them now.)
+2. **Committed, available, incoming,** per item, derived and stored.
 3. **A count:** `StockCount` of a location, on a day, by a user, a move
    part of at most one, those moves adjustments of reason "Count".
 4. **Due for reorder:** `ReorderRule is due`, derived (available and
    incoming below its point).
-5. **Order numbers:** each order's number unique in its catalog, given by
-   the app (next after the highest) where a person gives none.
+5. **Numbers:** a document's number is the app's prefix for its kind
+   (`PO`, `SO`, `RC` a receipt, `SH` a shipment, `CT` a count), the
+   catalog's own prefix as its owner types it in setup (`GAR`), and a
+   running number of that kind in the catalog: `PO-GAR-0042`. The running
+   number is the model's (unique per catalog and kind); the text is made
+   from it. A supplier's or customer's own reference is a fact of its own.
 
 ## Steps
 
@@ -328,24 +335,140 @@ What the design above needs that the model does not say yet:
    receiving and shipping, then the changelog, counts, overview, setup.
 5. The iOS tabs.
 
-## Later
+## Extensions
 
-- **Returns:** a customer's goods back against the sale line they went out
-  on (a receipt of a sale), and goods back to a supplier.
-- **Picking and packing:** a shipment picked to a staging location, packed,
-  then shipped, each a step with its moves; carriers and tracking.
-- **Lots, serials, expiry per lot.**
-- **Costing:** average or last cost per item, the stock's value at it.
-- **Fulfilment orders,** Shopify's: what of an order ships from which
-  warehouse, when one order ships from several.
+How the design grows toward a warehouse system, each in the model's terms.
+None is in the first version; each is drawn so the first does not have to
+be undone for it.
 
-## Open questions
+### Returns
 
-1. A holding's quantity derived from moves (recommended), or set by the
-   procedures that make moves?
-2. Counts as `StockCount` objects (recommended), or adjustments alone?
-3. Committed and available per warehouse as well as per item, or per item
-   only for now?
-4. Order numbers given by the app, or always by the person?
-5. The desktop app's stock in a window of its own (recommended), or tabs in
-   the main window beside Records and Reminders?
+Goods come back against the line they went out on, and go back against
+the line they came in on; the money (refunds, credit notes) is not stock's.
+
+```
+CustomerReturn(.id) is of SaleOrder; was received on Date; at Location; has Note.
+Move returns SaleLine.                       -- into the return's location
+SaleLine has returned Quantity.  ** total of its returning moves
+ReturnReason: 'Damaged', 'Wrong item', 'Not wanted', 'Other'.
+CustomerReturn is for ReturnReason.
+
+SupplierReturn(.id) is of PurchaseOrder; was shipped on Date; from Location.
+Move returns PurchaseLine.                   -- out of the return's location
+PurchaseLine has returned Quantity.  ** total
+```
+
+- A return's moves are of the line's item, into (or out of) the return's
+  location, as a receipt's and a shipment's are; a move is part of one
+  document at most.
+- What a returned item becomes is its location: back on a shelf for sale,
+  or into one marked not for sale (`Location is not for sale`), from which
+  it is adjusted away as damaged or moved back once checked. On hand
+  counts only what is for sale.
+- A line can return no more than went out (an alethic rule: returned ≤
+  shipped). A return does not make the line outstanding again; sending a
+  replacement is a new line, or a new order.
+- A phantom kit comes back as its components, against their lines.
+
+### Picking and packing
+
+A shipment becomes a process of three steps, each with its moves, so
+holdings say where the goods are at every step:
+
+```
+Location is a staging area.
+Pick(.id) is for Shipment; is assigned to User; was done at Moment.
+Move is part of Pick.                        -- a bin to the staging area
+Package(.id) is of Shipment; weighs Weight; measures Size×3;
+  has TrackingNumber; is sent by Carrier.
+Package holds Quantity of SaleLine.          -- what is packed in it
+Shipment was shipped on Date.                -- now optional: planned first
+```
+
+- **Planned:** a shipment is made with its lines and quantities and no day:
+  what is to go out. What it plans is committed, as now.
+- **Picked:** each pick moves its lines' goods from their bins to a staging
+  area, a keeper per pick; picking follows the bins' order (a location's
+  sequence) and, with lots, the earliest expiry first.
+- **Packed:** packages are made and filled; each says what it holds of each
+  line, its weight and size; a packing slip lists them.
+- **Shipped:** on the day it goes, a move of each line out of the staging
+  area, and its tracking numbers.
+- Its state is derived, as an order's is: planned, picked (every line
+  picked), packed (every line packed), shipped (it has its day).
+- For a small shop it stays one step: `Ship` picks, packs nothing and ships
+  at once, as in the first version.
+
+### Lots, serials and expiry
+
+Some items are kept by lot (food, medicines, paint: what came in together,
+with one expiry), some by serial number (one of each: tools, machines).
+
+```
+StockItem is kept by lot.  StockItem is kept by serial.   -- not both
+Lot(.id) is of StockItem; has LotNumber; expires on Date; was made on Date.
+For each StockItem and LotNumber, at most one Lot is of it and has it.
+Serial(.id) is of StockItem; has SerialNumber; (unique per item).
+Move is of Lot.  Move is of Serial.
+Holding is of Lot.                           -- optional; one per item, location and lot
+```
+
+- A move of an item kept by lot names its lot, and its lot is of its item
+  (a join subset); one kept by serial names its serial and is of 1.
+  An item kept by neither names neither.
+- **Holdings are kept per lot:** one per item, location and lot (none where
+  the item has no lots). The derived holding quantity of the first version
+  sums the moves of its item at its location and, where it has one, of its
+  lot: designed so now, nothing changes when lots come.
+- A serial is where its last move left it: `Serial is at Location`,
+  derived. A serial shipped is gone; returned, it is back.
+- Expiry: picking takes the earliest expiry first; the overview lists lots
+  expiring soon; an expired lot is adjusted away (reason "Expired").
+  The item's own expiry date of the first version moves to its lots.
+- Receiving asks the lot (number, expiry) or the serials of each line kept
+  so; a count counts per lot.
+
+### Fulfilment orders
+
+When one sale ships from several warehouses, what ships from where is
+decided before any of it is picked. Shopify calls that a fulfilment order:
+
+```
+FulfilmentOrder(.id) is of SaleOrder; is from Warehouse;
+  is in FulfilmentState ('Open', 'In progress', 'On hold', 'Closed', 'Cancelled').
+FulfilmentLine(.id) is of FulfilmentOrder; is for SaleLine; is for Quantity.
+Shipment is of FulfilmentOrder.              -- its sale order through it
+```
+
+- **Routing:** on `Confirm`, the order's lines are assigned to warehouses:
+  all to one that has everything available, else split, the most to the
+  one with most; each warehouse's share a fulfilment order. A person can
+  move a line, or a share of it, to another, or hold one.
+- A sale line's fulfilment lines add up to it (a rule); a shipment ships
+  only what its fulfilment order assigns, from its warehouse's locations.
+- **Committed per warehouse** follows: a warehouse's fulfilment lines'
+  outstanding. With it, available per warehouse, and reorder rules that
+  look at their own warehouse (the per-item first version says per
+  item).
+- A warehouse's keepers see their fulfilment orders as their work list:
+  open, in progress, on hold.
+- The purchase side's counterpart (an advance shipping notice: what a
+  supplier says is on its way, to which warehouse) can come the same way.
+
+### Costing
+
+The item's unit cost is a fact as the person enters it. Next: each receipt
+line's cost, and the item's average cost worked out from them (moving
+average), so the stock's value is at what it cost; a sale line's margin at
+it. FIFO costing needs lots, and comes after them.
+
+## Decisions
+
+1. A holding's quantity is derived from the moves, and stored.
+2. A count is a `StockCount`, grouping its adjustments.
+3. Committed, available and incoming are per item for now; per warehouse
+   comes with fulfilment orders.
+4. Numbers: the app's prefix for the kind of document, the catalog's own
+   prefix that its owner types in, and a running number
+   ([Changes](#changes-to-the-model), 5).
+5. The desktop app's stock is a window of its own.
