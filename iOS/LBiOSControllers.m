@@ -660,6 +660,7 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
     LBVehicleSectionNumbers,
     LBVehicleSectionSharing,
     LBVehicleSectionSync,
+    LBVehicleSectionStock,
     LBVehicleSectionAccount,
 };
 
@@ -703,7 +704,7 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
     NSMutableArray *sections = [NSMutableArray arrayWithObject:@(LBVehicleSectionVehicle)];
     if (_phone.vehicle) [sections addObject:@(LBVehicleSectionNumbers)];
     if ([self showsSharing]) [sections addObject:@(LBVehicleSectionSharing)];
-    [sections addObjectsFromArray:@[ @(LBVehicleSectionSync), @(LBVehicleSectionAccount) ]];
+    [sections addObjectsFromArray:@[ @(LBVehicleSectionSync), @(LBVehicleSectionStock), @(LBVehicleSectionAccount) ]];
     _sections = sections;
     _summary = _phone.vehicle ? [[LBVehicleSummary alloc] initWithVehicle:_phone.vehicle] : nil;
     self.navigationItem.prompt = _phone.store.status;
@@ -716,6 +717,7 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
         case LBVehicleSectionNumbers: return @"At a Glance";
         case LBVehicleSectionSharing: return @"Sharing";
         case LBVehicleSectionSync: return @"Sync";
+        case LBVehicleSectionStock: return @"Stock";
         case LBVehicleSectionAccount: return @"Account";
     }
     return @"";
@@ -773,6 +775,8 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
                       @[ @"Refused by the server", [NSString stringWithFormat:@"%lu", (unsigned long)store.issues.count] ],
                       @[ @"Conflicts", [NSString stringWithFormat:@"%lu", (unsigned long)conflicts] ] ];
         }
+        case LBVehicleSectionStock:
+            return @[ @[ @"Open Stock", @"" ] ];
         case LBVehicleSectionAccount:
             return @[ @[ store.user.email ?: @"", @"" ], @[ @"Sign Out", @"" ] ];
     }
@@ -811,7 +815,8 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     BOOL last = (NSUInteger)indexPath.row == rows.count - 1;
     if ((section == LBVehicleSectionVehicle && (indexPath.row == 0 || last)) || (section == LBVehicleSectionSharing && last)
-        || (section == LBVehicleSectionAccount && last) || (section == LBVehicleSectionSync && indexPath.row >= 3)) {
+        || (section == LBVehicleSectionAccount && last) || (section == LBVehicleSectionSync && indexPath.row >= 3)
+        || section == LBVehicleSectionStock) {
         cell.selectionStyle = UITableViewCellSelectionStyleDefault;
         if (last && section != LBVehicleSectionSync) cell.textLabel.textColor = section == LBVehicleSectionAccount ? [UIColor systemRedColor] : self.view.tintColor;
         else cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -838,6 +843,7 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
     else if (section == LBVehicleSectionSync && indexPath.row == 3) [self showIssues];
     else if (section == LBVehicleSectionSync && indexPath.row == 4)
         [self.navigationController pushViewController:[[LBConflictsViewController alloc] initWithPhone:_phone] animated:YES];
+    else if (section == LBVehicleSectionStock) [[UIApplication sharedApplication] sendAction:@selector(showStock:) to:nil from:self forEvent:nil];
     else if (section == LBVehicleSectionAccount && last) [self signOut:nil];
 }
 

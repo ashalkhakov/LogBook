@@ -98,6 +98,37 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSString *volumeText;
 @end
 
+// What a catalog holds, in figures: how many in all, worth so much at
+// price and at cost (in the currency given), weighing and taking up so
+// much (in the units given: LBStockTotals). The overview's, on the desktop
+// and the phone.
+@interface LBStockFigures : NSObject
++ (instancetype)figuresOf:(NSArray<StockItem *> *)items currency:(nullable NSString *)currency
+                 weightIn:(nullable WeightUnit *)weightUnit sizeIn:(nullable SizeUnit *)sizeUnit;
+@property (nonatomic, readonly, strong) NSDecimalNumber *quantity;
+@property (nonatomic, readonly, copy) NSString *valueAtPrice;
+@property (nonatomic, readonly, copy) NSString *valueAtCost;
+@property (nonatomic, readonly, strong) LBStockTotals *totals;
+// The orders of these open (drafts and confirmed): the sales first, each
+// kind the latest number first.
++ (NSArray<NSManagedObject *> *)openOf:(NSArray<SaleOrder *> *)sales purchases:(NSArray<PurchaseOrder *> *)purchases;
+@end
+
+// What a count may be of: a warehouse, all of it, or one of its locations.
+@interface LBCountPlace : NSObject
+// Of the warehouse, all of it (location nil: its locations given), or of
+// the location.
+- (instancetype)initWithWarehouse:(Warehouse *)warehouse location:(nullable Location *)location locations:(NSArray<Location *> *)locations;
+@property (nonatomic, readonly, strong) Warehouse *warehouse;
+@property (nonatomic, readonly, strong, nullable) Location *location;
+@property (nonatomic, readonly, copy) NSString *lbTitle;
+// Its locations: the one, or every one of the warehouse.
+@property (nonatomic, readonly, copy) NSArray<Location *> *locations;
+// Every place of the warehouses, of these locations: each warehouse, then
+// each of its locations.
++ (NSArray<LBCountPlace *> *)placesOf:(NSArray<Warehouse *> *)warehouses locations:(NSArray<Location *> *)locations;
+@end
+
 @interface ReorderRule (LBStockDisplay)
 // "Due" when it is, else nothing.
 @property (nonatomic, readonly, copy) NSString *lbDue;

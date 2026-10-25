@@ -6,18 +6,9 @@
 
 #import "LBStockEditor.h"
 
-@class Warehouse, Location, StockItem, Holding, StockCount;
+@class Warehouse, Location, StockItem, Holding, StockCount, LBCountPlace;
 
 NS_ASSUME_NONNULL_BEGIN
-
-// What a count may be of: a warehouse, all of it, or one of its locations.
-@interface LBCountPlace : NSObject
-@property (nonatomic, readonly, strong) Warehouse *warehouse;
-@property (nonatomic, readonly, strong, nullable) Location *location;
-@property (nonatomic, readonly, copy) NSString *lbTitle;
-// Its locations: the one, or every one of the warehouse.
-@property (nonatomic, readonly, copy) NSArray<Location *> *locations;
-@end
 
 // A row of the count: an item at a location, and how many were found
 // (typed; none yet, nil).

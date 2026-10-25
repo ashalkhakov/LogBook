@@ -353,8 +353,14 @@ devices make it.
   window has its own context and reads only what it shows; after a save
   or an action it says stock changed, and the others read theirs again.
   The actions are the server's, as the Reminders tab calls them.
-- **The iOS app** has KiWi's tabs (Items, Orders, Overview, Settings), runs
-  the procedures in its own store, and syncs.
+- **The iOS app** shows stock in place of the logbook when asked (the
+  Vehicle tab's Stock row; Settings' row back, and it stays so across
+  launches): KiWi's tabs, Items, Orders, Overview, Settings. On the phone
+  an item is looked up, added and edited, its stock adjusted and moved;
+  an order's lines shipped or received, one or all; a count taken and
+  posted. It runs the procedures in its own store, as the server does,
+  and syncs. A catalog's setup, recipes, supplier items and codes are the
+  desktop's.
 
 ## Changes to the model
 

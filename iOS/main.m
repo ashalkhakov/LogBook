@@ -4,9 +4,12 @@
 #import "LBiOSSelfTest.h"
 #import "LBSignIn.h"
 
+NSString * const LBModeDefaultsKey = @"LBMode";
+
 @implementation LBiOSAppDelegate {
     NSURL *_directory;
     ODataSignIn *_signIn;
+    LBStockPhone *_stockPhone;
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)options {
@@ -18,7 +21,7 @@
         _directory = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:
                                                  [NSString stringWithFormat:@"lb-selftest-%@", [NSProcessInfo processInfo].globallyUniqueString]]
                                 isDirectory:YES];
-        for (NSString *key in @[ LBServerDefaultsKey, LBEmailDefaultsKey, LBVehicleDefaultsKey ])
+        for (NSString *key in @[ LBServerDefaultsKey, LBEmailDefaultsKey, LBVehicleDefaultsKey, LBModeDefaultsKey, LBCatalogDefaultsKey ])
             [[NSUserDefaults standardUserDefaults] removeObjectForKey:key];
     } else {
         _directory = [LBLocalStore defaultDirectory];
@@ -43,10 +46,12 @@
     _store = [[LBLocalStore alloc] initWithDirectory:_directory modelURL:nil error:&error];
     if (!_store) NSLog(@"Logbook: the logbook does not open: %@", error);
     _phone = _store ? [[LBPhone alloc] initWithStore:_store] : nil;
+    _stockPhone = _store ? [[LBStockPhone alloc] initWithStore:_store] : nil;
 }
 
 - (void)showSignIn {
     _mainController = nil;
+    _stockController = nil;
     _signInController = [[LBSignInViewController alloc] init];
     _signInController.delegate = self;
     UINavigationController *navigation = [[UINavigationController alloc] initWithRootViewController:_signInController];
@@ -64,7 +69,22 @@
     _mainController.signOutTarget = self;
     _mainController.signOutAction = @selector(signOut:);
     _window.rootViewController = _mainController;
+    if ([[[NSUserDefaults standardUserDefaults] stringForKey:LBModeDefaultsKey] isEqualToString:@"stock"]) [self showStock:nil];
     [_store sync];
+}
+
+- (IBAction)showStock:(id)sender {
+    if (!_mainController || !_stockPhone) return;
+    _stockController = [[LBStockTabBarController alloc] initWithStockPhone:_stockPhone];
+    _window.rootViewController = _stockController;
+    [[NSUserDefaults standardUserDefaults] setObject:@"stock" forKey:LBModeDefaultsKey];
+}
+
+- (IBAction)showLogbook:(id)sender {
+    if (!_mainController) return;
+    _stockController = nil;
+    _window.rootViewController = _mainController;
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:LBModeDefaultsKey];
 }
 
 - (void)signInViewController:(LBSignInViewController *)controller didConnect:(ODataSignIn *)signIn email:(NSString *)email {
@@ -75,11 +95,13 @@
 - (IBAction)signOut:(id)sender {
     [_signIn signOut];
     _signIn = nil;
-    for (NSString *key in @[ LBServerDefaultsKey, LBVehicleDefaultsKey ]) [[NSUserDefaults standardUserDefaults] removeObjectForKey:key];
+    for (NSString *key in @[ LBServerDefaultsKey, LBVehicleDefaultsKey, LBModeDefaultsKey, LBCatalogDefaultsKey ])
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:key];
     _store.syncInterval = 0;
     _store.serviceRoot = nil;
     _store = nil;
     _phone = nil;
+    _stockPhone = nil;
     [[NSFileManager defaultManager] removeItemAtURL:_directory error:NULL];
     [self openStore];
     [self showSignIn];

@@ -106,7 +106,7 @@ static UIImage *LBReceiptPhoto(void) {
         exit(1);
     }
     /* The app as it was: the self-test's server and email not kept. */
-    for (NSString *key in @[ LBServerDefaultsKey, LBEmailDefaultsKey, LBVehicleDefaultsKey ])
+    for (NSString *key in @[ LBServerDefaultsKey, LBEmailDefaultsKey, LBVehicleDefaultsKey, LBModeDefaultsKey, LBCatalogDefaultsKey ])
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:key];
     [[NSUserDefaults standardUserDefaults] synchronize];
     fprintf(stderr, "self-test: %s (%d failed)\n", LBFailed ? "FAILED" : "passed", LBFailed);
@@ -445,7 +445,132 @@ static UIImage *LBReceiptPhoto(void) {
           [NSString stringWithFormat:@"a fill-up of no volume: refused, the rule said (%@)", [form.problems componentsJoinedByString:@"; "]]);
     [store.context rollback];
 
+    [self stockSteps];
     [self signOutSteps:fillUp];
+}
+
+static BOOL LBSame(id number, NSString *value) {
+    if (!number || number == [NSNull null]) return NO;
+    return [[NSDecimalNumber decimalNumberWithString:[number description]] compare:[NSDecimalNumber decimalNumberWithString:value]] == NSOrderedSame;
+}
+
+/* Stock on the phone (docs/STOCK.md): a catalog set up here as the desktop
+   would (its warehouse Main and Default; Shelf A; a customer, Bob), and
+   synced; then, in stock's tabs, as a user: an item added and priced, 20
+   brought in, 5 moved to Shelf A; a sale of 3 shipped from Shelf A, a line
+   then the rest; Default counted, one short; the overview. Synced: the
+   server agrees. The logbook again. */
+- (void)stockSteps {
+    LBiOSAppDelegate *app = self.app;
+    LBLocalStore *store = app.store;
+    NSManagedObjectContext *context = store.context;
+    NSError *error = nil;
+    Catalog *catalog = [Catalog lb_newCatalogNamed:@"Phone Workshop" owner:store.user inContext:context];
+    catalog.currency = @"USD";
+    catalog.documentPrefix = @"PH";
+    Warehouse *main = catalog.warehouses.anyObject;
+    Location *main_default = main.locations.anyObject;
+    Location *shelf = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Location class]) inManagedObjectContext:context];
+    shelf.id = [NSUUID UUID];
+    shelf.locationName = @"Shelf A";
+    shelf.warehouse = main;
+    LBSay([store save:&error], [NSString stringWithFormat:@"a catalog set up, as the desktop would (%@)", error.localizedDescription]);
+    LBSync(store, @"synced");
+    LBSay(LBServerHas([NSString stringWithFormat:@"Catalogs(%@)", LBKey(catalog.id)]) != nil, @"the server has the catalog");
+    /* Its customer, Bob, made at the server, as the desktop makes one: a
+       contact and its customer, which refer to each other. */
+    NSUUID *bobID = [NSUUID UUID], *customerID = [NSUUID UUID];
+    NSString *ofCatalog = [NSString stringWithFormat:@"Catalogs(%@)", LBKey(catalog.id)];
+    NSInteger made = LBAsk(@"POST", @"Contacts", @{ @"Id": LBKey(bobID), @"ContactName": @"Bob's Garage", @"IsACompany": @YES,
+                                                    @"Catalog@odata.bind": ofCatalog }, NULL);
+    NSInteger madeCustomer = LBAsk(@"POST", @"Customers", @{ @"Id": LBKey(customerID), @"Catalog@odata.bind": ofCatalog,
+                                                             @"Contact@odata.bind": [NSString stringWithFormat:@"Contacts(%@)", LBKey(bobID)] }, NULL);
+    LBSay(made == 201 && madeCustomer == 201, [NSString stringWithFormat:@"a customer, Bob, made at the server (%ld, %ld)", (long)made, (long)madeCustomer]);
+    LBSync(store, @"synced: Bob comes down");
+    Contact *bob = LBFetchID(store, [Contact class], bobID);
+    LBSay(bob.customer != nil, @"the phone has Bob, a customer");
+
+    [app showStock:nil];
+    LBStockTabBarController *tabs = app.stockController;
+    NSArray *titles = [tabs.viewControllers valueForKeyPath:@"tabBarItem.title"];
+    LBSay(tabs && app.window.rootViewController == tabs && [titles isEqualToArray:@[ @"Items", @"Orders", @"Overview", @"Settings" ]],
+          [NSString stringWithFormat:@"stock shown in place of the logbook: %@", [titles componentsJoinedByString:@", "]]);
+    LBSay([[[NSUserDefaults standardUserDefaults] stringForKey:LBModeDefaultsKey] isEqualToString:@"stock"], @"and kept so for the next launch");
+    tabs.selectedIndex = 0;
+    LBSpin(0.5);
+    LBStockItemsViewController *items = [tabs tabNamed:@"Items"];
+    LBStockItemViewController *card = [items addItem];
+    LBSay([card.item.sku isEqualToString:@"PH-00001"], [NSString stringWithFormat:@"a new item, its SKU the catalog's next (%@)", card.item.sku]);
+    [card enter:@"Bolt" intoField:@"Name"];
+    [card enter:@"0.5" intoField:@"Price"];
+    NSArray *problems = nil;
+    LBSay([card saveProblems:&problems] && [card.item.priceCurrency isEqualToString:@"USD"],
+          [NSString stringWithFormat:@"named, priced and saved, in the catalog's currency (%@)", [problems componentsJoinedByString:@"; "]]);
+    StockItem *bolt = card.item;
+    LBSay([card adjust:@"20" at:main_default reason:@"Opening" problems:&problems] && [[card quantityRows].firstObject isEqualToString:@"On hand: 20"],
+          [NSString stringWithFormat:@"20 brought in at Default (%@)", [problems componentsJoinedByString:@"; "] ?: [card quantityRows].firstObject]);
+    LBSay([card transfer:@"5" from:main_default to:shelf problems:&problems]
+              && [[card holdingRows] isEqualToArray:@[ @"Main / Default: 15", @"Main / Shelf A: 5" ]],
+          [NSString stringWithFormat:@"5 moved to Shelf A (%@)", [[card holdingRows] componentsJoinedByString:@"; "]]);
+    LBSay(![card adjust:@"-30" at:main_default reason:@"Lost" problems:&problems] && [[problems componentsJoinedByString:@" "] containsString:@"15"],
+          [NSString stringWithFormat:@"30 lost of the 15 there: refused, in the procedure's words (%@)", [problems componentsJoinedByString:@"; "]]);
+    LBSpin(0.5);
+    LBSay([[items shownRows] isEqualToArray:@[ @"PH-00001 Bolt: 20" ]], [NSString stringWithFormat:@"the items list it (%@)", [items shownRows]]);
+
+    SaleOrder *sale = [catalog lb_newSaleOrderTo:bob.customer on:LBNow()];
+    SaleLine *line = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([SaleLine class]) inManagedObjectContext:context];
+    line.id = [NSUUID UUID];
+    line.saleOrder = sale;
+    line.stockItem = bolt;
+    line.quantity = [NSDecimalNumber decimalNumberWithString:@"3"];
+    line.linePriceAmount = bolt.priceAmount;
+    line.linePriceCurrency = bolt.priceCurrency;
+    LBSay([sale lb_confirm:&error] && [store save:&error], [NSString stringWithFormat:@"a sale of 3 bolts to Bob, confirmed (%@)", error.localizedDescription]);
+    tabs.selectedIndex = 1;
+    LBSpin(0.5);
+    LBStockOrdersViewController *orders = [tabs tabNamed:@"Orders"];
+    LBSay([[orders shownRows] containsObject:@"SO-PH-0001 Bob's Garage: Confirmed"], [NSString stringWithFormat:@"Orders lists it (%@)", [orders shownRows]]);
+    LBStockOrderViewController *order = [orders openOrder:sale];
+    order.moveAt = shelf;
+    LBSay([order moveLine:order.lines.firstObject quantity:@"2" problems:&problems] && [[order lineRows].firstObject isEqualToString:@"Bolt: 3, shipped 2"],
+          [NSString stringWithFormat:@"2 of its line shipped from Shelf A (%@)", [problems componentsJoinedByString:@"; "] ?: [order lineRows].firstObject]);
+    LBSay([order moveAllProblems:&problems] && [sale.lbFilled isEqualToString:@"Shipped"] && sale.shipments.count == 2,
+          [NSString stringWithFormat:@"the rest shipped: fully, in two shipments (%@)", [problems componentsJoinedByString:@"; "] ?: sale.lbFilled]);
+
+    tabs.selectedIndex = 2;
+    LBSpin(0.5);
+    LBStockOverviewViewController *overview = [tabs tabNamed:@"Overview"];
+    LBStockCountViewController *counting = [overview beginCount];
+    for (LBCountPlace *place in [app.stockController.phone countPlaces]) {
+        if (place.location == main_default) counting.countPlace = place;
+    }
+    LBPhoneCountRow *row = counting.rows.firstObject;
+    LBSay(counting.rows.count == 1 && row.item == bolt && LBSame(row.expected, @"15"),
+          [NSString stringWithFormat:@"a count of Default: the bolts held there, 15 (%lu rows)", (unsigned long)counting.rows.count]);
+    row.found = @"14";
+    StockCount *count = [counting postProblems:&problems];
+    LBSay(count && [count.lbNumber isEqualToString:@"CT-PH-0001"] && LBSame(bolt.totalQuantity, @"16"),
+          [NSString stringWithFormat:@"posted, one short: CT-PH-0001, 16 on hand (%@)", [problems componentsJoinedByString:@"; "] ?: bolt.totalQuantity]);
+    LBSpin(0.5);
+    NSArray *figures = [overview figureRows];
+    LBSay([figures containsObject:@"Items: 1"] && [figures containsObject:@"On hand: 16"] && [figures containsObject:@"Value at price: 8 USD"],
+          [NSString stringWithFormat:@"the overview (%@)", [figures componentsJoinedByString:@"; "]]);
+
+    LBSync(store, @"stock synced");
+    NSDictionary *boltThere = LBServerHas([NSString stringWithFormat:@"StockItems(%@)", LBKey(bolt.id)]);
+    NSDictionary *shipments = LBServerHas([NSString stringWithFormat:@"SaleOrders(%@)/Shipments", LBKey(sale.id)]);
+    NSDictionary *counts = LBServerHas([NSString stringWithFormat:@"StockCounts(%@)", LBKey(count.id)]);
+    LBSay(LBSame(boltThere[@"TotalQuantity"], @"16") && [shipments[@"value"] count] == 2 && counts != nil,
+          [NSString stringWithFormat:@"the server has it all: 16 bolts, two shipments, the count (%@)", boltThere[@"TotalQuantity"]]);
+    LBSay([store pendingCount] == 0 && store.issues.count == 0 && [store pendingConflicts].count == 0,
+          [NSString stringWithFormat:@"nothing waits, nothing refused (%@)", [[store.issues valueForKey:@"message"] componentsJoinedByString:@"; "]]);
+
+    LBStockSettingsViewController *settings = [tabs tabNamed:@"Settings"];
+    LBSay([[settings shownSections] containsObject:@"Logbook"], @"Settings offers the logbook");
+    [app showLogbook:nil];
+    LBSay(app.window.rootViewController == app.mainController && !app.stockController
+              && ![[NSUserDefaults standardUserDefaults] stringForKey:LBModeDefaultsKey],
+          @"the logbook again, and kept so");
 }
 
 @end

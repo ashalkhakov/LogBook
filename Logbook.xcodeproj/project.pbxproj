@@ -240,6 +240,10 @@
 			isa = PBXBuildFile;
 			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
 		};
+		649ED8F26B5FBF618A78A5F0 /* LBStockPhone.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 629B5816603A0B12D55AECA8 /* LBStockPhone.m */;
+		};
 		683ABFCAE020079565AED216 /* Lists.xib */ = {
 			isa = PBXBuildFile;
 			fileRef = 694E25C06D350F4886223FAB /* Lists.xib */;
@@ -464,6 +468,10 @@
 		C602A0B55E99B81DE6C45579 /* CoreData.framework */ = {
 			isa = PBXBuildFile;
 			fileRef = 2AB66C65BE330D1517DF768E /* CoreData.framework */;
+		};
+		C84DC34E113C7F7313C34038 /* LBStockControllers.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 0C70284B01D938EB0C94402F /* LBStockControllers.m */;
 		};
 		C850D84A632E628032978828 /* LBCatalogSettingsWindowController.m */ = {
 			isa = PBXBuildFile;
@@ -772,6 +780,12 @@
 			path = LBReportsController.h;
 			sourceTree = "<group>";
 		};
+		0C70284B01D938EB0C94402F /* LBStockControllers.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStockControllers.m;
+			sourceTree = "<group>";
+		};
 		0D9E881A6CBBB60E5366EA0B /* GNUmakefile */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = text;
@@ -1067,6 +1081,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBCurrencies.m;
+			sourceTree = "<group>";
+		};
+		629B5816603A0B12D55AECA8 /* LBStockPhone.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStockPhone.m;
 			sourceTree = "<group>";
 		};
 		6802924709AD07775C09BCA9 /* LBCatalogSettingsWindowController.h */ = {
@@ -1456,6 +1476,12 @@
 			path = Fuel.rdl;
 			sourceTree = "<group>";
 		};
+		EF1B04C35E7635514A3AA07B /* LBStockPhone.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStockPhone.h;
+			sourceTree = "<group>";
+		};
 		F202254F689402A7F179E854 /* LBSignIn.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -1514,6 +1540,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBStore.m;
+			sourceTree = "<group>";
+		};
+		FDB533507A1E6D87DF169227 /* LBStockControllers.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStockControllers.h;
 			sourceTree = "<group>";
 		};
 		FF47C44BF13F9BF3086EC393 /* LBReportData.h */ = {
@@ -1662,6 +1694,10 @@
 				DA6375B01FB8DD843C3B2050 /* Assets.xcassets */,
 				20EFFA53D963249AE8282F3B /* Info.plist */,
 				AB824361FAF0A8F250B5C0F2 /* LBRecordForm.m */,
+				FDB533507A1E6D87DF169227 /* LBStockControllers.h */,
+				0C70284B01D938EB0C94402F /* LBStockControllers.m */,
+				EF1B04C35E7635514A3AA07B /* LBStockPhone.h */,
+				629B5816603A0B12D55AECA8 /* LBStockPhone.m */,
 				CCE2C3C58F1E04519BAA59B1 /* LBiOSApp.h */,
 				2BF486C62A308B2388CCDA61 /* LBiOSControllers.h */,
 				DBCAEB84C9CA0A46A31C8CE9 /* LBiOSControllers.m */,
@@ -2193,6 +2229,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				49FFF4D6C3A4AD8EF59C7DE1 /* LBRecordForm.m */,
+				C84DC34E113C7F7313C34038 /* LBStockControllers.m */,
+				649ED8F26B5FBF618A78A5F0 /* LBStockPhone.m */,
 				AC922E927BD3F0B59D483ADE /* LBiOSControllers.m */,
 				4D8955DA7D803F8FEAD540BF /* LBiOSSelfTest.m */,
 				FE433AA3AAE8A451111E0982 /* main.m */,

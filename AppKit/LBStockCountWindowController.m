@@ -2,33 +2,6 @@
 #import "LBStore.h"
 #import "LBStockDisplay.h"
 
-@implementation LBCountPlace
-
-- (instancetype)initWithWarehouse:(Warehouse *)warehouse location:(Location *)location locations:(NSArray<Location *> *)locations {
-    if ((self = [super init])) {
-        _warehouse = warehouse;
-        _location = location;
-        _locations = location ? @[ location ] : [locations copy];
-    }
-    return self;
-}
-
-- (NSString *)lbTitle {
-    return _location ? _location.lbTitle : [NSString stringWithFormat:@"%@ (all of it)", _warehouse.lbTitle];
-}
-
-/* The same place however often the list is made: a pop-up keeps it. */
-- (BOOL)isEqual:(id)other {
-    return [other isKindOfClass:[LBCountPlace class]] && ((LBCountPlace *)other).warehouse == _warehouse
-           && ((LBCountPlace *)other).location == _location;
-}
-
-- (NSUInteger)hash {
-    return _warehouse.hash ^ _location.hash;
-}
-
-@end
-
 @interface LBCountRow ()
 - (instancetype)initWithHeld:(NSDictionary *)held shows:(BOOL)shows;
 - (void)setShows:(BOOL)shows;
@@ -100,12 +73,7 @@
                              sortedBy:self.byTitle];
     NSArray *locations = [self fetch:[Location class] where:[NSPredicate predicateWithFormat:@"warehouse.catalog == %@", self.catalog]
                             sortedBy:self.byTitle];
-    NSMutableArray *places = [NSMutableArray array];
-    for (Warehouse *warehouse in warehouses) {
-        NSArray *its = [locations filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"warehouse == %@", warehouse]];
-        [places addObject:[[LBCountPlace alloc] initWithWarehouse:warehouse location:nil locations:its]];
-        for (Location *place in its) [places addObject:[[LBCountPlace alloc] initWithWarehouse:warehouse location:place locations:its]];
-    }
+    NSArray *places = [LBCountPlace placesOf:warehouses locations:locations];
     self.countPlaces = places;
     NSUInteger kept = _countPlace ? [places indexOfObject:_countPlace] : NSNotFound;
     self.countPlace = kept != NSNotFound ? places[kept] : places.firstObject;

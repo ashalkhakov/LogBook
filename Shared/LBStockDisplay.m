@@ -212,3 +212,68 @@ static NSDecimalNumber *LBRounded(NSDecimalNumber *number) {
 }
 
 @end
+
+@implementation LBStockFigures
+
++ (instancetype)figuresOf:(NSArray<StockItem *> *)items currency:(NSString *)currency weightIn:(WeightUnit *)weightUnit sizeIn:(SizeUnit *)sizeUnit {
+    NSDecimalNumber *quantity = [NSDecimalNumber zero], *atPrice = [NSDecimalNumber zero], *atCost = [NSDecimalNumber zero];
+    for (StockItem *item in items) {
+        NSDecimalNumber *held = item.totalQuantity ?: [NSDecimalNumber zero];
+        quantity = [quantity decimalNumberByAdding:held];
+        if (item.priceAmount) atPrice = [atPrice decimalNumberByAdding:[held decimalNumberByMultiplyingBy:item.priceAmount]];
+        if (item.unitCostAmount) atCost = [atCost decimalNumberByAdding:[held decimalNumberByMultiplyingBy:item.unitCostAmount]];
+    }
+    LBStockFigures *figures = [[self alloc] init];
+    figures->_quantity = quantity;
+    figures->_valueAtPrice = [NSString stringWithFormat:@"%@ %@", atPrice, currency ?: @""];
+    figures->_valueAtCost = [NSString stringWithFormat:@"%@ %@", atCost, currency ?: @""];
+    figures->_totals = [LBStockTotals totalsOf:items weightIn:weightUnit sizeIn:sizeUnit];
+    return figures;
+}
+
++ (NSArray<NSManagedObject *> *)openOf:(NSArray<SaleOrder *> *)sales purchases:(NSArray<PurchaseOrder *> *)purchases {
+    NSPredicate *open = [NSPredicate predicateWithFormat:@"orderState IN %@", @[ @"Draft", @"Confirmed" ]];
+    NSArray *latest = @[ [NSSortDescriptor sortDescriptorWithKey:@"runningNumber" ascending:NO] ];
+    NSArray<NSManagedObject *> *openSales = [[sales filteredArrayUsingPredicate:open] sortedArrayUsingDescriptors:latest];
+    NSArray<NSManagedObject *> *openPurchases = [[purchases filteredArrayUsingPredicate:open] sortedArrayUsingDescriptors:latest];
+    return [openSales arrayByAddingObjectsFromArray:openPurchases];
+}
+
+@end
+
+@implementation LBCountPlace
+
+- (instancetype)initWithWarehouse:(Warehouse *)warehouse location:(Location *)location locations:(NSArray<Location *> *)locations {
+    if ((self = [super init])) {
+        _warehouse = warehouse;
+        _location = location;
+        _locations = location ? @[ location ] : [locations copy];
+    }
+    return self;
+}
+
++ (NSArray<LBCountPlace *> *)placesOf:(NSArray<Warehouse *> *)warehouses locations:(NSArray<Location *> *)locations {
+    NSMutableArray *places = [NSMutableArray array];
+    for (Warehouse *warehouse in warehouses) {
+        NSArray *its = [locations filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"warehouse == %@", warehouse]];
+        [places addObject:[[LBCountPlace alloc] initWithWarehouse:warehouse location:nil locations:its]];
+        for (Location *place in its) [places addObject:[[LBCountPlace alloc] initWithWarehouse:warehouse location:place locations:its]];
+    }
+    return places;
+}
+
+- (NSString *)lbTitle {
+    return _location ? _location.lbTitle : [NSString stringWithFormat:@"%@ (all of it)", _warehouse.lbTitle];
+}
+
+/* The same place however often the list is made: a pop-up keeps it. */
+- (BOOL)isEqual:(id)other {
+    return [other isKindOfClass:[LBCountPlace class]] && ((LBCountPlace *)other).warehouse == _warehouse
+           && ((LBCountPlace *)other).location == _location;
+}
+
+- (NSUInteger)hash {
+    return _warehouse.hash ^ _location.hash;
+}
+
+@end

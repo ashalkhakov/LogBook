@@ -161,33 +161,23 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
 
 - (void)overviewOf:(Catalog *)catalog {
     NSPredicate *ofCatalog = [NSPredicate predicateWithFormat:@"catalog == %@", catalog];
-    NSDecimalNumber *quantity = [NSDecimalNumber zero], *atPrice = [NSDecimalNumber zero], *atCost = [NSDecimalNumber zero];
-    for (StockItem *item in _items) {
-        NSDecimalNumber *held = item.totalQuantity ?: [NSDecimalNumber zero];
-        quantity = [quantity decimalNumberByAdding:held];
-        if (item.priceAmount) atPrice = [atPrice decimalNumberByAdding:[held decimalNumberByMultiplyingBy:item.priceAmount]];
-        if (item.unitCostAmount) atCost = [atCost decimalNumberByAdding:[held decimalNumberByMultiplyingBy:item.unitCostAmount]];
-    }
-    NSString *currency = catalog.currency ?: @"";
+    LBStockFigures *figures = [LBStockFigures figuresOf:_items currency:catalog.currency weightIn:catalog.weightUnit sizeIn:catalog.sizeUnit];
     self.overviewItems = @(_items.count);
-    self.overviewQuantity = quantity;
-    self.overviewValueAtPrice = [NSString stringWithFormat:@"%@ %@", atPrice, currency];
-    self.overviewValueAtCost = [NSString stringWithFormat:@"%@ %@", atCost, currency];
+    self.overviewQuantity = figures.quantity;
+    self.overviewValueAtPrice = figures.valueAtPrice;
+    self.overviewValueAtCost = figures.valueAtCost;
     self.overviewCategories = @([self fetch:[Category class] where:ofCatalog sortedBy:nil].count);
     self.overviewLocations = @(_locations.count);
     self.overviewSuppliers = @([self fetch:[Supplier class] where:ofCatalog sortedBy:nil].count);
     self.overviewCustomers = @([self fetch:[Customer class] where:ofCatalog sortedBy:nil].count);
-    self.overviewTotals = [LBStockTotals totalsOf:_items weightIn:catalog.weightUnit sizeIn:catalog.sizeUnit];
+    self.overviewTotals = figures.totals;
     self.overviewWeight = _overviewTotals.weightText;
     self.overviewVolume = _overviewTotals.volumeText;
     NSArray *rules = [self fetch:[ReorderRule class] where:[NSPredicate predicateWithFormat:@"warehouse.catalog == %@", catalog]
                         sortedBy:self.byItem];
     self.rulesDue = [rules filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"isDue == YES"]];
     self.warehouses = [self fetch:[Warehouse class] where:ofCatalog sortedBy:self.byTitle];
-    NSPredicate *open = [NSPredicate predicateWithFormat:@"orderState IN %@", @[ @"Draft", @"Confirmed" ]];
-    NSArray *orders = [[_saleOrders filteredArrayUsingPredicate:open] arrayByAddingObjectsFromArray:[_purchaseOrders filteredArrayUsingPredicate:open]];
-    NSSortDescriptor *byKind = [NSSortDescriptor sortDescriptorWithKey:@"lbKind" ascending:NO];
-    self.ordersOpen = [orders sortedArrayUsingDescriptors:[@[ byKind ] arrayByAddingObjectsFromArray:LBLatestNumberFirst()]];
+    self.ordersOpen = [LBStockFigures openOf:_saleOrders purchases:_purchaseOrders];
 }
 
 #pragma mark The changelog
