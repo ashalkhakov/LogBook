@@ -52,10 +52,14 @@
 
 @implementation SaleOrder (LBStockDisplay)
 - (NSString *)lbFilled { return self.isFullyShipped ? @"Shipped" : self.isPartlyShipped ? @"Partly" : @""; }
+- (NSString *)lbKind { return @"Sale"; }
+- (NSString *)lbParty { return self.customer.lbTitle ?: @""; }
 @end
 
 @implementation PurchaseOrder (LBStockDisplay)
 - (NSString *)lbFilled { return self.isFullyReceived ? @"Received" : self.isPartlyReceived ? @"Partly" : @""; }
+- (NSString *)lbKind { return @"Purchase"; }
+- (NSString *)lbParty { return self.supplier.lbTitle ?: @""; }
 @end
 
 @implementation SaleLine (LBStockDisplay)
@@ -83,12 +87,48 @@
         return [NSString stringWithFormat:@"Shipment %@/%d", self.shipment.saleOrder.lb_number ?: @"", self.shipment.runningNumber];
     }
     if (self.assembly) return self.assembly.isADisassembly ? @"Taken apart" : @"Assembly";
-    if (self.stockCount) {
-        Catalog *catalog = self.stockCount.warehouse.catalog;
-        return [NSString stringWithFormat:@"Count %@", [catalog lb_numberOfKind:@"CT" running:self.stockCount.runningNumber]];
-    }
+    if (self.stockCount) return [NSString stringWithFormat:@"Count %@", self.stockCount.lbNumber];
     if (self.adjustmentReason) return [NSString stringWithFormat:@"Adjustment: %@", self.adjustmentReason];
     return @"Transfer";
+}
+
++ (NSArray<NSString *> *)lbKinds {
+    return @[ @"Receipt", @"Shipment", @"Assembly", @"Count", @"Adjustment", @"Transfer" ];
+}
+
+- (NSString *)lbKind {
+    if (self.receipt) return @"Receipt";
+    if (self.shipment) return @"Shipment";
+    if (self.assembly) return @"Assembly";
+    if (self.stockCount) return @"Count";
+    if (self.adjustmentReason) return @"Adjustment";
+    return @"Transfer";
+}
+
+- (NSString *)lbPlaceTitle {
+    return (self.destination ?: self.source).lbTitle ?: @"";
+}
+
+- (NSDecimalNumber *)lbChange {
+    if (self.destination || !self.moved) return self.moved;
+    return [[NSDecimalNumber zero] decimalNumberBySubtracting:self.moved];
+}
+
+@end
+
+@implementation ReorderRule (LBStockDisplay)
+- (NSString *)lbDue { return self.isDue ? @"Due" : @""; }
+@end
+
+@implementation StockCount (LBStockDisplay)
+
+- (NSString *)lbNumber {
+    return [self.warehouse.catalog lb_numberOfKind:@"CT" running:self.runningNumber] ?: @"";
+}
+
+- (NSString *)lbWhere {
+    if (self.countedLocation) return self.countedLocation.lbTitle;
+    return [NSString stringWithFormat:@"%@ (all of it)", self.warehouse.lbTitle ?: @""];
 }
 
 @end

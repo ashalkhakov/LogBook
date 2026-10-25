@@ -34,13 +34,19 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSString *lbLocationTitle;
 @end
 
+// An order as the overview lists sales and purchases together: which it
+// is, and to whom or from whom.
 @interface SaleOrder (LBStockDisplay)
 // How far it is shipped: "Shipped", "Partly", or nothing.
 @property (nonatomic, readonly, copy) NSString *lbFilled;
+@property (nonatomic, readonly, copy) NSString *lbKind;
+@property (nonatomic, readonly, copy) NSString *lbParty;
 @end
 @interface PurchaseOrder (LBStockDisplay)
 // How far it is received: "Received", "Partly", or nothing.
 @property (nonatomic, readonly, copy) NSString *lbFilled;
+@property (nonatomic, readonly, copy) NSString *lbKind;
+@property (nonatomic, readonly, copy) NSString *lbParty;
 @end
 // The order an order's lines are listed in: by item, a phantom kit's
 // components under its line.
@@ -58,6 +64,26 @@ NS_ASSUME_NONNULL_BEGIN
 // What made it: "Receipt PO-GAR-0001/1", "Shipment SO-GAR-0002/1",
 // "Assembly", "Count CT-0003", "Adjustment: Lost", "Transfer".
 @property (nonatomic, readonly, copy) NSString *lbWhat;
+// What kind of thing made it, as the changelog filters by: one of
+// +lbKinds.
+@property (nonatomic, readonly, copy) NSString *lbKind;
++ (NSArray<NSString *> *)lbKinds;
+// Where an adjustment was (its one location), and what it changed there:
+// so many more, or (out) less.
+@property (nonatomic, readonly, copy) NSString *lbPlaceTitle;
+@property (nonatomic, readonly, nullable) NSDecimalNumber *lbChange;
+@end
+
+@interface ReorderRule (LBStockDisplay)
+// "Due" when it is, else nothing.
+@property (nonatomic, readonly, copy) NSString *lbDue;
+@end
+
+// A count as the Counts tab lists it: its number (CT-GAR-0001), and where:
+// its location, or its whole warehouse.
+@interface StockCount (LBStockDisplay)
+@property (nonatomic, readonly, copy) NSString *lbNumber;
+@property (nonatomic, readonly, copy) NSString *lbWhere;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -344,6 +344,19 @@ static int32_t LBNextOf(NSSet *documents) {
 
 @end
 
+@implementation SupplierItem (LBStock)
+
+- (BOOL)lb_isPreferred {
+    return self.stockItem.preferredSupplierItem == self;
+}
+
+- (void)setLb_isPreferred:(BOOL)preferred {
+    if (preferred) self.stockItem.preferredSupplierItem = self;
+    else if (self.lb_isPreferred) self.stockItem.preferredSupplierItem = nil;
+}
+
+@end
+
 #pragma mark Orders
 
 /* An order's state changed from one of those given, or refused. */

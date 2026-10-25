@@ -20,7 +20,8 @@ status=0
 out=$(mktemp)
 "$app" --self-test "http://127.0.0.1:$port/odata/" -NSQuitAlwaysKeepsWindows NO >"$out" 2>&1 || status=$?
 cat "$out"
-# Quit before it was done is no pass.
+# Quit before it was done is no pass. LB_STEPS=stock (or logbook) runs that
+# part of the self-test alone; LB_SNAPSHOTS=<dir> keeps pictures of windows.
 grep -q "^self-test done" "$out" || { echo "FAIL the self-test did not finish"; status=1; }
 rm -f "$out"
 [ $status -eq 0 ] || { echo "the server's log:"; cat "$log"; }

@@ -134,13 +134,13 @@
                         </popUpButtonCell>
                         <connections>
                             <binding destination="distanceUnits" name="content" keyPath="arrangedObjects" id="distanceUnitContent"/>
-                            <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="distanceUnitContent" id="distanceUnitValues"/>
-                            <binding destination="user" name="selectedObject" keyPath="selection.distanceUnit" previousBinding="distanceUnitValues" id="distanceUnitChosen">
+                            <binding destination="distanceUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="distanceUnitContent" id="distanceUnitValues">
                                 <dictionary key="options">
                                     <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                     <string key="NSNullPlaceholder">None</string>
                                 </dictionary>
                             </binding>
+                            <binding destination="user" name="selectedObject" keyPath="selection.distanceUnit" previousBinding="distanceUnitValues" id="distanceUnitChosen"/>
                         </connections>
                     </popUpButton>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="volumeUnitLabel">
@@ -162,13 +162,13 @@
                         </popUpButtonCell>
                         <connections>
                             <binding destination="volumeUnits" name="content" keyPath="arrangedObjects" id="volumeUnitContent"/>
-                            <binding destination="volumeUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="volumeUnitContent" id="volumeUnitValues"/>
-                            <binding destination="user" name="selectedObject" keyPath="selection.volumeUnit" previousBinding="volumeUnitValues" id="volumeUnitChosen">
+                            <binding destination="volumeUnits" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="volumeUnitContent" id="volumeUnitValues">
                                 <dictionary key="options">
                                     <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                     <string key="NSNullPlaceholder">None</string>
                                 </dictionary>
                             </binding>
+                            <binding destination="user" name="selectedObject" keyPath="selection.volumeUnit" previousBinding="volumeUnitValues" id="volumeUnitChosen"/>
                         </connections>
                     </popUpButton>
                     <button verticalHuggingPriority="750" identifier="done" id="done">

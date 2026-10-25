@@ -1047,13 +1047,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="drivers" id="FillUpDriverContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="FillUpDriverContent" id="FillUpDriverValues"/>
-                                                                    <binding destination="FillUpForm" name="selectedObject" keyPath="selection.driver" previousBinding="FillUpDriverValues" id="FillUpDriverChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="FillUpDriverContent" id="FillUpDriverValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="FillUpForm" name="selectedObject" keyPath="selection.driver" previousBinding="FillUpDriverValues" id="FillUpDriverChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpNoteLabel">
@@ -1248,13 +1248,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="serviceKinds" id="ServiceKindContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="serviceKinds.lbTitle" previousBinding="ServiceKindContent" id="ServiceKindValues"/>
-                                                                    <binding destination="ServiceForm" name="selectedObject" keyPath="selection.serviceKind" previousBinding="ServiceKindValues" id="ServiceKindChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="serviceKinds.lbTitle" previousBinding="ServiceKindContent" id="ServiceKindValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ServiceForm" name="selectedObject" keyPath="selection.serviceKind" previousBinding="ServiceKindValues" id="ServiceKindChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceCurrencyLabel">
@@ -1415,13 +1415,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="drivers" id="ServiceDriverContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="ServiceDriverContent" id="ServiceDriverValues"/>
-                                                                    <binding destination="ServiceForm" name="selectedObject" keyPath="selection.driver" previousBinding="ServiceDriverValues" id="ServiceDriverChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="ServiceDriverContent" id="ServiceDriverValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ServiceForm" name="selectedObject" keyPath="selection.driver" previousBinding="ServiceDriverValues" id="ServiceDriverChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceNoteLabel">
@@ -1697,13 +1697,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="expenseKinds" name="content" keyPath="arrangedObjects" id="ExpenseKindContent"/>
-                                                                    <binding destination="expenseKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="ExpenseKindContent" id="ExpenseKindValues"/>
-                                                                    <binding destination="ExpenseForm" name="selectedObject" keyPath="selection.expenseKind" previousBinding="ExpenseKindValues" id="ExpenseKindChosen">
+                                                                    <binding destination="expenseKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="ExpenseKindContent" id="ExpenseKindValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ExpenseForm" name="selectedObject" keyPath="selection.expenseKind" previousBinding="ExpenseKindValues" id="ExpenseKindChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="expenseKindEdit" id="expenseKindEdit">
@@ -1767,13 +1767,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="drivers" id="ExpenseDriverContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="ExpenseDriverContent" id="ExpenseDriverValues"/>
-                                                                    <binding destination="ExpenseForm" name="selectedObject" keyPath="selection.driver" previousBinding="ExpenseDriverValues" id="ExpenseDriverChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="ExpenseDriverContent" id="ExpenseDriverValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ExpenseForm" name="selectedObject" keyPath="selection.driver" previousBinding="ExpenseDriverValues" id="ExpenseDriverChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ExpenseNoteLabel">
@@ -2080,13 +2080,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="drivers" id="TripDriverContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="TripDriverContent" id="TripDriverValues"/>
-                                                                    <binding destination="TripForm" name="selectedObject" keyPath="selection.driver" previousBinding="TripDriverValues" id="TripDriverChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="TripDriverContent" id="TripDriverValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="TripForm" name="selectedObject" keyPath="selection.driver" previousBinding="TripDriverValues" id="TripDriverChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="TripNoteLabel">
@@ -2307,13 +2307,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="drivers" id="IncomeDriverContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="IncomeDriverContent" id="IncomeDriverValues"/>
-                                                                    <binding destination="IncomeForm" name="selectedObject" keyPath="selection.driver" previousBinding="IncomeDriverValues" id="IncomeDriverChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="IncomeDriverContent" id="IncomeDriverValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="IncomeForm" name="selectedObject" keyPath="selection.driver" previousBinding="IncomeDriverValues" id="IncomeDriverChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="IncomeNoteLabel">
@@ -2361,13 +2361,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="trips" id="IncomeTripContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="trips.lbTitle" previousBinding="IncomeTripContent" id="IncomeTripValues"/>
-                                                                    <binding destination="IncomeForm" name="selectedObject" keyPath="selection.trip" previousBinding="IncomeTripValues" id="IncomeTripChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="trips.lbTitle" previousBinding="IncomeTripContent" id="IncomeTripValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="IncomeForm" name="selectedObject" keyPath="selection.trip" previousBinding="IncomeTripValues" id="IncomeTripChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                         </subviews>
@@ -2453,13 +2453,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="tyreSets" id="TyreChangeTyreSetContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="tyreSets.lbTitle" previousBinding="TyreChangeTyreSetContent" id="TyreChangeTyreSetValues"/>
-                                                                    <binding destination="TyreChangeForm" name="selectedObject" keyPath="selection.tyreSet" previousBinding="TyreChangeTyreSetValues" id="TyreChangeTyreSetChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="tyreSets.lbTitle" previousBinding="TyreChangeTyreSetContent" id="TyreChangeTyreSetValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="TyreChangeForm" name="selectedObject" keyPath="selection.tyreSet" previousBinding="TyreChangeTyreSetValues" id="TyreChangeTyreSetChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="TyreChangeRemovedLabel">
@@ -2533,13 +2533,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="drivers" id="TyreChangeDriverContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="TyreChangeDriverContent" id="TyreChangeDriverValues"/>
-                                                                    <binding destination="TyreChangeForm" name="selectedObject" keyPath="selection.driver" previousBinding="TyreChangeDriverValues" id="TyreChangeDriverChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="TyreChangeDriverContent" id="TyreChangeDriverValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="TyreChangeForm" name="selectedObject" keyPath="selection.driver" previousBinding="TyreChangeDriverValues" id="TyreChangeDriverChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="TyreChangeNoteLabel">
@@ -3103,13 +3103,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="drivers" id="MeterReadingDriverContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="MeterReadingDriverContent" id="MeterReadingDriverValues"/>
-                                                                    <binding destination="MeterReadingForm" name="selectedObject" keyPath="selection.driver" previousBinding="MeterReadingDriverValues" id="MeterReadingDriverChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="MeterReadingDriverContent" id="MeterReadingDriverValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="MeterReadingForm" name="selectedObject" keyPath="selection.driver" previousBinding="MeterReadingDriverValues" id="MeterReadingDriverChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="MeterReadingNoteLabel">
@@ -3221,13 +3221,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="checklists" name="content" keyPath="arrangedObjects" id="InspectionChecklistContent"/>
-                                                                    <binding destination="checklists" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="InspectionChecklistContent" id="InspectionChecklistValues"/>
-                                                                    <binding destination="InspectionForm" name="selectedObject" keyPath="selection.checklist" previousBinding="InspectionChecklistValues" id="InspectionChecklistChosen">
+                                                                    <binding destination="checklists" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="InspectionChecklistContent" id="InspectionChecklistValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="InspectionForm" name="selectedObject" keyPath="selection.checklist" previousBinding="InspectionChecklistValues" id="InspectionChecklistChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="inspectionChecklistEdit" id="inspectionChecklistEdit">
@@ -3260,13 +3260,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="-2" name="content" keyPath="drivers" id="InspectionDriverContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="InspectionDriverContent" id="InspectionDriverValues"/>
-                                                                    <binding destination="InspectionForm" name="selectedObject" keyPath="selection.driver" previousBinding="InspectionDriverValues" id="InspectionDriverChosen">
+                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="InspectionDriverContent" id="InspectionDriverValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="InspectionForm" name="selectedObject" keyPath="selection.driver" previousBinding="InspectionDriverValues" id="InspectionDriverChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="InspectionNoteLabel">
@@ -3872,13 +3872,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="expenseKinds" name="content" keyPath="arrangedObjects" id="scheduleExpenseKindContent"/>
-                                                                    <binding destination="expenseKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleExpenseKindContent" id="scheduleExpenseKindValues"/>
-                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.expenseKind" previousBinding="scheduleExpenseKindValues" id="scheduleExpenseKindChosen">
+                                                                    <binding destination="expenseKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleExpenseKindContent" id="scheduleExpenseKindValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.expenseKind" previousBinding="scheduleExpenseKindValues" id="scheduleExpenseKindChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="scheduleExpenseKindEdit" id="scheduleExpenseKindEdit">
@@ -3911,13 +3911,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="checklists" name="content" keyPath="arrangedObjects" id="scheduleChecklistContent"/>
-                                                                    <binding destination="checklists" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleChecklistContent" id="scheduleChecklistValues"/>
-                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.checklist" previousBinding="scheduleChecklistValues" id="scheduleChecklistChosen">
+                                                                    <binding destination="checklists" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleChecklistContent" id="scheduleChecklistValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.checklist" previousBinding="scheduleChecklistValues" id="scheduleChecklistChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="scheduleChecklistEdit" id="scheduleChecklistEdit">
@@ -4154,13 +4154,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="expenseKinds" name="content" keyPath="arrangedObjects" id="reminderExpenseKindContent"/>
-                                                                    <binding destination="expenseKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="reminderExpenseKindContent" id="reminderExpenseKindValues"/>
-                                                                    <binding destination="ReminderFormController" name="selectedObject" keyPath="selection.expenseKind" previousBinding="reminderExpenseKindValues" id="reminderExpenseKindChosen">
+                                                                    <binding destination="expenseKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="reminderExpenseKindContent" id="reminderExpenseKindValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ReminderFormController" name="selectedObject" keyPath="selection.expenseKind" previousBinding="reminderExpenseKindValues" id="reminderExpenseKindChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="reminderExpenseKindEdit" id="reminderExpenseKindEdit">
@@ -4193,13 +4193,13 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="checklists" name="content" keyPath="arrangedObjects" id="reminderChecklistContent"/>
-                                                                    <binding destination="checklists" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="reminderChecklistContent" id="reminderChecklistValues"/>
-                                                                    <binding destination="ReminderFormController" name="selectedObject" keyPath="selection.checklist" previousBinding="reminderChecklistValues" id="reminderChecklistChosen">
+                                                                    <binding destination="checklists" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="reminderChecklistContent" id="reminderChecklistValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
+                                                                    <binding destination="ReminderFormController" name="selectedObject" keyPath="selection.checklist" previousBinding="reminderChecklistValues" id="reminderChecklistChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="reminderChecklistEdit" id="reminderChecklistEdit">

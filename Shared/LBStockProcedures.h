@@ -99,6 +99,12 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 @property (nonatomic, copy, nullable) NSString *lb_shippingLines;
 @end
 
+@interface SupplierItem (LBStock)
+// Whether its item is preferably bought as it: set, it is (and no other);
+// cleared, none is.
+@property (nonatomic) BOOL lb_isPreferred;
+@end
+
 @interface Location (LBStock)
 // How many of the item its moves leave here: those in less those out, the
 // context's unsaved ones too (what the holding will say once saved).

@@ -343,9 +343,12 @@ devices make it.
   | `Reorder` | a warehouse | `Day` | the drafts |
 
   An order or a count posted with no number is given the next.
-- **The desktop app** has a Stock window: a sidebar (Items, Purchases,
-  Sales, Changelog, Counts, Overview, Setup), a list, and the selected
-  one's form beside it; it calls the actions, as its Reminders tab does.
+- **The desktop app** has a Stock window: tabs (Items, Sales, Purchases,
+  Changelog, Counts, Overview, Setup), a list, and the selected one's form
+  beside it; the item's card has its own tabs (Stock, Recipe, Suppliers,
+  Codes, Reorder). It calls the actions, as its Reminders tab does. Not
+  yet: the changelog's quantities before and after a move, and the
+  overview's weight and volume.
 - **The iOS app** has KiWi's tabs (Items, Orders, Overview, Settings), runs
   the procedures in its own store, and syncs.
 
