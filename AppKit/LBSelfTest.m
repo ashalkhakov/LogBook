@@ -800,10 +800,6 @@ static void LBStockSetupSteps(LBStockWindowController *stock) {
     LBTypeInRow(window, @"a location's name", @"Shelf B");
     LBClick(window, @"addCategory");
     LBTypeInRow(window, @"the category's name", @"Fasteners");
-#ifndef GNUSTEP
-    /* Contacts and orders not on GNUstep until ODataKit#56 is released:
-       there a new customer or supplier is posted before its new contact,
-       as the store happens to order them. */
     LBClick(window, @"addContact");
     LBTypeInRow(window, @"the contact's name", @"Parts Ltd");
     /* Its Supplier box ticked, as a click in the table's cell does. */
@@ -811,13 +807,11 @@ static void LBStockSetupSteps(LBStockWindowController *stock) {
     LBClick(window, @"addContact");
     LBTypeInRow(window, @"the contact's name", @"Bob's Garage");
     [stock.contacts.selectedObjects.firstObject setValue:@YES forKey:@"lb_isCustomer"];
-    /* Saved before its address: a new contact and its new address refer to
-       each other, which ODataIncrementalStore does not yet send in one
-       change set (ODataKit#56: the reference closing the cycle is not
-       deferred). Typed with the rest once that is released. */
-    LBClick(window, @"save");
-    LBCheck(@"the contacts saved", !stock.context.hasChanges && !stock.lastError,
-            stock.lastError.localizedRecoverySuggestion ?: stock.lastError);
+    /* Its address typed before anything is saved: the new contact and its
+       new address refer to each other, sent in one change set. Not on
+       GNUstep until ODataKit#58: there the server does not find the contact
+       the $ref closing that cycle names. */
+#ifndef GNUSTEP
     LBType(window, @"contactShipTo", @"1 Yard Lane");
 #endif
     LBClick(window, @"save");
@@ -835,17 +829,18 @@ static void LBStockSetupSteps(LBStockWindowController *stock) {
                 && [places isEqualToArray:@[ @"Garage / Shelf A", @"Garage / Shelf B", @"Main / Default" ]],
             places);
     LBCheck(@"its category", [[kept.categories.anyObject categoryName] isEqualToString:@"Fasteners"], kept.categories);
-#ifndef GNUSTEP
     Contact *bobs = nil, *parts = nil;
     for (Contact *contact in kept.contacts) {
         if ([contact.contactName isEqualToString:@"Bob's Garage"]) bobs = contact;
         if ([contact.contactName isEqualToString:@"Parts Ltd"]) parts = contact;
     }
-    LBCheck(@"its contacts: a supplier, a customer shipped to 1 Yard Lane",
-            parts.supplier && !parts.customer && bobs.customer && [bobs.shippingAddress.addressLines isEqualToString:@"1 Yard Lane"],
+    LBCheck(@"its contacts: a supplier, a customer", parts.supplier && !parts.customer && bobs.customer,
             [NSString stringWithFormat:@"%@ %@", parts, bobs]);
-    LBCheck(@"the forms offer them", stock.suppliers.count == 1 && stock.customers.count == 1, stock.suppliers);
+#ifndef GNUSTEP
+    LBCheck(@"the customer shipped to 1 Yard Lane", [bobs.shippingAddress.addressLines isEqualToString:@"1 Yard Lane"],
+            bobs.shippingAddress);
 #endif
+    LBCheck(@"the forms offer them", stock.suppliers.count == 1 && stock.customers.count == 1, stock.suppliers);
     LBCheck(@"the items' forms offer the category and the locations", stock.categories.count == 1 && stock.locations.count == 3,
             stock.locations);
     [stock.tabs selectTabViewItemWithIdentifier:@"items"];
@@ -873,9 +868,12 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBSpin();
     LBClick(window, @"newSale");
     SaleOrder *sale = stock.saleOrders.selectedObjects.firstObject;
-    LBCheck(@"a new sale, SO-GAR-0001, to Bob, shipped to 1 Yard Lane", [sale.lb_number isEqualToString:@"SO-GAR-0001"]
-                && [sale.customer.lbTitle isEqualToString:@"Bob's Garage"] && [sale.shipTo.addressLines isEqualToString:@"1 Yard Lane"],
+    LBCheck(@"a new sale, SO-GAR-0001, to Bob", [sale.lb_number isEqualToString:@"SO-GAR-0001"]
+                && [sale.customer.lbTitle isEqualToString:@"Bob's Garage"],
             sale.lb_number);
+#ifndef GNUSTEP
+    LBCheck(@"shipped to his yard", [sale.shipTo.addressLines isEqualToString:@"1 Yard Lane"], sale.shipTo);
+#endif
     LBClick(window, @"addSaleLine");
     LBChoose(window, @"saleLineItem", @"Bolt");
     LBTypeInCell(window, @"saleLinesTable", 1, @"3");
@@ -983,13 +981,14 @@ static void LBStockSteps(LBMainWindowController *controller) {
     LBType(window, @"itemPrice", @"0.5");
     LBClick(window, @"save");
     LBChoose(window, @"itemCategory", @"Fasteners");
-#ifndef GNUSTEP
     LBChoose(window, @"itemSupplier", @"Parts Ltd");
-#endif
     LBClick(window, @"save");
-    LBCheck(@"its price kept, in the catalog's currency; its category", LBIs(bolt.priceAmount, @"0.5")
-                && [bolt.priceCurrency isEqualToString:@"USD"] && [bolt.category.categoryName isEqualToString:@"Fasteners"],
-            [NSString stringWithFormat:@"%@ %@ %@", bolt.priceAmount, bolt.priceCurrency, stock.lastError]);
+    LBCheck(@"its price kept, in the catalog's currency; its category; its SKU given, GAR-00001", LBIs(bolt.priceAmount, @"0.5")
+                && [bolt.priceCurrency isEqualToString:@"USD"] && [bolt.category.categoryName isEqualToString:@"Fasteners"]
+                && [bolt.sku isEqualToString:@"GAR-00001"],
+            [NSString stringWithFormat:@"%@ %@ %@ %@", bolt.priceAmount, bolt.priceCurrency, bolt.sku, stock.lastError]);
+    LBCheck(@"bought from Parts Ltd: its supplier item, preferred", [bolt.preferredSupplierItem.supplier.lbTitle isEqualToString:@"Parts Ltd"],
+            bolt.preferredSupplierItem);
     LBMoveStock(stock, @"adjust", @"20", @"Opening");
     LBCheck(@"20 bolts brought in: on hand, held at Default, the move listed", LBIs(bolt.totalQuantity, @"20")
                 && [stock.holdings.arrangedObjects count] == 1 && [stock.moves.arrangedObjects count] == 1
@@ -1022,9 +1021,7 @@ static void LBStockSteps(LBMainWindowController *controller) {
     LBCheck(@"two assembled at Default: 2 mounts, 18 bolts, 3 brackets", LBIs(mount.totalQuantity, @"2") && LBIs(bolt.totalQuantity, @"18")
                                                                   && LBIs(bracket.totalQuantity, @"3"),
             stock.lastError ?: [NSString stringWithFormat:@"%@ %@ %@", mount.totalQuantity, bolt.totalQuantity, bracket.totalQuantity]);
-#ifndef GNUSTEP
     LBStockOrderSteps(stock, bolt, bracket);
-#endif
     LBType(window, @"itemSearch", @"mo");
     [stock search:nil];
     LBCheck(@"the list searched: Mount alone", [[stock.items.arrangedObjects valueForKey:@"itemName"] isEqualToArray:@[ @"Mount" ]],

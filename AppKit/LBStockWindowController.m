@@ -135,7 +135,7 @@ static void *LBItemChosen = &LBItemChosen;
     NSString *text = _itemSearch.stringValue;
     _items.filterPredicate = text.length ? [NSPredicate predicateWithFormat:@"%K CONTAINS[cd] %@ OR %K CONTAINS[cd] %@ OR %K CONTAINS[cd] %@",
                                                                             NSStringFromSelector(@selector(itemName)), text,
-                                                                            NSStringFromSelector(@selector(tag)), text,
+                                                                            NSStringFromSelector(@selector(sku)), text,
                                                                             NSStringFromSelector(@selector(descriptionValue)), text]
                                          : nil;
 }
@@ -565,8 +565,9 @@ static void *LBItemChosen = &LBItemChosen;
     item.id = [NSUUID UUID];
     item.created = [NSDate date];
     item.itemName = @"New Item";
-    /* Its catalog is the content set's: adding it to the controller adds
-       it there. */
+    /* Its SKU before it is shown: the next of the catalog's. Its catalog
+       is the content set's: adding it to the controller adds it there. */
+    item.sku = [[_windowController chosenCatalog] lb_nextSKU];
     return item;
 }
 

@@ -766,7 +766,8 @@ def stock_who_may(anna, ben, cid, dee):
     check("Ben, of its staff, sees it", status == 200 and [c["Id"].lower() for c in body["value"]] == [catalog["Id"]],
           (status, body))
     bolt = {"Id": str(uuid.uuid4()), "ItemName": "Bolt", "Created": now(), "Catalog@odata.bind": cat}
-    check("Anna's bolts", request("POST", "StockItems", bolt, user=anna)[0] == 201)
+    status, body = request("POST", "StockItems", bolt, user=anna)
+    check("Anna's bolts, their SKU given: GAR-00001", status == 201 and body.get("SKU", body.get("Sku")) == "GAR-00001", (status, body))
     status, body = request("POST", "StockItems", dict(bolt, Id=str(uuid.uuid4()), ItemName="Nut"), user=ben)
     check("Ben adds no items", status == 403, (status, body))
     item = "StockItems(%s)" % bolt["Id"]

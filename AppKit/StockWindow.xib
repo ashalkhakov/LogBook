@@ -250,7 +250,21 @@
                                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                         <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                         <tableColumns>
-                                                            <tableColumn identifier="itemName" width="170" minWidth="30" maxWidth="1000" id="itemsTableItemNameColumn">
+                                                            <tableColumn identifier="sku" width="80" minWidth="30" maxWidth="1000" id="itemsTableSkuColumn">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="SKU">
+                                                            <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                            <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="itemsTableSkuCell">
+                                                            <font key="font" metaFont="system"/>
+                                                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                            <binding destination="items" name="value" keyPath="arrangedObjects.sku" id="itemsTableSkuValue"/>
+                                                            </connections>
+                                                            </tableColumn>
+                                                            <tableColumn identifier="itemName" width="120" minWidth="30" maxWidth="1000" id="itemsTableItemNameColumn">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Item">
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                             <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -264,7 +278,7 @@
                                                             <binding destination="items" name="value" keyPath="arrangedObjects.itemName" id="itemsTableItemNameValue"/>
                                                             </connections>
                                                             </tableColumn>
-                                                            <tableColumn identifier="onHand" width="70" minWidth="30" maxWidth="1000" id="itemsTableOnHandColumn">
+                                                            <tableColumn identifier="onHand" width="60" minWidth="30" maxWidth="1000" id="itemsTableOnHandColumn">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="On hand">
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                             <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -279,7 +293,7 @@
                                                             <binding destination="items" name="value" keyPath="arrangedObjects.totalQuantity" id="itemsTableOnHandValue"/>
                                                             </connections>
                                                             </tableColumn>
-                                                            <tableColumn identifier="available" width="70" minWidth="30" maxWidth="1000" id="itemsTableAvailableColumn">
+                                                            <tableColumn identifier="available" width="60" minWidth="30" maxWidth="1000" id="itemsTableAvailableColumn">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Available">
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                             <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -294,7 +308,7 @@
                                                             <binding destination="items" name="value" keyPath="arrangedObjects.available" id="itemsTableAvailableValue"/>
                                                             </connections>
                                                             </tableColumn>
-                                                            <tableColumn identifier="incoming" width="70" minWidth="30" maxWidth="1000" id="itemsTableIncomingColumn">
+                                                            <tableColumn identifier="incoming" width="60" minWidth="30" maxWidth="1000" id="itemsTableIncomingColumn">
                                                             <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Incoming">
                                                             <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                                                             <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -440,7 +454,7 @@
                                             <connections>
                                                 <binding destination="-2" name="content" keyPath="suppliers" id="itemSupplierContent"/>
                                                 <binding destination="-2" name="contentValues" keyPath="suppliers.lbTitle" previousBinding="itemSupplierContent" id="itemSupplierValues"/>
-                                                <binding destination="items" name="selectedObject" keyPath="selection.supplier" previousBinding="itemSupplierValues" id="itemSupplierChosen">
+                                                <binding destination="items" name="selectedObject" keyPath="selection.lb_preferredSupplier" previousBinding="itemSupplierValues" id="itemSupplierChosen">
                                                     <dictionary key="options">
                                                         <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                         <string key="NSNullPlaceholder">None</string>
@@ -448,25 +462,25 @@
                                                 </binding>
                                             </connections>
                                         </popUpButton>
-                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemTagLabel">
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemSKULabel">
                                             <rect key="frame" x="425" y="523" width="90" height="17"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Tag" id="itemTagLabelCell">
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="SKU" id="itemSKULabelCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                         </textField>
-                                        <textField verticalHuggingPriority="750" identifier="itemTag" id="itemTag">
+                                        <textField verticalHuggingPriority="750" identifier="itemSKU" id="itemSKU">
                                             <rect key="frame" x="520" y="520" width="200" height="22"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemTagCell">
+                                            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemSKUCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                             <connections>
-                                                <binding destination="items" name="value" keyPath="selection.tag" id="itemTagValue"/>
+                                                <binding destination="items" name="value" keyPath="selection.sku" id="itemSKUValue"/>
                                             </connections>
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCountUnitLabel">

@@ -88,9 +88,11 @@ NS_ASSUME_NONNULL_BEGIN
 // A new catalog of the user's, named "New Catalog" to be typed over, with
 // its warehouse and location; chosen.
 - (IBAction)newCatalog:(nullable id)sender;
+// A new item of the chosen catalog, its SKU the next, its name to be
+// typed over.
 - (IBAction)addItem:(nullable id)sender;
 - (IBAction)removeItem:(nullable id)sender;
-// The items listed narrowed to those whose name, tag or description has
+// The items listed narrowed to those whose name, SKU or description has
 // what the search field says.
 - (IBAction)search:(nullable id)sender;
 // Setup: a new row of each, named to be typed over, chosen; the chosen
@@ -155,7 +157,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)shouldClose;
 @end
 
-// The items' controller: a new one made now, named to be typed over.
+// The items' controller: a new one made now, its SKU the catalog's next,
+// named to be typed over.
 @interface LBStockItemController : NSArrayController
 @property (nonatomic, weak) IBOutlet LBStockWindowController *windowController;
 @end

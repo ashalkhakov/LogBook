@@ -152,6 +152,19 @@ static int32_t LBNextOf(NSSet *documents) {
     return order;
 }
 
+- (NSString *)lb_nextSKU {
+    NSString *prefix = [(self.documentPrefix.length ? self.documentPrefix : @"SKU") stringByAppendingString:@"-"];
+    long highest = 0;
+    for (StockItem *item in self.stockItems) {
+        NSString *sku = item.sku;
+        if (![sku hasPrefix:prefix]) continue;
+        NSString *rest = [sku substringFromIndex:prefix.length];
+        NSCharacterSet *notDigits = [[NSCharacterSet decimalDigitCharacterSet] invertedSet];
+        if (rest.length && [rest rangeOfCharacterFromSet:notDigits].location == NSNotFound) highest = MAX(highest, (long)rest.longLongValue);
+    }
+    return [NSString stringWithFormat:@"%@%05ld", prefix, highest + 1];
+}
+
 - (int32_t)lb_nextNumberOf:(NSSet *)documents {
     return LBNextOf(documents);
 }
@@ -191,7 +204,7 @@ static int32_t LBNextOf(NSSet *documents) {
         Supplier *supplier = LBNew([Supplier class], self.managedObjectContext, nil);
         supplier.contact = self;
         supplier.catalog = self.catalog;
-    } else if (self.supplier.purchaseOrders.count == 0 && self.supplier.stockItems.count == 0) {
+    } else if (self.supplier.purchaseOrders.count == 0 && self.supplier.supplierItems.count == 0) {
         [self.managedObjectContext deleteObject:self.supplier];
     }
 }
@@ -243,6 +256,34 @@ static int32_t LBNextOf(NSSet *documents) {
 #pragma mark Items: transfers, adjustments, assemblies
 
 @implementation StockItem (LBStock)
+
+- (Supplier *)lb_preferredSupplier {
+    return self.preferredSupplierItem.supplier;
+}
+
+- (void)setLb_preferredSupplier:(Supplier *)supplier {
+    if (supplier == self.lb_preferredSupplier) return;
+    if (!supplier) {
+        self.preferredSupplierItem = nil;
+        return;
+    }
+    SupplierItem *bought = nil;
+    for (SupplierItem *each in self.supplierItems) {
+        if (each.supplier == supplier && !each.isDeleted) bought = each;
+    }
+    if (!bought) {
+        bought = LBNew([SupplierItem class], self.managedObjectContext, nil);
+        bought.supplier = supplier;
+        [self addSupplierItemsObject:bought];
+    }
+    self.preferredSupplierItem = bought;
+}
+
+- (SupplierItem *)lb_reorderedAs {
+    if (self.preferredSupplierItem && !self.preferredSupplierItem.isDeleted) return self.preferredSupplierItem;
+    NSArray *live = [self.supplierItems.allObjects filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"isDeleted == NO"]];
+    return live.count == 1 ? live[0] : nil;
+}
 
 - (Move *)lb_transfer:(NSDecimalNumber *)quantity from:(Location *)from to:(Location *)to by:(User *)user at:(NSDate *)now
                 error:(NSError **)error {
@@ -584,23 +625,32 @@ static BOOL LBWithin(Location *location, Location *counted) {
     for (ReorderRule *rule in [self.reorderRules.allObjects sortedArrayUsingFunction:LBByID context:NULL]) {
         if (!rule.isDue) continue;
         StockItem *item = rule.stockItem;
-        if (!item.supplier || !item.unitCostAmount) {
+        SupplierItem *bought = item.lb_reorderedAs;
+        NSDecimalNumber *cost = bought.supplierCostAmount ?: item.unitCostAmount;
+        NSString *currency = bought.supplierCostAmount ? bought.supplierCostCurrency : item.unitCostCurrency;
+        if (!bought || !cost) {
             [left addObject:item];
             continue;
         }
         NSDecimalNumber *has = [LBOr(item.available, [NSDecimalNumber zero]) decimalNumberByAdding:LBOr(item.incoming, [NSDecimalNumber zero])];
         NSDecimalNumber *wanted = [LBOr(rule.reorderLevel, rule.reorderPoint) decimalNumberBySubtracting:has];
         if (!LBPositive(wanted)) continue;
-        PurchaseOrder *order = orders[item.supplier.objectID];
+        /* At least its minimum, in whole packs. */
+        if (bought.minimumOrder && [wanted compare:bought.minimumOrder] == NSOrderedAscending) wanted = bought.minimumOrder;
+        if (LBPositive(bought.packSize)) {
+            wanted = [LBCeil([wanted decimalNumberByDividingBy:bought.packSize]) decimalNumberByMultiplyingBy:bought.packSize];
+        }
+        Supplier *supplier = bought.supplier;
+        PurchaseOrder *order = orders[supplier.objectID];
         if (!order) {
             NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"reorder at %@ on %@ from %@", LBText(self.id), dayText,
-                                                                  LBText(item.supplier.id)]);
+                                                                  LBText(supplier.id)]);
             order = LBNamed([PurchaseOrder class], context, uuid);
             if (!order) {
-                order = [self.catalog lb_newPurchaseOrderFrom:item.supplier on:day];
+                order = [self.catalog lb_newPurchaseOrderFrom:supplier on:day];
                 order.id = uuid;
             }
-            orders[item.supplier.objectID] = order;
+            orders[supplier.objectID] = order;
             [made addObject:order];
         }
         NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"%@ for %@", LBText(order.id), LBText(item.id)]);
@@ -608,8 +658,8 @@ static BOOL LBWithin(Location *location, Location *counted) {
         line.purchaseOrder = order;
         line.stockItem = item;
         line.quantity = wanted;
-        line.lineUnitCostAmount = item.unitCostAmount;
-        line.lineUnitCostCurrency = item.unitCostCurrency ?: self.catalog.currency;
+        line.lineUnitCostAmount = cost;
+        line.lineUnitCostCurrency = currency ?: self.catalog.currency;
     }
     if (skipped) *skipped = left;
     return made;

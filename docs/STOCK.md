@@ -103,8 +103,10 @@ searched by name, tag, description; filtered by category, supplier,
 warehouse; the catalog chosen above it.
 
 **The item** (KiWi's item card), its sections:
-- what it is: name, category, description, tag, photos, note, supplier,
-  count unit, the catalog's attributes it has;
+- what it is: its SKU, name, category, description, photos, note, count
+  unit, the catalog's attributes it has;
+- its codes: the barcodes and tags it is scanned or read by;
+- whom it is bought from: its supplier items, the preferred one first;
 - money: its price and unit cost, in the catalog's currency;
 - quantities: on hand, committed, available, incoming
   ([below](#on-hand-committed-available)), and each location's holding;
@@ -118,6 +120,29 @@ warehouse; the catalog chosen above it.
 
 Deleting an item that has moves or order lines is refused (the model's
 rules); one with neither is deleted with its holdings at zero.
+
+**Its SKU** is the catalog's own number for it: on its labels, on every
+order, in the changelog; kept whoever supplies it, and what customers
+order it by. Every item has one, unique in its catalog; one left out is
+given, the catalog's prefix and a running number (`GAR-00042`). Taking a
+supplier's is only a starting point: an item made from a supplier's
+listing may start with their SKU as its own, and from then on it is
+the catalog's.
+
+**Supplier items.** What a supplier sells of an item: its own SKU for it
+(written on purchase orders to it), its description, what it charges, in
+what packs, at the least how many, and how many days it takes. An item may
+have several; the one it is preferably bought from is what reordering
+buys (else its only one), at that supplier's cost, at least its minimum,
+in whole packs (120 wanted, packs of 50: 150).
+
+**Codes.** What is printed on an item or its pack and scanned (a GTIN:
+EAN-13, UPC-A, EAN-8; a Code 128; a QR code), or read from its RFID tag
+(an EPC), and how many units each stands for (a case's barcode, its
+count). An RFID tag of a GTIN's (an SGTIN: a GTIN and a serial) is read
+as its GTIN, so no tag need be entered one by one; its serial is the
+unit's, once there are [serials](#lots-serials-and-expiry). Scanning is
+not in the first version; the codes are kept from the start.
 
 ## Kits
 
@@ -347,6 +372,10 @@ Made (`lb-stock-check` checks each), as the design above needs them:
 6. **Contacts:** `Contact` and `Address`; `Customer` and `Supplier` each of
    one contact, in its catalog; a sale order's ship-to and bill-to, a
    shipment's ship-to.
+7. **SKUs, supplier items, codes:** `StockItem has SKU` (required, unique
+   per catalog); `SupplierItem` (the supplier's SKU, cost, pack size,
+   minimum, lead days; one preferred per item) for what was one supplier
+   per item; `ItemCode` (code, kind, units) for KiWi's tag.
 
 ## Steps
 
@@ -451,6 +480,8 @@ Holding is of Lot.                           -- optional; one per item, location
   lot: designed so now, nothing changes when lots come.
 - A serial is where its last move left it: `Serial is at Location`,
   derived. A serial shipped is gone; returned, it is back.
+- RFID: a serial's EPC is its tag (an SGTIN, its GTIN and its serial,
+  or a code of the catalog's own); a tag read is the unit it is on.
 - Expiry: picking takes the earliest expiry first; the overview lists lots
   expiring soon; an expired lot is adjusted away (reason "Expired").
   The item's own expiry date of the first version moves to its lots.
@@ -483,6 +514,15 @@ Shipment is of FulfilmentOrder.              -- its sale order through it
   open, in progress, on hold.
 - The purchase side's counterpart (an advance shipping notice: what a
   supplier says is on its way, to which warehouse) can come the same way.
+
+### Bills of materials with revisions
+
+A kit is an item, so it has a SKU and is sold and kept by it. Its recipe
+has no identity of its own: one recipe per kit. Where an item is made by
+more than one recipe, or by revisions of one (v1, v2), the recipe becomes
+an object, `BillOfMaterials` (of an item, its revision, one of them
+current), and the kit lines are its rather than the item's; assemblies
+and expansions then say which they followed.
 
 ### Costing
 

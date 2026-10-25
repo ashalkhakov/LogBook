@@ -47,6 +47,8 @@
 #import "Receipt+CoreDataClass.h"
 #import "StockCount+CoreDataClass.h"
 #import "ReorderRule+CoreDataClass.h"
+#import "SupplierItem+CoreDataClass.h"
+#import "ItemCode+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -76,6 +78,9 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // A new purchase order, a draft: from the supplier, placed on the day,
 // numbered the next in the catalog.
 - (PurchaseOrder *)lb_newPurchaseOrderFrom:(Supplier *)supplier on:(NSDate *)day;
+// The next SKU given an item: the catalog's prefix (else "SKU"), a dash,
+// and one more than the highest number so made (GAR-00042).
+- (NSString *)lb_nextSKU;
 // The next running number of the documents (orders of the catalog, a
 // warehouse's counts, an order's shipments): one more than the highest.
 - (int32_t)lb_nextNumberOf:(NSSet *)documents;
@@ -103,6 +108,12 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 @end
 
 @interface StockItem (LBStock)
+// Whom it is preferably bought from: set, its supplier item from them made
+// where it has none, and preferred.
+@property (nonatomic, strong, nullable) Supplier *lb_preferredSupplier;
+// What reordering buys: its preferred supplier item, else its only one;
+// nil for none or several and none preferred.
+@property (nonatomic, readonly, nullable) SupplierItem *lb_reorderedAs;
 // Moved, so many, from one location to another (a transfer), by the user at
 // now. Refused for none, the same location, a phantom kit, or more than is
 // held there.
@@ -205,10 +216,12 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
                                        by:(User *)user
                                        at:(NSDate *)now
                                     error:(NSError **)error;
-// Draft purchase orders for its reorder rules due: one for each supplier,
-// a line for each item, up to its level (its point, where it has none)
-// from what is available and coming; at the item's unit cost. Items with
-// no supplier or no unit cost are left, in skipped. The drafts made.
+// Draft purchase orders for its reorder rules due: one for each supplier
+// of what each item is reordered as (-lb_reorderedAs), a line for each
+// item, up to its level (its point, where it has none) from what is
+// available and coming, at least the supplier's minimum, in whole packs;
+// at the supplier's cost, else the item's unit cost. Items with no supplier
+// item to buy, or no cost, are left, in skipped. The drafts made.
 - (NSArray<PurchaseOrder *> *)lb_reorderOn:(NSDate *)day
                                    skipped:(NSArray<StockItem *> *_Nullable *_Nullable)skipped
                                      error:(NSError **)error;

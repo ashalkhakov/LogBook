@@ -32,8 +32,8 @@
 // warehouse) that warehouse's locations and reorder rules; a keeper (of a
 // warehouse, or its manager) the moves, holdings, receipts, shipments,
 // assemblies and counts there, which only a manager there, or the owner,
-// changes or removes. Order and count numbers left out are given, the
-// next of their kind. The procedures (LBStockActions.h) the same.
+// changes or removes. SKUs, order and count numbers left out are given,
+// the next of their kind. The procedures (LBStockActions.h) the same.
 //
 // An anonymous request (AllowAnonymous) is let do anything, as before a
 // sign-in is set.

@@ -125,6 +125,7 @@ static StockItem *LBItem(LBStock *stock, NSString *name) {
     item.itemName = name;
     item.catalog = stock->catalog;
     item.created = [NSDate date];
+    item.sku = [stock->catalog lb_nextSKU];
     return item;
 }
 
@@ -486,7 +487,11 @@ static void LBStockProcedures(void) {
     dees.lb_isCustomer = YES;
     dees.lb_shippingLines = @"2 High Street";
     StockItem *bolt = LBItem(&stock, @"Bolt");
-    bolt.supplier = supplier;
+    bolt.lb_preferredSupplier = supplier;
+    bolt.preferredSupplierItem.supplierSKU = @"PL-BOLT-8";
+    bolt.preferredSupplierItem.supplierCostAmount = LBN(@"0.20");
+    bolt.preferredSupplierItem.supplierCostCurrency = @"USD";
+    bolt.preferredSupplierItem.packSize = LBN(@"50");
     bolt.unitCostAmount = LBN(@"0.25");
     bolt.unitCostCurrency = @"USD";
     StockItem *bracket = LBItem(&stock, @"Bracket");
@@ -498,6 +503,17 @@ static void LBStockProcedures(void) {
     LBTakes(&stock, bundle, @"1", bracket);
     bundle.isAPhantomKit = YES;
     LBCheck(@"procedures: the catalog saved", LBSave(context, &why), why);
+    LBCheck(@"each item's SKU given: the catalog's prefix and a running number",
+            [bolt.sku isEqualToString:@"GAR-00001"] && [bundle.sku isEqualToString:@"GAR-00004"], @[ bolt.sku, bundle.sku ]);
+    LBCheck(@"the bolt bought from Parts Ltd as PL-BOLT-8", [bolt.lb_preferredSupplier.contact.contactName isEqualToString:@"Parts Ltd"]
+                                                            && bolt.lb_reorderedAs == bolt.preferredSupplierItem
+                                                            && [bolt.preferredSupplierItem.supplierSKU isEqualToString:@"PL-BOLT-8"],
+            bolt.preferredSupplierItem);
+    StockItem *twin = LBItem(&stock, @"Another Bolt");
+    twin.sku = bolt.sku;
+    why = nil;
+    LBCheck(@"another item of the bolt's SKU is refused", !LBSave(context, &why), nil);
+    printf("     (%s)\n", why.UTF8String);
     LBCheck(@"a contact made a customer, shipped to its lines: its address made, its own",
             dees.customer.catalog == catalog && [dees.shippingAddress.addressLines isEqualToString:@"2 High Street"]
                 && dees.shippingAddress.contact == dees && dees.billingAddress == dees.shippingAddress,
@@ -691,10 +707,10 @@ static void LBStockProcedures(void) {
     NSArray *skipped = nil;
     NSArray *drafts = [garage lb_reorderOn:now skipped:&skipped error:&error];
     PurchaseLine *reorder = [[drafts.firstObject purchaseLines] anyObject];
-    LBCheck(@"one draft, from Parts Ltd: 120 bolts at 0.25", drafts.count == 1 && [drafts.firstObject supplier] == supplier
-                                                                && LBSame(reorder.quantity, @"120")
-                                                                && LBSame(reorder.lineUnitCostAmount, @"0.25"),
-            @[ @(drafts.count), reorder.quantity ?: @"none" ]);
+    LBCheck(@"one draft, from Parts Ltd: 120 bolts wanted, 150 bought in packs of 50, at its 0.20",
+            drafts.count == 1 && [drafts.firstObject supplier] == supplier && LBSame(reorder.quantity, @"150")
+                && LBSame(reorder.lineUnitCostAmount, @"0.20"),
+            @[ @(drafts.count), reorder.quantity ?: @"none", reorder.lineUnitCostAmount ?: @"none" ]);
     LBCheck(@"brackets left: no supplier", [skipped isEqualToArray:@[ bracket ]], skipped);
     LBCheck(@"saved", LBSave(context, &why), why);
     LBCheck(@"its draft PO-GAR-0002", [[drafts.firstObject lb_number] isEqualToString:@"PO-GAR-0002"], [drafts.firstObject lb_number]);

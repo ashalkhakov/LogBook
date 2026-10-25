@@ -569,10 +569,14 @@ static id LBFollow(id from, NSString *path) {
     if ([made isKindOfClass:[Catalog class]]) ((Catalog *)made).catalogOwner = LBUserNamed(made.managedObjectContext, email, YES);
 }
 
-/* An order or count with no number is given the next of its kind. */
+/* An item with no SKU, an order or count with no number, is given the
+   next of its kind. */
 - (NSManagedObject *)insertObjectWithValues:(NSDictionary<NSString *, id> *)values request:(ODataRequest *)request reply:(ODataReply *)reply {
     NSManagedObject *made = [super insertObjectWithValues:values request:request reply:reply];
-    if ([made isKindOfClass:[SaleOrder class]] && ((SaleOrder *)made).runningNumber == 0) {
+    if ([made isKindOfClass:[StockItem class]] && !((StockItem *)made).sku.length) {
+        StockItem *item = (StockItem *)made;
+        item.sku = [item.catalog lb_nextSKU];
+    } else if ([made isKindOfClass:[SaleOrder class]] && ((SaleOrder *)made).runningNumber == 0) {
         SaleOrder *order = (SaleOrder *)made;
         order.runningNumber = [order.catalog lb_nextNumberOf:order.catalog.saleOrders];
     } else if ([made isKindOfClass:[PurchaseOrder class]] && ((PurchaseOrder *)made).runningNumber == 0) {
@@ -602,6 +606,8 @@ static void LBServeStock(ODataService *service, NSMutableDictionary<NSString *, 
         @[ @"ItemAttribute", catalog, @[], @(LBStockOwner) ],
         @[ @"ItemAttributeValue", @"stockItem.catalog", @[], @(LBStockOwner) ],
         @[ LBEntity(KitLine), @"kit.catalog", @[], @(LBStockOwner) ],
+        @[ LBEntity(SupplierItem), @"stockItem.catalog", @[], @(LBStockOwner) ],
+        @[ LBEntity(ItemCode), @"stockItem.catalog", @[], @(LBStockOwner) ],
         @[ LBEntity(Warehouse), catalog, @[], @(LBStockOwner) ],
         @[ LBEntity(WarehouseStaff), @"warehouse.catalog", @[], @(LBStockOwner) ],
         @[ LBEntity(Location), @"warehouse.catalog", @[ @"warehouse" ], @(LBStockManager) ],
