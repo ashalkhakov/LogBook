@@ -480,6 +480,11 @@ static void LBStockProcedures(void) {
     Customer *bob = LBInsert([Customer class], context);
     bob.contact = bobs;
     bob.catalog = catalog;
+    Contact *dees = LBInsert([Contact class], context);
+    dees.contactName = @"Dee's Shop";
+    dees.catalog = catalog;
+    dees.lb_isCustomer = YES;
+    dees.lb_shippingLines = @"2 High Street";
     StockItem *bolt = LBItem(&stock, @"Bolt");
     bolt.supplier = supplier;
     bolt.unitCostAmount = LBN(@"0.25");
@@ -493,6 +498,10 @@ static void LBStockProcedures(void) {
     LBTakes(&stock, bundle, @"1", bracket);
     bundle.isAPhantomKit = YES;
     LBCheck(@"procedures: the catalog saved", LBSave(context, &why), why);
+    LBCheck(@"a contact made a customer, shipped to its lines: its address made, its own",
+            dees.customer.catalog == catalog && [dees.shippingAddress.addressLines isEqualToString:@"2 High Street"]
+                && dees.shippingAddress.contact == dees && dees.billingAddress == dees.shippingAddress,
+            dees.shippingAddress);
 
     /* Adjustments: stock comes in, named holdings made. */
     LBCheck(@"20 bolts in: an opening adjustment",

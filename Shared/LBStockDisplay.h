@@ -34,6 +34,23 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSString *lbLocationTitle;
 @end
 
+@interface SaleOrder (LBStockDisplay)
+// How far it is shipped: "Shipped", "Partly", or nothing.
+@property (nonatomic, readonly, copy) NSString *lbFilled;
+@end
+@interface PurchaseOrder (LBStockDisplay)
+// How far it is received: "Received", "Partly", or nothing.
+@property (nonatomic, readonly, copy) NSString *lbFilled;
+@end
+// The order an order's lines are listed in: by item, a phantom kit's
+// components under its line.
+@interface SaleLine (LBStockDisplay)
+@property (nonatomic, readonly, copy) NSString *lbLineOrder;
+@end
+@interface PurchaseLine (LBStockDisplay)
+@property (nonatomic, readonly, copy) NSString *lbLineOrder;
+@end
+
 @interface Move (LBStockDisplay)
 // Where it went from and to: a location's title, or nothing.
 @property (nonatomic, readonly, copy) NSString *lbFromTitle;

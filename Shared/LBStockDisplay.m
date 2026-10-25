@@ -50,6 +50,26 @@
 - (NSString *)lbLocationTitle { return self.location.lbTitle ?: @""; }
 @end
 
+@implementation SaleOrder (LBStockDisplay)
+- (NSString *)lbFilled { return self.isFullyShipped ? @"Shipped" : self.isPartlyShipped ? @"Partly" : @""; }
+@end
+
+@implementation PurchaseOrder (LBStockDisplay)
+- (NSString *)lbFilled { return self.isFullyReceived ? @"Received" : self.isPartlyReceived ? @"Partly" : @""; }
+@end
+
+@implementation SaleLine (LBStockDisplay)
+- (NSString *)lbLineOrder {
+    NSString *own = self.stockItem.itemName ?: @"";
+    if (!self.expandedFrom) return [own stringByAppendingString:@" 0"];
+    return [NSString stringWithFormat:@"%@ 1 %@", self.expandedFrom.stockItem.itemName ?: @"", own];
+}
+@end
+
+@implementation PurchaseLine (LBStockDisplay)
+- (NSString *)lbLineOrder { return self.stockItem.itemName ?: @""; }
+@end
+
 @implementation Move (LBStockDisplay)
 
 - (NSString *)lbFromTitle { return self.source.lbTitle ?: @""; }

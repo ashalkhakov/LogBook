@@ -162,6 +162,57 @@ static int32_t LBNextOf(NSSet *documents) {
 
 @end
 
+#pragma mark Contacts
+
+@implementation Contact (LBStock)
+
+- (BOOL)lb_isCustomer {
+    return self.customer != nil && !self.customer.isDeleted;
+}
+
+- (void)setLb_isCustomer:(BOOL)flag {
+    if (flag == self.lb_isCustomer) return;
+    if (flag) {
+        Customer *customer = LBNew([Customer class], self.managedObjectContext, nil);
+        customer.contact = self;
+        customer.catalog = self.catalog;
+    } else if (self.customer.saleOrders.count == 0) {
+        [self.managedObjectContext deleteObject:self.customer];
+    }
+}
+
+- (BOOL)lb_isSupplier {
+    return self.supplier != nil && !self.supplier.isDeleted;
+}
+
+- (void)setLb_isSupplier:(BOOL)flag {
+    if (flag == self.lb_isSupplier) return;
+    if (flag) {
+        Supplier *supplier = LBNew([Supplier class], self.managedObjectContext, nil);
+        supplier.contact = self;
+        supplier.catalog = self.catalog;
+    } else if (self.supplier.purchaseOrders.count == 0 && self.supplier.stockItems.count == 0) {
+        [self.managedObjectContext deleteObject:self.supplier];
+    }
+}
+
+- (NSString *)lb_shippingLines {
+    return self.shippingAddress.addressLines;
+}
+
+- (void)setLb_shippingLines:(NSString *)lines {
+    if (!self.shippingAddress) {
+        if (!lines.length) return;
+        Address *address = LBNew([Address class], self.managedObjectContext, nil);
+        [self addAddressesObject:address];
+        self.shippingAddress = address;
+        if (!self.billingAddress) self.billingAddress = address;
+    }
+    self.shippingAddress.addressLines = lines;
+}
+
+@end
+
 #pragma mark Holdings
 
 @implementation Location (LBStock)

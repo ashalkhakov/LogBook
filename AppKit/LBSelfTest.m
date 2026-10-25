@@ -764,6 +764,10 @@ static void LBSnapshot(NSWindow *window, NSString *name) {
                                  atomically:YES];
 }
 
+static NSDecimalNumber *LBN10(void) {
+    return [NSDecimalNumber decimalNumberWithString:@"10"];
+}
+
 static NSWindow *LBStockWindow(void) {
     for (NSWindow *window in NSApp.windows) {
         if (window.isVisible && [window.windowController isKindOfClass:[LBStockWindowController class]]) return window;
@@ -777,6 +781,150 @@ static StockItem *LBStockItemNamed(LBStockWindowController *stock, NSString *nam
         if ([item.itemName isEqualToString:name]) return item;
     }
     return nil;
+}
+
+/* The stock window's Setup (docs/STOCK.md): the catalog's currency and
+   prefix; a warehouse with two shelves; a category; a supplier and a
+   customer, its address; saved, and the server's. */
+static void LBStockSetupSteps(LBStockWindowController *stock) {
+    NSWindow *window = stock.window;
+    [stock.tabs selectTabViewItemWithIdentifier:@"setup"];
+    LBSpin();
+    LBType(window, @"catalogCurrency", @"USD");
+    LBType(window, @"catalogPrefix", @"GAR");
+    LBClick(window, @"addWarehouse");
+    LBTypeInRow(window, @"the warehouse's name", @"Garage");
+    LBClick(window, @"addLocation");
+    LBTypeInRow(window, @"a location's name", @"Shelf A");
+    LBClick(window, @"addLocation");
+    LBTypeInRow(window, @"a location's name", @"Shelf B");
+    LBClick(window, @"addCategory");
+    LBTypeInRow(window, @"the category's name", @"Fasteners");
+#ifndef GNUSTEP
+    /* Contacts and orders not on GNUstep until ODataKit#56 is released:
+       there a new customer or supplier is posted before its new contact,
+       as the store happens to order them. */
+    LBClick(window, @"addContact");
+    LBTypeInRow(window, @"the contact's name", @"Parts Ltd");
+    /* Its Supplier box ticked, as a click in the table's cell does. */
+    [stock.contacts.selectedObjects.firstObject setValue:@YES forKey:@"lb_isSupplier"];
+    LBClick(window, @"addContact");
+    LBTypeInRow(window, @"the contact's name", @"Bob's Garage");
+    [stock.contacts.selectedObjects.firstObject setValue:@YES forKey:@"lb_isCustomer"];
+    /* Saved before its address: a new contact and its new address refer to
+       each other, which ODataIncrementalStore does not yet send in one
+       change set (ODataKit#56: the reference closing the cycle is not
+       deferred). Typed with the rest once that is released. */
+    LBClick(window, @"save");
+    LBCheck(@"the contacts saved", !stock.context.hasChanges && !stock.lastError,
+            stock.lastError.localizedRecoverySuggestion ?: stock.lastError);
+    LBType(window, @"contactShipTo", @"1 Yard Lane");
+#endif
+    LBClick(window, @"save");
+    LBCheck(@"the setup saved", !stock.context.hasChanges && !stock.lastError,
+            stock.lastError.localizedRecoverySuggestion ?: stock.lastError);
+    NSPredicate *named = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(catalogName)), @"Self-test Workshop"];
+    Catalog *kept = [LBServerObjects([Catalog class], named) firstObject];
+    NSMutableArray *places = [NSMutableArray array];
+    for (Warehouse *warehouse in kept.warehouses) {
+        for (Location *place in warehouse.locations) [places addObject:place.lbTitle];
+    }
+    [places sortUsingSelector:@selector(compare:)];
+    LBCheck(@"the server has its currency, prefix, warehouses and locations",
+            [kept.currency isEqualToString:@"USD"] && [kept.documentPrefix isEqualToString:@"GAR"]
+                && [places isEqualToArray:@[ @"Garage / Shelf A", @"Garage / Shelf B", @"Main / Default" ]],
+            places);
+    LBCheck(@"its category", [[kept.categories.anyObject categoryName] isEqualToString:@"Fasteners"], kept.categories);
+#ifndef GNUSTEP
+    Contact *bobs = nil, *parts = nil;
+    for (Contact *contact in kept.contacts) {
+        if ([contact.contactName isEqualToString:@"Bob's Garage"]) bobs = contact;
+        if ([contact.contactName isEqualToString:@"Parts Ltd"]) parts = contact;
+    }
+    LBCheck(@"its contacts: a supplier, a customer shipped to 1 Yard Lane",
+            parts.supplier && !parts.customer && bobs.customer && [bobs.shippingAddress.addressLines isEqualToString:@"1 Yard Lane"],
+            [NSString stringWithFormat:@"%@ %@", parts, bobs]);
+    LBCheck(@"the forms offer them", stock.suppliers.count == 1 && stock.customers.count == 1, stock.suppliers);
+#endif
+    LBCheck(@"the items' forms offer the category and the locations", stock.categories.count == 1 && stock.locations.count == 3,
+            stock.locations);
+    [stock.tabs selectTabViewItemWithIdentifier:@"items"];
+    LBSpin();
+}
+
+/* Typed into a cell of a table's chosen row, as a user does: the cell
+   edited, its text typed over. */
+static void LBTypeInCell(NSWindow *window, NSString *table, NSInteger column, NSString *text) {
+    NSTableView *view = (NSTableView *)LBControl(window.contentView, table);
+    NSInteger row = view.selectedRow;
+    LBCheck([NSString stringWithFormat:@"a row chosen in %@", table], view && row >= 0, nil);
+    if (!view || row < 0) return;
+    [view editColumn:column row:row withEvent:nil select:YES];
+    LBTypeInRow(window, [NSString stringWithFormat:@"%@'s cell", table], text);
+}
+
+/* Sales and purchases, as a user writes them: a sale to Bob of three
+   bolts, numbered, confirmed, shipped in two from Shelf A; a purchase
+   from Parts Ltd of ten brackets at a cost of 1, confirmed, received in
+   two at Default. Each the server's. */
+static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, StockItem *bracket) {
+    NSWindow *window = stock.window;
+    [stock.tabs selectTabViewItemWithIdentifier:@"saleOrders"];
+    LBSpin();
+    LBClick(window, @"newSale");
+    SaleOrder *sale = stock.saleOrders.selectedObjects.firstObject;
+    LBCheck(@"a new sale, SO-GAR-0001, to Bob, shipped to 1 Yard Lane", [sale.lb_number isEqualToString:@"SO-GAR-0001"]
+                && [sale.customer.lbTitle isEqualToString:@"Bob's Garage"] && [sale.shipTo.addressLines isEqualToString:@"1 Yard Lane"],
+            sale.lb_number);
+    LBClick(window, @"addSaleLine");
+    LBChoose(window, @"saleLineItem", @"Bolt");
+    LBTypeInCell(window, @"saleLinesTable", 1, @"3");
+    SaleLine *line = stock.saleLines.selectedObjects.firstObject;
+    LBCheck(@"its line: 3 bolts at their price", line.stockItem == bolt && LBIs(line.quantity, @"3") && LBIs(line.linePriceAmount, @"0.5"),
+            line.quantity);
+    LBClick(window, @"save");
+    LBClick(window, @"confirmSale");
+    LBCheck(@"saved, confirmed", [sale.orderState isEqualToString:@"Confirmed"] && !stock.lastError,
+            stock.lastError.localizedRecoverySuggestion ?: stock.lastError ?: sale.orderState);
+    LBChoose(window, @"saleMoveAt", @"Garage / Shelf A");
+    LBType(window, @"saleMoveQuantity", @"2");
+    [stock.saleLines setSelectedObjects:@[ line ]];
+    LBClick(window, @"shipLine");
+    LBCheck(@"2 shipped from Shelf A: partly shipped", LBIs(line.shippedQuantity, @"2") && [sale.lbFilled isEqualToString:@"Partly"],
+            stock.lastError ?: line.shippedQuantity);
+    LBClick(window, @"shipOutstanding");
+    LBCheck(@"the rest shipped: fully, in two shipments", [sale.lbFilled isEqualToString:@"Shipped"] && sale.shipments.count == 2,
+            stock.lastError ?: sale.lbFilled);
+
+    NSDecimalNumber *bracketsBefore = bracket.totalQuantity;
+    [stock.tabs selectTabViewItemWithIdentifier:@"purchaseOrders"];
+    LBSpin();
+    LBClick(window, @"newPurchase");
+    PurchaseOrder *purchase = stock.purchaseOrders.selectedObjects.firstObject;
+    LBCheck(@"a new purchase, PO-GAR-0001, from Parts Ltd", [purchase.lb_number isEqualToString:@"PO-GAR-0001"]
+                && [purchase.supplier.lbTitle isEqualToString:@"Parts Ltd"],
+            purchase.lb_number);
+    LBClick(window, @"addPurchaseLine");
+    LBChoose(window, @"purchaseLineItem", @"Bracket");
+    LBTypeInCell(window, @"purchaseLinesTable", 1, @"10");
+    LBTypeInCell(window, @"purchaseLinesTable", 2, @"1");
+    LBClick(window, @"save");
+    LBClick(window, @"confirmPurchase");
+    LBCheck(@"its line, 10 brackets at 1: saved, confirmed", [purchase.orderState isEqualToString:@"Confirmed"] && !stock.lastError,
+            stock.lastError.localizedRecoverySuggestion ?: stock.lastError ?: purchase.orderState);
+    LBChoose(window, @"purchaseMoveAt", @"Main / Default");
+    LBType(window, @"purchaseMoveQuantity", @"4");
+    [stock.purchaseLines setSelectedObjects:@[ purchase.purchaseLines.anyObject ]];
+    LBClick(window, @"receiveLine");
+    LBCheck(@"4 received: partly", [purchase.lbFilled isEqualToString:@"Partly"], stock.lastError ?: purchase.lbFilled);
+    LBClick(window, @"receiveOutstanding");
+    LBCheck(@"the rest received: fully, in two receipts; 10 brackets more on hand",
+            [purchase.lbFilled isEqualToString:@"Received"] && purchase.receipts.count == 2
+                && [bracket.totalQuantity compare:[bracketsBefore decimalNumberByAdding:LBN10()]] == NSOrderedSame,
+            stock.lastError ?: bracket.totalQuantity);
+    LBSnapshot(window, @"stock-purchases");
+    [stock.tabs selectTabViewItemWithIdentifier:@"items"];
+    LBSpin();
 }
 
 /* A new item of the chosen catalog, named so, saved. */
@@ -829,20 +977,31 @@ static void LBStockSteps(LBMainWindowController *controller) {
                 && [[[kept.warehouses anyObject] warehouseName] isEqualToString:@"Main"]
                 && [[[[[kept.warehouses anyObject] locations] anyObject] locationName] isEqualToString:@"Default"],
             kept);
+    LBStockSetupSteps(stock);
 
     StockItem *bolt = LBAddStockItem(stock, @"Bolt");
     LBType(window, @"itemPrice", @"0.5");
     LBClick(window, @"save");
-    LBCheck(@"its price kept, in the catalog's currency", LBIs(bolt.priceAmount, @"0.5")
-                                                             && [bolt.priceCurrency isEqualToString:catalog.currency ?: @""],
-            [NSString stringWithFormat:@"%@ %@", bolt.priceAmount, bolt.priceCurrency]);
+    LBChoose(window, @"itemCategory", @"Fasteners");
+#ifndef GNUSTEP
+    LBChoose(window, @"itemSupplier", @"Parts Ltd");
+#endif
+    LBClick(window, @"save");
+    LBCheck(@"its price kept, in the catalog's currency; its category", LBIs(bolt.priceAmount, @"0.5")
+                && [bolt.priceCurrency isEqualToString:@"USD"] && [bolt.category.categoryName isEqualToString:@"Fasteners"],
+            [NSString stringWithFormat:@"%@ %@ %@", bolt.priceAmount, bolt.priceCurrency, stock.lastError]);
     LBMoveStock(stock, @"adjust", @"20", @"Opening");
     LBCheck(@"20 bolts brought in: on hand, held at Default, the move listed", LBIs(bolt.totalQuantity, @"20")
                 && [stock.holdings.arrangedObjects count] == 1 && [stock.moves.arrangedObjects count] == 1
                 && [[[stock.moves.arrangedObjects firstObject] lbWhat] isEqualToString:@"Adjustment: Opening"],
             stock.lastError ?: bolt.totalQuantity);
+    LBChoose(window, @"stockTo", @"Garage / Shelf A");
+    LBMoveStock(stock, @"transfer", @"5", nil);
+    LBCheck(@"5 moved to Garage / Shelf A: two holdings, 20 on hand still", [stock.holdings.arrangedObjects count] == 2
+                                                                              && LBIs(bolt.totalQuantity, @"20"),
+            stock.lastError ?: [stock.holdings.arrangedObjects valueForKey:@"lbLocationTitle"]);
     LBMoveStock(stock, @"adjust", @"-25", @"Lost");
-    LBCheck(@"25 lost of 20 refused, in the procedure's words", [stock.lastError.localizedDescription containsString:@"holds 20"]
+    LBCheck(@"25 lost of the 15 at Default refused, in the procedure's words", [stock.lastError.localizedDescription containsString:@"holds 15"]
                                                                     && LBIs(bolt.totalQuantity, @"20"),
             stock.lastError);
 
@@ -860,9 +1019,12 @@ static void LBStockSteps(LBMainWindowController *controller) {
                                                                          && !stock.lastError,
             stock.lastError.localizedRecoverySuggestion ?: mount.makeable);
     LBMoveStock(stock, @"assemble", @"2", nil);
-    LBCheck(@"two assembled: 2 mounts, 18 bolts, 3 brackets", LBIs(mount.totalQuantity, @"2") && LBIs(bolt.totalQuantity, @"18")
+    LBCheck(@"two assembled at Default: 2 mounts, 18 bolts, 3 brackets", LBIs(mount.totalQuantity, @"2") && LBIs(bolt.totalQuantity, @"18")
                                                                   && LBIs(bracket.totalQuantity, @"3"),
             stock.lastError ?: [NSString stringWithFormat:@"%@ %@ %@", mount.totalQuantity, bolt.totalQuantity, bracket.totalQuantity]);
+#ifndef GNUSTEP
+    LBStockOrderSteps(stock, bolt, bracket);
+#endif
     LBType(window, @"itemSearch", @"mo");
     [stock search:nil];
     LBCheck(@"the list searched: Mount alone", [[stock.items.arrangedObjects valueForKey:@"itemName"] isEqualToArray:@[ @"Mount" ]],

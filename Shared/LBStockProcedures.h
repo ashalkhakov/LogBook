@@ -38,6 +38,7 @@
 #import "Customer+CoreDataClass.h"
 #import "Supplier+CoreDataClass.h"
 #import "Contact+CoreDataClass.h"
+#import "Address+CoreDataClass.h"
 #import "SaleOrder+CoreDataClass.h"
 #import "SaleLine+CoreDataClass.h"
 #import "Shipment+CoreDataClass.h"
@@ -81,6 +82,16 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // A document's number as people read it: the app's prefix for its kind,
 // the catalog's own where it has one, the running number (SO-GAR-0042).
 - (NSString *)lb_numberOfKind:(NSString *)kind running:(int32_t)number;
+@end
+
+@interface Contact (LBStock)
+// Whether it is a customer, a supplier, of its catalog: set, the part made
+// (or removed, refused where an order is of it: it stays, and says so).
+@property (nonatomic) BOOL lb_isCustomer;
+@property (nonatomic) BOOL lb_isSupplier;
+// Where it is shipped to, as lines of text: set, its shipping address
+// made where it has none (its billing address too, where it has none).
+@property (nonatomic, copy, nullable) NSString *lb_shippingLines;
 @end
 
 @interface Location (LBStock)
