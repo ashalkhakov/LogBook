@@ -53,15 +53,20 @@
         _coordinator = nil;
         return NO;
     }
-    _context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
-    _context.persistentStoreCoordinator = _coordinator;
-    _context.undoManager = [[NSUndoManager alloc] init];
+    _context = [self newContext];
+    return YES;
+}
+
+- (NSManagedObjectContext *)newContext {
+    NSManagedObjectContext *context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+    context.persistentStoreCoordinator = _coordinator;
+    context.undoManager = [[NSUndoManager alloc] init];
     /* What the server stamps as it saves (the sync's bookkeeping: a
        version, a last change), and what it settles (a reminder an event
        closed), comes back newer than the context read it: kept, beside
        what the context changed, which goes over it. */
-    _context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy;
-    return YES;
+    context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy;
+    return context;
 }
 
 /* The email the logbook knows the user by: the sign-in's, else the LBUser
@@ -86,13 +91,17 @@
 }
 
 - (BOOL)save:(NSError **)error {
-    if (!_context.hasChanges) return YES;
-    for (NSManagedObject *object in _context.insertedObjects) {
+    return [self saveContext:_context error:error];
+}
+
+- (BOOL)saveContext:(NSManagedObjectContext *)context error:(NSError **)error {
+    if (!context.hasChanges) return YES;
+    for (NSManagedObject *object in context.insertedObjects) {
         if ([object respondsToSelector:@selector(setId:)] && !((id<LBIdentified>)object).id) {
             ((id<LBIdentified>)object).id = [NSUUID UUID];
         }
     }
-    return [_context orm_prepareForSave:error] && [_context save:error];
+    return [context orm_prepareForSave:error] && [context save:error];
 }
 
 - (NSArray<NSError *> *)warnings {

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="24127" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" customObjectInstantitationMethod="direct">
+  <dependencies>
+    <deployment identifier="macosx"/>
+    <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="24127"/>
+  </dependencies>
+  <objects>
+    <customObject id="-2" userLabel="File's Owner" customClass="LBStockCountWindowController">
+      <connections>
+        <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="countRows" destination="countRows" id="countRowsOutlet"/>
+        <outlet property="countRowsTable" destination="countRowsTable" id="countRowsTableOutlet"/>
+      </connections>
+    </customObject>
+    <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+    <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+    <arrayController editable="YES" userLabel="Count Rows" id="countRows">
+      <connections>
+        <binding destination="-2" name="contentArray" keyPath="rowsCounted" id="countRowsContent"/>
+      </connections>
+    </arrayController>
+    <window title="Count" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookStockCount" animationBehavior="default" id="window">
+      <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+      <rect key="contentRect" x="180" y="140" width="660" height="520"/>
+      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
+      <value key="minSize" type="size" width="660" height="520"/>
+      <view key="contentView" id="content">
+        <rect key="frame" x="0" y="0" width="660" height="520"/>
+        <autoresizingMask key="autoresizingMask"/>
+        <subviews>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countPlaceLabel">
+            <rect key="frame" x="14" y="489" width="30" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Of" id="countPlaceLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="countPlace" id="countPlace">
+            <rect key="frame" x="49" y="483" width="300" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="countPlaceCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="countPlaceMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="-2" name="content" keyPath="countPlaces" id="countPlaceContent"/>
+              <binding destination="-2" name="contentValues" keyPath="countPlaces.lbTitle" previousBinding="countPlaceContent" id="countPlaceValues"/>
+              <binding destination="-2" name="selectedObject" keyPath="countPlace" previousBinding="countPlaceValues" id="countPlaceChosen"/>
+            </connections>
+          </popUpButton>
+          <button verticalHuggingPriority="750" identifier="startCount" id="startCount">
+            <rect key="frame" x="354" y="480" width="100" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <buttonCell key="cell" type="push" title="Start" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="startCountCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="startCount:" target="-2" id="startCountAction"/>
+            </connections>
+          </button>
+          <button identifier="countShowsExpected" id="countShowsExpected">
+            <rect key="frame" x="470" y="486" width="170" height="18"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <buttonCell key="cell" type="check" title="Show expected" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="countShowsExpectedCell">
+              <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <binding destination="-2" name="value" keyPath="showsExpected" id="countShowsExpectedValue"/>
+            </connections>
+          </button>
+          <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="countRowsTableScroll">
+            <rect key="frame" x="14" y="90" width="632" height="382"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <clipView key="contentView" id="countRowsTableClip">
+              <rect key="frame" x="1" y="1" width="630" height="380"/>
+              <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+              <subviews>
+                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="countRowsTableHeader" identifier="countRowsTable" id="countRowsTable">
+                  <rect key="frame" x="0" y="0" width="630" height="357"/>
+                  <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                  <size key="intercellSpacing" width="3" height="2"/>
+                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                  <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                  <tableColumns>
+                    <tableColumn identifier="item" width="230" minWidth="30" maxWidth="1000" id="countRowsTableItemColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Item">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="countRowsTableItemCell">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                      </textFieldCell>
+                      <connections>
+                        <binding destination="countRows" name="value" keyPath="arrangedObjects.item.lbTitle" id="countRowsTableItemValue"/>
+                      </connections>
+                    </tableColumn>
+                    <tableColumn identifier="location" width="200" minWidth="30" maxWidth="1000" id="countRowsTableLocationColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Location">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="countRowsTableLocationCell">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                      </textFieldCell>
+                      <connections>
+                        <binding destination="countRows" name="value" keyPath="arrangedObjects.location.lbTitle" id="countRowsTableLocationValue"/>
+                      </connections>
+                    </tableColumn>
+                    <tableColumn identifier="expected" width="80" minWidth="30" maxWidth="1000" id="countRowsTableExpectedColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Expected">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="countRowsTableExpectedCell">
+                        <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="countRowsTableExpectedFormatter"/>
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                      </textFieldCell>
+                      <connections>
+                        <binding destination="countRows" name="value" keyPath="arrangedObjects.expectedShown" id="countRowsTableExpectedValue"/>
+                      </connections>
+                    </tableColumn>
+                    <tableColumn identifier="found" width="80" minWidth="30" maxWidth="1000" id="countRowsTableFoundColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Found">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="countRowsTableFoundCell">
+                        <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="countRowsTableFoundFormatter"/>
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                      </textFieldCell>
+                      <connections>
+                        <binding destination="countRows" name="value" keyPath="arrangedObjects.found" id="countRowsTableFoundValue"/>
+                      </connections>
+                    </tableColumn>
+                  </tableColumns>
+                </tableView>
+              </subviews>
+            </clipView>
+            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="countRowsTableHScroller">
+              <rect key="frame" x="1" y="366" width="630" height="15"/>
+              <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+            </scroller>
+            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="countRowsTableVScroller">
+              <rect key="frame" x="616" y="1" width="15" height="380"/>
+              <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+            </scroller>
+            <tableHeaderView key="headerView" id="countRowsTableHeader">
+              <rect key="frame" x="0" y="0" width="630" height="23"/>
+              <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+            </tableHeaderView>
+          </scrollView>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countRowItemLabel">
+            <rect key="frame" x="14" y="55" width="40" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item" id="countRowItemLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="countRowItem" id="countRowItem">
+            <rect key="frame" x="59" y="49" width="220" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="countRowItemCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="countRowItemMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="-2" name="content" keyPath="catalogItems" id="countRowItemContent"/>
+              <binding destination="-2" name="contentValues" keyPath="catalogItems.lbTitle" previousBinding="countRowItemContent" id="countRowItemValues"/>
+              <binding destination="countRows" name="selectedObject" keyPath="selection.item" previousBinding="countRowItemValues" id="countRowItemChosen"/>
+            </connections>
+          </popUpButton>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countRowLocationLabel">
+            <rect key="frame" x="284" y="55" width="25" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At" id="countRowLocationLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="countRowLocation" id="countRowLocation">
+            <rect key="frame" x="314" y="49" width="220" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="countRowLocationCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="countRowLocationMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="-2" name="content" keyPath="countLocations" id="countRowLocationContent"/>
+              <binding destination="-2" name="contentValues" keyPath="countLocations.lbTitle" previousBinding="countRowLocationContent" id="countRowLocationValues"/>
+              <binding destination="countRows" name="selectedObject" keyPath="selection.location" previousBinding="countRowLocationValues" id="countRowLocationChosen"/>
+            </connections>
+          </popUpButton>
+          <button verticalHuggingPriority="750" identifier="addCountRow" id="addCountRow">
+            <rect key="frame" x="10" y="8" width="100" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Add Row" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addCountRowCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="addCountRow:" target="-2" id="addCountRowAction"/>
+            </connections>
+          </button>
+          <button verticalHuggingPriority="750" identifier="removeCountRow" id="removeCountRow">
+            <rect key="frame" x="110" y="8" width="115" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Remove Row" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeCountRowCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="removeCountRow:" target="-2" id="removeCountRowAction"/>
+              <binding destination="countRows" name="enabled" keyPath="canRemove" id="removeCountRowEnabled"/>
+            </connections>
+          </button>
+          <button verticalHuggingPriority="750" identifier="postCount" id="postCount">
+            <rect key="frame" x="535" y="8" width="115" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Post Count" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="postCountCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="postCount:" target="-2" id="postCountAction"/>
+              <binding destination="countRows" name="enabled" keyPath="arrangedObjects.@count" id="postCountEnabled"/>
+            </connections>
+          </button>
+        </subviews>
+      </view>
+      <connections>
+        <outlet property="delegate" destination="-2" id="windowDelegate"/>
+      </connections>
+    </window>
+  </objects>
+</document>

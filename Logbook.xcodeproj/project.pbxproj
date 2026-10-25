@@ -61,6 +61,14 @@
 			isa = PBXBuildFile;
 			fileRef = D9440F138977C55F58D15995 /* AppKit.framework */;
 		};
+		17A5EC43F70F3F6A0365515A /* LBStockCountWindowController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 409C3F87EC54981EE98BFB26 /* LBStockCountWindowController.m */;
+		};
+		1B53E59520416796EE53AB53 /* StockItem.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = D0D9070083F80CD0D5733CD9 /* StockItem.xib */;
+		};
 		1DDAAAA209F502AABBD87A63 /* ODataKit.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
@@ -68,6 +76,10 @@
 		1DFFCB4F560559D913842944 /* ODataSync.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
+		};
+		20F1409E469AF3CE4125FEB3 /* StockPurchase.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = FA5B18C260290594D3ADCF14 /* StockPurchase.xib */;
 		};
 		219C4077ED0376B4D8C4619C /* ODataIncrementalStore.xcframework */ = {
 			isa = PBXBuildFile;
@@ -186,6 +198,10 @@
 		54D6EE49D6E938F7DDAE8527 /* LBMainWindowController.m */ = {
 			isa = PBXBuildFile;
 			fileRef = BD71F723187129CDB667A72D /* LBMainWindowController.m */;
+		};
+		55163AC23A466DC095BC188A /* StockCount.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 1B50BA5E1C91FF419EF82E8F /* StockCount.xib */;
 		};
 		55D29C133A3C05C2C743A7E5 /* LBSignIn.m */ = {
 			isa = PBXBuildFile;
@@ -350,6 +366,14 @@
 			isa = PBXBuildFile;
 			fileRef = B7B9A497CDE38865D5D45891 /* UIKit.framework */;
 		};
+		9F8BE3DFB7CD7A8341EACB58 /* StockSale.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 883F7B11593A75CB7C5E95E0 /* StockSale.xib */;
+		};
+		9FFA1CCB7AD055C596E55444 /* LBStockItemWindowController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = E402CA41C1213E1747663E1A /* LBStockItemWindowController.m */;
+		};
 		A16F9AF36ECDBEFBD0612A4C /* HTTPServerKit.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */;
@@ -420,6 +444,10 @@
 			isa = PBXBuildFile;
 			fileRef = 4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */;
 		};
+		C399DB33835639D25AA56269 /* LBStockOrderWindowController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 1B68139C28655401D5A5B21D /* LBStockOrderWindowController.m */;
+		};
 		C3CE11FCB129BDCF4852DCA0 /* LBAppController.m */ = {
 			isa = PBXBuildFile;
 			fileRef = F8733BCB1B8361C68AA2E89C /* LBAppController.m */;
@@ -429,9 +457,17 @@
 			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
 			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
 		};
+		C4EC79F8329D4E41803D8946 /* CatalogSettings.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 2432BF71F62D11F0DCE041C6 /* CatalogSettings.xib */;
+		};
 		C602A0B55E99B81DE6C45579 /* CoreData.framework */ = {
 			isa = PBXBuildFile;
 			fileRef = 2AB66C65BE330D1517DF768E /* CoreData.framework */;
+		};
+		C850D84A632E628032978828 /* LBCatalogSettingsWindowController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 261369A52E8D3CB3F6D2B64F /* LBCatalogSettingsWindowController.m */;
 		};
 		CB17F011147C3CEE865BA8A2 /* Foundation.framework */ = {
 			isa = PBXBuildFile;
@@ -453,6 +489,10 @@
 		CED58ABEA9D41F3D78CB5077 /* LBProcedures.m */ = {
 			isa = PBXBuildFile;
 			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
+		};
+		D133B5ACC3CED76663C79052 /* LBStockEditor.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 1A3310166FC5A264617FA591 /* LBStockEditor.m */;
 		};
 		D150CB72C0373BBF67E78758 /* main.m */ = {
 			isa = PBXBuildFile;
@@ -757,12 +797,36 @@
 			path = "lb-procedures-check";
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		18EF9BF7A49E742BA0027A08 /* LBStockOrderWindowController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStockOrderWindowController.h;
+			sourceTree = "<group>";
+		};
+		1A3310166FC5A264617FA591 /* LBStockEditor.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStockEditor.m;
+			sourceTree = "<group>";
+		};
 		1AA616881FDF64023A455351 /* OTelKit.xcframework */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.xcframework;
 			name = OTelKit.xcframework;
 			path = ../NativeORM2/.deps/OTelKit.xcframework;
 			sourceTree = SOURCE_ROOT;
+		};
+		1B50BA5E1C91FF419EF82E8F /* StockCount.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = StockCount.xib;
+			sourceTree = "<group>";
+		};
+		1B68139C28655401D5A5B21D /* LBStockOrderWindowController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStockOrderWindowController.m;
+			sourceTree = "<group>";
 		};
 		1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */ = {
 			isa = PBXFileReference;
@@ -786,6 +850,18 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = UDQuantityField.m;
+			sourceTree = "<group>";
+		};
+		2432BF71F62D11F0DCE041C6 /* CatalogSettings.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = CatalogSettings.xib;
+			sourceTree = "<group>";
+		};
+		261369A52E8D3CB3F6D2B64F /* LBCatalogSettingsWindowController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBCatalogSettingsWindowController.m;
 			sourceTree = "<group>";
 		};
 		26F487F740C91D09AAF7869C /* LBVehicleSummary.h */ = {
@@ -824,6 +900,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = LBiOSControllers.h;
+			sourceTree = "<group>";
+		};
+		2E035A472DE9048A40CC51E2 /* LBStockItemWindowController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStockItemWindowController.h;
 			sourceTree = "<group>";
 		};
 		30E7D8345B87ED605821A180 /* LBCalendar.h */ = {
@@ -893,6 +975,12 @@
 			path = UDCalendarView.m;
 			sourceTree = "<group>";
 		};
+		409C3F87EC54981EE98BFB26 /* LBStockCountWindowController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStockCountWindowController.m;
+			sourceTree = "<group>";
+		};
 		470AD526B3A4B8CA0ADFC09B /* README.md */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = net.daringfireball.markdown;
@@ -903,6 +991,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBConnectPanel.m;
+			sourceTree = "<group>";
+		};
+		4DDC4EDEB5B9B0DABA7644A1 /* LBStockEditor.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStockEditor.h;
 			sourceTree = "<group>";
 		};
 		4E83A3CB72FBFB07198EF507 /* Preferences.xib */ = {
@@ -973,6 +1067,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBCurrencies.m;
+			sourceTree = "<group>";
+		};
+		6802924709AD07775C09BCA9 /* LBCatalogSettingsWindowController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBCatalogSettingsWindowController.h;
 			sourceTree = "<group>";
 		};
 		685ECA4661144E07ACCA3794 /* LBPreferencesController.h */ = {
@@ -1053,6 +1153,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBStockDisplay.m;
+			sourceTree = "<group>";
+		};
+		883F7B11593A75CB7C5E95E0 /* StockSale.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = StockSale.xib;
 			sourceTree = "<group>";
 		};
 		892723880096458A3BA80B0E /* LBProceduresCheck.m */ = {
@@ -1204,6 +1310,12 @@
 			path = System/Library/Frameworks/UIKit.framework;
 			sourceTree = SDKROOT;
 		};
+		B84277BF72A1805D5D8DB7FC /* LBStockCountWindowController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBStockCountWindowController.h;
+			sourceTree = "<group>";
+		};
 		B8B1C287A26229CAF6783017 /* UDQuantityField.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1263,6 +1375,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = LBStockWindowController.h;
+			sourceTree = "<group>";
+		};
+		D0D9070083F80CD0D5733CD9 /* StockItem.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = StockItem.xib;
 			sourceTree = "<group>";
 		};
 		D371E9DF0A4D53CA5C5BEBEF /* LBDisplay.h */ = {
@@ -1326,6 +1444,12 @@
 			path = LBMainWindowController.h;
 			sourceTree = "<group>";
 		};
+		E402CA41C1213E1747663E1A /* LBStockItemWindowController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBStockItemWindowController.m;
+			sourceTree = "<group>";
+		};
 		EEE3822C8E2C03EB633ED3AE /* Fuel.rdl */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = text.xml;
@@ -1360,6 +1484,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
 			path = ConnectPanel.xib;
+			sourceTree = "<group>";
+		};
+		FA5B18C260290594D3ADCF14 /* StockPurchase.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = StockPurchase.xib;
 			sourceTree = "<group>";
 		};
 		FA64ED383FFB91BEFF498056 /* LBStockDisplay.h */ = {
@@ -1616,6 +1746,7 @@
 		90051324002C9E91549A10E3 /* AppKit */ = {
 			isa = PBXGroup;
 			children = (
+				2432BF71F62D11F0DCE041C6 /* CatalogSettings.xib */,
 				F8746362A46CB5E2C52D1A7E /* ConnectPanel.xib */,
 				ABFDBC32D4665ABB05B1F819 /* Info.plist */,
 				1858D9209D5FE7B48B58866F /* LBAnswersController.h */,
@@ -1624,6 +1755,8 @@
 				F8733BCB1B8361C68AA2E89C /* LBAppController.m */,
 				6A1EBC28A9B6CE69C4B3F358 /* LBCalendarController.h */,
 				DBD2673923ED329189E1D866 /* LBCalendarController.m */,
+				6802924709AD07775C09BCA9 /* LBCatalogSettingsWindowController.h */,
+				261369A52E8D3CB3F6D2B64F /* LBCatalogSettingsWindowController.m */,
 				5CCDB675BB9F8C3A38017A0D /* LBConnectPanel.h */,
 				4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */,
 				324BB6A3D9A9BE9DE4F32543 /* LBCurrencies.h */,
@@ -1640,12 +1773,24 @@
 				AA1BB6F3704843F4C100FA9B /* LBReportsController.m */,
 				13623D0A57E5BB10F9182DD5 /* LBSelfTest.h */,
 				D754F8EB42F3ADAE0E299F79 /* LBSelfTest.m */,
+				B84277BF72A1805D5D8DB7FC /* LBStockCountWindowController.h */,
+				409C3F87EC54981EE98BFB26 /* LBStockCountWindowController.m */,
+				4DDC4EDEB5B9B0DABA7644A1 /* LBStockEditor.h */,
+				1A3310166FC5A264617FA591 /* LBStockEditor.m */,
+				2E035A472DE9048A40CC51E2 /* LBStockItemWindowController.h */,
+				E402CA41C1213E1747663E1A /* LBStockItemWindowController.m */,
+				18EF9BF7A49E742BA0027A08 /* LBStockOrderWindowController.h */,
+				1B68139C28655401D5A5B21D /* LBStockOrderWindowController.m */,
 				D090AFF26F4A18054D8494CB /* LBStockWindowController.h */,
 				0909862880AB1C4AD4F5EE4E /* LBStockWindowController.m */,
 				694E25C06D350F4886223FAB /* Lists.xib */,
 				4FE96229781E69B34DF214C9 /* MainMenu.xib */,
 				F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */,
 				4E83A3CB72FBFB07198EF507 /* Preferences.xib */,
+				1B50BA5E1C91FF419EF82E8F /* StockCount.xib */,
+				D0D9070083F80CD0D5733CD9 /* StockItem.xib */,
+				FA5B18C260290594D3ADCF14 /* StockPurchase.xib */,
+				883F7B11593A75CB7C5E95E0 /* StockSale.xib */,
 				F32AA887B6CB0E32A179DED7 /* StockWindow.xib */,
 				9F9B62C3CEAF21088CC988DF /* main.m */,
 			);
@@ -1881,6 +2026,11 @@
 				0104234405B4305646B85B40 /* Preferences.xib */,
 				683ABFCAE020079565AED216 /* Lists.xib */,
 				F9CCF7411FAEB452FA65A48A /* StockWindow.xib */,
+				1B53E59520416796EE53AB53 /* StockItem.xib */,
+				9F8BE3DFB7CD7A8341EACB58 /* StockSale.xib */,
+				20F1409E469AF3CE4125FEB3 /* StockPurchase.xib */,
+				55163AC23A466DC095BC188A /* StockCount.xib */,
+				C4EC79F8329D4E41803D8946 /* CatalogSettings.xib */,
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
 				528729F595FA1EDB414383AA /* Logbook.rdl */,
@@ -2081,6 +2231,7 @@
 				0A441C7DD4CE7A4FEEFA6A41 /* LBAnswersController.m */,
 				C3CE11FCB129BDCF4852DCA0 /* LBAppController.m */,
 				E63A728CF00EB704CEB4F90E /* LBCalendarController.m */,
+				C850D84A632E628032978828 /* LBCatalogSettingsWindowController.m */,
 				C151D3F90E7A8315F69EF777 /* LBConnectPanel.m */,
 				529DADF700964FC6237620B6 /* LBCurrencies.m */,
 				D66D87A70D3592981C2035CD /* LBListsController.m */,
@@ -2089,6 +2240,10 @@
 				A2A340CC7CD54ABA2AE1056F /* LBRemindersController.m */,
 				4AF4261543FF6ED24F470557 /* LBReportsController.m */,
 				DFBD0FF8323401C8CF5C5DF2 /* LBSelfTest.m */,
+				17A5EC43F70F3F6A0365515A /* LBStockCountWindowController.m */,
+				D133B5ACC3CED76663C79052 /* LBStockEditor.m */,
+				9FFA1CCB7AD055C596E55444 /* LBStockItemWindowController.m */,
+				C399DB33835639D25AA56269 /* LBStockOrderWindowController.m */,
 				4A7C39DF8D06BBC66581C911 /* LBStockWindowController.m */,
 				D150CB72C0373BBF67E78758 /* main.m */,
 				5AA4112F777D647934A73C69 /* UDCalendarView.m */,

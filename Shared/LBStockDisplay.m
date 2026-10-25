@@ -132,3 +132,83 @@
 }
 
 @end
+
+@implementation LBChange
+
+- (instancetype)initWithMove:(Move *)move from:(NSString *)from to:(NSString *)to {
+    if ((self = [super init])) {
+        _move = move;
+        _fromTitle = [from copy];
+        _toTitle = [to copy];
+    }
+    return self;
+}
+
+/* "Place: before → after", what the move does to the place's count of its
+   item, kept in held. */
+static NSString *LBStep(Location *place, Move *move, BOOL in, NSMutableDictionary *held) {
+    if (!place) return @"";
+    NSArray *key = @[ move.stockItem.objectID ?: [NSNull null], place.objectID ];
+    NSDecimalNumber *before = held[key] ?: [NSDecimalNumber zero];
+    NSDecimalNumber *moved = move.moved ?: [NSDecimalNumber zero];
+    NSDecimalNumber *after = in ? [before decimalNumberByAdding:moved] : [before decimalNumberBySubtracting:moved];
+    held[key] = after;
+    return [NSString stringWithFormat:@"%@: %@ \u2192 %@", place.lbTitle, before, after];
+}
+
++ (NSArray<LBChange *> *)changesOf:(NSArray<Move *> *)moves {
+    NSSortDescriptor *oldest = [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(moment)) ascending:YES];
+    NSMutableDictionary *held = [NSMutableDictionary dictionary];
+    NSMapTable *made = [NSMapTable strongToStrongObjectsMapTable];
+    for (Move *move in [moves sortedArrayUsingDescriptors:@[ oldest ]]) {
+        NSString *from = LBStep(move.source, move, NO, held);
+        NSString *to = LBStep(move.destination, move, YES, held);
+        [made setObject:[[LBChange alloc] initWithMove:move from:from to:to] forKey:move];
+    }
+    NSMutableArray *changes = [NSMutableArray arrayWithCapacity:moves.count];
+    for (Move *move in moves) [changes addObject:[made objectForKey:move]];
+    return changes;
+}
+
+@end
+
+@implementation LBStockTotals
+
+/* So many of the unit's factor (kg, or m, of one). */
+static NSDecimalNumber *LBInBase(NSDecimalNumber *quantity, NSDecimalNumber *factor) {
+    return factor ? [quantity decimalNumberByMultiplyingBy:factor] : quantity;
+}
+
+static NSDecimalNumber *LBRounded(NSDecimalNumber *number) {
+    NSDecimalNumberHandler *three = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain scale:3 raiseOnExactness:NO
+                                                                                    raiseOnOverflow:NO raiseOnUnderflow:NO
+                                                                                 raiseOnDivideByZero:NO];
+    return [number decimalNumberByRoundingAccordingToBehavior:three];
+}
+
++ (instancetype)totalsOf:(NSArray<StockItem *> *)items weightIn:(WeightUnit *)weightUnit sizeIn:(SizeUnit *)sizeUnit {
+    NSDecimalNumber *kilograms = [NSDecimalNumber zero], *cubicMetres = [NSDecimalNumber zero];
+    for (StockItem *item in items) {
+        NSDecimalNumber *held = item.totalQuantity;
+        if (!held) continue;
+        if (item.weightQuantity) {
+            kilograms = [kilograms decimalNumberByAdding:[held decimalNumberByMultiplyingBy:LBInBase(item.weightQuantity, item.weightWeightUnit.factor)]];
+        }
+        if (item.lengthQuantity && item.widthQuantity && item.heightQuantity) {
+            NSDecimalNumber *each = [[LBInBase(item.lengthQuantity, item.lengthSizeUnit.factor)
+                decimalNumberByMultiplyingBy:LBInBase(item.widthQuantity, item.widthSizeUnit.factor)]
+                decimalNumberByMultiplyingBy:LBInBase(item.heightQuantity, item.heightSizeUnit.factor)];
+            cubicMetres = [cubicMetres decimalNumberByAdding:[held decimalNumberByMultiplyingBy:each]];
+        }
+    }
+    LBStockTotals *totals = [[self alloc] init];
+    NSDecimalNumber *perWeight = weightUnit.factor, *perSize = sizeUnit.factor;
+    totals->_weight = LBRounded(perWeight ? [kilograms decimalNumberByDividingBy:perWeight] : kilograms);
+    NSDecimalNumber *perVolume = perSize ? [[perSize decimalNumberByMultiplyingBy:perSize] decimalNumberByMultiplyingBy:perSize] : nil;
+    totals->_volume = LBRounded(perVolume ? [cubicMetres decimalNumberByDividingBy:perVolume] : cubicMetres);
+    totals->_weightText = [NSString stringWithFormat:@"%@ %@", totals->_weight, weightUnit.code ?: @"kg"];
+    totals->_volumeText = [NSString stringWithFormat:@"%@ %@\u00B3", totals->_volume, sizeUnit.code ?: @"m"];
+    return totals;
+}
+
+@end

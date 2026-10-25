@@ -8,6 +8,8 @@
 #import "LBDisplay.h"
 #import "LBStockProcedures.h"
 #import "Category+CoreDataClass.h"
+#import "WeightUnit+CoreDataClass.h"
+#import "SizeUnit+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -72,6 +74,28 @@ NS_ASSUME_NONNULL_BEGIN
 // so many more, or (out) less.
 @property (nonatomic, readonly, copy) NSString *lbPlaceTitle;
 @property (nonatomic, readonly, nullable) NSDecimalNumber *lbChange;
+@end
+
+// A move as the changelog shows it: with what each of its locations held
+// of its item before it and after, "Main / Default: 20 → 15".
+@interface LBChange : NSObject
+@property (nonatomic, readonly, strong) Move *move;
+@property (nonatomic, readonly, copy) NSString *fromTitle;
+@property (nonatomic, readonly, copy) NSString *toTitle;
+// The moves' changes, in the order given; worked out from the oldest, so
+// the moves are to be all of their items' (a catalog's).
++ (NSArray<LBChange *> *)changesOf:(NSArray<Move *> *)moves;
+@end
+
+// What the items given weigh and take up, held: in the units given (none,
+// kg and m), as numbers and as text ("12.5 kg", "0.03 m³"). An item with
+// no weight, or not every size, adds nothing to that total.
+@interface LBStockTotals : NSObject
++ (instancetype)totalsOf:(NSArray<StockItem *> *)items weightIn:(nullable WeightUnit *)weightUnit sizeIn:(nullable SizeUnit *)sizeUnit;
+@property (nonatomic, readonly, strong) NSDecimalNumber *weight;
+@property (nonatomic, readonly, strong) NSDecimalNumber *volume;
+@property (nonatomic, readonly, copy) NSString *weightText;
+@property (nonatomic, readonly, copy) NSString *volumeText;
 @end
 
 @interface ReorderRule (LBStockDisplay)

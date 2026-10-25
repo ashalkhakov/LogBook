@@ -31,6 +31,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)open:(NSError **)error;
 // The main queue's: what the windows bind to.
 @property (nonatomic, readonly, strong, nullable) NSManagedObjectContext *context;
+// Another main-queue context over the same store, as the main one is (its
+// undo, its merge policy): a window's that edits apart from the others
+// (the stock windows), saved by -saveContext:error:.
+- (NSManagedObjectContext *)newContext;
 
 // Who is signed in, as a User of the logbook (made when there is none
 // yet): whom a new vehicle belongs to. With no sign-in, the user named by
@@ -41,6 +45,8 @@ NS_ASSUME_NONNULL_BEGIN
 // NO, and why (each violation in its NSDetailedErrorsKey), when a rule is
 // broken or the server refuses; the changes are kept to put right.
 - (BOOL)save:(NSError **)error;
+// The same of a context -newContext made.
+- (BOOL)saveContext:(NSManagedObjectContext *)context error:(NSError **)error;
 
 // What ought not to be, but may (deontic rules: the meter goes down, an
 // event after the car was sold): the objects changed asked, each warning
