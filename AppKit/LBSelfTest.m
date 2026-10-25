@@ -808,12 +808,8 @@ static void LBStockSetupSteps(LBStockWindowController *stock) {
     LBTypeInRow(window, @"the contact's name", @"Bob's Garage");
     [stock.contacts.selectedObjects.firstObject setValue:@YES forKey:@"lb_isCustomer"];
     /* Its address typed before anything is saved: the new contact and its
-       new address refer to each other, sent in one change set. Not on
-       GNUstep until ODataKit#58: there the server does not find the contact
-       the $ref closing that cycle names. */
-#ifndef GNUSTEP
+       new address refer to each other, sent in one change set. */
     LBType(window, @"contactShipTo", @"1 Yard Lane");
-#endif
     LBClick(window, @"save");
     LBCheck(@"the setup saved", !stock.context.hasChanges && !stock.lastError,
             stock.lastError.localizedRecoverySuggestion ?: stock.lastError);
@@ -836,10 +832,8 @@ static void LBStockSetupSteps(LBStockWindowController *stock) {
     }
     LBCheck(@"its contacts: a supplier, a customer", parts.supplier && !parts.customer && bobs.customer,
             [NSString stringWithFormat:@"%@ %@", parts, bobs]);
-#ifndef GNUSTEP
     LBCheck(@"the customer shipped to 1 Yard Lane", [bobs.shippingAddress.addressLines isEqualToString:@"1 Yard Lane"],
             bobs.shippingAddress);
-#endif
     LBCheck(@"the forms offer them", stock.suppliers.count == 1 && stock.customers.count == 1, stock.suppliers);
     LBCheck(@"the items' forms offer the category and the locations", stock.categories.count == 1 && stock.locations.count == 3,
             stock.locations);
@@ -871,9 +865,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBCheck(@"a new sale, SO-GAR-0001, to Bob", [sale.lb_number isEqualToString:@"SO-GAR-0001"]
                 && [sale.customer.lbTitle isEqualToString:@"Bob's Garage"],
             sale.lb_number);
-#ifndef GNUSTEP
     LBCheck(@"shipped to his yard", [sale.shipTo.addressLines isEqualToString:@"1 Yard Lane"], sale.shipTo);
-#endif
     LBClick(window, @"addSaleLine");
     LBChoose(window, @"saleLineItem", @"Bolt");
     LBTypeInCell(window, @"saleLinesTable", 1, @"3");

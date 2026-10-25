@@ -11,6 +11,7 @@ RUN set -e; \
     for name in RDLKIT; do \
       version=$(sed -n "s/^${name}_VERSION=//p" /tmp/logbook-pins.env); \
       repo=$(echo "$name" | tr 'A-Z_' 'a-z-'); \
-      curl -fsSL "https://github.com/ashalkhakov/$repo/releases/download/v$version/$repo-$version-ubuntu22.04-$(uname -m).tar.xz" \
-        | tar -C / -xJ; \
+      curl -fsSL --retry 5 --retry-all-errors -o /tmp/release.tar.xz \
+        "https://github.com/ashalkhakov/$repo/releases/download/v$version/$repo-$version-ubuntu22.04-$(uname -m).tar.xz"; \
+      tar -C / -xJf /tmp/release.tar.xz; rm /tmp/release.tar.xz; \
     done
