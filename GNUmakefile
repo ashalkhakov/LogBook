@@ -138,10 +138,16 @@ endif
 
 before-all:: lb-model
 
-# The server finds its model and tables beside itself.
+# The server finds its model, tables and permissions beside itself; the
+# permissions checked against the model by ODataKit's odatakit-permissions
+# where ODATAKIT_PERMISSIONS names it (none: the server checks them as it
+# starts).
+ODATAKIT_PERMISSIONS ?=
 after-all::
 	rm -rf obj/Logbook.momd && momc $(LB_MODEL)/Logbook.xcdatamodeld obj/Logbook.momd
 	cp $(LB_MODEL)/Constraints/Logbook.ormplans obj/
+	$(if $(ODATAKIT_PERMISSIONS),$(ODATAKIT_PERMISSIONS) check obj/Logbook.momd Server/Logbook.permissions.plist)
+	cp Server/Logbook.permissions.plist obj/
 
 LB_RUN = LD_LIBRARY_PATH="$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}"
 

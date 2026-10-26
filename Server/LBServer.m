@@ -26,6 +26,10 @@
 //                (HSApplication.h)
 //   AllowAnonymous  NO: a request that names no one is refused (default
 //                YES, for trying it out)
+//   Permissions  who may see and change the stock, as relations (default
+//                Logbook.permissions.plist here; ODataKit's
+//                docs/permissions.md): read once a sign-in is set, and one
+//                that does not fit the model stops the server
 //
 // Once a sign-in is set (TrustedUserHeader, JWTIssuer or
 // IntrospectionEndpoint), who may see and change what is kept as the model
@@ -54,7 +58,7 @@
 + (NSString *)environmentPrefix { return @"LB_"; }
 + (NSArray<NSString *> *)knownSettings {
     return [[super knownSettings] arrayByAddingObjectsFromArray:@[ @"Model", @"Plans", @"StoreType", @"StoreURL", @"ServiceRoot",
-                                                                   @"AllowAnonymous" ]];
+                                                                   @"AllowAnonymous", @"Permissions" ]];
 }
 @end
 
@@ -217,6 +221,19 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
     /* Who may see and change what, once someone is signed in: before
        ODataSync's, which keeps the handlers (they are its kind). */
     if ([c setting:@"TrustedUserHeader"] || [c setting:@"JWTIssuer"] || [c setting:@"IntrospectionEndpoint"]) {
+        /* The stock's as relations (Logbook.permissions.plist): one that
+           does not fit the model serves no one. */
+        NSURL *permissionsURL = LBBeside(c, @"Permissions", @"Logbook.permissions.plist");
+        NSError *unreadable = nil;
+        ODataPermissions *permissions = [ODataPermissions permissionsWithContentsOfURL:permissionsURL error:&unreadable];
+        NSArray *problems = permissions ? [permissions problemsWithModel:model] : nil;
+        if (!permissions || problems.count) {
+            if (error) *error = LBError(NSFileReadCorruptFileError, [NSString stringWithFormat:@"%@ (-Permissions): %@", permissionsURL.path,
+                                                                                               unreadable.localizedDescription
+                                                                                                   ?: [problems componentsJoinedByString:@"; "]]);
+            return NO;
+        }
+        _service.permissions = permissions;
         LBServePermissions(_service);
     }
     _histories = [[ODataSyncService alloc] initWithService:_service];

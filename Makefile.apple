@@ -66,7 +66,7 @@ LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(
 
 .PHONY: all check clean runtime ios ios-check ios-install ios-installcheck ios-runtime
 APP = $(BUILD)/Logbook.app
-all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-stock-check $(BUILD)/lb-sync-check
+all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(BUILD)/Logbook.permissions.plist $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-stock-check $(BUILD)/lb-sync-check
 
 # ORMKit's runtime, and its ormtool, which generates from the model.
 runtime $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(ORMTOOL):
@@ -97,6 +97,14 @@ $(GENERATED)/.made: $(MODEL)/.made
 
 $(BUILD)/Logbook.ormplans: $(MODEL)/.made
 	cp $(MODEL)/Constraints/Logbook.ormplans $@
+
+# Who may see and change the stock, beside the server: checked against the
+# model by ODataKit's odatakit-permissions, which ODATAKIT_PERMISSIONS
+# names (none: the server checks it as it starts).
+ODATAKIT_PERMISSIONS ?=
+$(BUILD)/Logbook.permissions.plist: Server/Logbook.permissions.plist $(BUILD)/Logbook.momd
+	$(if $(ODATAKIT_PERMISSIONS),$(ODATAKIT_PERMISSIONS) check $(BUILD)/Logbook.momd $<)
+	cp $< $@
 
 # What Logbook.xcodeproj's targets build on, generated (its Model target
 # runs this): the model, its classes, its tables, and the list of its

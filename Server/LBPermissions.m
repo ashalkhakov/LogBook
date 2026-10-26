@@ -506,12 +506,14 @@ static id LBFollow(id from, NSString *path) {
 @property (nonatomic, copy) NSString *catalogPath;           /* nil: a catalog */
 @property (nonatomic, copy) NSArray<NSString *> *warehousePaths;  /* each must be kept, managed */
 @property (nonatomic) LBStockWriter writer;
+/* Who may is the service's relations' to decide (its permissions). */
+@property (nonatomic) BOOL byRelations;
 @end
 
 @implementation LBStockHandler
 
 - (NSPredicate *)visibleTo:(NSString *)email request:(ODataRequest *)request {
-    return LBCatalogSeen(self.catalogPath, email);
+    return self.byRelations ? nil : LBCatalogSeen(self.catalogPath, email);
 }
 
 - (Catalog *)catalogOf:(id)row {
@@ -551,7 +553,7 @@ static BOOL LBKeepsIn(Catalog *catalog, NSString *email) {
 /* Why the user may not write the row (a write's values, or a row): nil
    when they may. Changing, a keeper's row is a manager's. */
 - (NSString *)whyNot:(id)row email:(NSString *)email changing:(BOOL)changing {
-    if ([self mayRecordParts:row email:email changing:changing]) return nil;
+    if (self.byRelations || [self mayRecordParts:row email:email changing:changing]) return nil;
     Catalog *catalog = [self catalogOf:row];
     if (!catalog) return self.catalogPath ? @"It names what catalog it is of" : nil;
     switch (self.writer) {
@@ -664,6 +666,7 @@ static void LBServeStock(ODataService *service, NSMutableDictionary<NSString *, 
         handler.catalogPath = each[1] == [NSNull null] ? nil : each[1];
         handler.warehousePaths = each[2];
         handler.writer = [each[3] integerValue];
+        handler.byRelations = service.permissions != nil;
         handlers[each[0]] = handler;
     }
 }

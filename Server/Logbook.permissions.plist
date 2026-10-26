@@ -1,0 +1,233 @@
+// Who may see and change Logbook's stock (docs/STOCK.md, Who may), as
+// relations (ODataKit's docs/permissions.md): the server loads it once a
+// sign-in is set, and the build checks it against the model
+// (odatakit-permissions check).
+//
+// A catalog is its owner's; a warehouse's staff (WarehouseStaff, as
+// Manager or Keeper) manage or keep it. Everything of a catalog is seen
+// by its owner and any warehouse's staff. The owner alone writes the
+// catalog's items, contacts, warehouses and staff; a manager of any of
+// its warehouses its orders, of a warehouse its locations and reorder
+// rules; a keeper of a warehouse what moves stock there, which a manager
+// there changes or removes.
+//
+// Relations join their terms with or. Where a rule needs and (a move
+// kept at both its ends; a parts sale, and a keeper where it ships from),
+// it is a where term, the keeper and manager written out as key paths.
+{
+  Version = 1;
+  Identities = ( sub, email );
+
+  Tuples = {
+    WarehouseStaff = { object = warehouse; relation = staffRole; user = "user.email"; };
+  };
+
+  Entities = {
+    Catalog = {
+      owner   = ( { where = "catalogOwner.email IN $user"; } );
+      manager = ( { relation = owner; }, { relation = manager; from = warehouses; } );
+      keeper  = ( { relation = manager; }, { relation = keeper; from = warehouses; } );
+      read    = ( { relation = keeper; } );
+      // Anyone signed in makes one, theirs (the handler names them owner).
+      insert  = ( { where = "$user.@count > 0"; } );
+      update  = ( { relation = owner; } );
+      delete  = ( { relation = owner; } );
+    };
+
+    Warehouse = {
+      owner   = ( { relation = owner; from = catalog; } );
+      Manager = ( { direct = YES; } );
+      Keeper  = ( { direct = YES; } );
+      manager = ( { relation = Manager; }, { relation = owner; } );
+      keeper  = ( { relation = Keeper; }, { relation = manager; } );
+      read    = ( { relation = read; from = catalog; } );
+      insert  = ( { relation = owner; } );
+      update  = ( { relation = owner; } );
+      delete  = ( { relation = owner; } );
+    };
+    WarehouseStaff = {
+      read   = ( { relation = read; from = warehouse; } );
+      insert = ( { relation = owner; from = warehouse; } );
+      update = ( { relation = owner; from = warehouse; } );
+      delete = ( { relation = owner; from = warehouse; } );
+    };
+
+    // The owner's: the catalog's items, its contacts and what is of them.
+    StockItem = {
+      owner  = ( { relation = owner; from = catalog; } );
+      read   = ( { relation = read; from = catalog; } );
+      insert = ( { relation = owner; } );
+      update = ( { relation = owner; } );
+      delete = ( { relation = owner; } );
+    };
+    Category = {
+      read   = ( { relation = read; from = catalog; } );
+      insert = ( { relation = owner; from = catalog; } );
+      update = ( { relation = owner; from = catalog; } );
+      delete = ( { relation = owner; from = catalog; } );
+    };
+    ItemAttribute = {
+      read   = ( { relation = read; from = catalog; } );
+      insert = ( { relation = owner; from = catalog; } );
+      update = ( { relation = owner; from = catalog; } );
+      delete = ( { relation = owner; from = catalog; } );
+    };
+    Supplier = {
+      read   = ( { relation = read; from = catalog; } );
+      insert = ( { relation = owner; from = catalog; } );
+      update = ( { relation = owner; from = catalog; } );
+      delete = ( { relation = owner; from = catalog; } );
+    };
+    // A vehicle owner's contact and customer, for the parts their
+    // services use: made by the catalog's warehouse staff too.
+    Contact = {
+      owner  = ( { relation = owner; from = catalog; } );
+      read   = ( { relation = read; from = catalog; } );
+      insert = ( { relation = owner; },
+                 { where = "user != nil AND SUBQUERY(catalog.warehouses, $w, ANY $w.warehouseStaffs.user.email IN $user)[SIZE] > 0"; } );
+      update = ( { relation = owner; } );
+      delete = ( { relation = owner; } );
+    };
+    Customer = {
+      read   = ( { relation = read; from = catalog; } );
+      insert = ( { relation = owner; from = catalog; },
+                 { where = "contact.user != nil AND SUBQUERY(catalog.warehouses, $w, ANY $w.warehouseStaffs.user.email IN $user)[SIZE] > 0"; } );
+      update = ( { relation = owner; from = catalog; } );
+      delete = ( { relation = owner; from = catalog; } );
+    };
+    Address = {
+      read   = ( { relation = read; from = contact; } );
+      insert = ( { relation = owner; from = contact; } );
+      update = ( { relation = owner; from = contact; } );
+      delete = ( { relation = owner; from = contact; } );
+    };
+    ItemAttributeValue = {
+      read   = ( { relation = read; from = stockItem; } );
+      insert = ( { relation = owner; from = stockItem; } );
+      update = ( { relation = owner; from = stockItem; } );
+      delete = ( { relation = owner; from = stockItem; } );
+    };
+    KitLine = {
+      read   = ( { relation = read; from = kit; } );
+      insert = ( { relation = owner; from = kit; } );
+      update = ( { relation = owner; from = kit; } );
+      delete = ( { relation = owner; from = kit; } );
+    };
+    SupplierItem = {
+      read   = ( { relation = read; from = stockItem; } );
+      insert = ( { relation = owner; from = stockItem; } );
+      update = ( { relation = owner; from = stockItem; } );
+      delete = ( { relation = owner; from = stockItem; } );
+    };
+    ItemCode = {
+      read   = ( { relation = read; from = stockItem; } );
+      insert = ( { relation = owner; from = stockItem; } );
+      update = ( { relation = owner; from = stockItem; } );
+      delete = ( { relation = owner; from = stockItem; } );
+    };
+
+    // A warehouse's managers': its locations and reorder rules.
+    Location = {
+      manager = ( { relation = manager; from = warehouse; } );
+      keeper  = ( { relation = keeper; from = warehouse; } );
+      read    = ( { relation = read; from = warehouse; } );
+      insert  = ( { relation = manager; } );
+      update  = ( { relation = manager; } );
+      delete  = ( { relation = manager; } );
+    };
+    ReorderRule = {
+      read   = ( { relation = read; from = warehouse; } );
+      insert = ( { relation = manager; from = warehouse; } );
+      update = ( { relation = manager; from = warehouse; } );
+      delete = ( { relation = manager; from = warehouse; } );
+    };
+
+    // Orders: any of the catalog's managers'. A service's or tyre
+    // change's parts sale, and its lines: a keeper's where it ships from.
+    SaleOrder = {
+      manager = ( { relation = manager; from = catalog; } );
+      read    = ( { relation = read; from = catalog; } );
+      insert  = ( { relation = manager; },
+                  { where = "(serviceAsPartsSale != nil OR tyreChangeAsPartsSale != nil) AND (shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
+      update  = ( { relation = manager; },
+                  { where = "(serviceAsPartsSale != nil OR tyreChangeAsPartsSale != nil) AND (shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
+      delete  = ( { relation = manager; },
+                  { where = "(serviceAsPartsSale != nil OR tyreChangeAsPartsSale != nil) AND (shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
+    };
+    SaleLine = {
+      read   = ( { relation = read; from = saleOrder; } );
+      insert = ( { relation = manager; from = saleOrder; },
+                 { where = "(saleOrder.serviceAsPartsSale != nil OR saleOrder.tyreChangeAsPartsSale != nil) AND (saleOrder.shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY saleOrder.shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
+      update = ( { relation = manager; from = saleOrder; },
+                 { where = "(saleOrder.serviceAsPartsSale != nil OR saleOrder.tyreChangeAsPartsSale != nil) AND (saleOrder.shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY saleOrder.shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
+      delete = ( { relation = manager; from = saleOrder; },
+                 { where = "(saleOrder.serviceAsPartsSale != nil OR saleOrder.tyreChangeAsPartsSale != nil) AND (saleOrder.shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY saleOrder.shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
+    };
+    PurchaseOrder = {
+      manager = ( { relation = manager; from = catalog; } );
+      read    = ( { relation = read; from = catalog; } );
+      insert  = ( { relation = manager; } );
+      update  = ( { relation = manager; } );
+      delete  = ( { relation = manager; } );
+    };
+    PurchaseLine = {
+      read   = ( { relation = read; from = purchaseOrder; } );
+      insert = ( { relation = manager; from = purchaseOrder; } );
+      update = ( { relation = manager; from = purchaseOrder; } );
+      delete = ( { relation = manager; from = purchaseOrder; } );
+    };
+
+    // What moves stock: made by a keeper where it is, changed or removed
+    // by a manager there.
+    Holding = {
+      read   = ( { relation = read; from = stockItem; } );
+      insert = ( { relation = keeper; from = location; } );
+      update = ( { relation = manager; from = location; } );
+      delete = ( { relation = manager; from = location; } );
+    };
+    // A move is kept at both its ends: a transfer between warehouses
+    // needs both.
+    Move = {
+      read   = ( { relation = read; from = stockItem; } );
+      insert = ( { where = "(source != nil OR destination != nil) AND (source == nil OR source.warehouse.catalog.catalogOwner.email IN $user OR ANY source.warehouse.warehouseStaffs.user.email IN $user) AND (destination == nil OR destination.warehouse.catalog.catalogOwner.email IN $user OR ANY destination.warehouse.warehouseStaffs.user.email IN $user)"; } );
+      update = ( { where = "(source != nil OR destination != nil) AND (source == nil OR source.warehouse.catalog.catalogOwner.email IN $user OR SUBQUERY(source.warehouse.warehouseStaffs, $s, $s.staffRole == 'Manager' AND $s.user.email IN $user)[SIZE] > 0) AND (destination == nil OR destination.warehouse.catalog.catalogOwner.email IN $user OR SUBQUERY(destination.warehouse.warehouseStaffs, $s, $s.staffRole == 'Manager' AND $s.user.email IN $user)[SIZE] > 0)"; } );
+      delete = ( { where = "(source != nil OR destination != nil) AND (source == nil OR source.warehouse.catalog.catalogOwner.email IN $user OR SUBQUERY(source.warehouse.warehouseStaffs, $s, $s.staffRole == 'Manager' AND $s.user.email IN $user)[SIZE] > 0) AND (destination == nil OR destination.warehouse.catalog.catalogOwner.email IN $user OR SUBQUERY(destination.warehouse.warehouseStaffs, $s, $s.staffRole == 'Manager' AND $s.user.email IN $user)[SIZE] > 0)"; } );
+    };
+    Shipment = {
+      read   = ( { relation = read; from = saleOrder; } );
+      insert = ( { relation = keeper; from = shippedFrom; } );
+      update = ( { relation = manager; from = shippedFrom; } );
+      delete = ( { relation = manager; from = shippedFrom; } );
+    };
+    Receipt = {
+      read   = ( { relation = read; from = purchaseOrder; } );
+      insert = ( { relation = keeper; from = receivedAt; } );
+      update = ( { relation = manager; from = receivedAt; } );
+      delete = ( { relation = manager; from = receivedAt; } );
+    };
+    CustomerReturn = {
+      read   = ( { relation = read; from = saleOrder; } );
+      insert = ( { relation = keeper; from = returnedTo; } );
+      update = ( { relation = manager; from = returnedTo; } );
+      delete = ( { relation = manager; from = returnedTo; } );
+    };
+    SupplierReturn = {
+      read   = ( { relation = read; from = purchaseOrder; } );
+      insert = ( { relation = keeper; from = returnedFrom; } );
+      update = ( { relation = manager; from = returnedFrom; } );
+      delete = ( { relation = manager; from = returnedFrom; } );
+    };
+    Assembly = {
+      read   = ( { relation = read; from = assembled; } );
+      insert = ( { relation = keeper; from = assembledAt; } );
+      update = ( { relation = manager; from = assembledAt; } );
+      delete = ( { relation = manager; from = assembledAt; } );
+    };
+    StockCount = {
+      read   = ( { relation = read; from = warehouse; } );
+      insert = ( { relation = keeper; from = warehouse; } );
+      update = ( { relation = manager; from = warehouse; } );
+      delete = ( { relation = manager; from = warehouse; } );
+    };
+  };
+}

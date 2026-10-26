@@ -786,6 +786,21 @@ def stock_who_may(anna, ben, cid, dee):
     check("and changes no move: a manager's", status == 403, (status, body))
     status, body = request("PATCH", "Moves(%s)" % moved["Id"], {"Note": "checked"}, user=dee)
     check("Dee, managing there, notes it", status in (200, 204), (status, body))
+    # A move sent as it is, as a syncing phone sends one: kept at both its ends.
+    shop = {"Id": str(uuid.uuid4()), "WarehouseName": "Shop", "Catalog@odata.bind": cat}
+    check("Anna's shop, where Ben is of no staff", request("POST", "Warehouses", shop, user=anna)[0] == 201)
+    counter = {"Id": str(uuid.uuid4()), "LocationName": "Counter", "Warehouse@odata.bind": "Warehouses(%s)" % shop["Id"]}
+    check("its counter", request("POST", "Locations", counter, user=anna)[0] == 201)
+    def move(source, destination):
+        return {"Id": str(uuid.uuid4()), "Moved": 1, "Moment": now(), "StockItem@odata.bind": item,
+                "Source@odata.bind": source, "Destination@odata.bind": destination, "User@odata.bind": "Users('%s')" % ben}
+    status, body = request("POST", "Moves", move(a, b), user=ben)
+    check("Ben sends a move of a bolt from A to B, both his warehouse's", status == 201, (status, body))
+    status, body = request("POST", "Moves", move("Locations(%s)" % counter["Id"], a), user=ben)
+    check("one from the shop's counter, kept by him at one end only, is refused", status == 403, (status, body))
+    status, body = request("POST", "Moves", move(a, b), user=cid)
+    check("Cid sends none: the shelves are none he sees", status == 400 and "There is no Locations" in body["error"]["message"],
+          (status, body))
 
     contact = {"Id": str(uuid.uuid4()), "ContactName": "Bob's Garage", "Catalog@odata.bind": cat}
     check("Anna's contact", request("POST", "Contacts", contact, user=anna)[0] == 201)
