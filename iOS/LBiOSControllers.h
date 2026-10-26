@@ -25,6 +25,8 @@
 #import "Vehicle+CoreDataClass.h"
 #import "Record+CoreDataClass.h"
 #import "Reminder+CoreDataClass.h"
+#import "StockItem+CoreDataClass.h"
+#import "Location+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -179,6 +181,13 @@ FOUNDATION_EXPORT CGFloat const LBPhotoLongestSide;
 - (void)addItemTask:(NSString *)task cost:(NSDecimalNumber *)cost;
 // An inspection's answer to the question.
 - (void)answer:(BOOL)yes toQuestionAt:(NSUInteger)index;
+// A service's parts (Shared/LBStockProcedures.h): the lines of a sale of
+// them to the vehicle's owner, shipped as it is saved ("2 × Brake pad, from
+// Garage / Shelf A"); where they come from (the phone keeps the last); a
+// part used, so many of the item. NO, and why: none used.
+- (NSArray<NSString *> *)partRows;
+@property (nonatomic, strong, nullable) Location *partsLocation;
+- (BOOL)usePart:(StockItem *)item quantity:(NSDecimalNumber *)quantity problems:(NSArray<NSString *> *_Nullable *_Nullable)problems;
 // A receipt's photo (JPEG data), as one picked: the attachment's content.
 - (void)addImageData:(NSData *)jpeg;
 // A photo taken or chosen (UIImagePickerControllerDelegate's): kept as a

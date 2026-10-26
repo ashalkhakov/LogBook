@@ -22,6 +22,9 @@
 #import "MeterReading+CoreDataClass.h"
 #import "Inspection+CoreDataClass.h"
 #import "Attachment+CoreDataClass.h"
+#import "LBPartsPanelController.h"
+#import "LBStockEditor.h"
+#import "LBStockProcedures.h"
 
 static void *LBVehicleChosen = &LBVehicleChosen;
 static void *LBRecordChosen = &LBRecordChosen;
@@ -420,8 +423,14 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 - (BOOL)saveChanges {
     NSError *error = nil;
+    /* A record's parts shipped as the server saves: the stock windows told. */
+    BOOL stock = NO;
+    for (NSManagedObject *object in [self.context.insertedObjects setByAddingObjectsFromSet:self.context.updatedObjects]) {
+        stock = stock || [object isKindOfClass:[SaleOrder class]] || [object isKindOfClass:[SaleLine class]];
+    }
     if ([_store save:&error]) {
         _lastError = nil;
+        if (stock) [[NSNotificationCenter defaultCenter] postNotificationName:LBStockDidChangeNotification object:self];
         return YES;
     }
     [self reportError:[self willPresentError:error]];
@@ -501,6 +510,17 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         Event *event = (Event *)object;
         if (event.mileageQuantity && !event.mileageDistanceUnit) event.mileageDistanceUnit = [self distanceUnit];
     }
+}
+
+- (IBAction)showParts:(id)sender {
+    Event *event = _chosenRecords[NSStringFromClass([Service class])] ?: _chosenRecords[NSStringFromClass([TyreChange class])];
+    if (!event.lb_usesParts) return;
+    if (_partsPanel.event != event) {
+        [_partsPanel close];
+        _partsPanel = [[LBPartsPanelController alloc] initWithEvent:event];
+        _partsPanel.quiet = _quiet;
+    }
+    [_partsPanel showWindow:sender];
 }
 
 - (IBAction)save:(id)sender {

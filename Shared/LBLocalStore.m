@@ -1,6 +1,7 @@
 #import "LBLocalStore.h"
 #import "LogbookValidation.h"
 #import "LBProcedures.h"
+#import "LBStockProcedures.h"
 #import "LBStore.h"
 #import "LBDisplay.h"
 #import "User+CoreDataClass.h"
@@ -315,7 +316,8 @@ static NSString *LBCount(NSUInteger n) {
     }
     /* What the server does before it saves: the same procedures, the same
        rules. */
-    if (![_context lb_completeRemindersOfChangedEvents:error] || ![_context orm_prepareForSave:error] || ![_context save:error]) {
+    if (![_context lb_completeRemindersOfChangedEvents:error] || ![_context lb_shipPartsOfChangedEvents:error]
+        || ![_context orm_prepareForSave:error] || ![_context save:error]) {
         return NO;
     }
     [[NSNotificationCenter defaultCenter] postNotificationName:LBLocalStoreDidChangeNotification object:self

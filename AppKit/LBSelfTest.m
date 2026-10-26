@@ -39,6 +39,7 @@
 #import "LBStockOrderWindowController.h"
 #import "LBStockCountWindowController.h"
 #import "LBCatalogSettingsWindowController.h"
+#import "LBPartsPanelController.h"
 #import "LBStockDisplay.h"
 
 NSURL *LBSelfTestRoot;
@@ -1129,6 +1130,8 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
    window; items each in a window of its own, priced, moved, a kit
    assembled; orders, a count, the lists. Each saved, the server's, and the
    windows told of each other's changes. */
+static void LBPartsSteps(LBMainWindowController *controller, LBStockWindowController *stock, StockItem *bolt);
+
 static void LBStockSteps(LBMainWindowController *controller) {
     [NSApp sendAction:@selector(showStock:) to:nil from:nil];
     LBSpin();
@@ -1222,7 +1225,78 @@ static void LBStockSteps(LBMainWindowController *controller) {
     LBType(window, @"itemSearch", @"");
     [stock search:nil];
     LBSnapshot(window, @"stock-items");
+    LBPartsSteps(controller, stock, bolt);
     [window close];
+}
+
+/* A service's parts on the desktop: in the logbook's window, a service of a
+   vehicle (one made where there is none) uses 2 bolts of Main / Default
+   through its Parts panel; saved, the server ships them, and the stock
+   window is told. More than is held: refused at saving, in the procedure's
+   words. */
+static void LBPartsSteps(LBMainWindowController *controller, LBStockWindowController *stock, StockItem *bolt) {
+    NSWindow *window = controller.window;
+    controller.quiet = YES;
+    NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
+    if (![controller.vehicles.arrangedObjects count]) {
+        [tabs selectTabViewItemWithIdentifier:@"vehicle"];
+        LBSpin();
+        LBClick(window, @"addVehicle");
+        LBType(window, @"vehicleName", @"Workshop van");
+        LBType(window, @"make", @"Ford");
+        LBType(window, @"carModel", @"Transit");
+        LBType(window, @"manufactureYear", @"2019");
+        LBType(window, @"fuel", @"Diesel");
+        LBClick(window, @"save");
+    }
+    [tabs selectTabViewItemWithIdentifier:@"records"];
+    LBSpin();
+    Service *service = (Service *)LBAddRecord(controller, [Service class]);
+    LBType(window, @"ServiceGarage", @"Our workshop");
+    LBChoose(window, @"ServiceKind", @"Repair");
+    LBType(window, @"ServiceMileageValue", @"90000");
+    LBType(window, @"ServiceMileageUnit", @"km");
+    NSDecimalNumber *before = [LBServerOf(bolt) totalQuantity];
+    LBClick(window, @"ServiceParts");
+    LBPartsPanelController *parts = controller.partsPanel;
+    LBCheck(@"its Parts panel", parts.window.isVisible && parts.event == service, nil);
+    parts.quiet = YES;
+    LBChoose(parts.window, @"partsFrom", @"Main / Default");
+    LBChoose(parts.window, @"partItem", @"Bolt");
+    LBType(parts.window, @"partQuantity", @"2");
+    LBClick(parts.window, @"usePart");
+    SaleLine *used = parts.parts.firstObject;
+    LBCheck(@"2 bolts used, of Main / Default, at their price", parts.parts.count == 1 && LBIs(used.quantity, @"2")
+                && [service.lb_partsSale.shipsFrom.lbTitle isEqualToString:@"Main / Default"],
+            parts.lastError ?: parts.parts);
+    LBClick(parts.window, @"partsDone");
+    id kept = LBSaved(controller, service, @"the service saved, its parts with it");
+    SaleOrder *sale = [LBServerObjects([SaleOrder class], [NSPredicate predicateWithFormat:@"id == %@", service.lb_partsSale.id]) firstObject];
+    NSDecimalNumber *after = [LBServerOf(bolt) totalQuantity];
+    LBCheck(@"the server shipped them as it saved: 2 bolts fewer", kept && sale.shipments.count == 1
+                && [after compare:[before decimalNumberBySubtracting:[NSDecimalNumber decimalNumberWithString:@"2"]]] == NSOrderedSame,
+            [NSString stringWithFormat:@"%@ -> %@, %lu shipments", before, after, (unsigned long)sale.shipments.count]);
+    LBSpin();
+    StockItem *listed = [stock.items filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"itemName == 'Bolt'"]].firstObject;
+    LBCheck(@"the stock window told: it lists the bolts left", [listed.totalQuantity compare:after] == NSOrderedSame, listed.totalQuantity);
+
+    service = (Service *)LBAddRecord(controller, [Service class]);
+    LBType(window, @"ServiceGarage", @"Our workshop");
+    LBChoose(window, @"ServiceKind", @"Repair");
+    LBType(window, @"ServiceMileageValue", @"90100");
+    LBType(window, @"ServiceMileageUnit", @"km");
+    LBClick(window, @"ServiceParts");
+    parts = controller.partsPanel;
+    parts.quiet = YES;
+    LBChoose(parts.window, @"partsFrom", @"Main / Default");
+    LBChoose(parts.window, @"partItem", @"Bolt");
+    LBType(parts.window, @"partQuantity", @"100");
+    LBClick(parts.window, @"usePart");
+    LBClick(parts.window, @"partsDone");
+    LBClick(window, @"save");
+    LBCheck(@"100 bolts used, of the few there: refused at saving, in the procedure's words",
+            controller.lastError && [controller.lastError.localizedDescription containsString:@"holds"], controller.lastError);
+    LBClick(window, @"revert");
 }
 
 static void LBKindSteps(LBMainWindowController *controller) {

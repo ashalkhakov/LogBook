@@ -43,6 +43,7 @@
 #import "LBPermissions.h"
 #import "LBActions.h"
 #import "LBProcedures.h"
+#import "LBStockProcedures.h"
 #include <dlfcn.h>
 #include <stdlib.h>
 
@@ -202,7 +203,7 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
        whichever device sent them; then the model's rules. */
     _service.willSave = ^BOOL(NSManagedObjectContext *context, NSError **refused) {
         NSError *why = nil;
-        if (![context lb_completeRemindersOfChangedEvents:&why]) {
+        if (![context lb_completeRemindersOfChangedEvents:&why] || ![context lb_shipPartsOfChangedEvents:&why]) {
             if (refused) *refused = why;
             return NO;
         }

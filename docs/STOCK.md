@@ -293,6 +293,41 @@ next counts due.
 **An item's history**, a location's, an order's: their moves, as the
 changelog shows them.
 
+## Parts used by services and tyre changes
+
+A service or a tyre change that uses parts sells them to the vehicle's
+owner. Stock leaves a warehouse one way only: as a sale shipped.
+
+- **The sale:** the record has a sale order of its own, named by it, in the
+  parts' catalog. It is to the customer the owner is there: the contact that
+  stands for them, made the first time (named by the catalog and their
+  email), and its customer.
+- **The parts:** the sale's lines, each of an item and how many, at its unit
+  cost (none: at its price; neither: refused). Charging more is invoicing's,
+  later.
+- **Where from:** the sale ships from a location, chosen on the form. The
+  device remembers the last one used.
+- **Shipped as the record is saved:** confirmed where a draft, then every
+  line's outstanding shipped. This runs on the record's day, at its moment,
+  by whoever entered it, so the phone and the server make the same shipment.
+  It is part of the save, on the server and on the phone, as automatic
+  completion is (`lb_shipPartsOfChangedEvents:`).
+- **Short:** refused, as any shipment is ("Shelf A holds 1 of Brake pad,
+  not 2"). Buy it in and receive it first.
+- **A used part reduced or removed:** refused. A return will undo it, once
+  there are returns ([Returns](#returns)).
+- **The service's cost:** its items' and its parts', less its discount.
+- **Where:** the phone's service form has Parts; the desktop's service and
+  tyre change forms have a Parts… panel.
+- **Who may:** the staff of the warehouse the parts ship from, keepers
+  among them, make and change such a sale and its lines. The catalog's
+  warehouse staff make the owner's contact and customer.
+
+Offline on the phone, the service and its sale refer to each other, and
+ODataSync cannot send two such new objects yet (ODataKit#61). Until it
+can, the phone keeps them waiting; the desktop sends them as one change
+set.
+
 ## Who may
 
 | | Owner | Manager | Keeper |
@@ -301,6 +336,7 @@ changelog shows them.
 | warehouses, locations, staff | yes | locations of theirs | |
 | orders: make, confirm, close, cancel | yes | yes | |
 | receive, ship, transfer, adjust, count, assemble | yes | at theirs | at theirs |
+| a record's parts: its sale, from where it ships | yes | at theirs | at theirs |
 | see the catalog | yes | yes | yes |
 
 The server checks each request against it (`Server/LBPermissions.h`); the

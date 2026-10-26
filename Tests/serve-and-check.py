@@ -821,6 +821,50 @@ def stock_who_may(anna, ben, cid, dee):
     check("Ben reorders nothing", status == 403, (status, body))
     status, body = action("Warehouses(%s)" % garage["Id"], "Reorder", user=dee)
     check("Dee reorders: nothing due", status == 200 and body.get("value") == [], (status, body))
+    parts_used(ben, cid, cat, bolt["Id"], shelves[0])
+
+
+def parts_used(ben, cid, cat, bolt, shelf):
+    """A service's parts: a keeper records them, a stranger does not."""
+    global BATCH_USER
+    cars = {}
+    for user, name in ((ben, "Ben's van"), (cid, "Cid's car")):
+        if user == cid:
+            request("POST", "Users", {"Email": cid}, user=cid)
+        cars[user] = {"Id": str(uuid.uuid4()), "VehicleName": name, "Make": "Ford", "CarModel": "Transit", "ManufactureYear": 2019,
+                      "Fuel": "Diesel", "Owner@odata.bind": "Users('%s')" % user}
+        check(name, request("POST", "Vehicles", cars[user], user=user)[0] == 201)
+
+    def service_with_parts(user):
+        """A service of the user's car using 2 bolts of shelf A, in one change set: its sale to its owner."""
+        car = cars[user]
+        service = {"@odata.type": "#Default.Service", "Id": str(uuid.uuid4()), "Timestamp": "2026-10-12T09:00:00Z",
+                   "MileageQuantity": 80000, "MileageDistanceUnit@odata.bind": "DistanceUnits('km')", "Garage": "Anna's garage",
+                   "Currency": "USD", "ServiceKind@odata.bind": "CostKinds('Repair')", "Vehicle@odata.bind": "Vehicles(%s)" % car["Id"],
+                   "Driver@odata.bind": "Users('%s')" % user, "EnteredBy@odata.bind": "Users('%s')" % user}
+        contact = {"Id": str(uuid.uuid4()), "ContactName": user, "User@odata.bind": "Users('%s')" % user, "Catalog@odata.bind": cat}
+        customer = {"Id": str(uuid.uuid4()), "Contact@odata.bind": "Contacts(%s)" % contact["Id"], "Catalog@odata.bind": cat}
+        sale = {"Id": str(uuid.uuid4()), "SaleOrdered": "2026-10-12", "OrderState": "Draft", "Catalog@odata.bind": cat,
+                "Customer@odata.bind": "Customers(%s)" % customer["Id"], "ShipsFrom@odata.bind": "Locations(%s)" % shelf,
+                "ServiceAsPartsSale@odata.bind": "Records(%s)" % service["Id"]}
+        line = {"Id": str(uuid.uuid4()), "Quantity": 2, "LinePriceAmount": 0.25, "LinePriceCurrency": "USD",
+                "SaleOrder@odata.bind": "SaleOrders(%s)" % sale["Id"], "StockItem@odata.bind": "StockItems(%s)" % bolt}
+        return sale, batch("parts", [("POST", "Records", service), ("POST", "Contacts", contact), ("POST", "Customers", customer),
+                                     ("POST", "SaleOrders", sale), ("POST", "SaleLines", line)])
+
+    BATCH_USER = cid
+    sale, (statuses, bodies) = service_with_parts(cid)
+    status, nothing = request("GET", "SaleOrders(%s)" % sale["Id"], user=ben)
+    check("Cid, of no staff, records no parts of Anna's: her catalog is none he sees",
+          not all(s in (200, 201) for s in statuses) and status == 404, (statuses, bodies))
+    BATCH_USER = ben
+    sale, (statuses, bodies) = service_with_parts(ben)
+    BATCH_USER = None
+    check("Ben, a keeper there, records a service using 2 bolts of shelf A", all(s in (200, 201) for s in statuses), (statuses, bodies))
+    status, shipments = request("GET", "SaleOrders(%s)/Shipments" % sale["Id"], user=ben)
+    check("shipped as it was saved, from shelf A", status == 200 and len(shipments.get("value", [])) == 1, (status, shipments))
+    status, held = request("GET", "Holdings(%s)" % named("%s at %s" % (bolt, shelf)), user=ben)
+    check("A holds 12", status == 200 and held.get("Quantity") == 12, (status, held))
 
 try:
     server = serve()

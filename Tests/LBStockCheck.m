@@ -19,7 +19,11 @@
 // - the procedures (Shared/LBStockProcedures.h): adjust, transfer, assemble
 //   and take apart; orders numbered, confirmed (phantom kits expanded),
 //   shipped and received in parts, closed, cancelled; counts; reordering;
-//   each refusal; what they make named by what it is made of.
+//   each refusal; what they make named by what it is made of;
+// - parts used by a service or a tyre change: a sale of them to the
+//   vehicle owner's customer (the contact that stands for them, made),
+//   shipped as the event is saved, on its day; the service's cost with
+//   them; more than is held, and a used part reduced, refused.
 
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
@@ -43,6 +47,14 @@
 #import "PurchaseLine+CoreDataClass.h"
 #import "StockCount+CoreDataClass.h"
 #import "ReorderRule+CoreDataClass.h"
+#import "Vehicle+CoreDataClass.h"
+#import "Service+CoreDataClass.h"
+#import "ServiceItem+CoreDataClass.h"
+#import "TyreChange+CoreDataClass.h"
+#import "TyreSet+CoreDataClass.h"
+#import "Expense+CoreDataClass.h"
+#import "DistanceUnit+CoreDataClass.h"
+#import "CostKind+CoreDataClass.h"
 
 static NSUInteger LBFailures;
 static NSManagedObjectModel *LBModel;
@@ -716,6 +728,158 @@ static void LBStockProcedures(void) {
     LBCheck(@"its draft PO-GAR-0002", [[drafts.firstObject lb_number] isEqualToString:@"PO-GAR-0002"], [drafts.firstObject lb_number]);
 }
 
+#pragma mark Parts used by services and tyre changes
+
+/* The object of the class whose key is so. */
+static id LBFetchKey(Class cls, NSString *key, id value, NSManagedObjectContext *context) {
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(cls)];
+    fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", key, value];
+    return [[context executeFetchRequest:fetch error:NULL] firstObject];
+}
+
+/* Saved as the server and the phone save: the parts of the events shipped
+   first. */
+static BOOL LBSaveShipping(NSManagedObjectContext *context, NSString **why) {
+    NSError *error = nil;
+    if (![context lb_shipPartsOfChangedEvents:&error]) {
+        if (why) *why = error.localizedDescription;
+        [context rollback];
+        return NO;
+    }
+    return LBSave(context, why);
+}
+
+/* A service or a tyre change of the vehicle, at a moment, at a distance. */
+static void LBJob(Event *event, Vehicle *vehicle, User *user, NSString *moment, DistanceUnit *km) {
+    event.vehicle = vehicle;
+    event.enteredBy = user;
+    event.driver = user;
+    NSISO8601DateFormatter *iso = [[NSISO8601DateFormatter alloc] init];
+    event.timestamp = [iso dateFromString:moment];
+    [event setValue:LBN(@"150000") forKey:@"mileageQuantity"];
+    [event setValue:km forKey:@"mileageDistanceUnit"];
+}
+
+static void LBPartsUsed(void) {
+    NSManagedObjectContext *context = LBNewStore();
+    LBStock stock = { context, nil, nil, nil, nil };
+    NSString *why = nil;
+    NSError *error = nil;
+    User *anna = LBInsert([User class], context);
+    anna.email = @"anna@example.org";
+    anna.personName = @"Anna";
+    stock.anna = anna;
+    Catalog *catalog = LBInsert([Catalog class], context);
+    catalog.catalogName = @"Workshop";
+    catalog.catalogOwner = anna;
+    catalog.documentPrefix = @"GAR";
+    catalog.currency = @"EUR";
+    stock.catalog = catalog;
+    Warehouse *garage = LBInsert([Warehouse class], context);
+    garage.warehouseName = @"Garage";
+    garage.catalog = catalog;
+    stock.warehouse = garage;
+    Location *shelf = LBInsert([Location class], context);
+    shelf.locationName = @"Shelf A";
+    shelf.warehouse = garage;
+    stock.shelf = shelf;
+    StockItem *pads = LBItem(&stock, @"Brake pad");
+    pads.unitCostAmount = LBN(@"20");
+    pads.unitCostCurrency = @"EUR";
+    StockItem *tyre = LBItem(&stock, @"Tyre");
+    tyre.unitCostAmount = LBN(@"80");
+    tyre.unitCostCurrency = @"EUR";
+    LBKeep(&stock, pads, @"5");
+    LBKeep(&stock, tyre, @"4");
+    Vehicle *golf = LBInsert([Vehicle class], context);
+    golf.vehicleName = @"Golf";
+    golf.make = @"Volkswagen";
+    golf.carModel = @"Golf VII";
+    golf.manufactureYear = 2016;
+    golf.fuel = @"Petrol";
+    golf.owner = anna;
+    LBCheck(@"parts: a workshop with 5 brake pads and 4 tyres, and Anna's Golf", LBSave(context, &why), why);
+    DistanceUnit *km = LBFetchKey([DistanceUnit class], @"code", @"km", context);
+    CostKind *repair = LBFetchKey([CostKind class], @"name", @"Repair", context);
+
+    Service *brakes = LBInsert([Service class], context);
+    LBJob(brakes, golf, anna, @"2026-10-12T09:00:00Z", km);
+    brakes.serviceKind = repair;
+    brakes.currency = @"EUR";
+    brakes.garage = @"Anna's workshop";
+    ServiceItem *labour = LBInsert([ServiceItem class], context);
+    labour.task = @"Brakes";
+    labour.costAmount = LBN(@"60");
+    labour.costCurrency = @"EUR";
+    labour.service = brakes;
+    SaleLine *used = [brakes lb_usePart:pads quantity:LBN(@"2") from:shelf error:&error];
+    SaleOrder *sale = brakes.lb_partsSale;
+    Contact *owners = sale.customer.contact;
+    LBCheck(@"a service uses 2 brake pads: a line of a sale of its parts, to Anna, the contact that stands for her, from Shelf A",
+            used && sale && owners.user == anna && [owners.contactName isEqualToString:@"Anna"] && sale.shipsFrom == shelf
+                && LBSame(used.linePriceAmount, @"20"),
+            error ?: used.linePriceAmount);
+    LBCheck(@"named by the service, the catalog and her email",
+            [sale.id isEqual:LBNamed(@"parts of %@", LBId(brakes))]
+                && [owners.id isEqual:LBNamed(@"%@ contact of anna@example.org", LBId(catalog))]
+                && [sale.customer.id isEqual:LBNamed(@"%@ customer", LBId(owners))],
+            sale.id);
+    LBCheck(@"saved: shipped as it was, from Shelf A, on its day", LBSaveShipping(context, &why) && sale.shipments.count == 1
+                                                                       && [sale.orderState isEqualToString:LBOrderConfirmed],
+            why ?: sale.orderState);
+    Shipment *shipment = sale.shipments.anyObject;
+    Move *move = shipment.moves.anyObject;
+    NSISO8601DateFormatter *iso = [[NSISO8601DateFormatter alloc] init];
+    LBCheck(@"its move: 2 pads out of Shelf A, by Anna, at the service's moment, named by its shipment",
+            LBSame(move.moved, @"2") && move.source == shelf && !move.destination && move.user == anna
+                && [move.moment isEqual:[iso dateFromString:@"2026-10-12T09:00:00Z"]]
+                && [shipment.id isEqual:LBNamed(@"%@ shipment 1", LBId(sale))],
+            move);
+    LBCheck(@"3 pads left on the shelf", LBSame(LBHeld(&stock, pads), @"3"), LBHeld(&stock, pads));
+    LBCheck(@"the service cost its labour and its parts: 60 + 40", LBSame(brakes.totalAmount, @"100"), brakes.totalAmount);
+    LBCheck(@"the sale comes to 40", LBSame(sale.linesAmount, @"40"), sale.linesAmount);
+
+    [brakes lb_usePart:pads quantity:LBN(@"4") from:shelf error:&error];
+    LBCheck(@"4 more pads, of the 3 there: refused at saving, in the procedure's words",
+            !LBSaveShipping(context, &why) && [why containsString:@"holds 3"], why);
+    used.quantity = LBN(@"1");
+    LBCheck(@"a used part reduced: refused (a return undoes one, once there are returns)",
+            !LBSaveShipping(context, &why) && [why containsString:@"have been used"], why);
+    NSError *refused = nil;
+    LBCheck(@"a used part's line not deleted", ![used lb_delete:&refused], refused);
+    [context rollback];
+    NSMutableArray *lines = [NSMutableArray array];
+    for (SaleLine *line in sale.saleLines) [lines addObject:[NSString stringWithFormat:@"%@ x%@ (%lu moves)", line.stockItem.itemName, line.quantity,
+                                                                                          (unsigned long)line.moves.count]];
+    LBCheck(@"after the refusals, its one line as it was: 2 pads, shipped", sale.saleLines.count == 1 && LBSame(used.quantity, @"2"), lines);
+    [brakes lb_usePart:pads quantity:LBN(@"1") from:shelf error:&error];
+    LBCheck(@"one more pad: shipped too, a second shipment; 2 left", LBSaveShipping(context, &why) && sale.shipments.count == 2
+                                                                         && LBSame(LBHeld(&stock, pads), @"2")
+                                                                         && LBSame(brakes.totalAmount, @"120"),
+            why ?: brakes.totalAmount);
+
+    TyreSet *winter = LBInsert([TyreSet class], context);
+    winter.vehicle = golf;
+    winter.enteredBy = anna;
+    winter.tyreSetName = @"Winter";
+    winter.season = @"Winter";
+    winter.tyreModel = @"Alpin 6";
+    winter.tyreSize = @"205/55 R16";
+    TyreChange *tyres = LBInsert([TyreChange class], context);
+    LBJob(tyres, golf, anna, @"2026-10-20T09:00:00Z", km);
+    tyres.tyreSet = winter;
+    tyres.tread = LBN(@"8");
+    [tyres lb_usePart:tyre quantity:LBN(@"4") from:shelf error:&error];
+    LBCheck(@"a tyre change uses 4 tyres: shipped as it is saved, to the same customer", LBSaveShipping(context, &why)
+                                                                                           && LBSame(LBHeld(&stock, tyre), @"0")
+                                                                                           && tyres.lb_partsSale.customer == sale.customer,
+            why ?: LBHeld(&stock, tyre));
+    LBCheck(@"its sale, SO-GAR-0002, the next", [tyres.lb_partsSale.lb_number isEqualToString:@"SO-GAR-0002"], tyres.lb_partsSale.lb_number);
+    Expense *wash = LBInsert([Expense class], context);
+    LBCheck(@"an expense uses no parts", ![wash lb_usePart:tyre quantity:LBN(@"1") from:shelf error:&error] && !wash.lb_usesParts, nil);
+    [context rollback];
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -734,6 +898,7 @@ int main(int argc, const char *argv[]) {
         [ORMTables registerTables:tables named:@"Logbook"];
         LBKits();
         LBStockProcedures();
+        LBPartsUsed();
         printf("stock: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

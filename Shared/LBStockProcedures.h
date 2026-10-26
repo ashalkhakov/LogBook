@@ -18,6 +18,9 @@
 //   a count's adjustments           "<count id> for <item id> at <location id>"
 //   a reorder's draft, its lines    "reorder at <warehouse id> on <day> from
 //                                   <supplier id>", "<order id> for <item id>"
+//   a user's contact, its customer  "<catalog id> contact of <email>",
+//                                   "<contact id> customer"
+//   an event's sale of its parts    "parts of <event id>"
 //
 // What a person starts (an order, a transfer, an adjustment, a count, an
 // assembly) is new, with an id of its own. Numbers: an order's running
@@ -49,6 +52,11 @@
 #import "ReorderRule+CoreDataClass.h"
 #import "SupplierItem+CoreDataClass.h"
 #import "ItemCode+CoreDataClass.h"
+#import "Event+CoreDataClass.h"
+#import "Service+CoreDataClass.h"
+#import "TyreChange+CoreDataClass.h"
+#import "User+CoreDataClass.h"
+#import "Vehicle+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -87,6 +95,45 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // A document's number as people read it: the app's prefix for its kind,
 // the catalog's own where it has one, the running number (SO-GAR-0042).
 - (NSString *)lb_numberOfKind:(NSString *)kind running:(int32_t)number;
+@end
+
+@interface Catalog (LBParts)
+// The customer a logbook user is here: that of the contact that stands for
+// them, made where there is none (named by the catalog and their email,
+// called by their name), and made a customer.
+- (Customer *)lb_customerFor:(User *)user;
+@end
+
+@interface NSManagedObjectContext (LBParts)
+// Before a save: the parts of the events whose sale, or its lines, the
+// context is about to save, shipped (-lb_shipParts:); refused as the first
+// refuses. The server's and the phone's, as automatic completion is.
+- (BOOL)lb_shipPartsOfChangedEvents:(NSError **)error;
+@end
+
+// A service's or a tyre change's parts: the lines of a sale of them to the
+// vehicle's owner, shipped from a warehouse as the event is saved.
+@interface Event (LBParts)
+// Whether it may use parts: a service, a tyre change.
+@property (nonatomic, readonly) BOOL lb_usesParts;
+// The sale of its parts; nil, none yet.
+@property (nonatomic, readonly, nullable) SaleOrder *lb_partsSale;
+// A part used: a line of the sale of its parts, of the item, so many, at
+// its unit cost (none: at its price; neither: refused). The sale made
+// where there is none: of the item's catalog, to the vehicle owner's
+// customer there, shipping from the location, placed on the event's day,
+// a draft. Refused for an event that uses none, none of it, an item of
+// another catalog than the sale's, or a location of another catalog.
+- (nullable SaleLine *)lb_usePart:(StockItem *)item
+                         quantity:(NSDecimalNumber *)quantity
+                             from:(Location *)location
+                            error:(NSError **)error;
+// Its parts shipped: what is left of each line, from where its sale ships
+// from, on its day and at its moment, by whoever entered it; the sale
+// confirmed first where a draft. Refused, nothing changed, where the
+// location holds too few, or a line is now for less than has been used (a
+// return undoes a part, once there are returns). Nothing to do: YES.
+- (BOOL)lb_shipParts:(NSError **)error;
 @end
 
 @interface Contact (LBStock)

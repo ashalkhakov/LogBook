@@ -402,6 +402,10 @@
 			isa = PBXBuildFile;
 			fileRef = DBCAEB84C9CA0A46A31C8CE9 /* LBiOSControllers.m */;
 		};
+		AD38B0AF9D458A5069D566AC /* LBStockProcedures.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 9E4DA9E6FA751F2E5CD4DA94 /* LBStockProcedures.m */;
+		};
 		AE0F26598DA7DF5B39B27E62 /* LBConflicts.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 690202E342F3343CCC4A45AF /* LBConflicts.m */;
@@ -468,6 +472,10 @@
 		C602A0B55E99B81DE6C45579 /* CoreData.framework */ = {
 			isa = PBXBuildFile;
 			fileRef = 2AB66C65BE330D1517DF768E /* CoreData.framework */;
+		};
+		C71545DED797070E07AAE675 /* LBPartsPanelController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = A060906032CE4D13C16DEA86 /* LBPartsPanelController.m */;
 		};
 		C84DC34E113C7F7313C34038 /* LBStockControllers.m */ = {
 			isa = PBXBuildFile;
@@ -1181,6 +1189,12 @@
 			path = StockSale.xib;
 			sourceTree = "<group>";
 		};
+		88DDA08F567B30BF9DD19595 /* LBPartsPanelController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBPartsPanelController.h;
+			sourceTree = "<group>";
+		};
 		892723880096458A3BA80B0E /* LBProceduresCheck.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -1227,6 +1241,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = main.m;
+			sourceTree = "<group>";
+		};
+		A060906032CE4D13C16DEA86 /* LBPartsPanelController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBPartsPanelController.m;
 			sourceTree = "<group>";
 		};
 		A3647A7FA7ED738095E6DCDB /* README.md */ = {
@@ -1801,6 +1821,8 @@
 				8A5F3F17FFB494ABBD32CCDE /* LBListsController.m */,
 				E162B1147B7C390BF620F05A /* LBMainWindowController.h */,
 				BD71F723187129CDB667A72D /* LBMainWindowController.m */,
+				88DDA08F567B30BF9DD19595 /* LBPartsPanelController.h */,
+				A060906032CE4D13C16DEA86 /* LBPartsPanelController.m */,
 				685ECA4661144E07ACCA3794 /* LBPreferencesController.h */,
 				3419A52A63B43A4BEBA68C32 /* LBPreferencesController.m */,
 				38FE87A9BE8D17BED843EAC5 /* LBRemindersController.h */,
@@ -2258,6 +2280,7 @@
 				E6924E20DC3BFC0A2A1C8BA4 /* LBVehicleSummary.m */,
 				595FEC6757BD6850E90DBB02 /* LBDisplay.m */,
 				231C5DA685A4BEF1681D0474 /* LBProcedures.m */,
+				AD38B0AF9D458A5069D566AC /* LBStockProcedures.m */,
 				CBCD7A99FF51CB117EB2FD0B /* LogbookModel.m */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2274,6 +2297,7 @@
 				529DADF700964FC6237620B6 /* LBCurrencies.m */,
 				D66D87A70D3592981C2035CD /* LBListsController.m */,
 				54D6EE49D6E938F7DDAE8527 /* LBMainWindowController.m */,
+				C71545DED797070E07AAE675 /* LBPartsPanelController.m */,
 				8ECBB7BC40A4F45ACBFC0E2F /* LBPreferencesController.m */,
 				A2A340CC7CD54ABA2AE1056F /* LBRemindersController.m */,
 				4AF4261543FF6ED24F470557 /* LBReportsController.m */,

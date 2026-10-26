@@ -131,7 +131,7 @@ $(BUILD)/lb-stock-check: $(MODEL)/.made Tests/LBStockCheck.m $(STOCK) Shared/LBS
 
 # The offline store (the iOS app's) checked against a server: two devices.
 SYNC_CHECK = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m Shared/LBDisplay.m \
-	Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+	Shared/LBProcedures.m Shared/LBStockProcedures.m $(MODEL)/Constraints/LogbookValidation.m
 
 $(BUILD)/lb-sync-check: $(MODEL)/.made $(SYNC_CHECK) $(wildcard Shared/*.h) $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) $(SYNC_CHECK) $(GENERATED)/*.m $(LIBS) -o $@

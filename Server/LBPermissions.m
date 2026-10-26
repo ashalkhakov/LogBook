@@ -518,9 +518,40 @@ static id LBFollow(id from, NSString *path) {
     return self.catalogPath ? LBFollow(row, self.catalogPath) : ([row isKindOfClass:[Catalog class]] ? row : nil);
 }
 
+/* Whether the user keeps a warehouse of the catalog. */
+static BOOL LBKeepsIn(Catalog *catalog, NSString *email) {
+    for (Warehouse *warehouse in [catalog isKindOfClass:[Catalog class]] ? catalog.warehouses : nil) {
+        if (LBKeeps(warehouse, email)) return YES;
+    }
+    return NO;
+}
+
+/* The parts a service or a tyre change used (docs/STOCK.md): their sale,
+   and its lines, are written by the staff of the warehouse it ships from,
+   keepers too; the vehicle owner's contact and customer it is to are made
+   by the catalog's warehouse staff. Until claims (ODataKit#60) say who may
+   do what. */
+- (BOOL)mayRecordParts:(id)row email:(NSString *)email changing:(BOOL)changing {
+    NSString *entity = self.entity.name;
+    if ([entity isEqualToString:LBEntity(SaleOrder)] || [entity isEqualToString:LBEntity(SaleLine)]) {
+        id sale = [entity isEqualToString:LBEntity(SaleLine)] ? LBFollow(row, @"saleOrder") : row;
+        BOOL parts = LBFollow(sale, @"serviceAsPartsSale") || LBFollow(sale, @"tyreChangeAsPartsSale");
+        return parts && LBKeeps(LBFollow(sale, @"shipsFrom.warehouse"), email);
+    }
+    if (changing) return NO;
+    if ([entity isEqualToString:LBEntity(Contact)]) {
+        return LBFollow(row, @"user") && LBKeepsIn(LBFollow(row, @"catalog"), email);
+    }
+    if ([entity isEqualToString:LBEntity(Customer)]) {
+        return LBFollow(row, @"contact.user") && LBKeepsIn(LBFollow(row, @"catalog"), email);
+    }
+    return NO;
+}
+
 /* Why the user may not write the row (a write's values, or a row): nil
    when they may. Changing, a keeper's row is a manager's. */
 - (NSString *)whyNot:(id)row email:(NSString *)email changing:(BOOL)changing {
+    if ([self mayRecordParts:row email:email changing:changing]) return nil;
     Catalog *catalog = [self catalogOf:row];
     if (!catalog) return self.catalogPath ? @"It names what catalog it is of" : nil;
     switch (self.writer) {

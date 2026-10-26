@@ -92,6 +92,10 @@ static UIImage *LBReceiptPhoto(void) {
 
 @interface LBSelfTest : NSObject
 @property (nonatomic, strong) LBiOSAppDelegate *app;
+/* The stock steps' bolt, shelf and catalog: the parts steps' too. */
+@property (nonatomic, copy) NSUUID *boltID;
+@property (nonatomic, copy) NSUUID *shelfID;
+@property (nonatomic, copy) NSUUID *catalogID;
 @end
 
 @implementation LBSelfTest
@@ -447,6 +451,7 @@ static UIImage *LBReceiptPhoto(void) {
 
     [self stockSteps];
     [self signOutSteps:fillUp];
+    [self partsSteps];
 }
 
 static BOOL LBSame(id number, NSString *value) {
@@ -469,7 +474,7 @@ static BOOL LBSame(id number, NSString *value) {
     catalog.currency = @"USD";
     catalog.documentPrefix = @"PH";
     Warehouse *main = catalog.warehouses.anyObject;
-    Location *main_default = main.locations.anyObject;
+    Location *defaultPlace = main.locations.anyObject;
     Location *shelf = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Location class]) inManagedObjectContext:context];
     shelf.id = [NSUUID UUID];
     shelf.locationName = @"Shelf A";
@@ -507,12 +512,12 @@ static BOOL LBSame(id number, NSString *value) {
     LBSay([card saveProblems:&problems] && [card.item.priceCurrency isEqualToString:@"USD"],
           [NSString stringWithFormat:@"named, priced and saved, in the catalog's currency (%@)", [problems componentsJoinedByString:@"; "]]);
     StockItem *bolt = card.item;
-    LBSay([card adjust:@"20" at:main_default reason:@"Opening" problems:&problems] && [[card quantityRows].firstObject isEqualToString:@"On hand: 20"],
+    LBSay([card adjust:@"20" at:defaultPlace reason:@"Opening" problems:&problems] && [[card quantityRows].firstObject isEqualToString:@"On hand: 20"],
           [NSString stringWithFormat:@"20 brought in at Default (%@)", [problems componentsJoinedByString:@"; "] ?: [card quantityRows].firstObject]);
-    LBSay([card transfer:@"5" from:main_default to:shelf problems:&problems]
+    LBSay([card transfer:@"5" from:defaultPlace to:shelf problems:&problems]
               && [[card holdingRows] isEqualToArray:@[ @"Main / Default: 15", @"Main / Shelf A: 5" ]],
           [NSString stringWithFormat:@"5 moved to Shelf A (%@)", [[card holdingRows] componentsJoinedByString:@"; "]]);
-    LBSay(![card adjust:@"-30" at:main_default reason:@"Lost" problems:&problems] && [[problems componentsJoinedByString:@" "] containsString:@"15"],
+    LBSay(![card adjust:@"-30" at:defaultPlace reason:@"Lost" problems:&problems] && [[problems componentsJoinedByString:@" "] containsString:@"15"],
           [NSString stringWithFormat:@"30 lost of the 15 there: refused, in the procedure's words (%@)", [problems componentsJoinedByString:@"; "]]);
     LBSpin(0.5);
     LBSay([[items shownRows] isEqualToArray:@[ @"PH-00001 Bolt: 20" ]], [NSString stringWithFormat:@"the items list it (%@)", [items shownRows]]);
@@ -542,7 +547,7 @@ static BOOL LBSame(id number, NSString *value) {
     LBStockOverviewViewController *overview = [tabs tabNamed:@"Overview"];
     LBStockCountViewController *counting = [overview beginCount];
     for (LBCountPlace *place in [app.stockController.phone countPlaces]) {
-        if (place.location == main_default) counting.countPlace = place;
+        if (place.location == defaultPlace) counting.countPlace = place;
     }
     LBPhoneCountRow *row = counting.rows.firstObject;
     LBSay(counting.rows.count == 1 && row.item == bolt && LBSame(row.expected, @"15"),
@@ -571,6 +576,73 @@ static BOOL LBSame(id number, NSString *value) {
     LBSay(app.window.rootViewController == app.mainController && !app.stockController
               && ![[NSUserDefaults standardUserDefaults] stringForKey:LBModeDefaultsKey],
           @"the logbook again, and kept so");
+    self.boltID = bolt.id;
+    self.shelfID = shelf.id;
+    self.catalogID = catalog.id;
+}
+
+/* Whether the sync sends two new objects that refer to each other: a
+   service and the sale of its parts (ODataKit#61). Not yet: what the
+   server has of them is checked once it does. */
+static BOOL const LBSyncSendsCycles = NO;
+
+/* A service's parts, on a phone of Anna's (a store of its own, so what it
+   cannot send yet waits there): 2 bolts of the stock steps' Shelf A used,
+   shipped as it is saved, to the Golf's owner; more than Shelf A holds,
+   refused. Anna's contact in the catalog is made at the server, as the
+   desktop would: one made on a phone with its customer is the same cycle. */
+- (void)partsSteps {
+    NSString *email = @"anna@example.org";
+    NSString *ofCatalog = [NSString stringWithFormat:@"Catalogs(%@)", LBKey(_catalogID)];
+    NSUUID *annaID = [NSUUID UUID];
+    NSInteger made = LBAsk(@"POST", @"Contacts", @{ @"Id": LBKey(annaID), @"ContactName": @"Anna", @"Catalog@odata.bind": ofCatalog,
+                                                    @"User@odata.bind": [NSString stringWithFormat:@"Users('%@')", email] }, NULL);
+    NSInteger customer = LBAsk(@"POST", @"Customers", @{ @"Id": LBKey([NSUUID UUID]), @"Catalog@odata.bind": ofCatalog,
+                                                         @"Contact@odata.bind": [NSString stringWithFormat:@"Contacts(%@)", LBKey(annaID)] }, NULL);
+    LBSay(made == 201 && customer == 201, @"Anna a customer in the catalog, at the server");
+    NSURL *other = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:
+                                               [NSString stringWithFormat:@"lb-selftest-parts-%@", [NSProcessInfo processInfo].globallyUniqueString]]
+                              isDirectory:YES];
+    NSError *error = nil;
+    LBLocalStore *phone = [[LBLocalStore alloc] initWithDirectory:other modelURL:nil error:&error];
+    phone.email = email;
+    phone.serviceRoot = LBSelfTestRoot;
+    LBSync(phone, @"her other phone syncs");
+    LBPhone *hers = [[LBPhone alloc] initWithStore:phone];
+    StockItem *bolts = LBFetchID(phone, [StockItem class], _boltID);
+    Location *shelfA = LBFetchID(phone, [Location class], _shelfID);
+
+    LBRecordFormViewController *form = [[LBRecordFormViewController alloc]
+        initWithObject:[LBRecordFormViewController newRecordOfKind:@"Service" phone:hers] phone:hers];
+    [form enter:@"Garage Müller" intoField:@"Garage"];
+    [form enter:@"149000" intoField:@"Odometer"];
+    form.partsLocation = shelfA;
+    NSArray *problems = nil;
+    LBSay([form usePart:bolts quantity:[NSDecimalNumber decimalNumberWithString:@"2"] problems:&problems]
+              && [[form partRows] isEqualToArray:@[ @"2 × Bolt, from Main / Shelf A" ]],
+          [NSString stringWithFormat:@"a service uses 2 bolts of Shelf A (%@)", [[form partRows] componentsJoinedByString:@"; "] ?: problems]);
+    BOOL saved = [form saveIgnoringWarnings:YES];
+    SaleOrder *sale = ((Service *)form.object).lb_partsSale;
+    LBSay(saved && sale.shipments.count == 1 && LBSame(bolts.totalQuantity, @"14") && [sale.customer.contact.contactName isEqualToString:@"Anna"],
+          [NSString stringWithFormat:@"saved: shipped as it was, to Anna; 14 bolts left (%@)", [form.problems componentsJoinedByString:@"; "]]);
+    if (LBSyncSendsCycles) {
+        LBSync(phone, @"synced");
+        NSDictionary *shipments = LBServerHas([NSString stringWithFormat:@"SaleOrders(%@)/Shipments", LBKey(sale.id)]);
+        NSDictionary *boltThere = LBServerHas([NSString stringWithFormat:@"StockItems(%@)", LBKey(_boltID)]);
+        LBSay([shipments[@"value"] count] == 1 && LBSame(boltThere[@"TotalQuantity"], @"14") && [phone pendingCount] == 0 && phone.issues.count == 0,
+              [NSString stringWithFormat:@"the server has the service's parts shipped: 14 bolts (%@; %@)", boltThere[@"TotalQuantity"],
+                                         [[phone.issues valueForKey:@"message"] componentsJoinedByString:@"; "]]);
+    }
+
+    form = [[LBRecordFormViewController alloc] initWithObject:[LBRecordFormViewController newRecordOfKind:@"Service" phone:hers] phone:hers];
+    [form enter:@"Garage Müller" intoField:@"Garage"];
+    [form enter:@"149500" intoField:@"Odometer"];
+    form.partsLocation = shelfA;
+    [form usePart:bolts quantity:[NSDecimalNumber decimalNumberWithString:@"5"] problems:&problems];
+    LBSay(![form saveIgnoringWarnings:YES] && [[form.problems componentsJoinedByString:@" "] containsString:@"holds 0"],
+          [NSString stringWithFormat:@"5 bolts of the none left on Shelf A: refused at saving (%@)", [form.problems componentsJoinedByString:@"; "]]);
+    [phone.context rollback];
+    [[NSFileManager defaultManager] removeItemAtURL:other error:NULL];
 }
 
 @end

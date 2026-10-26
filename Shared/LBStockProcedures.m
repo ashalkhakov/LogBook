@@ -679,3 +679,137 @@ static BOOL LBWithin(Location *location, Location *counted) {
 }
 
 @end
+
+#pragma mark Parts used by services and tyre changes
+
+@implementation Catalog (LBParts)
+
+- (Customer *)lb_customerFor:(User *)user {
+    for (Contact *contact in self.contacts) {
+        if (contact.user == user && !contact.isDeleted) {
+            if (!contact.lb_isCustomer) contact.lb_isCustomer = YES;
+            return contact.customer;
+        }
+    }
+    NSManagedObjectContext *context = self.managedObjectContext;
+    NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"%@ contact of %@", LBText(self.id), user.email.lowercaseString ?: @""]);
+    Contact *contact = LBNamed([Contact class], context, uuid);
+    if (!contact) {
+        contact = LBNew([Contact class], context, uuid);
+        contact.catalog = self;
+        contact.user = user;
+        contact.contactName = user.personName.length ? user.personName : user.email;
+        contact.emailAddress = user.email;
+    }
+    if (!contact.customer || contact.customer.isDeleted) {
+        NSUUID *customerID = LBNamedUUID([NSString stringWithFormat:@"%@ customer", LBText(contact.id)]);
+        Customer *customer = LBNamed([Customer class], context, customerID) ?: LBNew([Customer class], context, customerID);
+        customer.contact = contact;
+        customer.catalog = self;
+    }
+    return contact.customer;
+}
+
+@end
+
+@implementation Event (LBParts)
+
+- (BOOL)lb_usesParts {
+    return [self isKindOfClass:[Service class]] || [self isKindOfClass:[TyreChange class]];
+}
+
+- (SaleOrder *)lb_partsSale {
+    if (!self.lb_usesParts) return nil;
+    SaleOrder *sale = [self valueForKey:@"partsSale"];
+    return sale.isDeleted ? nil : sale;
+}
+
+- (SaleLine *)lb_usePart:(StockItem *)item quantity:(NSDecimalNumber *)quantity from:(Location *)location error:(NSError **)error {
+    if (!self.lb_usesParts) return LBRefuse(error, @"Only a service or a tyre change uses parts."), nil;
+    if (!LBPositive(quantity)) return LBRefuse(error, @"Say how many of it were used."), nil;
+    /* At its unit cost; with none, at its price; with neither, what it is
+       sold at is for someone to say first. */
+    BOOL costed = LBPositive(item.unitCostAmount);
+    if (!costed && !LBPositive(item.priceAmount)) {
+        return LBRefuse(error, [NSString stringWithFormat:@"%@ has no unit cost or price: give it one first.", item.itemName]), nil;
+    }
+    Catalog *catalog = item.catalog;
+    if (location.warehouse.catalog != catalog) return LBRefuse(error, @"That location keeps another catalog's stock."), nil;
+    SaleOrder *sale = self.lb_partsSale;
+    if (sale && sale.catalog != catalog) return LBRefuse(error, @"Its parts come from another catalog."), nil;
+    NSManagedObjectContext *context = self.managedObjectContext;
+    if (!sale) {
+        NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"parts of %@", LBText(self.id)]);
+        sale = LBNamed([SaleOrder class], context, uuid);
+        if (!sale) {
+            sale = [catalog lb_newSaleOrderTo:[catalog lb_customerFor:self.vehicle.owner] on:LBEventDay(self)];
+            sale.id = uuid;
+        }
+        sale.shipsFrom = location;
+        [self setValue:sale forKey:@"partsSale"];
+    }
+    SaleLine *line = LBNew([SaleLine class], context, nil);
+    line.saleOrder = sale;
+    line.stockItem = item;
+    line.quantity = quantity;
+    line.linePriceAmount = costed ? item.unitCostAmount : item.priceAmount;
+    line.linePriceCurrency = (costed ? item.unitCostCurrency : item.priceCurrency) ?: catalog.currency;
+    return line;
+}
+
+/* How many of the line have been shipped: its moves'. */
+static NSDecimalNumber *LBShippedOf(SaleLine *line) {
+    NSDecimalNumber *shipped = [NSDecimalNumber zero];
+    for (Move *move in line.moves) {
+        if (!move.isDeleted) shipped = [shipped decimalNumberByAdding:move.moved];
+    }
+    return shipped;
+}
+
+- (BOOL)lb_shipParts:(NSError **)error {
+    SaleOrder *sale = self.lb_partsSale;
+    if (!sale || [sale.orderState isEqualToString:LBOrderCancelled]) return YES;
+    for (SaleLine *line in sale.saleLines) {
+        if (line.isDeleted) continue;
+        NSDecimalNumber *shipped = LBShippedOf(line);
+        if ([shipped compare:line.quantity ?: [NSDecimalNumber zero]] == NSOrderedDescending) {
+            return LBRefuse(error, [NSString stringWithFormat:@"%@ of %@ have been used: a return undoes a part used, once there are returns.",
+                                                              LBQuantityText(shipped), line.stockItem.itemName]);
+        }
+    }
+    if ([sale.orderState isEqualToString:LBOrderDraft] && ![sale lb_confirm:error]) return NO;
+    NSMutableDictionary *left = [NSMutableDictionary dictionary];
+    for (SaleLine *line in sale.saleLines) {
+        if (line.isDeleted || line.stockItem.isAPhantomKit) continue;
+        NSDecimalNumber *more = [line.quantity decimalNumberBySubtracting:LBShippedOf(line)];
+        if (LBPositive(more)) left[line.id] = more;
+    }
+    if (!left.count) return YES;
+    if (!sale.shipsFrom) return LBRefuse(error, @"Say where its parts come from.");
+    NSDate *moment = [self valueForKey:@"timestamp"];
+    return [sale lb_shipLines:left from:sale.shipsFrom on:LBEventDay(self) by:self.enteredBy at:moment error:error] != nil;
+}
+
+@end
+
+@implementation NSManagedObjectContext (LBParts)
+
+- (BOOL)lb_shipPartsOfChangedEvents:(NSError **)error {
+    NSMutableSet *objects = [NSMutableSet setWithSet:self.insertedObjects];
+    [objects unionSet:self.updatedObjects];
+    NSMutableSet<Event *> *events = [NSMutableSet set];
+    for (NSManagedObject *object in objects) {
+        SaleOrder *sale = nil;
+        if ([object isKindOfClass:[Event class]]) sale = ((Event *)object).lb_partsSale;
+        else if ([object isKindOfClass:[SaleOrder class]]) sale = (SaleOrder *)object;
+        else if ([object isKindOfClass:[SaleLine class]]) sale = ((SaleLine *)object).saleOrder;
+        Event *event = sale.serviceAsPartsSale ?: (Event *)sale.tyreChangeAsPartsSale;
+        if (event && !event.isDeleted && !sale.isDeleted) [events addObject:event];
+    }
+    for (Event *event in [events.allObjects sortedArrayUsingFunction:LBByID context:NULL]) {
+        if (![event lb_shipParts:error]) return NO;
+    }
+    return YES;
+}
+
+@end

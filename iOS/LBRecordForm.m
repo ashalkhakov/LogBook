@@ -1,5 +1,6 @@
 // A record's form (LBiOSControllers.h): fields, by kind, as the model has
-// them; a service's items; an inspection's answers; receipts' photos.
+// them; a service's items; an inspection's answers; a service's or a tyre
+// change's parts; receipts' photos.
 
 #import "LBiOSControllers.h"
 #import "LBDisplay.h"
@@ -21,6 +22,11 @@
 #import "DistanceUnit+CoreDataClass.h"
 #import "VolumeUnit+CoreDataClass.h"
 #import "User+CoreDataClass.h"
+#import "LBStockProcedures.h"
+#import "LBStockDisplay.h"
+
+/* Defaults: where parts were last taken from (a location's id). */
+static NSString * const LBPartsLocationDefaultsKey = @"LBPartsLocation";
 
 typedef NS_ENUM(NSInteger, LBFieldKind) {
     LBFieldText,
@@ -128,7 +134,7 @@ static NSData *LBJPEGOf(UIImage *image) {
     return UIImageJPEGRepresentation(image, 0.7);
 }
 
-enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
+enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSectionCount };
 
 @implementation LBRecordFormViewController {
     LBPhone *_phone;
@@ -410,6 +416,122 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
     [picker dismissViewControllerAnimated:YES completion:nil];
 }
 
+#pragma mark Parts
+
+- (Event *)partsEvent {
+    return [_object isKindOfClass:[Event class]] && ((Event *)_object).lb_usesParts ? (Event *)_object : nil;
+}
+
+- (NSArray<SaleLine *> *)parts {
+    NSMutableArray *lines = [NSMutableArray array];
+    for (SaleLine *line in self.partsEvent.lb_partsSale.saleLines) {
+        if (!line.isDeleted) [lines addObject:line];
+    }
+    [lines sortUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"lbLineOrder" ascending:YES
+                                                                  selector:@selector(localizedCaseInsensitiveCompare:)] ]];
+    return lines;
+}
+
+- (NSArray<NSString *> *)partRows {
+    NSMutableArray *rows = [NSMutableArray array];
+    Location *from = self.partsEvent.lb_partsSale.shipsFrom;
+    for (SaleLine *line in [self parts]) {
+        [rows addObject:[NSString stringWithFormat:@"%@ × %@, from %@", LBTextOfNumber(line.quantity), line.stockItem.lbTitle, from.lbTitle ?: @"?"]];
+    }
+    return rows;
+}
+
+/* The items parts may be of: every catalog's this phone has. */
+- (NSArray<StockItem *> *)partItems {
+    return LBAll(_object.managedObjectContext, [StockItem class], nil, @selector(itemName));
+}
+
+- (Location *)partsLocation {
+    Location *from = self.partsEvent.lb_partsSale.shipsFrom;
+    if (from) return from;
+    NSString *kept = [[NSUserDefaults standardUserDefaults] stringForKey:LBPartsLocationDefaultsKey];
+    NSArray *locations = LBAll(_object.managedObjectContext, [Location class], nil, @selector(locationName));
+    for (Location *location in locations) {
+        if ([location.id.UUIDString isEqualToString:kept]) return location;
+    }
+    return locations.firstObject;
+}
+
+- (void)setPartsLocation:(Location *)location {
+    [[NSUserDefaults standardUserDefaults] setObject:location.id.UUIDString forKey:LBPartsLocationDefaultsKey];
+    SaleOrder *sale = self.partsEvent.lb_partsSale;
+    if (sale && location.warehouse.catalog == sale.catalog) sale.shipsFrom = location;
+    if ([self isViewLoaded]) [self.tableView reloadData];
+}
+
+- (BOOL)usePart:(StockItem *)item quantity:(NSDecimalNumber *)quantity problems:(NSArray<NSString *> **)problems {
+    Location *from = self.partsLocation;
+    /* Taken from the item's catalog: where last taken from there, else its
+       first location. */
+    if (from.warehouse.catalog != item.catalog) {
+        from = LBAll(_object.managedObjectContext, [Location class], [NSPredicate predicateWithFormat:@"warehouse.catalog == %@", item.catalog],
+                     @selector(locationName)).firstObject;
+    }
+    NSError *error = nil;
+    SaleLine *line = from ? [self.partsEvent lb_usePart:item quantity:quantity from:from error:&error] : nil;
+    if (!line) {
+        if (problems) *problems = @[ error.localizedDescription ?: @"Its catalog has no location to take it from." ];
+        return NO;
+    }
+    if ([self isViewLoaded]) [self.tableView reloadData];
+    return YES;
+}
+
+- (void)askForPart {
+    UIAlertController *sheet = [UIAlertController alertControllerWithTitle:@"Part" message:@"What was used." preferredStyle:UIAlertControllerStyleActionSheet];
+    __weak LBRecordFormViewController *weakSelf = self;
+    for (StockItem *item in [self partItems]) {
+        NSString *title = item.sku.length ? [NSString stringWithFormat:@"%@ (%@)", item.lbTitle, item.sku] : item.lbTitle;
+        [sheet addAction:[UIAlertAction actionWithTitle:title style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            [weakSelf askHowManyOf:item];
+        }]];
+    }
+    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    sheet.popoverPresentationController.sourceView = self.view;
+    sheet.popoverPresentationController.sourceRect = self.view.bounds;
+    [self presentViewController:sheet animated:YES completion:nil];
+}
+
+- (void)askHowManyOf:(StockItem *)item {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:item.lbTitle message:@"How many were used?"
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    [alert addTextFieldWithConfigurationHandler:^(UITextField *field) {
+        field.text = @"1";
+        field.keyboardType = UIKeyboardTypeDecimalPad;
+    }];
+    __weak LBRecordFormViewController *weakSelf = self;
+    __weak UIAlertController *weakAlert = alert;
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Use" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        NSArray *problems = nil;
+        if (![weakSelf usePart:item quantity:LBNumberOf(weakAlert.textFields[0].text) problems:&problems]) {
+            [weakSelf tell:@"Not Used" lines:problems ?: @[]];
+        }
+    }]];
+    [self presentViewController:alert animated:YES completion:nil];
+}
+
+- (void)chooseFrom:(UITableViewCell *)cell {
+    UIAlertController *sheet = [UIAlertController alertControllerWithTitle:@"Parts From" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    __weak LBRecordFormViewController *weakSelf = self;
+    SaleOrder *sale = self.partsEvent.lb_partsSale;
+    NSPredicate *ofSale = sale ? [NSPredicate predicateWithFormat:@"warehouse.catalog == %@", sale.catalog] : nil;
+    for (Location *location in LBAll(_object.managedObjectContext, [Location class], ofSale, @selector(locationName))) {
+        [sheet addAction:[UIAlertAction actionWithTitle:location.lbTitle style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+            weakSelf.partsLocation = location;
+        }]];
+    }
+    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    sheet.popoverPresentationController.sourceView = cell;
+    sheet.popoverPresentationController.sourceRect = cell.bounds;
+    [self presentViewController:sheet animated:YES completion:nil];
+}
+
 #pragma mark Saving
 
 - (void)finish {
@@ -491,6 +613,7 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
     if (section == LBSectionItems) return self.service ? @"Items" : self.inspection ? @"Answers" : nil;
+    if (section == LBSectionParts) return self.partsEvent ? @"Parts" : nil;
     if (section == LBSectionPhotos) return [_object isKindOfClass:[Record class]] ? @"Receipts" : nil;
     return nil;
 }
@@ -502,6 +625,8 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
         if (self.inspection) return (NSInteger)[self questions].count;
         return 0;
     }
+    /* Where from, each part, and one more. */
+    if (section == LBSectionParts) return self.partsEvent ? (NSInteger)[self parts].count + 2 : 0;
     return [_object isKindOfClass:[Record class]] ? (NSInteger)[self attachments].count + 1 : 0;
 }
 
@@ -618,6 +743,24 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
         cell.accessoryView = toggle;
         return cell;
     }
+    if (indexPath.section == LBSectionParts) {
+        NSArray<SaleLine *> *parts = [self parts];
+        if (row == 0) {
+            cell.textLabel.text = @"From";
+            cell.detailTextLabel.text = self.partsLocation.lbTitle ?: @"No stock here";
+            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+        } else if ((NSUInteger)row - 1 < parts.count) {
+            SaleLine *line = parts[(NSUInteger)row - 1];
+            cell.textLabel.text = line.stockItem.lbTitle;
+            cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ × %@", LBTextOfNumber(line.quantity), LBTextOfNumber(line.linePriceAmount)];
+        } else {
+            cell.textLabel.text = @"Use a Part…";
+            cell.textLabel.textColor = self.view.tintColor;
+            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+        }
+        return cell;
+    }
     NSArray<Attachment *> *attachments = [self attachments];
     if ((NSUInteger)row < attachments.count) {
         Attachment *attachment = attachments[(NSUInteger)row];
@@ -638,6 +781,10 @@ enum { LBSectionFields, LBSectionItems, LBSectionPhotos, LBSectionCount };
         if (field.kind == LBFieldChoice) [self choose:field from:[tableView cellForRowAtIndexPath:indexPath]];
     } else if (indexPath.section == LBSectionItems && self.service && (NSUInteger)indexPath.row == [self items].count) {
         [self askForItem];
+    } else if (indexPath.section == LBSectionParts && indexPath.row == 0) {
+        [self chooseFrom:[tableView cellForRowAtIndexPath:indexPath]];
+    } else if (indexPath.section == LBSectionParts && (NSUInteger)indexPath.row == [self parts].count + 1) {
+        [self askForPart];
     } else if (indexPath.section == LBSectionPhotos && (NSUInteger)indexPath.row == [self attachments].count) {
         [self pickPhoto];
     }

@@ -50,7 +50,7 @@ Logbook_LIB_DIRS = -L$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)
 Logbook_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
 Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit
 Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib AppKit/Preferences.xib AppKit/Lists.xib AppKit/StockWindow.xib \
-	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib \
+	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib AppKit/Parts.xib \
 	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl)
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 
@@ -88,7 +88,7 @@ lb-stock-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 
 # The offline store (the iOS app's) against a server: two devices.
 lb-sync-check_OBJC_FILES = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m \
-	Shared/LBDisplay.m Shared/LBProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
+	Shared/LBDisplay.m Shared/LBProcedures.m Shared/LBStockProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
 lb-sync-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 lb-sync-check_COREDATA_CODEGEN = yes
 lb-sync-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)

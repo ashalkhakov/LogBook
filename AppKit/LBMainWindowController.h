@@ -11,6 +11,8 @@
 
 @class LBStore, User, TyreSet, Trip, Vehicle, DistanceUnit, CostKind, Attachment, LBReportsController, LBRemindersController, LBAnswersController, LBCalendarController, Record;
 
+@class LBPartsPanelController;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface LBMainWindowController : NSWindowController
@@ -113,6 +115,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, strong, nullable) NSError *lastError;
 // Said in no alert, kept in lastError: a self-test has no one to answer one.
 @property (nonatomic) BOOL quiet;
+// The chosen service's or tyre change's parts, in a panel of their own
+// (LBPartsPanelController); its window while it is open.
+- (IBAction)showParts:(nullable id)sender;
+@property (nonatomic, readonly, strong, nullable) LBPartsPanelController *partsPanel;
 // The changes sent; the rules' refusals and the warnings said.
 - (IBAction)save:(nullable id)sender;
 - (IBAction)revertChanges:(nullable id)sender;
