@@ -11,9 +11,8 @@
 // rules; a keeper of a warehouse what moves stock there, which a manager
 // there changes or removes.
 //
-// Relations join their terms with or. Where a rule needs and (a move
-// kept at both its ends; a parts sale, and a keeper where it ships from),
-// it is a where term, the keeper and manager written out as key paths.
+// A relation's terms are joined with or; all = ( ... ) is and (a move
+// kept at both its ends; a parts sale, by a keeper where it ships from).
 {
   Version = 1;
   Identities = ( sub, email );
@@ -84,14 +83,14 @@
       owner  = ( { relation = owner; from = catalog; } );
       read   = ( { relation = read; from = catalog; } );
       insert = ( { relation = owner; },
-                 { where = "user != nil AND SUBQUERY(catalog.warehouses, $w, ANY $w.warehouseStaffs.user.email IN $user)[SIZE] > 0"; } );
+                 { all = ( { where = "user != nil"; }, { relation = keeper; from = catalog; } ); } );
       update = ( { relation = owner; } );
       delete = ( { relation = owner; } );
     };
     Customer = {
       read   = ( { relation = read; from = catalog; } );
       insert = ( { relation = owner; from = catalog; },
-                 { where = "contact.user != nil AND SUBQUERY(catalog.warehouses, $w, ANY $w.warehouseStaffs.user.email IN $user)[SIZE] > 0"; } );
+                 { all = ( { where = "contact.user != nil"; }, { relation = keeper; from = catalog; } ); } );
       update = ( { relation = owner; from = catalog; } );
       delete = ( { relation = owner; from = catalog; } );
     };
@@ -146,22 +145,18 @@
     // change's parts sale, and its lines: a keeper's where it ships from.
     SaleOrder = {
       manager = ( { relation = manager; from = catalog; } );
+      parts   = ( { all = ( { where = "serviceAsPartsSale != nil OR tyreChangeAsPartsSale != nil"; },
+                            { relation = keeper; from = shipsFrom; } ); } );
       read    = ( { relation = read; from = catalog; } );
-      insert  = ( { relation = manager; },
-                  { where = "(serviceAsPartsSale != nil OR tyreChangeAsPartsSale != nil) AND (shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
-      update  = ( { relation = manager; },
-                  { where = "(serviceAsPartsSale != nil OR tyreChangeAsPartsSale != nil) AND (shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
-      delete  = ( { relation = manager; },
-                  { where = "(serviceAsPartsSale != nil OR tyreChangeAsPartsSale != nil) AND (shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
+      insert  = ( { relation = manager; }, { relation = parts; } );
+      update  = ( { relation = manager; }, { relation = parts; } );
+      delete  = ( { relation = manager; }, { relation = parts; } );
     };
     SaleLine = {
       read   = ( { relation = read; from = saleOrder; } );
-      insert = ( { relation = manager; from = saleOrder; },
-                 { where = "(saleOrder.serviceAsPartsSale != nil OR saleOrder.tyreChangeAsPartsSale != nil) AND (saleOrder.shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY saleOrder.shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
-      update = ( { relation = manager; from = saleOrder; },
-                 { where = "(saleOrder.serviceAsPartsSale != nil OR saleOrder.tyreChangeAsPartsSale != nil) AND (saleOrder.shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY saleOrder.shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
-      delete = ( { relation = manager; from = saleOrder; },
-                 { where = "(saleOrder.serviceAsPartsSale != nil OR saleOrder.tyreChangeAsPartsSale != nil) AND (saleOrder.shipsFrom.warehouse.catalog.catalogOwner.email IN $user OR ANY saleOrder.shipsFrom.warehouse.warehouseStaffs.user.email IN $user)"; } );
+      insert = ( { relation = manager; from = saleOrder; }, { relation = parts; from = saleOrder; } );
+      update = ( { relation = manager; from = saleOrder; }, { relation = parts; from = saleOrder; } );
+      delete = ( { relation = manager; from = saleOrder; }, { relation = parts; from = saleOrder; } );
     };
     PurchaseOrder = {
       manager = ( { relation = manager; from = catalog; } );
@@ -185,13 +180,19 @@
       update = ( { relation = manager; from = location; } );
       delete = ( { relation = manager; from = location; } );
     };
-    // A move is kept at both its ends: a transfer between warehouses
-    // needs both.
+    // A move is kept at both its ends (a transfer between warehouses
+    // needs both); one end of it, at that end.
     Move = {
       read   = ( { relation = read; from = stockItem; } );
-      insert = ( { where = "(source != nil OR destination != nil) AND (source == nil OR source.warehouse.catalog.catalogOwner.email IN $user OR ANY source.warehouse.warehouseStaffs.user.email IN $user) AND (destination == nil OR destination.warehouse.catalog.catalogOwner.email IN $user OR ANY destination.warehouse.warehouseStaffs.user.email IN $user)"; } );
-      update = ( { where = "(source != nil OR destination != nil) AND (source == nil OR source.warehouse.catalog.catalogOwner.email IN $user OR SUBQUERY(source.warehouse.warehouseStaffs, $s, $s.staffRole == 'Manager' AND $s.user.email IN $user)[SIZE] > 0) AND (destination == nil OR destination.warehouse.catalog.catalogOwner.email IN $user OR SUBQUERY(destination.warehouse.warehouseStaffs, $s, $s.staffRole == 'Manager' AND $s.user.email IN $user)[SIZE] > 0)"; } );
-      delete = ( { where = "(source != nil OR destination != nil) AND (source == nil OR source.warehouse.catalog.catalogOwner.email IN $user OR SUBQUERY(source.warehouse.warehouseStaffs, $s, $s.staffRole == 'Manager' AND $s.user.email IN $user)[SIZE] > 0) AND (destination == nil OR destination.warehouse.catalog.catalogOwner.email IN $user OR SUBQUERY(destination.warehouse.warehouseStaffs, $s, $s.staffRole == 'Manager' AND $s.user.email IN $user)[SIZE] > 0)"; } );
+      insert = ( { all = ( { relation = keeper; from = source; }, { relation = keeper; from = destination; } ); },
+                 { all = ( { where = "source == nil"; }, { relation = keeper; from = destination; } ); },
+                 { all = ( { where = "destination == nil"; }, { relation = keeper; from = source; } ); } );
+      update = ( { all = ( { relation = manager; from = source; }, { relation = manager; from = destination; } ); },
+                 { all = ( { where = "source == nil"; }, { relation = manager; from = destination; } ); },
+                 { all = ( { where = "destination == nil"; }, { relation = manager; from = source; } ); } );
+      delete = ( { all = ( { relation = manager; from = source; }, { relation = manager; from = destination; } ); },
+                 { all = ( { where = "source == nil"; }, { relation = manager; from = destination; } ); },
+                 { all = ( { where = "destination == nil"; }, { relation = manager; from = source; } ); } );
     };
     Shipment = {
       read   = ( { relation = read; from = saleOrder; } );
