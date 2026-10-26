@@ -811,6 +811,25 @@ def stock_who_may(anna, ben, cid, dee):
     check("the order fully shipped", status == 200 and shipped.get("IsFullyShipped") is True, (status, shipped))
     status, body = action(sale, "Ship", {"Lines": {line["Id"]: 1}, "From": {"@odata.id": b}}, user=cid)
     check("Cid ships nothing", status in (403, 404), (status, body))
+    back = {"Lines": {line["Id"]: 1}, "At": {"@odata.id": b}, "Reason": "Damaged", "Note": "Bent"}
+    status, body = action(sale, "Return", back, user=cid)
+    check("Cid takes no return", status in (403, 404), (status, body))
+    status, body = action(sale, "Return", back, user=ben)
+    check("a bolt back to B, damaged: Ben takes the return", status == 200 and body.get("RunningNumber") == 1
+          and body.get("ReturnReason") == "Damaged", (status, body))
+    status, body = action(sale, "Return", dict(back, Lines={line["Id"]: 3}), user=ben)
+    check("3 more, of the 2 still out, is refused, said so", status == 400 and "not 3" in body["error"]["message"], (status, body))
+    status, body = action(sale, "Return", dict(back, Reason="Lost"), user=ben)
+    check("a reason not a return's is refused", status == 400, (status, body))
+    status, returned = request("GET", "SaleLines(%s)" % line["Id"], user=dee)
+    check("the line: 1 returned, its amount 2 bolts' 4", status == 200 and returned.get("ReturnedQuantity") == 1
+          and returned.get("LineAmount") == 4, (status, returned))
+    status, metadata = request("GET", "$metadata", user=dee)
+    check("purchases are returned too: PurchaseOrder's Return",
+          any(bound.get("$ReturnType", {}).get("$Type") == "Default.SupplierReturn"
+              and bound.get("$Parameter", [{}])[0].get("$Type") == "Default.PurchaseOrder"
+              for bound in (metadata.get("Default", {}).get("Return", []) if isinstance(metadata, dict) else [])),
+          status)
 
     found = [{"Item": bolt["Id"], "Location": shelves[0], "Quantity": 14}]
     status, body = action("Warehouses(%s)" % garage["Id"], "Count", {"Location": {"@odata.id": a}, "Found": found}, user=ben)

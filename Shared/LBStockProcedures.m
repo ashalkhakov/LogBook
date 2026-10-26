@@ -386,7 +386,20 @@ static NSArray *LBLines(NSSet *lines, NSDictionary<NSUUID *, NSDecimalNumber *> 
     return [chosen sortedArrayUsingFunction:LBByID context:NULL];
 }
 
+/* How many the moves moved, those deleted left out. */
+static NSDecimalNumber *LBMovedBy(NSSet<Move *> *moves) {
+    NSDecimalNumber *moved = [NSDecimalNumber zero];
+    for (Move *move in moves) {
+        if (!move.isDeleted && move.moved) moved = [moved decimalNumberByAdding:move.moved];
+    }
+    return moved;
+}
+
 @implementation SaleLine (LBStock)
+
+- (NSDecimalNumber *)lb_kept {
+    return [(self.quantity ?: [NSDecimalNumber zero]) decimalNumberBySubtracting:LBMovedBy(self.movesAsReturnedSaleLine)];
+}
 
 - (BOOL)lb_delete:(NSError **)error {
     NSArray *lines = [@[ self ] arrayByAddingObjectsFromArray:self.saleLinesAsExpandedFrom.allObjects];
@@ -400,6 +413,16 @@ static NSArray *LBLines(NSSet *lines, NSDictionary<NSUUID *, NSDecimalNumber *> 
 }
 
 @end
+
+/* Refused unless the order is confirmed or closed: what went out or came
+   in of it may come back. */
+static BOOL LBReturnable(NSManagedObject *order, NSError **error) {
+    NSString *state = [order valueForKey:@"orderState"];
+    if (![@[ LBOrderConfirmed, LBOrderClosed ] containsObject:state ?: @""]) {
+        return LBRefuse(error, [NSString stringWithFormat:@"Nothing of a %@ order comes back.", [state lowercaseString] ?: @"new"]);
+    }
+    return YES;
+}
 
 @implementation SaleOrder (LBStock)
 
@@ -511,6 +534,39 @@ static NSArray *LBLines(NSSet *lines, NSDictionary<NSUUID *, NSDecimalNumber *> 
     return shipment;
 }
 
+- (CustomerReturn *)lb_returnLines:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities at:(Location *)location on:(NSDate *)day
+                            reason:(NSString *)reason note:(NSString *)note by:(User *)user at:(NSDate *)now error:(NSError **)error {
+    if (!LBReturnable(self, error)) return nil;
+    NSArray *lines = LBLines(self.saleLines, quantities, error);
+    if (!lines) return nil;
+    for (SaleLine *line in lines) {
+        if (line.stockItem.isAPhantomKit) {
+            return LBRefuse(error, [NSString stringWithFormat:@"%@ is a phantom kit: return its components' lines.", line.stockItem.itemName]), nil;
+        }
+        NSDecimalNumber *out = [LBMovedBy(line.moves) decimalNumberBySubtracting:LBMovedBy(line.movesAsReturnedSaleLine)];
+        if ([quantities[line.id] compare:out] == NSOrderedDescending) {
+            return LBRefuse(error, [NSString stringWithFormat:@"%@ of %@ went out and have not come back, not %@.", LBQuantityText(out),
+                                                              line.stockItem.itemName, LBQuantityText(quantities[line.id])]), nil;
+        }
+    }
+    NSManagedObjectContext *context = self.managedObjectContext;
+    int32_t number = LBNextOf(self.customerReturns);
+    CustomerReturn *back = LBNew([CustomerReturn class], context, LBNamedUUID([NSString stringWithFormat:@"%@ return %d", LBText(self.id), number]));
+    back.saleOrder = self;
+    back.runningNumber = number;
+    back.returnReceived = LBDay(day);
+    back.returnedTo = location;
+    back.returnReason = reason;
+    back.note = note;
+    for (SaleLine *line in lines) {
+        NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"%@ for %@", LBText(back.id), LBText(line.id)]);
+        Move *move = LBMove(context, uuid, line.stockItem, quantities[line.id], nil, location, user, now);
+        move.customerReturn = back;
+        move.returnedSaleLine = line;
+    }
+    return back;
+}
+
 @end
 
 @implementation PurchaseOrder (LBStock)
@@ -560,6 +616,37 @@ static NSArray *LBLines(NSSet *lines, NSDictionary<NSUUID *, NSDecimalNumber *> 
         move.purchaseLine = line;
     }
     return receipt;
+}
+
+- (SupplierReturn *)lb_returnLines:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities from:(Location *)location on:(NSDate *)day
+                            reason:(NSString *)reason note:(NSString *)note by:(User *)user at:(NSDate *)now error:(NSError **)error {
+    if (!LBReturnable(self, error)) return nil;
+    NSArray *lines = LBLines(self.purchaseLines, quantities, error);
+    if (!lines) return nil;
+    for (PurchaseLine *line in lines) {
+        NSDecimalNumber *in = [LBMovedBy(line.moves) decimalNumberBySubtracting:LBMovedBy(line.movesAsReturnedPurchaseLine)];
+        if ([quantities[line.id] compare:in] == NSOrderedDescending) {
+            return LBRefuse(error, [NSString stringWithFormat:@"%@ of %@ came in and have not gone back, not %@.", LBQuantityText(in),
+                                                              line.stockItem.itemName, LBQuantityText(quantities[line.id])]), nil;
+        }
+        if (!LBHolds(location, line.stockItem, quantities[line.id], error)) return nil;
+    }
+    NSManagedObjectContext *context = self.managedObjectContext;
+    int32_t number = LBNextOf(self.supplierReturns);
+    SupplierReturn *back = LBNew([SupplierReturn class], context, LBNamedUUID([NSString stringWithFormat:@"%@ return %d", LBText(self.id), number]));
+    back.purchaseOrder = self;
+    back.runningNumber = number;
+    back.returnShipped = LBDay(day);
+    back.returnedFrom = location;
+    back.returnReason = reason;
+    back.note = note;
+    for (PurchaseLine *line in lines) {
+        NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"%@ for %@", LBText(back.id), LBText(line.id)]);
+        Move *move = LBMove(context, uuid, line.stockItem, quantities[line.id], location, nil, user, now);
+        move.supplierReturn = back;
+        move.returnedPurchaseLine = line;
+    }
+    return back;
 }
 
 @end
@@ -759,11 +846,32 @@ static BOOL LBWithin(Location *location, Location *counted) {
 
 /* How many of the line have been shipped: its moves'. */
 static NSDecimalNumber *LBShippedOf(SaleLine *line) {
-    NSDecimalNumber *shipped = [NSDecimalNumber zero];
-    for (Move *move in line.moves) {
-        if (!move.isDeleted) shipped = [shipped decimalNumberByAdding:move.moved];
+    return LBMovedBy(line.moves);
+}
+
+- (BOOL)lb_setUsed:(NSDecimalNumber *)used ofPart:(SaleLine *)part by:(User *)user at:(NSDate *)now error:(NSError **)error {
+    if (!used || used == [NSDecimalNumber notANumber] || [used compare:[NSDecimalNumber zero]] == NSOrderedAscending) {
+        return LBRefuse(error, @"Say how many were used: none, or more.");
     }
-    return shipped;
+    NSDecimalNumber *was = part.lb_kept;
+    NSComparisonResult change = [used compare:was];
+    if (change == NSOrderedSame) return YES;
+    if (change == NSOrderedDescending) {
+        part.quantity = [part.quantity decimalNumberByAdding:[used decimalNumberBySubtracting:was]];
+        return YES;
+    }
+    NSDecimalNumber *fewer = [was decimalNumberBySubtracting:used];
+    NSDecimalNumber *unshipped = [part.quantity decimalNumberBySubtracting:LBShippedOf(part)];
+    NSDecimalNumber *off = [fewer compare:unshipped] == NSOrderedDescending ? unshipped : fewer;
+    NSDecimalNumber *back = [fewer decimalNumberBySubtracting:off];
+    if (LBPositive(back)) {
+        SaleOrder *sale = part.saleOrder;
+        Location *from = sale.shipsFrom ?: [[sale.shipments anyObject] shippedFrom];
+        if (![sale lb_returnLines:@{ part.id: back } at:from on:now reason:@"Not used" note:nil by:user at:now error:error]) return NO;
+    }
+    part.quantity = [part.quantity decimalNumberBySubtracting:off];
+    if (!LBPositive(part.quantity)) return [part lb_delete:error];
+    return YES;
 }
 
 - (BOOL)lb_shipParts:(NSError **)error {
@@ -773,7 +881,7 @@ static NSDecimalNumber *LBShippedOf(SaleLine *line) {
         if (line.isDeleted) continue;
         NSDecimalNumber *shipped = LBShippedOf(line);
         if ([shipped compare:line.quantity ?: [NSDecimalNumber zero]] == NSOrderedDescending) {
-            return LBRefuse(error, [NSString stringWithFormat:@"%@ of %@ have been used: a return undoes a part used, once there are returns.",
+            return LBRefuse(error, [NSString stringWithFormat:@"%@ of %@ have been shipped for it: say how many were used instead.",
                                                               LBQuantityText(shipped), line.stockItem.itemName]);
         }
     }

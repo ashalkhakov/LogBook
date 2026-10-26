@@ -268,7 +268,7 @@
                   <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                   <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                   <tableColumns>
-                    <tableColumn identifier="locationName" width="230" minWidth="30" maxWidth="1000" id="locationsTableLocationNameColumn">
+                    <tableColumn identifier="locationName" width="160" minWidth="30" maxWidth="1000" id="locationsTableLocationNameColumn">
                       <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Location">
                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
@@ -280,6 +280,19 @@
                       </textFieldCell>
                       <connections>
                         <binding destination="locationList" name="value" keyPath="arrangedObjects.locationName" id="locationsTableLocationNameValue"/>
+                      </connections>
+                    </tableColumn>
+                    <tableColumn identifier="setAside" width="70" minWidth="30" maxWidth="1000" id="locationsTableSetAsideColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Set aside">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <buttonCell key="dataCell" type="check" bezelStyle="regularSquare" imagePosition="only" alignment="center" inset="2" id="locationsTableSetAsideCell">
+                        <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                        <font key="font" metaFont="system"/>
+                      </buttonCell>
+                      <connections>
+                        <binding destination="locationList" name="value" keyPath="arrangedObjects.isSetAside" id="locationsTableSetAsideValue"/>
                       </connections>
                     </tableColumn>
                   </tableColumns>

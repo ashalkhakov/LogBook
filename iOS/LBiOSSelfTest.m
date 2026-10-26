@@ -634,13 +634,19 @@ static BOOL const LBSyncSendsCycles = NO;
                                          [[phone.issues valueForKey:@"message"] componentsJoinedByString:@"; "]]);
     }
 
+    LBSay([form setUsed:[NSDecimalNumber one] ofPart:0 problems:&problems] && [[form partRows] isEqualToArray:@[ @"1 × Bolt, from Main / Shelf A" ]]
+              && [form saveIgnoringWarnings:YES] && LBSame(bolts.totalQuantity, @"15")
+              && [[sale.customerReturns.anyObject returnReason] isEqualToString:@"Not used"],
+          [NSString stringWithFormat:@"1 used after all: saved, one back on the shelf, not used; 15 bolts (%@)",
+                                     [(problems ?: form.problems) componentsJoinedByString:@"; "]]);
+
     form = [[LBRecordFormViewController alloc] initWithObject:[LBRecordFormViewController newRecordOfKind:@"Service" phone:hers] phone:hers];
     [form enter:@"Garage Müller" intoField:@"Garage"];
     [form enter:@"149500" intoField:@"Odometer"];
     form.partsLocation = shelfA;
     [form usePart:bolts quantity:[NSDecimalNumber decimalNumberWithString:@"5"] problems:&problems];
-    LBSay(![form saveIgnoringWarnings:YES] && [[form.problems componentsJoinedByString:@" "] containsString:@"holds 0"],
-          [NSString stringWithFormat:@"5 bolts of the none left on Shelf A: refused at saving (%@)", [form.problems componentsJoinedByString:@"; "]]);
+    LBSay(![form saveIgnoringWarnings:YES] && [[form.problems componentsJoinedByString:@" "] containsString:@"holds 1"],
+          [NSString stringWithFormat:@"5 bolts of the one left on Shelf A: refused at saving (%@)", [form.problems componentsJoinedByString:@"; "]]);
     [phone.context rollback];
     [[NSFileManager defaultManager] removeItemAtURL:other error:NULL];
 }

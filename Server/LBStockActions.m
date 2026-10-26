@@ -129,6 +129,17 @@ static NSDate *LBToday(NSDate *day) {
     return shipment;
 }
 
+- (CustomerReturn *)returnWithLines:(NSDictionary *)lines at:(Location *)at reason:(NSString *)reason note:(NSString *)note
+                                day:(NSDate *)day reply:(ODataReply *)reply {
+    User *user = LBKeeperActor(reply, self.catalog, at ? @[ at.warehouse ] : @[]);
+    NSDictionary *read = user ? LBLines(reply, lines) : nil;
+    if (!read) return nil;
+    NSError *error = nil;
+    CustomerReturn *back = [self lb_returnLines:read at:at on:LBToday(day) reason:reason note:note by:user at:[NSDate date] error:&error];
+    if (!back) LBRefuse(reply, error);
+    return back;
+}
+
 @end
 
 @implementation PurchaseOrder (LBStockActions)
@@ -169,6 +180,17 @@ static NSDate *LBToday(NSDate *day) {
     Receipt *receipt = [self lb_receiveLines:read at:at on:LBToday(day) by:user at:[NSDate date] error:&error];
     if (!receipt) LBRefuse(reply, error);
     return receipt;
+}
+
+- (SupplierReturn *)returnWithLines:(NSDictionary *)lines from:(Location *)from reason:(NSString *)reason note:(NSString *)note
+                                day:(NSDate *)day reply:(ODataReply *)reply {
+    User *user = LBKeeperActor(reply, self.catalog, from ? @[ from.warehouse ] : @[]);
+    NSDictionary *read = user ? LBLines(reply, lines) : nil;
+    if (!read) return nil;
+    NSError *error = nil;
+    SupplierReturn *back = [self lb_returnLines:read from:from on:LBToday(day) reason:reason note:note by:user at:[NSDate date] error:&error];
+    if (!back) LBRefuse(reply, error);
+    return back;
 }
 
 @end

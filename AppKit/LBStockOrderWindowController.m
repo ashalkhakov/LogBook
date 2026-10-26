@@ -5,6 +5,7 @@
 @interface LBStockOrderWindowController ()
 @property (nonatomic, readwrite, copy) NSArray *lines;
 @property (nonatomic, readwrite, copy) NSArray *documents;
+@property (nonatomic, readwrite, copy) NSArray *returns;
 @property (nonatomic, readwrite, copy) NSArray *parties;
 @property (nonatomic, readwrite, copy) NSArray<StockItem *> *catalogItems;
 @property (nonatomic, readwrite, copy) NSArray<Location *> *locations;
@@ -20,6 +21,9 @@
         self.catalog = [_order valueForKey:@"catalog"];
         _lines = @[];
         _documents = @[];
+        _returns = @[];
+        _returnReasons = @[ @"Damaged", @"Wrong item", @"Not wanted", @"Not used", @"Other" ];
+        _returnReason = sale ? @"Not wanted" : @"Damaged";
         _parties = @[];
         _catalogItems = @[];
         _locations = @[];
@@ -47,6 +51,8 @@
     self.lines = [self fetch:_sale ? [SaleLine class] : [PurchaseLine class] where:ofOrder sortedBy:@[ inOrder ]];
     self.documents = [self fetch:_sale ? [Shipment class] : [Receipt class] where:ofOrder
                         sortedBy:@[ [NSSortDescriptor sortDescriptorWithKey:@"runningNumber" ascending:NO] ]];
+    self.returns = [self fetch:_sale ? [CustomerReturn class] : [SupplierReturn class] where:ofOrder
+                      sortedBy:@[ [NSSortDescriptor sortDescriptorWithKey:@"runningNumber" ascending:NO] ]];
     self.parties = [self fetch:_sale ? [Customer class] : [Supplier class] where:ofCatalog sortedBy:self.byTitle];
     self.catalogItems = [self fetch:[StockItem class] where:ofCatalog sortedBy:self.byTitle];
     self.locations = [self fetch:[Location class] where:[NSPredicate predicateWithFormat:@"warehouse.catalog == %@", self.catalog]
@@ -165,6 +171,17 @@ static NSDictionary *LBLinesParameter(NSArray *lines, NSArray<NSDecimalNumber *>
     }
     if (!chosen.count) return [self refuse:_sale ? @"Nothing outstanding is held there." : @"Nothing is outstanding."];
     [self move:chosen quantities:quantities];
+}
+
+- (IBAction)returnLine:(id)sender {
+    NSManagedObject *line = _lineList.selectedObjects.count == 1 ? _lineList.selectedObjects[0] : nil;
+    if (!line) return [self refuse:@"Choose a line."];
+    if (!_moveAt) return [self refuse:_sale ? @"Choose where to." : @"Choose where from."];
+    NSDecimalNumber *quantity = [self typed:_moveQuantity];
+    if (!quantity) return;
+    [self performAction:@"Return" on:_order
+             parameters:@{ @"Lines": LBLinesParameter(@[ line ], @[ quantity ]), (_sale ? @"At" : @"From"): _moveAt,
+                           @"Reason": _returnReason ?: @"Other" }];
 }
 
 @end

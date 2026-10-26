@@ -1,6 +1,6 @@
 // The parts a service or a tyre change used (Parts.xib; docs/STOCK.md,
 // Parts used): its sale's lines, where they come from, a part used (an
-// item, so many) or one not yet used removed. It edits the logbook
+// item, so many), or how many of one were used after all. It edits the logbook
 // window's objects: the record's Save sends them, and the server ships
 // them as it saves (Shared/LBStockProcedures.h).
 
@@ -30,9 +30,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *quantityText;
 
 // The chosen item used, so many, from partsLocation (its first location of
-// the item's catalog where that is another's). The chosen parts removed,
-// refused where some of one is used. NO, and why, in lastError.
+// the item's catalog where that is another's). The chosen part used so
+// many as typed after all; the chosen parts none (what was shipped of them
+// comes back, Event -lb_setUsed:). Refused: why, in lastError.
 - (IBAction)usePart:(nullable id)sender;
+- (IBAction)setUsed:(nullable id)sender;
 - (IBAction)removePart:(nullable id)sender;
 - (IBAction)done:(nullable id)sender;
 @property (nonatomic, readonly, strong, nullable) NSError *lastError;

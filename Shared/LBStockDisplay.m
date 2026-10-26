@@ -86,6 +86,8 @@
     if (self.shipment) {
         return [NSString stringWithFormat:@"Shipment %@/%d", self.shipment.saleOrder.lb_number ?: @"", self.shipment.runningNumber];
     }
+    if (self.customerReturn) return [NSString stringWithFormat:@"Return %@: %@", self.customerReturn.lbNumber, self.customerReturn.returnReason ?: @""];
+    if (self.supplierReturn) return [NSString stringWithFormat:@"Return %@: %@", self.supplierReturn.lbNumber, self.supplierReturn.returnReason ?: @""];
     if (self.assembly) return self.assembly.isADisassembly ? @"Taken apart" : @"Assembly";
     if (self.stockCount) return [NSString stringWithFormat:@"Count %@", self.stockCount.lbNumber];
     if (self.adjustmentReason) return [NSString stringWithFormat:@"Adjustment: %@", self.adjustmentReason];
@@ -93,12 +95,13 @@
 }
 
 + (NSArray<NSString *> *)lbKinds {
-    return @[ @"Receipt", @"Shipment", @"Assembly", @"Count", @"Adjustment", @"Transfer" ];
+    return @[ @"Receipt", @"Shipment", @"Return", @"Assembly", @"Count", @"Adjustment", @"Transfer" ];
 }
 
 - (NSString *)lbKind {
     if (self.receipt) return @"Receipt";
     if (self.shipment) return @"Shipment";
+    if (self.customerReturn || self.supplierReturn) return @"Return";
     if (self.assembly) return @"Assembly";
     if (self.stockCount) return @"Count";
     if (self.adjustmentReason) return @"Adjustment";
@@ -114,6 +117,16 @@
     return [[NSDecimalNumber zero] decimalNumberBySubtracting:self.moved];
 }
 
+@end
+
+@implementation CustomerReturn (LBStockDisplay)
+- (NSString *)lbNumber { return [NSString stringWithFormat:@"%@/%d", self.saleOrder.lb_number ?: @"", self.runningNumber]; }
+- (NSString *)lbPlaceTitle { return self.returnedTo.lbTitle ?: @""; }
+@end
+
+@implementation SupplierReturn (LBStockDisplay)
+- (NSString *)lbNumber { return [NSString stringWithFormat:@"%@/%d", self.purchaseOrder.lb_number ?: @"", self.runningNumber]; }
+- (NSString *)lbPlaceTitle { return self.returnedFrom.lbTitle ?: @""; }
 @end
 
 @implementation ReorderRule (LBStockDisplay)

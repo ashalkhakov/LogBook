@@ -92,13 +92,30 @@ static NSString * const LBPartsLocationDefaultsKey = @"LBPartsLocation";
     [self listParts];
 }
 
-- (IBAction)removePart:(id)sender {
-    for (SaleLine *line in _partList.selectedObjects) {
+/* The parts so many were used of, by whoever entered the event. */
+- (void)set:(NSArray<SaleLine *> *)lines used:(NSDecimalNumber *)used {
+    NSDate *now = [NSDate date];
+    for (SaleLine *line in lines) {
         NSError *error = nil;
-        if (![line lb_delete:&error]) return [self refuse:error.localizedDescription];
+        if (![_event lb_setUsed:used ofPart:line by:_event.enteredBy at:now error:&error]) {
+            [self listParts];
+            return [self refuse:error.localizedDescription];
+        }
     }
     _lastError = nil;
     [self listParts];
+}
+
+- (IBAction)setUsed:(id)sender {
+    if (self.isWindowLoaded && ![self.window makeFirstResponder:nil]) return;
+    if (_partList.selectedObjects.count != 1) return [self refuse:@"Choose a part."];
+    NSDecimalNumber *used = _quantityText.length ? [NSDecimalNumber decimalNumberWithString:_quantityText locale:[NSLocale currentLocale]] : nil;
+    if (!used || used == [NSDecimalNumber notANumber]) return [self refuse:@"Say how many: a number."];
+    [self set:_partList.selectedObjects used:used];
+}
+
+- (IBAction)removePart:(id)sender {
+    [self set:_partList.selectedObjects used:[NSDecimalNumber zero]];
 }
 
 - (IBAction)done:(id)sender {

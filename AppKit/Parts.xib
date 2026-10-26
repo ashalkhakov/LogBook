@@ -78,19 +78,19 @@
                         <binding destination="partList" name="value" keyPath="arrangedObjects.stockItem.lbTitle" id="partsTableItemValue"/>
                       </connections>
                     </tableColumn>
-                    <tableColumn identifier="quantity" width="80" minWidth="30" maxWidth="1000" id="partsTableQuantityColumn">
-                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="How many">
+                    <tableColumn identifier="used" width="80" minWidth="30" maxWidth="1000" id="partsTableUsedColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Used">
                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                       </tableHeaderCell>
-                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="partsTableQuantityCell">
-                        <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="partsTableQuantityFormatter"/>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="partsTableUsedCell">
+                        <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="partsTableUsedFormatter"/>
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                       </textFieldCell>
                       <connections>
-                        <binding destination="partList" name="value" keyPath="arrangedObjects.quantity" id="partsTableQuantityValue"/>
+                        <binding destination="partList" name="value" keyPath="arrangedObjects.lb_kept" id="partsTableUsedValue"/>
                       </connections>
                     </tableColumn>
                     <tableColumn identifier="price" width="80" minWidth="30" maxWidth="1000" id="partsTablePriceColumn">
@@ -108,19 +108,19 @@
                         <binding destination="partList" name="value" keyPath="arrangedObjects.linePriceAmount" id="partsTablePriceValue"/>
                       </connections>
                     </tableColumn>
-                    <tableColumn identifier="used" width="80" minWidth="30" maxWidth="1000" id="partsTableUsedColumn">
-                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Used">
+                    <tableColumn identifier="shipped" width="80" minWidth="30" maxWidth="1000" id="partsTableShippedColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Shipped">
                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                       </tableHeaderCell>
-                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="partsTableUsedCell">
-                        <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="partsTableUsedFormatter"/>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="partsTableShippedCell">
+                        <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="partsTableShippedFormatter"/>
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                       </textFieldCell>
                       <connections>
-                        <binding destination="partList" name="value" keyPath="arrangedObjects.shippedQuantity" id="partsTableUsedValue"/>
+                        <binding destination="partList" name="value" keyPath="arrangedObjects.shippedQuantity" id="partsTableShippedValue"/>
                       </connections>
                     </tableColumn>
                   </tableColumns>
@@ -205,6 +205,18 @@
             <connections>
               <action selector="removePart:" target="-2" id="removePartAction"/>
               <binding destination="partList" name="enabled" keyPath="canRemove" id="removePartEnabled"/>
+            </connections>
+          </button>
+          <button verticalHuggingPriority="750" identifier="setUsed" id="setUsed">
+            <rect key="frame" x="110" y="10" width="110" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Set Used" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="setUsedCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="setUsed:" target="-2" id="setUsedAction"/>
+              <binding destination="partList" name="enabled" keyPath="selectedObjects.@count" id="setUsedEnabled"/>
             </connections>
           </button>
           <button verticalHuggingPriority="750" identifier="partsDone" id="partsDone">

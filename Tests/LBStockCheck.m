@@ -29,6 +29,7 @@
 #import <CoreData/CoreData.h>
 #import "LogbookValidation.h"
 #import "LBStockProcedures.h"
+#import "LBStockDisplay.h"
 #import "User+CoreDataClass.h"
 #import "Catalog+CoreDataClass.h"
 #import "Customer+CoreDataClass.h"
@@ -728,6 +729,142 @@ static void LBStockProcedures(void) {
     LBCheck(@"its draft PO-GAR-0002", [[drafts.firstObject lb_number] isEqualToString:@"PO-GAR-0002"], [drafts.firstObject lb_number]);
 }
 
+#pragma mark Returns
+
+static void LBReturns(void) {
+    NSManagedObjectContext *context = LBNewStore();
+    LBStock stock = { context, nil, nil, nil, nil };
+    NSDate *now = [NSDate date];
+    NSString *why = nil;
+    NSError *error = nil;
+    User *anna = LBInsert([User class], context);
+    anna.email = @"anna@example.org";
+    stock.anna = anna;
+    Catalog *catalog = LBInsert([Catalog class], context);
+    catalog.catalogName = @"Workshop";
+    catalog.catalogOwner = anna;
+    catalog.documentPrefix = @"GAR";
+    catalog.currency = @"USD";
+    stock.catalog = catalog;
+    Warehouse *garage = LBInsert([Warehouse class], context);
+    garage.warehouseName = @"Garage";
+    garage.catalog = catalog;
+    stock.warehouse = garage;
+    Location *a = LBInsert([Location class], context);
+    a.locationName = @"Shelf A";
+    a.warehouse = garage;
+    stock.shelf = a;
+    Location *aside = LBInsert([Location class], context);
+    aside.locationName = @"Returns";
+    aside.warehouse = garage;
+    aside.isSetAside = YES;
+    Contact *bobs = LBInsert([Contact class], context);
+    bobs.contactName = @"Bob's Garage";
+    bobs.catalog = catalog;
+    bobs.lb_isCustomer = YES;
+    Contact *parts = LBInsert([Contact class], context);
+    parts.contactName = @"Parts Ltd";
+    parts.catalog = catalog;
+    Supplier *supplier = LBInsert([Supplier class], context);
+    supplier.contact = parts;
+    supplier.catalog = catalog;
+    StockItem *bolt = LBItem(&stock, @"Bolt");
+    LBKeep(&stock, bolt, @"10");
+    LBCheck(@"returns: 10 bolts on shelf A, and a place for returns, set aside", LBSave(context, &why), why);
+
+    /* A customer's return: 4 sold and shipped, 1 back, set aside. */
+    SaleOrder *order = [catalog lb_newSaleOrderTo:bobs.customer on:now];
+    SaleLine *sold = LBInsert([SaleLine class], context);
+    sold.saleOrder = order;
+    sold.stockItem = bolt;
+    sold.quantity = LBN(@"4");
+    sold.linePriceAmount = LBN(@"1.5");
+    sold.linePriceCurrency = @"USD";
+    error = nil;
+    LBRefused(@"a draft's line returned is refused",
+              [order lb_returnLines:@{ sold.id: LBN(@"1") } at:aside on:now reason:@"Damaged" note:nil by:anna at:now error:&error] != nil,
+              error, context);
+    LBCheck(@"confirmed", [order lb_confirm:&error], error);
+    LBCheck(@"4 shipped from A", [order lb_shipLines:@{ sold.id: LBN(@"4") } from:a on:now by:anna at:now error:&error] != nil, error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    LBCheck(@"6 bolts in all", LBSame(bolt.totalQuantity, @"6"), bolt.totalQuantity);
+    CustomerReturn *back = [order lb_returnLines:@{ sold.id: LBN(@"1") } at:aside on:now reason:@"Damaged" note:@"Bent"
+                                              by:anna at:now error:&error];
+    LBCheck(@"a bolt back, damaged: return 1 of the order, named so", back.runningNumber == 1
+                                                                      && [back.id isEqual:LBNamed(@"%@ return 1", LBId(order))],
+            error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    Move *in = back.moves.anyObject;
+    LBCheck(@"its move: 1 bolt into Returns, for the line, named so", back.moves.count == 1 && LBSame(in.moved, @"1")
+                                                                      && in.destination == aside && !in.source
+                                                                      && in.returnedSaleLine == sold
+                                                                      && [in.id isEqual:LBNamed(@"%@ for %@", LBId(back), LBId(sold))],
+            in);
+    LBCheck(@"the line: 1 returned, its amount 3 bolts' 4.5", LBSame(sold.returnedQuantity, @"1") && LBSame(sold.lineAmount, @"4.5"),
+            @[ sold.returnedQuantity ?: @"none", sold.lineAmount ?: @"none" ]);
+    LBCheck(@"set aside: Returns holds it, the item's total still 6", LBSame([aside lb_heldOf:bolt], @"1")
+                                                                       && LBSame(bolt.totalQuantity, @"6"),
+            bolt.totalQuantity);
+    LBCheck(@"in the changelog: \"Return SO-GAR-0001/1: Damaged\"", [in.lbWhat isEqualToString:@"Return SO-GAR-0001/1: Damaged"]
+                                                                      && [in.lbKind isEqualToString:@"Return"],
+            in.lbWhat);
+    error = nil;
+    LBRefused(@"4 more back, of the 3 out, is refused",
+              [order lb_returnLines:@{ sold.id: LBN(@"4") } at:a on:now reason:@"Not wanted" note:nil by:anna at:now error:&error] != nil,
+              error, context);
+    CustomerReturn *rest = [order lb_returnLines:@{ sold.id: LBN(@"3") } at:a on:now reason:@"Not wanted" note:nil by:anna at:now
+                                           error:&error];
+    LBCheck(@"the other 3 back on shelf A, not wanted: return 2", rest.runningNumber == 2, error);
+    LBCheck(@"saved: 9 bolts in all, the line's amount none", LBSave(context, &why) && LBSame(bolt.totalQuantity, @"9")
+                                                                  && (sold.lineAmount == nil || LBSame(sold.lineAmount, @"0")),
+            why ?: bolt.totalQuantity);
+    Move *more = LBInsert([Move class], context);
+    more.stockItem = bolt;
+    more.moved = LBN(@"1");
+    more.destination = a;
+    more.moment = now;
+    more.user = anna;
+    more.customerReturn = back;
+    more.returnedSaleLine = sold;
+    LBCheck(@"a bolt more returned than went out, by hand, is refused", !LBSave(context, &why), nil);
+    [context rollback];
+
+    /* A return to the supplier: 5 received, 2 sent back. */
+    PurchaseOrder *purchase = [catalog lb_newPurchaseOrderFrom:supplier on:now];
+    PurchaseLine *bought = LBInsert([PurchaseLine class], context);
+    bought.purchaseOrder = purchase;
+    bought.stockItem = bolt;
+    bought.quantity = LBN(@"5");
+    bought.lineUnitCostAmount = LBN(@"1");
+    bought.lineUnitCostCurrency = @"USD";
+    LBCheck(@"confirmed", [purchase lb_confirm:&error], error);
+    LBCheck(@"5 received at Returns", [purchase lb_receiveLines:@{ bought.id: LBN(@"5") } at:aside on:now by:anna at:now error:&error] != nil,
+            error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    error = nil;
+    LBRefused(@"6 sent back, of the 5 in, is refused",
+              [purchase lb_returnLines:@{ bought.id: LBN(@"6") } from:aside on:now reason:@"Wrong item" note:nil by:anna at:now
+                                 error:&error] != nil,
+              error, context);
+    error = nil;
+    LBRefused(@"2 sent back from a place that holds none is refused",
+              [purchase lb_returnLines:@{ bought.id: LBN(@"2") } from:LBInsert([Location class], context) on:now reason:@"Wrong item"
+                                  note:nil by:anna at:now error:&error] != nil,
+              error, context);
+    [context rollback];
+    SupplierReturn *sent = [purchase lb_returnLines:@{ bought.id: LBN(@"2") } from:aside on:now reason:@"Wrong item" note:nil by:anna
+                                                 at:now error:&error];
+    LBCheck(@"2 sent back from Returns: return 1 of the purchase", sent.runningNumber == 1, error);
+    LBCheck(@"saved", LBSave(context, &why), why);
+    Move *out = sent.moves.anyObject;
+    LBCheck(@"its move: 2 out of Returns, for the line; the line 2 returned, Returns holds 4",
+            LBSame(out.moved, @"2") && out.source == aside && !out.destination && out.returnedPurchaseLine == bought
+                && LBSame(bought.returnedQuantity, @"2") && LBSame([aside lb_heldOf:bolt], @"4"),
+            @[ bought.returnedQuantity ?: @"none", [aside lb_heldOf:bolt] ]);
+    LBCheck(@"in the changelog: \"Return PO-GAR-0001/1: Wrong item\"", [out.lbWhat isEqualToString:@"Return PO-GAR-0001/1: Wrong item"],
+            out.lbWhat);
+}
+
 #pragma mark Parts used by services and tyre changes
 
 /* The object of the class whose key is so. */
@@ -843,8 +980,8 @@ static void LBPartsUsed(void) {
     LBCheck(@"4 more pads, of the 3 there: refused at saving, in the procedure's words",
             !LBSaveShipping(context, &why) && [why containsString:@"holds 3"], why);
     used.quantity = LBN(@"1");
-    LBCheck(@"a used part reduced: refused (a return undoes one, once there are returns)",
-            !LBSaveShipping(context, &why) && [why containsString:@"have been used"], why);
+    LBCheck(@"a used part's line reduced by hand: refused, how many were used is said instead",
+            !LBSaveShipping(context, &why) && [why containsString:@"say how many were used"], why);
     NSError *refused = nil;
     LBCheck(@"a used part's line not deleted", ![used lb_delete:&refused], refused);
     [context rollback];
@@ -857,6 +994,29 @@ static void LBPartsUsed(void) {
                                                                          && LBSame(LBHeld(&stock, pads), @"2")
                                                                          && LBSame(brakes.totalAmount, @"120"),
             why ?: brakes.totalAmount);
+
+    /* Fewer used than shipped: they come back to the shelf, not used. */
+    LBCheck(@"the first line: 2 used", LBSame(used.lb_kept, @"2"), used.lb_kept);
+    LBCheck(@"1 used after all", [brakes lb_setUsed:LBN(@"1") ofPart:used by:anna at:[NSDate date] error:&error], error);
+    CustomerReturn *unused = sale.customerReturns.anyObject;
+    LBCheck(@"saved: a pad back to the shelf, a return of the sale, not used; the service 100",
+            LBSaveShipping(context, &why) && LBSame(LBHeld(&stock, pads), @"3") && [unused.returnReason isEqualToString:@"Not used"]
+                && unused.returnedTo == shelf && LBSame(used.lb_kept, @"1") && LBSame(brakes.totalAmount, @"100"),
+            why ?: @[ LBHeld(&stock, pads), brakes.totalAmount ?: @"none" ]);
+    LBCheck(@"3 used: two more shipped", [brakes lb_setUsed:LBN(@"3") ofPart:used by:anna at:[NSDate date] error:&error]
+                                             && LBSaveShipping(context, &why) && LBSame(LBHeld(&stock, pads), @"1")
+                                             && LBSame(used.lb_kept, @"3") && LBSame(brakes.totalAmount, @"140"),
+            why ?: error ?: LBHeld(&stock, pads));
+    LBCheck(@"none used: all 3 back, the line's amount none", [brakes lb_setUsed:[NSDecimalNumber zero] ofPart:used by:anna
+                                                                             at:[NSDate date] error:&error]
+                                                                   && LBSaveShipping(context, &why) && LBSame(LBHeld(&stock, pads), @"4")
+                                                                   && LBSame(brakes.totalAmount, @"80"),
+            why ?: error ?: @[ LBHeld(&stock, pads), brakes.totalAmount ?: @"none" ]);
+    SaleLine *unshipped = [brakes lb_usePart:pads quantity:LBN(@"1") from:shelf error:&error];
+    LBCheck(@"a part not yet shipped, none used: its line goes",
+            [brakes lb_setUsed:[NSDecimalNumber zero] ofPart:unshipped by:anna at:[NSDate date] error:&error]
+                && LBSaveShipping(context, &why) && ![sale.saleLines containsObject:unshipped] && LBSame(LBHeld(&stock, pads), @"4"),
+            why ?: error);
 
     TyreSet *winter = LBInsert([TyreSet class], context);
     winter.vehicle = golf;
@@ -898,6 +1058,7 @@ int main(int argc, const char *argv[]) {
         [ORMTables registerTables:tables named:@"Logbook"];
         LBKits();
         LBStockProcedures();
+        LBReturns();
         LBPartsUsed();
         printf("stock: %lu failed\n", (unsigned long)LBFailures);
     }

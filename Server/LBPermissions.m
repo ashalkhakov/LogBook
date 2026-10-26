@@ -651,6 +651,8 @@ static void LBServeStock(ODataService *service, NSMutableDictionary<NSString *, 
         @[ LBEntity(Move), @"stockItem.catalog", @[ @"source.warehouse", @"destination.warehouse" ], @(LBStockKeeper) ],
         @[ LBEntity(Shipment), @"saleOrder.catalog", @[ @"shippedFrom.warehouse" ], @(LBStockKeeper) ],
         @[ LBEntity(Receipt), @"purchaseOrder.catalog", @[ @"receivedAt.warehouse" ], @(LBStockKeeper) ],
+        @[ LBEntity(CustomerReturn), @"saleOrder.catalog", @[ @"returnedTo.warehouse" ], @(LBStockKeeper) ],
+        @[ LBEntity(SupplierReturn), @"purchaseOrder.catalog", @[ @"returnedFrom.warehouse" ], @(LBStockKeeper) ],
         @[ LBEntity(Assembly), @"assembled.catalog", @[ @"assembledAt.warehouse" ], @(LBStockKeeper) ],
         @[ LBEntity(StockCount), @"warehouse.catalog", @[ @"warehouse" ], @(LBStockKeeper) ],
     ];

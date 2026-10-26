@@ -123,7 +123,8 @@ $(BUILD)/lb-procedures-check: $(MODEL)/.made Tests/LBProceduresCheck.m $(PROCEDU
 	$(CC) $(FLAGS) $(INC) Tests/LBProceduresCheck.m $(PROCEDURES) $(GENERATED)/*.m $(LIBS) -o $@
 
 # The stock model's derivations and rules checked over a store of its own.
-STOCK = Shared/LBStockProcedures.m Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+STOCK = Shared/LBStockProcedures.m Shared/LBStockDisplay.m Shared/LBDisplay.m Shared/LBProcedures.m \
+	$(MODEL)/Constraints/LogbookValidation.m
 
 $(BUILD)/lb-stock-check: $(MODEL)/.made Tests/LBStockCheck.m $(STOCK) Shared/LBStockProcedures.h $(GENERATED)/.made \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework

@@ -59,12 +59,24 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSString *lbLineOrder;
 @end
 
+// A return as its order's lists show it: "SO-GAR-0002/1", and where the
+// goods came back to or went back from.
+@interface CustomerReturn (LBStockDisplay)
+@property (nonatomic, readonly, copy) NSString *lbNumber;
+@property (nonatomic, readonly, copy) NSString *lbPlaceTitle;
+@end
+@interface SupplierReturn (LBStockDisplay)
+@property (nonatomic, readonly, copy) NSString *lbNumber;
+@property (nonatomic, readonly, copy) NSString *lbPlaceTitle;
+@end
+
 @interface Move (LBStockDisplay)
 // Where it went from and to: a location's title, or nothing.
 @property (nonatomic, readonly, copy) NSString *lbFromTitle;
 @property (nonatomic, readonly, copy) NSString *lbToTitle;
 // What made it: "Receipt PO-GAR-0001/1", "Shipment SO-GAR-0002/1",
-// "Assembly", "Count CT-0003", "Adjustment: Lost", "Transfer".
+// "Return SO-GAR-0002/1: Damaged", "Assembly", "Count CT-0003",
+// "Adjustment: Lost", "Transfer".
 @property (nonatomic, readonly, copy) NSString *lbWhat;
 // What kind of thing made it, as the changelog filters by: one of
 // +lbKinds.

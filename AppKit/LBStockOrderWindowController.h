@@ -1,7 +1,7 @@
 // An order's window (StockSale.xib, StockPurchase.xib; docs/STOCK.md,
-// Orders): a sale or a purchase, its lines, and its shipments or receipts;
-// confirmed, closed, cancelled or reopened, and its lines shipped or
-// received, by the server's actions. It reads the order and what is of it.
+// Orders): a sale or a purchase, its lines, its shipments or receipts and
+// its returns; confirmed, closed, cancelled or reopened, and its lines
+// shipped or received, and returned, by the server's actions. It reads the order and what is of it.
 
 #import "LBStockEditor.h"
 
@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 // shipments or receipts, the latest first.
 @property (nonatomic, readonly, copy) NSArray *lines;
 @property (nonatomic, readonly, copy) NSArray *documents;
+// Its returns, the latest first.
+@property (nonatomic, readonly, copy) NSArray *returns;
 @property (nonatomic, strong) IBOutlet NSArrayController *lineList;
 @property (nonatomic, strong) IBOutlet NSTableView *linesTable;
 // What its form chooses from: the catalog's customers (suppliers), items,
@@ -31,6 +33,9 @@ NS_ASSUME_NONNULL_BEGIN
 // What a line is about to ship or receive: how many, from or at where.
 @property (nonatomic, copy, nullable) NSString *moveQuantity;
 @property (nonatomic, strong, nullable) Location *moveAt;
+// Why a line comes back (goes back): one of returnReasons.
+@property (nonatomic, readonly, copy) NSArray<NSString *> *returnReasons;
+@property (nonatomic, copy) NSString *returnReason;
 
 // The server's Confirm, Close, Cancel and Reopen.
 - (IBAction)confirmOrder:(nullable id)sender;
@@ -46,6 +51,9 @@ NS_ASSUME_NONNULL_BEGIN
 // every line's outstanding (shipping: what moveAt holds of each).
 - (IBAction)moveLine:(nullable id)sender;
 - (IBAction)moveOutstanding:(nullable id)sender;
+// The chosen line, so many as typed, returned to (from) moveAt, for
+// returnReason: the server's Return.
+- (IBAction)returnLine:(nullable id)sender;
 
 @end
 

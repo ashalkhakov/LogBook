@@ -260,6 +260,10 @@
 			isa = PBXBuildFile;
 			fileRef = F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */;
 		};
+		72F298546B4BBA2B1AD0CAED /* Parts.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 7B58A3F22B5132525D3F4330 /* Parts.xib */;
+		};
 		743FCF79A5D881093D2F7D31 /* LBProceduresCheck.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 892723880096458A3BA80B0E /* LBProceduresCheck.m */;
@@ -1159,6 +1163,12 @@
 			path = LBPlanned.h;
 			sourceTree = "<group>";
 		};
+		7B58A3F22B5132525D3F4330 /* Parts.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = Parts.xib;
+			sourceTree = "<group>";
+		};
 		7D121C7DECA61E76A9483A71 /* LBAnswersController.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -1844,6 +1854,7 @@
 				694E25C06D350F4886223FAB /* Lists.xib */,
 				4FE96229781E69B34DF214C9 /* MainMenu.xib */,
 				F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */,
+				7B58A3F22B5132525D3F4330 /* Parts.xib */,
 				4E83A3CB72FBFB07198EF507 /* Preferences.xib */,
 				1B50BA5E1C91FF419EF82E8F /* StockCount.xib */,
 				D0D9070083F80CD0D5733CD9 /* StockItem.xib */,
@@ -2089,6 +2100,7 @@
 				20F1409E469AF3CE4125FEB3 /* StockPurchase.xib */,
 				55163AC23A466DC095BC188A /* StockCount.xib */,
 				C4EC79F8329D4E41803D8946 /* CatalogSettings.xib */,
+				72F298546B4BBA2B1AD0CAED /* Parts.xib */,
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
 				528729F595FA1EDB414383AA /* Logbook.rdl */,

@@ -20,13 +20,13 @@ garage of parts, or a small shop, should find it no more work than KiWi.
 | Setup | catalogs, their currency and units; warehouses, locations within them; who works where | [Setup](#setup) |
 | Catalog | items, categories, suppliers, customers, attributes; kits and their recipes | [Items](#items), [Kits](#kits) |
 | Orders | purchase and sale orders, their lines, confirmed, closed or cancelled | [Orders](#orders) |
-| Fulfilment | receiving purchases, shipping sales, in parts, phantom kits expanded | [Receiving](#receiving), [Shipping](#shipping) |
+| Fulfilment | receiving purchases, shipping sales, in parts, phantom kits expanded; returns both ways | [Receiving](#receiving), [Shipping](#shipping), [Returns](#returns) |
 | Stock | holdings per location; transfers, adjustments, counts; assemblies | [Holdings](#holdings), [Moves](#moves-transfers-and-adjustments), [Counts](#counts), [Assembly](#assembly) |
 | Planning | what is committed, available, coming; what to reorder | [Available](#on-hand-committed-available), [Reorder](#reorder) |
 | Looking back | an item's history, the changelog, statistics | [Overview](#overview-and-history) |
 
 Not in the first version, as agreed: barcodes, PDF and CSV export, alerts
-and passwords. Designed to come after it: returns, picking and packing as
+and passwords. Designed to come after it: picking and packing as
 steps of their own, lots and serial numbers, fulfilment orders, costing
 beyond the item's unit cost ([Extensions](#extensions)).
 
@@ -231,6 +231,37 @@ partly shipped until nothing is outstanding.
 Picking and packing are not steps of their own in the first version
 ([Extensions](#extensions)).
 
+## Returns
+
+Goods come back against the line they went out on, and go back against
+the line they came in on. The money (refunds, credit notes) is not
+stock's.
+
+- **A customer return** is what came back of a sale order at once: a day,
+  the location it came back to, a reason (Damaged, Wrong item, Not wanted,
+  Not used, Other), a note, and a move into the location for each line,
+  how many. A **supplier return** is what went back of a purchase order:
+  a day, the location it went from, a reason, a note, and a move out of
+  the location for each line. Numbered per order: `SO-GAR-0002/1`.
+- **No more than went out** (came in), less what came back already: the
+  procedure refuses it, and the model's rule says so too (a line's
+  returned quantity, the total of its returning moves, is no more than
+  shipped, or received). A phantom kit comes back as its components,
+  against their lines.
+- **What it is worth:** a sale line comes to what of it was kept at its
+  price; once all of it came back, to nothing. A return does not make the
+  line outstanding again: a replacement is a new line, or a new order.
+- **Set aside:** what a returned item becomes is where it is put. A
+  location can be set aside (in the catalog's settings): what comes back
+  damaged, or waits to be checked, is kept there and is not for sale. On
+  hand counts only what is not set aside; from there it is adjusted away
+  as damaged, or moved back once checked.
+- **Where:** the order's window has Reason and Return Line (to or from the
+  location chosen for shipping or receiving), and lists its returns; the
+  server's `Return` action on a sale or a purchase order
+  (`Server/LBStockActions.h`). Who may: the staff of the warehouse the
+  goods come back to, or go from.
+
 ## Holdings
 
 A holding is an item at a location and how many are there. Its quantity,
@@ -314,11 +345,16 @@ owner. Stock leaves a warehouse one way only: as a sale shipped.
   completion is (`lb_shipPartsOfChangedEvents:`).
 - **Short:** refused, as any shipment is ("Shelf A holds 1 of Brake pad,
   not 2"). Buy it in and receive it first.
-- **A used part reduced or removed:** refused. A return will undo it, once
-  there are returns ([Returns](#returns)).
+- **Fewer used after all:** said as how many were used. What of the line
+  was not shipped yet is taken off; what was comes back where it came
+  from, a customer return of the sale for Not used, and the sale comes to
+  less. More used: the line is for more, shipped as the record is saved.
+  None used of a line nothing of which was shipped: the line goes. A line
+  changed by hand to less than was shipped is refused.
 - **The service's cost:** its items' and its parts', less its discount.
-- **Where:** the phone's service form has Parts; the desktop's service and
-  tyre change forms have a Parts… panel.
+- **Where:** the phone's service form has Parts (a part tapped: how many
+  were used); the desktop's service and tyre change forms have a Parts…
+  panel (Set Used, and Remove: none used).
 - **Who may:** the staff of the warehouse the parts ship from, keepers
   among them, make and change such a sale and its lines. The catalog's
   warehouse staff make the owner's contact and customer.
@@ -335,7 +371,7 @@ set.
 | catalog, items, kits, categories, suppliers, customers | yes | | |
 | warehouses, locations, staff | yes | locations of theirs | |
 | orders: make, confirm, close, cancel | yes | yes | |
-| receive, ship, transfer, adjust, count, assemble | yes | at theirs | at theirs |
+| receive, ship, return, transfer, adjust, count, assemble | yes | at theirs | at theirs |
 | a record's parts: its sale, from where it ships | yes | at theirs | at theirs |
 | see the catalog | yes | yes | yes |
 
@@ -351,7 +387,8 @@ Logbook's namespace):
 |---|---|
 | a phantom kit line's component line | `<kit line id> component <item id>` |
 | a receipt, a shipment | `<order id> receipt <n>`, `<order id> shipment <n>` (n counted up) |
-| a receipt's or shipment's move | `<receipt or shipment id> for <line id>` |
+| a return | `<order id> return <n>` (n counted up) |
+| a receipt's, shipment's or return's move | `<receipt, shipment or return id> for <line id>` |
 | an assembly's moves | `<assembly id> uses <item id>`, `<assembly id> makes` |
 | a count's adjustment | `<count id> for <item id> at <location id>` |
 | a holding | `<item id> at <location id>` |
@@ -425,6 +462,11 @@ Made (`lb-stock-check` checks each), as the design above needs them:
    per catalog); `SupplierItem` (the supplier's SKU, cost, pack size,
    minimum, lead days; one preferred per item) for what was one supplier
    per item; `ItemCode` (code, kind, units) for KiWi's tag.
+8. **Returns:** `CustomerReturn` of a sale order, `SupplierReturn` of a
+   purchase order, a move part of at most one document; `Move returns
+   SaleLine` (`PurchaseLine`), the lines' returned quantity derived and
+   stored, no more than shipped (received); a sale line's amount less what
+   came back; `Location is set aside`, left out of an item's total.
 
 ## Steps
 
@@ -446,35 +488,6 @@ How the design grows toward a warehouse system, each in the model's terms,
 each approved. None is in the first version; each is drawn so the first
 does not have to be undone for it. Picking and packing and lots are as
 ShipStream has them; fulfilment orders are Shopify's.
-
-### Returns
-
-Goods come back against the line they went out on, and go back against
-the line they came in on; the money (refunds, credit notes) is not stock's.
-
-```
-CustomerReturn(.id) is of SaleOrder; was received on Date; at Location; has Note.
-Move returns SaleLine.                       -- into the return's location
-SaleLine has returned Quantity.  ** total of its returning moves
-ReturnReason: 'Damaged', 'Wrong item', 'Not wanted', 'Other'.
-CustomerReturn is for ReturnReason.
-
-SupplierReturn(.id) is of PurchaseOrder; was shipped on Date; from Location.
-Move returns PurchaseLine.                   -- out of the return's location
-PurchaseLine has returned Quantity.  ** total
-```
-
-- A return's moves are of the line's item, into (or out of) the return's
-  location, as a receipt's and a shipment's are; a move is part of one
-  document at most.
-- What a returned item becomes is its location: back on a shelf for sale,
-  or into one marked not for sale (`Location is not for sale`), from which
-  it is adjusted away as damaged or moved back once checked. On hand
-  counts only what is for sale.
-- A line can return no more than went out (an alethic rule: returned ≤
-  shipped). A return does not make the line outstanding again; sending a
-  replacement is a new line, or a new order.
-- A phantom kit comes back as its components, against their lines.
 
 ### Picking and packing
 

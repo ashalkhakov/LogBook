@@ -184,10 +184,13 @@ FOUNDATION_EXPORT CGFloat const LBPhotoLongestSide;
 // A service's parts (Shared/LBStockProcedures.h): the lines of a sale of
 // them to the vehicle's owner, shipped as it is saved ("2 × Brake pad, from
 // Garage / Shelf A"); where they come from (the phone keeps the last); a
-// part used, so many of the item. NO, and why: none used.
+// part used, so many of the item; how many of the nth part were used after
+// all (tapped), what was shipped of it and not used coming back
+// (Event -lb_setUsed:). NO, and why: nothing changed.
 - (NSArray<NSString *> *)partRows;
 @property (nonatomic, strong, nullable) Location *partsLocation;
 - (BOOL)usePart:(StockItem *)item quantity:(NSDecimalNumber *)quantity problems:(NSArray<NSString *> *_Nullable *_Nullable)problems;
+- (BOOL)setUsed:(NSDecimalNumber *)used ofPart:(NSUInteger)index problems:(NSArray<NSString *> *_Nullable *_Nullable)problems;
 // A receipt's photo (JPEG data), as one picked: the attachment's content.
 - (void)addImageData:(NSData *)jpeg;
 // A photo taken or chosen (UIImagePickerControllerDelegate's): kept as a

@@ -21,6 +21,8 @@
 //   a user's contact, its customer  "<catalog id> contact of <email>",
 //                                   "<contact id> customer"
 //   an event's sale of its parts    "parts of <event id>"
+//   a return, its moves             "<order id> return <n>", "<return id>
+//                                   for <line id>"
 //
 // What a person starts (an order, a transfer, an adjustment, a count, an
 // assembly) is new, with an id of its own. Numbers: an order's running
@@ -52,6 +54,8 @@
 #import "ReorderRule+CoreDataClass.h"
 #import "SupplierItem+CoreDataClass.h"
 #import "ItemCode+CoreDataClass.h"
+#import "CustomerReturn+CoreDataClass.h"
+#import "SupplierReturn+CoreDataClass.h"
 #import "Event+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
 #import "TyreChange+CoreDataClass.h"
@@ -128,11 +132,17 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
                          quantity:(NSDecimalNumber *)quantity
                              from:(Location *)location
                             error:(NSError **)error;
+// A part's use changed to so many. More: its line is for more, shipped as
+// the event is saved. Fewer: what of its line is not shipped yet is taken
+// off; of what was, as many come back (a customer return, Not used, to
+// where they came from, now, by the user). None of a line nothing of which
+// was shipped: the line deleted. Refused as a return is.
+- (BOOL)lb_setUsed:(NSDecimalNumber *)used ofPart:(SaleLine *)part by:(User *)user at:(NSDate *)now error:(NSError **)error;
 // Its parts shipped: what is left of each line, from where its sale ships
 // from, on its day and at its moment, by whoever entered it; the sale
 // confirmed first where a draft. Refused, nothing changed, where the
-// location holds too few, or a line is now for less than has been used (a
-// return undoes a part, once there are returns). Nothing to do: YES.
+// location holds too few, or a line was changed to less than has been
+// shipped (-lb_setUsed: says fewer). Nothing to do: YES.
 - (BOOL)lb_shipParts:(NSError **)error;
 @end
 
@@ -204,6 +214,10 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // Deleted, with its component lines (a phantom kit's). Refused where
 // something of it, or of them, has been shipped.
 - (BOOL)lb_delete:(NSError **)error;
+// How many of it were kept (of a part, used): its quantity, less those
+// that came back, as its moves say (before the save that derives
+// returnedQuantity).
+@property (nonatomic, readonly) NSDecimalNumber *lb_kept;
 @end
 
 @interface SaleOrder (LBStock)
@@ -234,6 +248,21 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
                                  by:(User *)user
                                  at:(NSDate *)now
                               error:(NSError **)error;
+// Come back: so many of each line (by its id) received at the location on
+// the day, for the reason (one of the model's ReturnReasons): a customer
+// return, numbered the next in the order, a move in for each. The lines
+// stay as they are: what came back is not outstanding again. Refused for
+// an order neither confirmed nor closed, no lines, a line not of it, a
+// phantom kit's line (return its components'), none of one, or more of one
+// than went out and has not come back.
+- (nullable CustomerReturn *)lb_returnLines:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities
+                                         at:(Location *)location
+                                         on:(NSDate *)day
+                                     reason:(NSString *)reason
+                                       note:(nullable NSString *)note
+                                         by:(User *)user
+                                         at:(NSDate *)now
+                                      error:(NSError **)error;
 // Its number, as people read it.
 @property (nonatomic, readonly) NSString *lb_number;
 @end
@@ -253,6 +282,19 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
                                    by:(User *)user
                                    at:(NSDate *)now
                                 error:(NSError **)error;
+// Sent back: so many of each line (by its id) shipped from the location on
+// the day, for the reason: a supplier return, numbered the next in the
+// order, a move out for each. Refused for an order neither confirmed nor
+// closed, no lines, a line not of it, none of one, more of one than came
+// in and has not gone back, or more than is held at the location.
+- (nullable SupplierReturn *)lb_returnLines:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities
+                                       from:(Location *)location
+                                         on:(NSDate *)day
+                                     reason:(NSString *)reason
+                                       note:(nullable NSString *)note
+                                         by:(User *)user
+                                         at:(NSDate *)now
+                                      error:(NSError **)error;
 @property (nonatomic, readonly) NSString *lb_number;
 @end
 

@@ -436,7 +436,7 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
     NSMutableArray *rows = [NSMutableArray array];
     Location *from = self.partsEvent.lb_partsSale.shipsFrom;
     for (SaleLine *line in [self parts]) {
-        [rows addObject:[NSString stringWithFormat:@"%@ × %@, from %@", LBTextOfNumber(line.quantity), line.stockItem.lbTitle, from.lbTitle ?: @"?"]];
+        [rows addObject:[NSString stringWithFormat:@"%@ × %@, from %@", LBTextOfNumber(line.lb_kept), line.stockItem.lbTitle, from.lbTitle ?: @"?"]];
     }
     return rows;
 }
@@ -480,6 +480,37 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
     }
     if ([self isViewLoaded]) [self.tableView reloadData];
     return YES;
+}
+
+- (BOOL)setUsed:(NSDecimalNumber *)used ofPart:(NSUInteger)index problems:(NSArray<NSString *> **)problems {
+    NSArray<SaleLine *> *parts = [self parts];
+    NSError *error = nil;
+    BOOL done = index < parts.count && [self.partsEvent lb_setUsed:used ofPart:parts[index] by:self.partsEvent.enteredBy at:[NSDate date]
+                                                             error:&error];
+    if (!done && problems) *problems = @[ error.localizedDescription ?: @"No such part." ];
+    if ([self isViewLoaded]) [self.tableView reloadData];
+    return done;
+}
+
+- (void)askUsedOfPart:(NSUInteger)index {
+    SaleLine *line = [self parts][index];
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:line.stockItem.lbTitle
+                                                                   message:@"How many were used? Those not come back to where they came from."
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    [alert addTextFieldWithConfigurationHandler:^(UITextField *field) {
+        field.text = LBTextOfNumber(line.lb_kept);
+        field.keyboardType = UIKeyboardTypeDecimalPad;
+    }];
+    __weak LBRecordFormViewController *weakSelf = self;
+    __weak UIAlertController *weakAlert = alert;
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Set" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {
+        NSArray *problems = nil;
+        if (![weakSelf setUsed:LBNumberOf(weakAlert.textFields[0].text) ofPart:index problems:&problems]) {
+            [weakSelf tell:@"Not Changed" lines:problems ?: @[]];
+        }
+    }]];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)askForPart {
@@ -753,7 +784,8 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
         } else if ((NSUInteger)row - 1 < parts.count) {
             SaleLine *line = parts[(NSUInteger)row - 1];
             cell.textLabel.text = line.stockItem.lbTitle;
-            cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ × %@", LBTextOfNumber(line.quantity), LBTextOfNumber(line.linePriceAmount)];
+            cell.detailTextLabel.text = [NSString stringWithFormat:@"%@ × %@", LBTextOfNumber(line.lb_kept), LBTextOfNumber(line.linePriceAmount)];
+            cell.selectionStyle = UITableViewCellSelectionStyleDefault;
         } else {
             cell.textLabel.text = @"Use a Part…";
             cell.textLabel.textColor = self.view.tintColor;
@@ -785,6 +817,8 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
         [self chooseFrom:[tableView cellForRowAtIndexPath:indexPath]];
     } else if (indexPath.section == LBSectionParts && (NSUInteger)indexPath.row == [self parts].count + 1) {
         [self askForPart];
+    } else if (indexPath.section == LBSectionParts && indexPath.row > 0) {
+        [self askUsedOfPart:(NSUInteger)indexPath.row - 1];
     } else if (indexPath.section == LBSectionPhotos && (NSUInteger)indexPath.row == [self attachments].count) {
         [self pickPhoto];
     }

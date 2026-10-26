@@ -961,7 +961,7 @@ static void LBStockCardSteps(LBStockItemWindowController *card) {
 /* Sales and purchases, each in its window, as a user writes them: a sale
    to Bob of three bolts, numbered, confirmed, shipped in two from Shelf A;
    a purchase from Parts Ltd of ten brackets at a cost of 1, confirmed,
-   received in two at Default. Each the server's. */
+   received in two at Default, a damaged one sent back. Each the server's. */
 static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, StockItem *bracket) {
     [stock.tabs selectTabViewItemWithIdentifier:@"saleOrders"];
     LBSpin();
@@ -1024,6 +1024,16 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
             [bought.lbFilled isEqualToString:@"Received"] && purchase.documents.count == 2
                 && [brackets compare:[bracketsBefore decimalNumberByAdding:LBN10()]] == NSOrderedSame,
             purchase.lastError ?: brackets);
+    LBChoose(window, @"returnReason", @"Damaged");
+    LBType(window, @"moveQuantity", @"1");
+    [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];
+    LBClick(window, @"returnLine");
+    SupplierReturn *sent = purchase.returns.firstObject;
+    NSDecimalNumber *left = [LBServerOf(bracket) totalQuantity];
+    LBCheck(@"a damaged bracket sent back from Main / Default: PO-GAR-0001/1, listed; 9 more on hand than before",
+            purchase.returns.count == 1 && [sent.lbNumber isEqualToString:@"PO-GAR-0001/1"] && [sent.returnReason isEqualToString:@"Damaged"]
+                && [left compare:[brackets decimalNumberBySubtracting:[NSDecimalNumber one]]] == NSOrderedSame,
+            purchase.lastError ?: left);
     LBSnapshot(window, @"stock-purchase");
     [purchase close];
     [stock.tabs selectTabViewItemWithIdentifier:@"saleOrders"];
@@ -1279,6 +1289,25 @@ static void LBPartsSteps(LBMainWindowController *controller, LBStockWindowContro
     LBSpin();
     StockItem *listed = [stock.items filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"itemName == 'Bolt'"]].firstObject;
     LBCheck(@"the stock window told: it lists the bolts left", [listed.totalQuantity compare:after] == NSOrderedSame, listed.totalQuantity);
+
+    /* One fewer used after all: it comes back, a return of the sale. */
+    LBChooseRecord(controller, service);
+    LBClick(window, @"ServiceParts");
+    parts = controller.partsPanel;
+    parts.quiet = YES;
+    [parts.partList setSelectedObjects:@[ parts.parts.firstObject ]];
+    LBType(parts.window, @"partQuantity", @"1");
+    LBClick(parts.window, @"setUsed");
+    LBCheck(@"1 used after all, in the panel", parts.parts.count == 1 && LBIs(parts.parts.firstObject.lb_kept, @"1"),
+            parts.lastError ?: parts.parts);
+    LBClick(parts.window, @"partsDone");
+    kept = LBSaved(controller, service, @"the service saved again");
+    sale = [LBServerObjects([SaleOrder class], [NSPredicate predicateWithFormat:@"id == %@", service.lb_partsSale.id]) firstObject];
+    CustomerReturn *back = sale.customerReturns.anyObject;
+    NSDecimalNumber *returned = [LBServerOf(bolt) totalQuantity];
+    LBCheck(@"the server has its return, not used, and the bolt back", kept && [back.returnReason isEqualToString:@"Not used"]
+                && [returned compare:[after decimalNumberByAdding:[NSDecimalNumber one]]] == NSOrderedSame,
+            [NSString stringWithFormat:@"%@ -> %@, %@", after, returned, back.returnReason]);
 
     service = (Service *)LBAddRecord(controller, [Service class]);
     LBType(window, @"ServiceGarage", @"Our workshop");
