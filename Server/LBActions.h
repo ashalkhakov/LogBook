@@ -22,7 +22,7 @@
 //
 // A unit is its code ('km'), an event a reference ({"@odata.id":
 // "Records(<id>)"}), a date a moment whose UTC day is meant. Who may call
-// each (LBPermissions.h): whoever drives the vehicle closes and moves its
+// each (the permissions' call.<Name>, Logbook.permissions.plist): whoever drives the vehicle closes and moves its
 // reminders; its owner starts and changes its schedules, cancels its reminders and
 // discards its records (403 for anyone else). A procedure's refusal is a
 // 400; Discard of an event whose next reminder was touched since is a 409,

@@ -375,8 +375,11 @@ set.
 | a record's parts: its sale, from where it ships | yes | at theirs | at theirs |
 | see the catalog | yes | yes | yes |
 
-The server checks each request against it (`Server/LBPermissions.h`); the
-model's rules check what each leaves.
+It is `Server/Logbook.permissions.plist`, as relations (ODataKit's
+permissions file): the service checks every read, write and action
+against it, and an action asks it of what its parameters name (a keeper
+where it ships from). The build checks the file against the model. The
+model's rules check what each request leaves.
 
 ## Names
 
@@ -476,7 +479,7 @@ Made (`lb-stock-check` checks each), as the design above needs them:
    and take apart, orders numbered, confirmed (expanded), closed,
    cancelled and reopened, receive and ship, count, reorder.
 3. Done: the server's actions and permissions (`Server/LBStockActions.h`,
-   `Server/LBPermissions.h`), checked over HTTP by
+   `Server/Logbook.permissions.plist`), checked over HTTP by
    `Tests/serve-and-check.py`.
 4. The desktop Stock window: items and the item card, then orders,
    receiving and shipping, then the changelog, counts, overview, setup.

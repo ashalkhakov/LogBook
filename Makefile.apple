@@ -9,9 +9,9 @@
 #   make -f Makefile.apple check    the procedures checked over a store of
 #                                   their own (Tests/LBProceduresCheck.m);
 #                                   the server run, and asked over HTTP
-#                                   (Tests/serve-and-check.py); two devices'
-#                                   offline stores synced through it
-#                                   (Tests/sync-check.sh); the app driven
+#                                   (Tests/serve-and-check.py); devices'
+#                                   offline stores synced through it,
+#                                   signed in (Tests/sync-check.sh); the app driven
 #                                   from within against one
 #                                   (Tests/app-check.sh); and where Xcode has
 #                                   an iPhone simulator, ios-check's
@@ -98,12 +98,12 @@ $(GENERATED)/.made: $(MODEL)/.made
 $(BUILD)/Logbook.ormplans: $(MODEL)/.made
 	cp $(MODEL)/Constraints/Logbook.ormplans $@
 
-# Who may see and change the stock, beside the server: checked against the
-# model by ODataKit's odatakit-permissions, which ODATAKIT_PERMISSIONS
-# names (none: the server checks it as it starts).
-ODATAKIT_PERMISSIONS ?=
+# Who may see and change what, beside the server: checked against the
+# model by ODataKit's odatakit-permissions, of the release ODataKit's
+# XCFrameworks are (bin/, beside them).
+ODATAKIT_PERMISSIONS ?= $(abspath $(ODATAKIT_DEPS)/bin/odatakit-permissions)
 $(BUILD)/Logbook.permissions.plist: Server/Logbook.permissions.plist $(BUILD)/Logbook.momd
-	$(if $(ODATAKIT_PERMISSIONS),$(ODATAKIT_PERMISSIONS) check $(BUILD)/Logbook.momd $<)
+	$(ODATAKIT_PERMISSIONS) check $(BUILD)/Logbook.momd $<
 	cp $< $@
 
 # What Logbook.xcodeproj's targets build on, generated (its Model target

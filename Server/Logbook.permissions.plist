@@ -1,9 +1,22 @@
-// Who may see and change Logbook's stock (docs/STOCK.md, Who may), as
-// relations (ODataKit's docs/permissions.md): the server loads it once a
-// sign-in is set, and the build checks it against the model
-// (odatakit-permissions check).
+// Who may see and change what, and call which actions, as relations
+// (ODataKit's docs/permissions.md): the server loads it once a sign-in is
+// set, and the build checks it against the model (odatakit-permissions
+// check). A set it does not name is read only (LBPermissions.h).
 //
-// A catalog is its owner's; a warehouse's staff (WarehouseStaff, as
+// Vehicles (docs/CSDP.md, Permissions): a user sees the vehicles they
+// drive (own, or are entered as a driver of: VehicleDriver), and what is
+// of them. A vehicle is made by anyone signed in, its owner; only its
+// owner changes or removes it, who drives it and its valuations. A record
+// is added by whoever drives its vehicle; only the owner changes or
+// removes one. A record's items, attachments and answers are added by its
+// owner, or by whoever drives the vehicle and entered the record (a new
+// one's sent with it, in one change set); changed by its owner. A checklist is its keeper's, seen too by whoever an inspection
+// of a vehicle of theirs went through it. Units are the app's; exchange
+// rates and kinds of cost are added by anyone signed in, changed by no
+// one. Users are seen and written as LBPermissions.h says (a write finds
+// anyone by email, which no relation can say); changed only by themselves.
+//
+// Stock (docs/STOCK.md, Who may): a catalog is its owner's; a warehouse's staff (WarehouseStaff, as
 // Manager or Keeper) manage or keep it. Everything of a catalog is seen
 // by its owner and any warehouse's staff. The owner alone writes the
 // catalog's items, contacts, warehouses and staff; a manager of any of
@@ -19,9 +32,110 @@
 
   Tuples = {
     WarehouseStaff = { object = warehouse; relation = staffRole; user = "user.email"; };
+    VehicleDriver  = { object = vehicle; relationName = Driver; user = "user.email"; };
   };
 
   Entities = {
+    Vehicle = {
+      owner  = ( { where = "owner.email IN $user"; } );
+      Driver = ( { direct = YES; } );
+      driver = ( { relation = owner; }, { relation = Driver; } );
+      read   = ( { relation = driver; } );
+      // Anyone signed in makes one, theirs (the handler names them owner).
+      insert = ( { where = "$user.@count > 0"; } );
+      update = ( { relation = owner; } );
+      delete = ( { relation = owner; } );
+    };
+    VehicleDriver = {
+      read   = ( { relation = driver; from = vehicle; } );
+      insert = ( { relation = owner; from = vehicle; } );
+      update = ( { relation = owner; from = vehicle; } );
+      delete = ( { relation = owner; from = vehicle; } );
+    };
+    VehicleWasValuedOnDateAtMoney = {
+      read   = ( { relation = driver; from = vehicle; } );
+      insert = ( { relation = owner; from = vehicle; } );
+      update = ( { relation = owner; from = vehicle; } );
+      delete = ( { relation = owner; from = vehicle; } );
+    };
+    // Every record: events, schedules, reminders.
+    Record = {
+      owner  = ( { relation = owner; from = vehicle; } );
+      driver = ( { relation = driver; from = vehicle; } );
+      read   = ( { relation = driver; } );
+      insert = ( { relation = driver; } );
+      update = ( { relation = owner; } );
+      delete = ( { relation = owner; } );
+      // The procedures (LBActions.h): a schedule started and continued, a
+      // reminder cancelled, a record discarded, by the owner; a reminder
+      // completed and rescheduled by whoever drives the vehicle.
+      "call.Start"      = ( { relation = owner; } );
+      "call.Continue"   = ( { relation = owner; } );
+      "call.Cancel"     = ( { relation = owner; } );
+      "call.Discard"    = ( { relation = owner; } );
+      "call.Complete"   = ( { relation = driver; } );
+      "call.Reschedule" = ( { relation = driver; } );
+    };
+    ServiceItem = {
+      read   = ( { relation = read; from = service; } );
+      insert = ( { relation = owner; from = service; },
+                 { all = ( { where = "service.enteredBy.email IN $user"; }, { relation = driver; from = service; } ); } );
+      update = ( { relation = owner; from = service; } );
+      delete = ( { relation = owner; from = service; } );
+    };
+    Answer = {
+      read   = ( { relation = read; from = inspection; } );
+      insert = ( { relation = owner; from = inspection; },
+                 { all = ( { where = "inspection.enteredBy.email IN $user"; }, { relation = driver; from = inspection; } ); } );
+      update = ( { relation = owner; from = inspection; } );
+      delete = ( { relation = owner; from = inspection; } );
+    };
+    // A record's photo, or a stock item's (its catalog's owner's).
+    Attachment = {
+      read   = ( { relation = read; from = record; }, { relation = read; from = stockItem; } );
+      insert = ( { relation = owner; from = record; }, { relation = owner; from = stockItem; },
+                 { all = ( { where = "record.enteredBy.email IN $user"; }, { relation = driver; from = record; } ); } );
+      update = ( { relation = owner; from = record; }, { relation = owner; from = stockItem; } );
+      delete = ( { relation = owner; from = record; }, { relation = owner; from = stockItem; } );
+    };
+    Rescheduling = {
+      read   = ( { relation = driver; from = reminder; } );
+      insert = ( { relation = driver; from = reminder; } );
+      update = ( { relation = owner; from = reminder; } );
+      delete = ( { relation = owner; from = reminder; } );
+    };
+    Checklist = {
+      keeper = ( { where = "user.email IN $user"; } );
+      read   = ( { relation = keeper; }, { relation = driver; from = inspections; } );
+      // Anyone signed in keeps one (the handler names them its keeper).
+      insert = ( { where = "$user.@count > 0"; } );
+      update = ( { relation = keeper; } );
+      delete = ( { relation = keeper; } );
+    };
+    Question = {
+      keeper = ( { relation = keeper; from = checklist; } );
+      read   = ( { relation = read; from = checklist; } );
+      insert = ( { relation = keeper; } );
+      update = ( { relation = keeper; } );
+      delete = ( { relation = keeper; } );
+    };
+    Option = {
+      read   = ( { relation = read; from = question; } );
+      insert = ( { relation = keeper; from = question; } );
+      update = ( { relation = keeper; from = question; } );
+      delete = ( { relation = keeper; from = question; } );
+    };
+    User = {
+      update = ( { where = "email IN $user"; } );
+      delete = ( { where = "email IN $user"; } );
+    };
+    DistanceUnit = { insert = ( ); update = ( ); delete = ( ); };
+    VolumeUnit   = { insert = ( ); update = ( ); delete = ( ); };
+    SizeUnit     = { insert = ( ); update = ( ); delete = ( ); };
+    WeightUnit   = { insert = ( ); update = ( ); delete = ( ); };
+    CostKind     = { insert = ( { where = "$user.@count > 0"; } ); update = ( ); delete = ( ); };
+    ExchangeRate = { insert = ( { where = "$user.@count > 0"; } ); update = ( ); delete = ( ); };
+
     Catalog = {
       owner   = ( { where = "catalogOwner.email IN $user"; } );
       manager = ( { relation = owner; }, { relation = manager; from = warehouses; } );
@@ -43,6 +157,8 @@
       insert  = ( { relation = owner; } );
       update  = ( { relation = owner; } );
       delete  = ( { relation = owner; } );
+      "call.Count"   = ( { relation = keeper; } );
+      "call.Reorder" = ( { relation = manager; } );
     };
     WarehouseStaff = {
       read   = ( { relation = read; from = warehouse; } );
@@ -58,6 +174,11 @@
       insert = ( { relation = owner; } );
       update = ( { relation = owner; } );
       delete = ( { relation = owner; } );
+      // The procedures (LBStockActions.h): what an action moves is checked
+      // in it too, where it moves it (keeper there).
+      "call.Transfer" = ( { relation = keeper; from = catalog; } );
+      "call.Adjust"   = ( { relation = keeper; from = catalog; } );
+      "call.Assemble" = ( { relation = keeper; from = catalog; } );
     };
     Category = {
       read   = ( { relation = read; from = catalog; } );
@@ -151,6 +272,15 @@
       insert  = ( { relation = manager; }, { relation = parts; } );
       update  = ( { relation = manager; }, { relation = parts; } );
       delete  = ( { relation = manager; }, { relation = parts; } );
+      "call.Confirm"    = ( { relation = manager; } );
+      "call.Close"      = ( { relation = manager; } );
+      "call.Cancel"     = ( { relation = manager; } );
+      "call.Reopen"     = ( { relation = manager; } );
+      "call.ExpandKits" = ( { relation = manager; } );
+      // The procedures (LBStockActions.h): what an action moves is checked
+      // in it too, where it moves it (keeper there).
+      "call.Ship"   = ( { relation = keeper; from = catalog; } );
+      "call.Return" = ( { relation = keeper; from = catalog; } );
     };
     SaleLine = {
       read   = ( { relation = read; from = saleOrder; } );
@@ -164,6 +294,14 @@
       insert  = ( { relation = manager; } );
       update  = ( { relation = manager; } );
       delete  = ( { relation = manager; } );
+      "call.Confirm" = ( { relation = manager; } );
+      "call.Close"   = ( { relation = manager; } );
+      "call.Cancel"  = ( { relation = manager; } );
+      "call.Reopen"  = ( { relation = manager; } );
+      // The procedures (LBStockActions.h): what an action moves is checked
+      // in it too, where it moves it (keeper there).
+      "call.Receive" = ( { relation = keeper; from = catalog; } );
+      "call.Return"  = ( { relation = keeper; from = catalog; } );
     };
     PurchaseLine = {
       read   = ( { relation = read; from = purchaseOrder; } );

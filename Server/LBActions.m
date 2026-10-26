@@ -5,20 +5,15 @@
 
 NSString * const LBNextReminderTouchedCode = @"NextReminderTouched";
 
-/* Who carries out the procedure on the vehicle's behalf: the signed-in user,
-   when they may (its owner, or for what drivers may do, whoever drives it);
-   for an anonymous request, which may do anything, the vehicle's owner.
-   nil, the reply failed, when no one may. */
-static User *LBActorFor(ODataReply *reply, Vehicle *vehicle, BOOL ownerOnly) {
+/* Who carries out the procedure on the vehicle's behalf: the signed-in
+   user (who may call it is the permissions', call.<Name>); for an
+   anonymous request, with no sign-in, the vehicle's owner. nil, the reply
+   failed, when there is no one. */
+static User *LBActorFor(ODataReply *reply, Vehicle *vehicle) {
     NSString *email = LBEmailOf(reply.request);
     if (!email) {
         if (!vehicle.owner) [reply failWithError:ODataServiceError(400, @"The vehicle has no owner to act for")];
         return vehicle.owner;
-    }
-    if (ownerOnly ? !LBOwns(vehicle, email) : !LBDrives(vehicle, email)) {
-        [reply failWithError:ODataServiceError(403, ownerOnly ? @"Only a vehicle's owner does that"
-                                                              : @"Only who drives a vehicle does that")];
-        return nil;
     }
     return LBUserNamed(reply.request.context, email, YES);
 }
@@ -52,7 +47,7 @@ static void LBRefuse(ODataReply *reply, NSError *error) {
 
 - (Reminder *)startWithLastDoneAt:(NSDate *)lastDoneAt lastDoneMileage:(NSDecimalNumber *)lastDoneMileage
               lastDoneMileageUnit:(NSString *)lastDoneMileageUnit reply:(ODataReply *)reply {
-    User *user = LBActorFor(reply, self.vehicle, YES);
+    User *user = LBActorFor(reply, self.vehicle);
     DistanceUnit *unit;
     if (!user || !LBUnitCoded(reply, lastDoneMileageUnit, &unit)) return nil;
     NSError *error = nil;
@@ -68,7 +63,7 @@ static void LBRefuse(ODataReply *reply, NSError *error) {
 - (Schedule *)continueWithTask:(NSString *)task expenseKind:(ExpenseKind *)expenseKind checklist:(Checklist *)checklist
                       interval:(NSDecimalNumber *)interval intervalUnit:(NSString *)intervalUnit months:(NSNumber *)months
                           note:(NSString *)note reply:(ODataReply *)reply {
-    User *user = LBActorFor(reply, self.vehicle, YES);
+    User *user = LBActorFor(reply, self.vehicle);
     DistanceUnit *unit;
     if (!user || !LBUnitCoded(reply, intervalUnit, &unit)) return nil;
     NSError *error = nil;
@@ -84,7 +79,7 @@ static void LBRefuse(ODataReply *reply, NSError *error) {
 @implementation Reminder (LBActions)
 
 - (Reminder *)completeWithEvent:(Event *)event reply:(ODataReply *)reply {
-    User *user = LBActorFor(reply, self.vehicle, NO);
+    User *user = LBActorFor(reply, self.vehicle);
     if (!user) return nil;
     NSError *error = nil;
     Reminder *next = nil;
@@ -94,7 +89,7 @@ static void LBRefuse(ODataReply *reply, NSError *error) {
 
 - (Rescheduling *)rescheduleWithDueDate:(NSDate *)dueDate dueMileage:(NSDecimalNumber *)dueMileage dueMileageUnit:(NSString *)dueMileageUnit
                                    note:(NSString *)note reply:(ODataReply *)reply {
-    User *user = LBActorFor(reply, self.vehicle, NO);
+    User *user = LBActorFor(reply, self.vehicle);
     DistanceUnit *unit;
     if (!user || !LBUnitCoded(reply, dueMileageUnit, &unit)) return nil;
     NSError *error = nil;
@@ -106,7 +101,7 @@ static void LBRefuse(ODataReply *reply, NSError *error) {
 - (Reminder *)cancelWithCancelDate:(NSDate *)cancelDate replacementDueDate:(NSDate *)replacementDueDate
              replacementDueMileage:(NSDecimalNumber *)replacementDueMileage replacementDueMileageUnit:(NSString *)replacementDueMileageUnit
                              reply:(ODataReply *)reply {
-    User *user = LBActorFor(reply, self.vehicle, YES);
+    User *user = LBActorFor(reply, self.vehicle);
     DistanceUnit *unit;
     if (!user || !LBUnitCoded(reply, replacementDueMileageUnit, &unit)) return nil;
     NSError *error = nil;
@@ -127,7 +122,7 @@ static void LBRefuse(ODataReply *reply, NSError *error) {
 }
 
 - (void)discardWithKeepNextReminder:(NSNumber *)keepNextReminder reply:(ODataReply *)reply {
-    if (!LBActorFor(reply, self.vehicle, YES)) return;
+    if (!LBActorFor(reply, self.vehicle)) return;
     NSError *error = nil;
     if (![self lb_discardKeepingNextReminders:keepNextReminder error:&error]) LBRefuse(reply, error);
 }

@@ -87,7 +87,7 @@ lb-stock-check_LIB_DIRS = $(logbook-server_LIB_DIRS)
 lb-stock-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
 lb-stock-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 
-# The offline store (the iOS app's) against a server: two devices.
+# The offline store (the iOS app's) against a server: devices, signed in.
 lb-sync-check_OBJC_FILES = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m \
 	Shared/LBDisplay.m Shared/LBProcedures.m Shared/LBStockProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
 lb-sync-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
@@ -140,13 +140,12 @@ before-all:: lb-model
 
 # The server finds its model, tables and permissions beside itself; the
 # permissions checked against the model by ODataKit's odatakit-permissions
-# where ODATAKIT_PERMISSIONS names it (none: the server checks them as it
-# starts).
-ODATAKIT_PERMISSIONS ?=
+# (installed with its libraries).
+ODATAKIT_PERMISSIONS ?= odatakit-permissions
 after-all::
 	rm -rf obj/Logbook.momd && momc $(LB_MODEL)/Logbook.xcdatamodeld obj/Logbook.momd
 	cp $(LB_MODEL)/Constraints/Logbook.ormplans obj/
-	$(if $(ODATAKIT_PERMISSIONS),$(ODATAKIT_PERMISSIONS) check obj/Logbook.momd Server/Logbook.permissions.plist)
+	$(ODATAKIT_PERMISSIONS) check obj/Logbook.momd Server/Logbook.permissions.plist
 	cp Server/Logbook.permissions.plist obj/
 
 LB_RUN = LD_LIBRARY_PATH="$(ORMKIT)/ORMRuntime/$(GNUSTEP_OBJ_DIR)$${LD_LIBRARY_PATH:+:$$LD_LIBRARY_PATH}"

@@ -32,9 +32,10 @@
 //                that does not fit the model stops the server
 //
 // Once a sign-in is set (TrustedUserHeader, JWTIssuer or
-// IntrospectionEndpoint), who may see and change what is kept as the model
-// says (LBPermissions.h): a user sees the vehicles they drive, and only a
-// vehicle's owner changes what is recorded of it.
+// IntrospectionEndpoint), who may see and change what, and call which
+// action, is the permissions file's (Permissions, above; LBPermissions.h):
+// a user sees the vehicles they drive, and only a vehicle's owner changes
+// what is recorded of it.
 //
 // The procedures on schedules and reminders are its actions (LBActions.h):
 // started, closed, moved, cancelled, discarded, each saved whole. An event

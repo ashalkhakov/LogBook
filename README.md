@@ -233,13 +233,21 @@ As SimpleNotes does:
    `$metadata` stays readable without signing in, so the apps can find
    out where to sign in.
 
-Once signed in, who may see and change what is the model's
-([Permissions](docs/CSDP.md#permissions)):
+Once signed in, who may see and change what, and call which action, is
+the permissions file's, `Server/Logbook.permissions.plist`
+([Permissions](docs/CSDP.md#permissions); the stock's in
+[docs/STOCK.md](docs/STOCK.md#who-may)). It is ODataKit's
+([permissions.md](https://github.com/ashalkhakov/ODataKit/blob/master/docs/permissions.md)):
+relations in the manner of Google's Zanzibar, which the service checks on
+every read, write and action. The build checks the file against the model
+(`odatakit-permissions check`), and the server does not start with one
+that does not fit. What it says:
 - a user sees the vehicles they drive (own, or are a driver of) and what is
   recorded of them, themselves, and the people they share a vehicle with;
 - a vehicle is its maker's; only its owner changes it, shares it, values
   it, and changes or removes what is recorded of it;
-- whoever drives a vehicle adds records to it, entered by them;
+- whoever drives a vehicle adds records to it, entered by them, and items,
+  photos and answers to the records they entered;
 - a user is named by their email: a vehicle is shared with someone by it,
   before they first sign in too; what else is said of a user is theirs;
 - units and kinds of cost are the app's (the model's reference data,
@@ -249,5 +257,7 @@ Once signed in, who may see and change what is the model's
 - whoever drives a vehicle closes and moves its reminders; its owner
   starts its schedules, cancels its reminders and discards its records.
 
-Without a sign-in (no `JWTIssuer`), anyone who can reach the server may do
-anything: for trying it out.
+A request that names no one holds nothing the file limits (with
+`-AllowAnonymous NO`, it is refused outright). Without a sign-in (no
+`JWTIssuer`), the file is not read, and anyone who can reach the server
+may do anything: for trying it out.

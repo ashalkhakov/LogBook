@@ -26,12 +26,13 @@
 //
 // A location is a reference ({"@odata.id": "Locations(<id>)"}); in Lines
 // and Found, ids are as the entity's key, quantities numbers (or decimal
-// strings); a day a moment whose UTC day is meant. Who may (LBPermissions.h):
-// an order's actions its catalog's owner or managers; Ship, Receive,
-// Return, Transfer, Adjust, Assemble and Count the staff of the warehouses they are
-// at (keepers or managers) or the owner; Reorder a manager of the warehouse
-// or the owner (403 for anyone else). An anonymous request acts as the
-// catalog's owner.
+// strings); a day a moment whose UTC day is meant. Who may (the
+// permissions' call.<Name>, Logbook.permissions.plist): an order's actions
+// its catalog's owner or managers; Ship, Receive, Return, Transfer, Adjust,
+// Assemble and Count the staff of the warehouses they are at (keepers or
+// managers, each place the parameters name asked here) or the owner;
+// Reorder a manager of the warehouse or the owner (403 for anyone else).
+// With no sign-in, an anonymous request acts as the catalog's owner.
 
 #pragma once
 #import <ODataService/ODataService.h>

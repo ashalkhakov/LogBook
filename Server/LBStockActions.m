@@ -2,9 +2,10 @@
 #import "LBPermissions.h"
 #import <ODataKit/ODataError.h>
 
-/* Who carries out the procedure: the signed-in user, when they may; for
-   an anonymous request, the catalog's owner. nil, the reply failed, when
-   no one may. */
+/* Who carries out the procedure: the signed-in user, when they may (who
+   may call it is the permissions', call.<Name>; what a parameter names is
+   asked here); for an anonymous request, with no sign-in, the catalog's
+   owner. nil, the reply failed, when no one may. */
 static User *LBStockActor(ODataReply *reply, Catalog *catalog, BOOL may, NSString *why) {
     NSString *email = LBEmailOf(reply.request);
     if (!email) {
@@ -18,17 +19,16 @@ static User *LBStockActor(ODataReply *reply, Catalog *catalog, BOOL may, NSStrin
     return LBUserNamed(reply.request.context, email, YES);
 }
 
+/* Whoever the permissions let call it. */
 static User *LBOrderActor(ODataReply *reply, Catalog *catalog) {
-    NSString *email = LBEmailOf(reply.request);
-    return LBStockActor(reply, catalog, email && LBManagesIn(catalog, email), @"Only a catalog's owner or managers do that");
+    return LBStockActor(reply, catalog, YES, nil);
 }
 
-/* Whoever keeps the warehouses (each of them); the owner. */
+/* Whoever keeps the warehouses (each of them), as the permissions say. */
 static User *LBKeeperActor(ODataReply *reply, Catalog *catalog, NSArray<Warehouse *> *warehouses) {
-    NSString *email = LBEmailOf(reply.request);
-    BOOL may = email != nil;
+    BOOL may = YES;
     for (Warehouse *warehouse in warehouses) {
-        may = may && warehouse.catalog == catalog && LBKeeps(warehouse, email);
+        may = may && warehouse.catalog == catalog && LBHolds(reply.request, @"keeper", warehouse);
     }
     return LBStockActor(reply, catalog, may, @"Only a warehouse's staff, or its catalog's owner, do that there");
 }
@@ -266,10 +266,7 @@ static NSDate *LBToday(NSDate *day) {
 }
 
 - (NSArray<PurchaseOrder *> *)reorderWithDay:(NSDate *)day reply:(ODataReply *)reply {
-    NSString *email = LBEmailOf(reply.request);
-    if (!LBStockActor(reply, self.catalog, email && LBManages(self, email), @"Only a warehouse's managers, or its catalog's owner, reorder")) {
-        return nil;
-    }
+    if (!LBStockActor(reply, self.catalog, YES, nil)) return nil;
     NSError *error = nil;
     return [self lb_reorderOn:LBToday(day) skipped:NULL error:&error];
 }
