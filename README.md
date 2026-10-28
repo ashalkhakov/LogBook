@@ -246,8 +246,8 @@ that does not fit. What it says:
   recorded of them, themselves, and the people they share a vehicle with;
 - a vehicle is its maker's; only its owner changes it, shares it, values
   it, and changes or removes what is recorded of it;
-- whoever drives a vehicle adds records to it, entered by them, and items,
-  photos and answers to the records they entered;
+- whoever drives a vehicle adds records to it, entered by them, with
+  their items, photos and answers;
 - a user is named by their email: a vehicle is shared with someone by it,
   before they first sign in too; what else is said of a user is theirs;
 - units and kinds of cost are the app's (the model's reference data,

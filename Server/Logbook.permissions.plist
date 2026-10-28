@@ -8,9 +8,9 @@
 // of them. A vehicle is made by anyone signed in, its owner; only its
 // owner changes or removes it, who drives it and its valuations. A record
 // is added by whoever drives its vehicle; only the owner changes or
-// removes one. A record's items, attachments and answers are added by its
-// owner, or by whoever drives the vehicle and entered the record (a new
-// one's sent with it, in one change set); changed by its owner. A checklist is its keeper's, seen too by whoever an inspection
+// removes one. A record's items, attachments and answers go with it:
+// added with a new record (one made in the same change set decides by its
+// own insert), else its owner's. A checklist is its keeper's, seen too by whoever an inspection
 // of a vehicle of theirs went through it. Units are the app's; exchange
 // rates and kinds of cost are added by anyone signed in, changed by no
 // one. Users are seen and written as LBPermissions.h says (a write finds
@@ -78,23 +78,20 @@
     };
     ServiceItem = {
       read   = ( { relation = read; from = service; } );
-      insert = ( { relation = owner; from = service; },
-                 { all = ( { where = "service.enteredBy.email IN $user"; }, { relation = driver; from = service; } ); } );
+      insert = ( { relation = owner; from = service; } );
       update = ( { relation = owner; from = service; } );
       delete = ( { relation = owner; from = service; } );
     };
     Answer = {
       read   = ( { relation = read; from = inspection; } );
-      insert = ( { relation = owner; from = inspection; },
-                 { all = ( { where = "inspection.enteredBy.email IN $user"; }, { relation = driver; from = inspection; } ); } );
+      insert = ( { relation = owner; from = inspection; } );
       update = ( { relation = owner; from = inspection; } );
       delete = ( { relation = owner; from = inspection; } );
     };
     // A record's photo, or a stock item's (its catalog's owner's).
     Attachment = {
       read   = ( { relation = read; from = record; }, { relation = read; from = stockItem; } );
-      insert = ( { relation = owner; from = record; }, { relation = owner; from = stockItem; },
-                 { all = ( { where = "record.enteredBy.email IN $user"; }, { relation = driver; from = record; } ); } );
+      insert = ( { relation = owner; from = record; }, { relation = owner; from = stockItem; } );
       update = ( { relation = owner; from = record; }, { relation = owner; from = stockItem; } );
       delete = ( { relation = owner; from = record; }, { relation = owner; from = stockItem; } );
     };
