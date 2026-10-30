@@ -4,7 +4,8 @@ name: Build
 # make install; Makefile.apple on Apple's platforms) by
 # gnustep-release-actions' workflows, the same as every repository's. Every
 # push builds and tests it and uploads what is installed: Logbook for macOS,
-# for iOS (unsigned) and for Linux (an AppImage, with its server). A v* tag
+# for iOS (unsigned), for Linux (an AppImage, with its server) and for
+# Windows (an installer, the server in its runtime). A v* tag
 # (or a run started by hand with one) also releases them, attached to the
 # tag's release (a pre-release when the tag has a '-'). What it builds on is
 # in .github/pins.env.
@@ -35,6 +36,13 @@ jobs:
     with:
       tag: ${{ inputs.tag }}
       extra-packages: libsqlite3-dev libpq-dev libmariadb-dev
+
+  windows:
+    uses: ashalkhakov/gnustep-release-actions/.github/workflows/windows.yml@v1
+    with:
+      tag: ${{ inputs.tag }}
+      extra-packages: sqlite3 postgresql libmariadbclient dlfcn
+    secrets: inherit
 
   macos:
     uses: ashalkhakov/gnustep-release-actions/.github/workflows/macos.yml@v1
