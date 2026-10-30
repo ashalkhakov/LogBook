@@ -24,10 +24,13 @@ log=$(mktemp)
 pid=$!
 stop() { kill $pid 2>/dev/null; wait $pid 2>/dev/null; rm -f "$log"; }
 trap stop EXIT
-for i in $(seq 1 100); do
-  curl -sf "$root" >/dev/null 2>&1 && break
+# Up to a minute: a CI runner can be slow to start it.
+up=no
+for i in $(seq 1 300); do
+  curl -sf "$root" >/dev/null 2>&1 && { up=yes; break; }
   sleep 0.2
 done
+[ $up = yes ] || { echo "ios-self-test: the server did not answer in 60 s; its log:"; cat "$log"; exit 1; }
 python3 "$here/seed.py" "$root" || exit 1
 xcrun simctl install "$udid" "$app" || exit 1
 id=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app/Info.plist")

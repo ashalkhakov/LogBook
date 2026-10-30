@@ -173,6 +173,8 @@ static UIImage *LBReceiptPhoto(void) {
     main.selectedIndex = 2;
     LBSpin(0.5);
     [vehicleTab setSyncOn:NO];
+    /* A sync already under way would send the change too: ended first. */
+    LBSettle(store);
     fillUp.note = @"Before signing out";
     NSError *error = nil;
     LBSay([store save:&error], [NSString stringWithFormat:@"a change saved, sync off (%@)", error.localizedDescription]);
