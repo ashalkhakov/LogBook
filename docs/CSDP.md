@@ -1399,7 +1399,7 @@ the vehicle's side: a vehicle is sold at most once. The vehicle's sale
 
 - **Subtypes defined by a rule** (Cost, CarSale, the kinds): each is
   run by a derivation query of the subtype, as a fact type's is
-  ([DERIVATION.md](../../NativeORM2/docs/DERIVATION.md#subtypes)).
+  ([DERIVATION.md](https://github.com/ashalkhakov/ORMKit/blob/master/docs/DERIVATION.md#subtypes)).
 - **Patterns** (a currency code, a VIN) are not value constraints NORMA
   has; they're a data type's facet. They can be checked by code generated
   from a constraint written as a rule.
@@ -1601,7 +1601,7 @@ tables run as a query); that a service's kind is one is not yet checked
 at save (a value list's rule is not one step the planner can negate).
 
 What no graphical constraint says is a rule, a query whose answers are
-what must not be ([RULES.md](../../NativeORM2/docs/RULES.md)), written
+what must not be ([RULES.md](https://github.com/ashalkhakov/ORMKit/blob/master/docs/RULES.md)), written
 in the schema as its outline:
 - a schedule has at most one reminder open, neither done nor cancelled
   (`OneOpenReminder`);
@@ -1622,7 +1622,7 @@ in the schema as its outline:
   (`TyresBoughtBeforeFitted`).
 
 Some of what is worked out is computed by queries, with value nodes
-([EXPRESSIONS.md](../../NativeORM2/docs/EXPRESSIONS.md)): a trip's
+([EXPRESSIONS.md](https://github.com/ashalkhakov/ORMKit/blob/master/docs/EXPRESSIONS.md)): a trip's
 length in its driver's unit (`TripLength`), and a fill-up's price per
 unit of volume (`PricePerVolume`), in the units its record is in. "The one before"
 is an aggregate value, the latest earlier, that another node is compared

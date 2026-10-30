@@ -108,8 +108,10 @@
 
 - (void)connected {
     LBSetDefault(@"LBServer", _signIn.serviceRoot.absoluteString);
-    [self close];
+    /* The logbook's window open before this one closes: closed first, this
+       would be the app's last window, and the app would quit. */
     [_delegate connectPanel:self didConnect:_signIn];
+    [self close];
 }
 
 @end

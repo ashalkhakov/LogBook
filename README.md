@@ -1,263 +1,146 @@
 # Logbook
 
-A car logbook: what each vehicle needs and when, what it had done, and what
-it cost. It keeps fill-ups, services, the parts fitted, and what is coming
-due, and it works offline on every device, syncing through a server of your
-own.
+[![Build](https://github.com/ashalkhakov/LogBook/actions/workflows/build.yml/badge.svg)](https://github.com/ashalkhakov/LogBook/actions/workflows/build.yml)
 
-It is built on [ORMKit](../NativeORM2):
-- **The model:** an ORM model, designed by Halpin's conceptual schema
-  design procedure ([docs/CSDP.md](docs/CSDP.md)): `Model/Logbook.orm`,
-  the one source of it.
-- **Generated from it, by the build:** the Core Data model, the code and
-  tables that keep its constraints, and its listing; through them the
-  OData service and the sync.
-- **Written by hand:** the forms, in the manner of TopoText's SimpleNotes:
-  - an AppKit app for macOS and GNUstep;
-  - an iOS app;
-  - a server.
+**A car logbook for the people who share a car: what each vehicle needs
+and when, what was done to it, and what it cost, kept on a server of your
+own and in your pocket.**
 
-Early days: the model is done, the server runs it, the desktop app keeps
-a vehicle's records of every kind (added, corrected and removed in its
-Records tab: an inspection's answers, an income's trip, what a cost was
-charged, files attached), its schedules and reminders, and its reports,
-a calendar of a vehicle's day, week or month, or of all of them together (what was
-done, what is due, what its schedules plan), and the iOS app (below) logs on the road, offline first.
+Log a fill-up at the pump from your phone, offline if need be; the
+service, the parking and the insurance from your desk. Logbook works out
+the consumption, what the car costs each month and when the next oil
+change is due, by date or by distance, whichever comes first, and closes
+that reminder when the garage's bill says the oil was changed. Share a
+car with the family by email: everyone logs, the owner decides.
 
-## Schedules and reminders
+| macOS | Linux (GNUstep) | iOS |
+|:---:|:---:|:---:|
+| ![The records of a car on macOS: a service and its items](docs/images/macos-records.png) | ![The records of a car on Linux](docs/images/linux-records.png) | ![The timeline on iOS](docs/images/ios-timeline.png) |
+| ![Costs by month, a report, on macOS](docs/images/macos-report-costs.png) | ![The reminders on Linux](docs/images/linux-reminders.png) | ![The reminders on iOS](docs/images/ios-reminders.png) |
+| ![The calendar, both cars, on macOS](docs/images/macos-calendar.png) | ![The fuel report on Linux](docs/images/linux-report-fuel.png) | ![A car at a glance on iOS](docs/images/ios-vehicle.png) |
 
-What happens to a reminder is procedure, not model: closed when an event
-does its work, the schedule's next made, moved, cancelled and replaced,
-reopened when the record that closed it is discarded
-([docs/PROCESSES.md](docs/PROCESSES.md)). `Shared/LBProcedures.h` carries
-each out on the model's generated classes, Foundation and Core Data
-only, and the model's rules check what it leaves at save. What a
-procedure makes is named by what it is made of (a name-based UUID: "next
-of" the reminder it follows), so two devices that do the same, offline,
-make the same objects.
+## Get it
 
-- The server runs them as OData actions bound to what they act on
-  (`Start`, `Continue`, `Complete`, `Reschedule`, `Cancel`, `Discard`:
-  `Server/LBActions.h`), and closes the reminders an event does the work
-  of whenever it saves one, whichever device sent it.
-- The desktop app, online, calls the actions from its Reminders tab: the
-  chosen vehicle's schedules and reminders, the open first, overdue as the
-  model's queries say, and how each was moved before. A schedule is
-  changed (Edit Schedule) by going on in a new one (the `Continue`
-  action): its past stays as it was, its open reminder due anew. The
-  kinds of expense and the checklists the forms pick from are the users'
-  own, written in their own window (Expense Kinds…, Checklists…, or Edit…
-  beside a pop-up), as are the exchange rates costs by month counts each
-  cost at (Exchange Rates…). Kinds and rates are kept once saved.
-- The iOS app runs the same procedures in its own store as it saves,
-  offline or not, and syncs what they made ([iOS](#the-ios-app)).
+From [Releases](https://github.com/ashalkhakov/LogBook/releases/latest):
 
-## Stock
+| Platform | Download | Contains |
+|---|---|---|
+| macOS 14+ | `Logbook-macOS-*.zip` | The desktop app, signed and notarized; it updates itself (Logbook > Check for Updates…) |
+| Linux x86_64 | `Logbook-*.AppImage` | The desktop app, and the server (`… --server`) |
+| iOS | `Logbook-*-unsigned.ipa`, `Logbook-Simulator-*.zip` | Unsigned: sign the `.ipa` yourself to put it on a phone; the zip runs in the iOS Simulator |
 
-A clone of KiWi Stock Control in the same model: catalogs, items and kits,
-purchase and sale orders received and shipped in parts, holdings kept by
-moves, counts and adjustments. What the apps do with it, its screens and
-procedures, is designed in [docs/STOCK.md](docs/STOCK.md); the model's
-derivations and rules are checked by `lb-stock-check`.
+Every push also uploads unsigned builds to its
+[Actions run](https://github.com/ashalkhakov/LogBook/actions). The apps
+talk to a `logbook-server`: run the AppImage's
+(`./Logbook-*.AppImage --server -StoreURL logbook.sqlite -Port 8080`), or
+build one ([docs/SERVER.md](docs/SERVER.md), signing in with Keycloak
+included).
 
-## The iOS app
+Build from source:
 
-`iOS/`: a driver's logbook in the pocket, for the drivers and the owner;
-managing and reporting stay with the desktop app. It keeps the logbook in a
-store of its own (`Shared/LBLocalStore.h`: Core Data's SQLite, the model
-generated from `Model/Logbook.orm`) and syncs it with the server through
-ODataKit's ODataSync: as it opens and comes back, a little after each save,
-and every minute; with sync off (a switch), what is saved waits.
+    make -f Makefile.apple && make -f Makefile.apple check     # macOS and iOS
+    make && make check                                          # Linux (GNUstep)
 
-- **Sign in:** the server's address; signed in as the server asks (OpenID
-  Connect's device flow, a code entered in any browser; its tokens in the
-  Keychain), or, for a server with no sign-in, as the email you give.
-- **Timeline:** the chosen vehicle's records, newest first, by month: kind,
-  when, cost; tap one to edit it.
-- **Reminders:** open and overdue first (the model's queries), then done
-  (by what) and cancelled; move one to another day, or, the owner, cancel
-  it.
-- **Vehicle:** choose one; its details; consumption at full tanks, what
-  this month cost, what is due next; the owner adds a vehicle and shares it
-  by email (a driver is offered no sharing); sync, what waits and what the
-  server refused; pending conflicts; the account. Signing out deletes the
-  phone's logbook: with changes waiting (or conflicts not settled), it
-  says how many would be lost first: Sync Now (then signs out, if that
-  leaves nothing to lose), Sign Out Anyway, or Cancel.
-- **+**, over the tabs: a fill-up first (now, odometer, volume, cost, full
-  tank, station, in the user's units and currency), a service and its
-  items, an expense, a trip, a meter reading, an inspection (its
-  checklist's questions); each with photos of receipts.
+Details: [docs/BUILDING.md](docs/BUILDING.md).
 
-Saving does what the server does: the reminders the events close are
-closed (automatic completion), what is derived is worked out, and every
-rule is checked; a deontic rule (the meter going down) is said before
-saving, and the user may go ahead; a rule broken refuses, in the model's
-words. Whatever the procedures make is named by what it is made of, so the
-phone and the server make the same reminders, which the sync meets as one.
+## What it does
 
-A record changed on the phone and elsewhere before they meet is a
-conflict: the server's version stands, the sync goes on, and what the
-phone changed waits as a pending conflict (a badge on the Vehicle tab):
-keep theirs, keep mine (written back as a new change), or edit by hand
-([PROCESSES.md](docs/PROCESSES.md#offline-the-phone)).
+- **Every kind of record** a car has: fill-ups (volume, cost, station, a
+  full tank or not), services and their items, expenses of kinds of your
+  own, trips and the income they made, tyre sets and changes, inspections
+  against a checklist, documents with their expiry, meter readings; photos
+  of receipts on any of them.
+- **Schedules and reminders**: every 15,000 km or 12 months, from the last
+  time it was done. The service that does the work closes the reminder and
+  makes the next, whichever device logs it; a reminder can be moved,
+  cancelled and replaced, or done by hand.
+  ([docs/PROCESSES.md](docs/PROCESSES.md))
+- **A calendar** of a car's day, week or month, or of all of them: what
+  was done, what is due, what the schedules plan.
+- **Reports**: costs by month across the cars, fuel and consumption at each
+  full tank, the logbook itself; to PDF, HTML or the printer.
+- **Sharing**: a car is its owner's; the drivers it is shared with log
+  their fill-ups and services, and see only the cars they drive.
+- **Offline on the phone**: the iOS app keeps its own copy and syncs it
+  when it can; a record changed on both sides comes back as a conflict to
+  settle, keep theirs, keep mine, or edit.
+  ([docs/IOS.md](docs/IOS.md))
+- **Stock** for a workshop's parts: catalogs, items and kits, purchase and
+  sale orders received and shipped in parts, counts and adjustments; parts
+  fitted in a service come off the shelf.
+  ([docs/STOCK.md](docs/STOCK.md))
+- **The rules hold everywhere**: the odometer does not go backwards, a
+  trip does not end before it began, a tyre change removes the set that
+  was fitted. The phone, the desktop and the server check the same rules
+  before saving, and say what is wrong in plain words.
 
-A receipt's photo is an Attachment of its record, the image its content: a
-JPEG no larger than 2000 pixels on its longest side, which syncs with the
-record (`Edm.Binary` in the sync's JSON; kept in a file beside the store,
-as Core Data keeps a large value), to the server and every other device
-of the vehicle's. The desktop app lists a record's attachments beside it,
-opens one as the system opens a file of its kind, attaches a file (Add…)
-and removes one.
+## Architecture
 
-### Building and running it
+One model, from which the build generates what every part runs.
 
-```sh
-make -f Makefile.apple ios          # build/ios/iphoneos (unsigned) and build/ios/iphonesimulator, Logbook.app
-make -f Makefile.apple ios-check    # the simulator's app driven from within against a server of its own
-make -f Makefile.apple ios-install DESTDIR=out   # out/iphoneos and out/iphonesimulator/Logbook.app
-xcrun simctl install booted build/ios/iphonesimulator/Logbook.app
+```mermaid
+flowchart LR
+    orm[("Model/Logbook.orm<br/>the ORM model")]
+    ormtool["ormtool<br/>(ORMKit, at build time)"]
+    gen["Core Data model,<br/>rules and derivations<br/>(generated code and plans)"]
+    subgraph server["logbook-server"]
+        service["OData service (ODataKit)<br/>actions · permissions · sync"]
+        db[("SQLite, PostgreSQL<br/>or MySQL")]
+    end
+    desktop["Logbook desktop<br/>AppKit: macOS, Linux<br/>reports (RDLKit)"]
+    phone["Logbook iOS<br/>UIKit, its own store"]
+    idp["Keycloak<br/>(any OpenID Connect)"]
+    orm --> ormtool --> gen
+    gen -.-> service
+    gen -.-> desktop
+    gen -.-> phone
+    service --- db
+    desktop <-->|"OData, online"| service
+    phone <-->|"ODataSync, offline first"| service
+    idp -.->|"sign-in tokens"| service
 ```
 
-No Xcode project: clang links it against the iOS slices of ODataKit's
-XCFrameworks and of ORMRuntime (built from `../NativeORM2` for iOS),
-`momc` and `actool` compile its resources, its settings come from
-`iOS/Logbook-iOS.xcconfig` (the bundle id, the version, `LB_DEFAULT_SERVER`,
-the address the sign-in offers first). For a device, sign the app in
-`build/ios/iphoneos` with your team (`DEVELOPMENT_TEAM` in
-`iOS/Local.xcconfig`, which git ignores). The icon is a placeholder.
-`make -f Makefile.apple check` runs `ios-check` too where Xcode has an
-iPhone simulator. The self-test (`iOS/LBiOSSelfTest.h`) signs in by
-email, adds a vehicle, logs a fill-up with sync off and sends it, closes a
-schedule's reminder with a service (the server agreeing, by id), settles a
-conflict each way, shares the vehicle, checks a driver is offered no
-sharing, attaches a receipt's photo (one bundled in the simulator's app,
-taken as the camera's would be: kept smaller, synced to the server and the
-driver's phone), meets a deontic rule and a refusal, and signs out: warned
-with changes waiting, each button as it says, and at once with none.
+- **The model** is `Model/Logbook.orm`: the facts about cars and what is
+  done to them, stated as sentences, with their rules, designed by
+  Halpin's conceptual schema design procedure ([docs/CSDP.md](docs/CSDP.md)).
+  [ORMKit](https://github.com/ashalkhakov/ORMKit)'s `ormtool` generates
+  the Core Data model and the code that keeps its rules, so nothing of it
+  is written twice. Open it in ORMDesigner to see the diagrams.
+- **The procedures** (`Shared/LBProcedures.h`) are what happens to a
+  reminder: started, done, moved, cancelled. They run in the server, as
+  OData actions, and in the phone's own store, alike; what they make is
+  named by what it is made of, so two devices doing the same offline make
+  the same objects.
+- **The server** is [ODataKit](https://github.com/ashalkhakov/ODataKit)'s
+  service over Core Data (Apple's, or
+  [FreeCoreData](https://github.com/ashalkhakov/FreeCoreData) on Linux),
+  with who may do what in `Server/Logbook.permissions.plist`.
+- **The apps**: the desktop app works against the server, online; the
+  iOS app keeps a store of its own and syncs it with ODataSync. The
+  desktop's reports are [RDLKit](https://github.com/ashalkhakov/RDLKit)'s.
 
-`ODATAKIT_DEPS=<dir>` builds against other XCFrameworks of ODataKit than
-`../NativeORM2/.deps`, to try one not released yet.
+## Limitations
 
-## The model
+- **The desktop app needs the server**: it does not work offline (the
+  phone does).
+- **No Windows build yet**, and no Android app.
+- **iOS**: unsigned, no App Store or TestFlight build; the icon is a
+  placeholder. Managing and reporting stay with the desktop app.
+- Early days: the data model is settled, the apps are still growing.
 
-`Model/Logbook.orm` is the model, and the only copy of it: its facts,
-constraints, queries and derivations, its Core Data mapping, and its
-diagrams. It is ORMKit's model in NORMA's file format, so NORMA opens it
-too. Change it in ORMDesigner, or apply lines of FORML to it, as the
-listing says them:
+## More
 
-```sh
-ormtool apply Model/Logbook.orm changes.forml   # "- line" takes one away
-```
+- [docs/BUILDING.md](docs/BUILDING.md): building, the checks, the model's
+  generation, Xcode.
+- [docs/SERVER.md](docs/SERVER.md): running the server, signing in,
+  permissions.
+- [docs/IOS.md](docs/IOS.md): the iOS app.
+- [docs/PROCESSES.md](docs/PROCESSES.md): what happens to reminders, and
+  offline.
+- [docs/STOCK.md](docs/STOCK.md): stock control.
+- [docs/CSDP.md](docs/CSDP.md): how the model was designed.
 
-([docs/CSDP.md](docs/CSDP.md#the-model) says how.) What the apps and the
-server use is generated from it by the build, into `build/Model`
-(`obj/Model` on GNUstep), with ORMKit's `ormtool`, built from
-`../NativeORM2` first:
-- `Logbook.xcdatamodeld`, the Core Data model (compiled to `Logbook.momd`,
-  and its classes generated, as Xcode does);
-- `Constraints/`: `LogbookValidation.h` and `.m`, and `Logbook.ormplans`,
-  the code and tables that keep the model's rules and work out its stored
-  derivations;
-- `Logbook.forml`, the listing: every statement of the model, a line each,
-  as the verbalizer says it, for reading and for copying lines from.
+## Licence
 
-None of it is kept in git, nor edited: it is made again whenever the
-model, or ormtool, changes.
-
-## The server
-
-`logbook-server` serves the logbook over OData for the apps to sync with:
-ODataKit's service, with ODataSync's part of it, and the model's rules
-kept as it writes. Before it saves a request, or a change set at its end,
-the stored derivations are worked out and every rule is checked for what
-the change reaches (the generated code in `build/Model/Constraints`); a change
-that breaks one is refused, `400`, and nothing of it is saved.
-
-```sh
-make -f Makefile.apple && make -f Makefile.apple check     # macOS
-make && make check                                          # GNUstep
-.tools/gnustep.sh make check                                # GNUstep, in ORMKit's image
-build/logbook-server -StoreURL logbook.sqlite -Port 8080 -Localhost NO
-```
-
-### In Xcode
-
-`Logbook.xcworkspace` holds `Logbook.xcodeproj` and ORMKit's project
-(`../NativeORM2/ORMKit.xcodeproj`), whose ORMRuntime the targets link, so
-Xcode builds it for the platform chosen and steps into it. Its schemes:
-`Logbook` (the desktop app), `Logbook-iOS` (iOS's settings are
-`iOS/Logbook-iOS.xcconfig`'s), `logbook-server`, `lb-procedures-check` and
-`lb-sync-check`. Each first builds `Model`, which generates what they need
-from the model by `make -f Makefile.apple xcode-model`; the frameworks are
-the XCFrameworks in `../NativeORM2/.deps` and `.deps` (`scripts/deps.sh
-apple` from gnustep-release-actions, in each).
-
-The project is generated from the makefiles' source lists: after adding a
-file, `python3 .tools/genxcodeproj.py`, rather than editing it by hand. The
-makefiles remain what builds and checks Logbook.
-
-It builds on ORMKit's runtime from `../NativeORM2`, and on the ODataKit
-release ORMKit pins. `make check` checks the procedures over a store of
-their own (`Tests/LBProceduresCheck.m`), then `Tests/serve-and-check.py`
-runs the server on a temporary store and checks it over HTTP: the
-reference data (the units, the kinds of cost), a change set saved with
-what it derives, one a rule refuses, an attachment's photo there and
-back, the actions and automatic completion, and who may do what, signed
-in; `Tests/sync-check.sh` syncs two devices' offline stores through one,
-a receipt's photo among what they sync (`Tests/LBSyncCheck.m`); then
-`Tests/app-check.sh` drives the desktop app against one: every kind of
-record added from its Add menu, its form typed into, saved, corrected and
-saved again, each checked at the server.
-
-### Signing in with Keycloak (or another OpenID Connect provider)
-
-As SimpleNotes does:
-
-1. In the realm, add a client with Client ID `logbook`: public (no client
-   authentication), with **OAuth 2.0 Device Authorization Grant** on. The
-   apps sign in with a code entered in a browser, so they need no redirect
-   URI. Its tokens carry the user's email (the realm's default `email`
-   scope): that is who they are in the logbook.
-2. Run the server with the realm as its issuer:
-
-   ```sh
-   build/logbook-server -StoreURL logbook.sqlite -Port 8080 -Localhost NO \
-     -ServiceRoot https://logbook.example.com/odata/ \
-     -JWTIssuer https://id.example.com/realms/<realm> -AllowAnonymous NO
-   ```
-
-   `-JWTAudience` additionally checks the tokens' audience, if your realm
-   sets one. Each setting is an `LB_` variable too (`LB_JWT_ISSUER`).
-   `$metadata` stays readable without signing in, so the apps can find
-   out where to sign in.
-
-Once signed in, who may see and change what, and call which action, is
-the permissions file's, `Server/Logbook.permissions.plist`
-([Permissions](docs/CSDP.md#permissions); the stock's in
-[docs/STOCK.md](docs/STOCK.md#who-may)). It is ODataKit's
-([permissions.md](https://github.com/ashalkhakov/ODataKit/blob/master/docs/permissions.md)):
-relations in the manner of Google's Zanzibar, which the service checks on
-every read, write and action. The build checks the file against the model
-(`odatakit-permissions check`), and the server does not start with one
-that does not fit. What it says:
-- a user sees the vehicles they drive (own, or are a driver of) and what is
-  recorded of them, themselves, and the people they share a vehicle with;
-- a vehicle is its maker's; only its owner changes it, shares it, values
-  it, and changes or removes what is recorded of it;
-- whoever drives a vehicle adds records to it, entered by them, with
-  their items, photos and answers;
-- a user is named by their email: a vehicle is shared with someone by it,
-  before they first sign in too; what else is said of a user is theirs;
-- units and kinds of cost are the app's (the model's reference data,
-  every store's from the start: 'Maintenance' and 'Repair', a service's,
-  'Fuel', 'Tyres', 'Documents'); a user adds kinds of expense of their
-  own, which no one removes; an exchange rate is added, never changed;
-- whoever drives a vehicle closes and moves its reminders; its owner
-  starts its schedules, cancels its reminders and discards its records.
-
-A request that names no one holds nothing the file limits (with
-`-AllowAnonymous NO`, it is refused outright). Without a sign-in (no
-`JWTIssuer`), the file is not read, and anyone who can reach the server
-may do anything: for trying it out.
+Logbook is free software, released under the GNU General Public License,
+version 3 ([LICENSE](LICENSE)).

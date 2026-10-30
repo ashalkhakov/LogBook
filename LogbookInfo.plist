@@ -1,0 +1,16 @@
+{
+    /* GNUstep's: gnustep-make merges it into Logbook.app's Info-gnustep.plist
+       (macOS reads AppKit/Info.plist). The About panel (GSInfoPanel) shows
+       these; the release's build stamps ApplicationRelease and FullVersionID. */
+    ApplicationName = Logbook;
+    ApplicationDescription = "A car logbook: what each vehicle needs and when, what it had done, and what it cost";
+    ApplicationRelease = "0.0.0";
+    FullVersionID = "0.0.0";
+    Authors = ( "Artyom Shalkhakov" );
+    Copyright = "Copyright (C) 2026 Artyom Shalkhakov";
+    NSIcon = "Logbook.png";
+    ApplicationIcon = "Logbook.png";
+    CopyrightDescription = "Released under the GNU GPL, version 3";
+    URL = "https://github.com/ashalkhakov/LogBook";
+    CFBundleIdentifier = "io.github.ashalkhakov.Logbook";
+}

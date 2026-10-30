@@ -103,7 +103,8 @@ static UIImage *LBReceiptPhoto(void) {
 /* An exception is a failure, not a hang. */
 - (void)fire:(NSTimer *)timer {
     @try {
-        [self run];
+        if ([[NSProcessInfo processInfo].environment[@"LB_STEPS"] isEqualToString:@"pictures"]) [self pictures];
+        else [self run];
     } @catch (NSException *e) {
         fprintf(stderr, "FAIL %s: %s\nFAIL   %s\nself-test: FAILED\n", e.name.UTF8String, e.reason.UTF8String,
                 [e.callStackSymbols componentsJoinedByString:@"\nFAIL   "].UTF8String);
@@ -136,6 +137,28 @@ static UIImage *LBReceiptPhoto(void) {
     return app.mainController;
 }
 
+/* LB_STEPS=pictures, over a server Tests/sample-logbook.py filled (as
+   Tests/ios-pictures.sh runs it): signed in as its user, the Family Golf
+   chosen, each tab shown and said ("picture <name>"), then held a while
+   for the simulator's screenshot. Nothing is changed. */
+- (void)pictures {
+    LBMainViewController *main = [self signInAs:@"alex@example.org"];
+    LBSay(main != nil, @"signed in to the sample logbook");
+    if (!main) return;
+    LBPhone *phone = self.app.phone;
+    for (Vehicle *vehicle in [phone vehicles]) {
+        if ([vehicle.vehicleName isEqualToString:@"Family Golf"]) phone.vehicle = vehicle;
+    }
+    LBSay([phone.vehicle.vehicleName isEqualToString:@"Family Golf"], @"the Family Golf chosen");
+    NSArray<NSString *> *names = @[ @"timeline", @"reminders", @"vehicle" ];
+    for (NSUInteger i = 0; i < names.count; i++) {
+        main.selectedIndex = i;
+        LBSpin(2);
+        fprintf(stderr, "picture %s\n", names[i].UTF8String);
+        LBSpin(3);
+    }
+}
+
 - (LBVehicleViewController *)vehicleTabOf:(LBMainViewController *)main {
     return (LBVehicleViewController *)((UINavigationController *)main.viewControllers[2]).topViewController;
 }
@@ -150,6 +173,8 @@ static UIImage *LBReceiptPhoto(void) {
     main.selectedIndex = 2;
     LBSpin(0.5);
     [vehicleTab setSyncOn:NO];
+    /* A sync already under way would send the change too: ended first. */
+    LBSettle(store);
     fillUp.note = @"Before signing out";
     NSError *error = nil;
     LBSay([store save:&error], [NSString stringWithFormat:@"a change saved, sync off (%@)", error.localizedDescription]);

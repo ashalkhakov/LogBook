@@ -23,6 +23,11 @@
                                     <action selector="orderFrontStandardAboutPanel:" target="-1" id="aboutAction"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Check for Updates…" tag="1001" id="checkForUpdatesItem">
+                                <connections>
+                                    <action selector="checkForUpdates:" target="appController" id="checkForUpdatesAction"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="separator1"/>
                             <menuItem title="Preferences…" keyEquivalent="," id="preferences">
                                 <connections>

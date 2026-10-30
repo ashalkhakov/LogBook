@@ -17,18 +17,22 @@ tokens=$(mktemp -u)
 python3 "$here/issuer.py" "$tokens" anna@example.org ben@example.org &
 issuer=$!
 trap 'kill $issuer $pid 2>/dev/null; wait 2>/dev/null; rm -f "$log" "$tokens"' EXIT
-for i in $(seq 1 100); do
+# Each waited for up to a minute: a CI runner can be slow to start them.
+for i in $(seq 1 600); do
   [ -f "$tokens" ] && break
   sleep 0.1
 done
+[ -f "$tokens" ] || { echo "sync-check: Tests/issuer.py wrote no tokens in 60 s"; exit 1; }
 url=$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["url"])' "$tokens")
 "$server" -StoreURL Temporary -Port "$port" -Localhost YES -AccessLog NO -JWTIssuer "$url" -AllowAnonymous NO >"$log" 2>&1 &
 pid=$!
 root="http://127.0.0.1:$port/odata/"
-for i in $(seq 1 100); do
-  curl -s -o /dev/null "$root" 2>/dev/null && break
+up=no
+for i in $(seq 1 600); do
+  curl -s -o /dev/null "$root" 2>/dev/null && { up=yes; break; }
   sleep 0.1
 done
+[ $up = yes ] || { echo "sync-check: the server did not answer in 60 s; its log:"; cat "$log"; exit 1; }
 python3 "$here/seed.py" "$root" "$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["tokens"]["anna@example.org"])' "$tokens")"
 export LB_TOKENS="$tokens"
 status=0

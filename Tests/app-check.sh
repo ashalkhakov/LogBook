@@ -12,10 +12,13 @@ log=$(mktemp)
 "$server" -StoreURL Temporary -Port "$port" -Localhost YES >"$log" 2>&1 &
 pid=$!
 trap 'kill $pid 2>/dev/null; rm -f "$log"' EXIT
-for i in $(seq 1 100); do
-  curl -sf "http://127.0.0.1:$port/odata/" >/dev/null 2>&1 && break
+# Up to a minute: a CI runner can be slow to start it.
+up=no
+for i in $(seq 1 600); do
+  curl -sf "http://127.0.0.1:$port/odata/" >/dev/null 2>&1 && { up=yes; break; }
   sleep 0.1
 done
+[ $up = yes ] || { echo "app-check: the server did not answer in 60 s; its log:"; cat "$log"; exit 1; }
 status=0
 out=$(mktemp)
 "$app" --self-test "http://127.0.0.1:$port/odata/" -NSQuitAlwaysKeepsWindows NO >"$out" 2>&1 || status=$?
