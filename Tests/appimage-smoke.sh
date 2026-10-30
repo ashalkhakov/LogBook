@@ -10,7 +10,8 @@ image=$1
 for i in $(seq 1 60); do python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18090/odata/')" 2>/dev/null && break; sleep 1; done
 out=$(mktemp)
 status=0
-timeout -k 15 300 xvfb-run -a "$image" --self-test http://127.0.0.1:18090/odata/ -NSQuitAlwaysKeepsWindows NO >"$out" 2>&1 || status=$?
+# The whole self-test: over five minutes on a CI runner, from the image.
+timeout -k 15 900 xvfb-run -a "$image" --self-test http://127.0.0.1:18090/odata/ -NSQuitAlwaysKeepsWindows NO >"$out" 2>&1 || status=$?
 cat "$out"
 grep -q "^self-test done" "$out" || { echo "FAIL the self-test did not finish"; status=1; }
 [ $status -eq 0 ] || { echo "the server's log:"; cat /tmp/server.log; }
