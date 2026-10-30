@@ -171,13 +171,18 @@
 			isa = PBXBuildFile;
 			fileRef = AA1BB6F3704843F4C100FA9B /* LBReportsController.m */;
 		};
+		4B441BBEBDAE27E53DC00DDD /* ORMRuntime.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
+		};
 		4D8955DA7D803F8FEAD540BF /* LBiOSSelfTest.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 3E3F1752022340EB917EE401 /* LBiOSSelfTest.m */;
 		};
-		5149D04F26060A2EE74ABBE5 /* ORMRuntime.framework */ = {
+		51605EC8B59E8949E93A042C /* ORMRuntime.xcframework */ = {
 			isa = PBXBuildFile;
-			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
+			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
 		};
 		528729F595FA1EDB414383AA /* Logbook.rdl */ = {
 			isa = PBXBuildFile;
@@ -236,10 +241,6 @@
 			isa = PBXBuildFile;
 			fileRef = 7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */;
 		};
-		5FE66B0D6E397A6BFAEFAD79 /* ORMRuntime.framework */ = {
-			isa = PBXBuildFile;
-			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
-		};
 		649ED8F26B5FBF618A78A5F0 /* LBStockPhone.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 629B5816603A0B12D55AECA8 /* LBStockPhone.m */;
@@ -285,11 +286,6 @@
 			isa = PBXBuildFile;
 			fileRef = DA69776518CC1CE3869BB9FD /* LBVehicleSummary.m */;
 		};
-		7C2CCACA5EB60AEF8F9972E2 /* ORMRuntime.framework */ = {
-			isa = PBXBuildFile;
-			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
-			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
-		};
 		7FA6C3922445DEB120B7D596 /* CoreData.framework */ = {
 			isa = PBXBuildFile;
 			fileRef = 2AB66C65BE330D1517DF768E /* CoreData.framework */;
@@ -301,10 +297,6 @@
 		7FDC935F7177900AB0A2F4B6 /* ODataSync.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
-		};
-		80FEA4ED0CDA3F0019EB82B5 /* ORMRuntime.framework */ = {
-			isa = PBXBuildFile;
-			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
 		};
 		8384EFEECCAAA1E2433B611A /* OTelKit.xcframework */ = {
 			isa = PBXBuildFile;
@@ -436,21 +428,17 @@
 			isa = PBXBuildFile;
 			fileRef = 227D6A8CB446AED3F885D090 /* UDQuantityField.m */;
 		};
-		B4553F1526E5437B61396B97 /* ORMRuntime.framework */ = {
-			isa = PBXBuildFile;
-			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
-		};
 		B5161D2BC4CE3B16C3B19378 /* ODataIncrementalStore.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
 		};
+		B6C159C29CA09B6E7954B039 /* ORMRuntime.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
+		};
 		B773B63B2D9EE0EACF095C02 /* LogbookModel.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
-		};
-		BE3C06A26981CB30C01B46D9 /* ORMRuntime.framework */ = {
-			isa = PBXBuildFile;
-			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
 		};
 		C151D3F90E7A8315F69EF777 /* LBConnectPanel.m */ = {
 			isa = PBXBuildFile;
@@ -468,6 +456,10 @@
 			isa = PBXBuildFile;
 			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
 			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		C4659DB84AC84C6FE94AEA61 /* ORMRuntime.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
 		};
 		C4EC79F8329D4E41803D8946 /* CatalogSettings.xib */ = {
 			isa = PBXBuildFile;
@@ -497,10 +489,9 @@
 			isa = PBXBuildFile;
 			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
 		};
-		CCBC0D785B337ED738310BB1 /* ORMRuntime.framework */ = {
+		CCEBD6054AF82773133B8FAA /* ORMRuntime.xcframework */ = {
 			isa = PBXBuildFile;
-			fileRef = B4D9063116054347386970CE /* ORMRuntime.framework */;
-			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
 		};
 		CEACE449612154F18045B848 /* Security.framework */ = {
 			isa = PBXBuildFile;
@@ -509,6 +500,10 @@
 		CED58ABEA9D41F3D78CB5077 /* LBProcedures.m */ = {
 			isa = PBXBuildFile;
 			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
+		};
+		D0491AE320E3E648A7959456 /* ORMRuntime.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
 		};
 		D133B5ACC3CED76663C79052 /* LBStockEditor.m */ = {
 			isa = PBXBuildFile;
@@ -558,6 +553,11 @@
 		E332CA1139B1D4B83688FD86 /* ODataKit.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
+		};
+		E4258920D159201DA3D94CD6 /* ORMRuntime.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
 		};
 		E442D25C9C917A769465A246 /* HTTPServerKit.xcframework */ = {
 			isa = PBXBuildFile;
@@ -648,40 +648,12 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		0A06EB590C59A3EF54175D2F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 28E61B15A6027FBF5937BC0D /* ORMKit.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = FDA2783CB7634D75F7062662;
-			remoteInfo = ORMRuntime;
-		};
-		0F7F97589432DE7A373C9B31 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 28E61B15A6027FBF5937BC0D /* ORMKit.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 82AA0377B0C5091F5DD3927B;
-			remoteInfo = ORMRuntime;
-		};
 		28E8712AB4ACCA86AEE2759B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 4D7EF247F4B7258C9392CF96;
 			remoteInfo = Model;
-		};
-		3F827B5724CF4E74FC636893 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 28E61B15A6027FBF5937BC0D /* ORMKit.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 82AA0377B0C5091F5DD3927B;
-			remoteInfo = ORMRuntime;
-		};
-		774C676E4BD9ECF61F7A8F1C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 28E61B15A6027FBF5937BC0D /* ORMKit.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 82AA0377B0C5091F5DD3927B;
-			remoteInfo = ORMRuntime;
 		};
 		7A1752B6512F162DDDCD3976 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -704,26 +676,12 @@
 			remoteGlobalIDString = 4D7EF247F4B7258C9392CF96;
 			remoteInfo = Model;
 		};
-		E4FAEC103481341157C94D2C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 28E61B15A6027FBF5937BC0D /* ORMKit.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 82AA0377B0C5091F5DD3927B;
-			remoteInfo = ORMRuntime;
-		};
 		EB32C46758D4FB5E873C270D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 4D7EF247F4B7258C9392CF96;
 			remoteInfo = Model;
-		};
-		F176D4D36F1DFBB7F94A85C1 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 28E61B15A6027FBF5937BC0D /* ORMKit.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 82AA0377B0C5091F5DD3927B;
-			remoteInfo = ORMRuntime;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -732,7 +690,7 @@
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7C2CCACA5EB60AEF8F9972E2 /* ORMRuntime.framework */,
+				E4258920D159201DA3D94CD6 /* ORMRuntime.xcframework */,
 				8FC1EC5C8A5111BDCDA58160 /* ODataKit.xcframework */,
 				8384EFEECCAAA1E2433B611A /* OTelKit.xcframework */,
 				8AA2803D9B1A2747A6B16326 /* ODataIncrementalStore.xcframework */,
@@ -751,7 +709,7 @@
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CCBC0D785B337ED738310BB1 /* ORMRuntime.framework */,
+				51605EC8B59E8949E93A042C /* ORMRuntime.xcframework */,
 				9B7AC02AD42B04EAABB53DF5 /* ODataKit.xcframework */,
 				C40A94DA57E13CEE09F665BE /* OTelKit.xcframework */,
 				219C4077ED0376B4D8C4619C /* ODataIncrementalStore.xcframework */,
@@ -839,7 +797,7 @@
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.xcframework;
 			name = OTelKit.xcframework;
-			path = ../NativeORM2/.deps/OTelKit.xcframework;
+			path = .deps/OTelKit.xcframework;
 			sourceTree = SOURCE_ROOT;
 		};
 		1B50BA5E1C91FF419EF82E8F /* StockCount.xib */ = {
@@ -896,13 +854,6 @@
 			path = LBVehicleSummary.h;
 			sourceTree = "<group>";
 		};
-		28E61B15A6027FBF5937BC0D /* ORMKit.xcodeproj */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = "wrapper.pb-project";
-			name = ORMKit.xcodeproj;
-			path = ../NativeORM2/ORMKit.xcodeproj;
-			sourceTree = SOURCE_ROOT;
-		};
 		2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -952,6 +903,13 @@
 			lastKnownFileType = sourcecode.c.h;
 			path = LBCurrencies.h;
 			sourceTree = "<group>";
+		};
+		33507005495470C8207C2597 /* ORMRuntime.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = ORMRuntime.xcframework;
+			path = .deps/ORMRuntime.xcframework;
+			sourceTree = SOURCE_ROOT;
 		};
 		3419A52A63B43A4BEBA68C32 /* LBPreferencesController.m */ = {
 			isa = PBXFileReference;
@@ -1053,14 +1011,14 @@
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.xcframework;
 			name = ODataKit.xcframework;
-			path = ../NativeORM2/.deps/ODataKit.xcframework;
+			path = .deps/ODataKit.xcframework;
 			sourceTree = SOURCE_ROOT;
 		};
 		563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.xcframework;
 			name = ODataIncrementalStore.xcframework;
-			path = ../NativeORM2/.deps/ODataIncrementalStore.xcframework;
+			path = .deps/ODataIncrementalStore.xcframework;
 			sourceTree = SOURCE_ROOT;
 		};
 		584640704EF6A5925E5FAEBF /* RDLKitUI.xcframework */ = {
@@ -1154,7 +1112,7 @@
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.xcframework;
 			name = HTTPServerKit.xcframework;
-			path = ../NativeORM2/.deps/HTTPServerKit.xcframework;
+			path = .deps/HTTPServerKit.xcframework;
 			sourceTree = SOURCE_ROOT;
 		};
 		78A28AAA1E8F8D6377B0D29E /* LBPlanned.h */ = {
@@ -1282,7 +1240,7 @@
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.xcframework;
 			name = ODataSync.xcframework;
-			path = ../NativeORM2/.deps/ODataSync.xcframework;
+			path = .deps/ODataSync.xcframework;
 			sourceTree = SOURCE_ROOT;
 		};
 		AA1BB6F3704843F4C100FA9B /* LBReportsController.m */ = {
@@ -1406,7 +1364,7 @@
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.xcframework;
 			name = ODataService.xcframework;
-			path = ../NativeORM2/.deps/ODataService.xcframework;
+			path = .deps/ODataService.xcframework;
 			sourceTree = SOURCE_ROOT;
 		};
 		CBBE62FB66CDAB94534A27DE /* LBiOSSelfTest.h */ = {
@@ -1591,7 +1549,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BE3C06A26981CB30C01B46D9 /* ORMRuntime.framework */,
+				4B441BBEBDAE27E53DC00DDD /* ORMRuntime.xcframework */,
 				AB2B8692CAA5E70D9258E2B1 /* ODataKit.xcframework */,
 				08173CC207BED2C97590BBBC /* OTelKit.xcframework */,
 				B5161D2BC4CE3B16C3B19378 /* ODataIncrementalStore.xcframework */,
@@ -1610,7 +1568,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5FE66B0D6E397A6BFAEFAD79 /* ORMRuntime.framework */,
+				B6C159C29CA09B6E7954B039 /* ORMRuntime.xcframework */,
 				D2078ECC2CB3D93E9B224DC0 /* ODataKit.xcframework */,
 				DA0F6F0A9AD40AE88BD72E94 /* OTelKit.xcframework */,
 				5462B17B505D7BB83790C951 /* ODataIncrementalStore.xcframework */,
@@ -1628,7 +1586,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5149D04F26060A2EE74ABBE5 /* ORMRuntime.framework */,
+				C4659DB84AC84C6FE94AEA61 /* ORMRuntime.xcframework */,
 				E332CA1139B1D4B83688FD86 /* ODataKit.xcframework */,
 				54188C4026BE856502AAF67E /* OTelKit.xcframework */,
 				4651A0F5DBC0EAFD7EA1A335 /* ODataIncrementalStore.xcframework */,
@@ -1644,7 +1602,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				80FEA4ED0CDA3F0019EB82B5 /* ORMRuntime.framework */,
+				CCEBD6054AF82773133B8FAA /* ORMRuntime.xcframework */,
 				040FE5A60609D06282B3282E /* ODataKit.xcframework */,
 				9A2330CCE28224322303C700 /* OTelKit.xcframework */,
 				0DD672404585D5BF594EA084 /* ODataIncrementalStore.xcframework */,
@@ -1660,7 +1618,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B4553F1526E5437B61396B97 /* ORMRuntime.framework */,
+				D0491AE320E3E648A7959456 /* ORMRuntime.xcframework */,
 				1DDAAAA209F502AABBD87A63 /* ODataKit.xcframework */,
 				460917A477FCD0C1B56A92F3 /* OTelKit.xcframework */,
 				32DC1571D7A282CCA89980FB /* ODataIncrementalStore.xcframework */,
@@ -1753,7 +1711,6 @@
 				5E14CDF31B3C8DCE0631102F /* UDQuantity */,
 				2B6F7E2DBE1E88B5D1B95BA6 /* Xcode */,
 				4BB4DDA056F6DB57003A27FE /* iOS */,
-				28E61B15A6027FBF5937BC0D /* ORMKit.xcodeproj */,
 				5A559843A90E30B141C300FB /* Frameworks */,
 				2AC8BA37DAC32D5437812408 /* Products */,
 			);
@@ -1772,6 +1729,7 @@
 		5A559843A90E30B141C300FB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				33507005495470C8207C2597 /* ORMRuntime.xcframework */,
 				556E7EB7554160D265539612 /* ODataKit.xcframework */,
 				1AA616881FDF64023A455351 /* OTelKit.xcframework */,
 				563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */,
@@ -1905,14 +1863,6 @@
 			path = Shared;
 			sourceTree = "<group>";
 		};
-		9E615FD99CD5BA2F116135F9 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				B4D9063116054347386970CE /* ORMRuntime.framework */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		F50D50AB8A3CE68E7C5DC430 /* Docs */ = {
 			isa = PBXGroup;
 			children = (
@@ -1941,7 +1891,6 @@
 			);
 			dependencies = (
 				7A69DA12FCF2A68DB668C144 /* PBXTargetDependency */,
-				77A4B5F3174710F3B19F4472 /* PBXTargetDependency */,
 			);
 			name = "logbook-server";
 			productName = "logbook-server";
@@ -1962,7 +1911,6 @@
 			);
 			dependencies = (
 				A5068E846D709D42D53EAC6F /* PBXTargetDependency */,
-				0A978CA0D72B71C5012EF076 /* PBXTargetDependency */,
 			);
 			name = Logbook;
 			productName = Logbook;
@@ -1981,7 +1929,6 @@
 			);
 			dependencies = (
 				EC9DE446E190A2132EBD2724 /* PBXTargetDependency */,
-				59C909F7F04B0BC96E37F005 /* PBXTargetDependency */,
 			);
 			name = "lb-procedures-check";
 			productName = "lb-procedures-check";
@@ -2000,7 +1947,6 @@
 			);
 			dependencies = (
 				E159A7BC9B9B7FF03E88AB02 /* PBXTargetDependency */,
-				1743572503DB962A762819A3 /* PBXTargetDependency */,
 			);
 			name = "lb-sync-check";
 			productName = "lb-sync-check";
@@ -2021,7 +1967,6 @@
 			);
 			dependencies = (
 				339087B3D73E416AD5BFD223 /* PBXTargetDependency */,
-				E90E9653E8882AFEA2228A4E /* PBXTargetDependency */,
 			);
 			name = "Logbook-iOS";
 			productName = "Logbook-iOS";
@@ -2047,12 +1992,6 @@
 			);
 			mainGroup = 4EAE695AD1F489F78EA3E1C6;
 			productRefGroup = 2AC8BA37DAC32D5437812408 /* Products */;
-			projectReferences = (
-				{
-					ProductGroup = 9E615FD99CD5BA2F116135F9 /* Products */;
-					ProjectRef = 28E61B15A6027FBF5937BC0D /* ORMKit.xcodeproj */;
-				},
-			);
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -2065,16 +2004,6 @@
 			);
 		};
 /* End PBXProject section */
-
-/* Begin PBXReferenceProxy section */
-		B4D9063116054347386970CE /* ORMRuntime.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = ORMRuntime.framework;
-			remoteRef = 0A06EB590C59A3EF54175D2F /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		09AFAC354C2AEFC1BC484C85 /* Resources */ = {
@@ -2146,7 +2075,7 @@
 			outputPaths = (
 			);
 			shellPath = /bin/sh;
-			shellScript = "# Generated by make, as on the command line, and out of Xcode's own\n# environment: the makefile builds ORMKit's ormtool with xcodebuild, which\n# the settings of this build would mislead.\nexec env -i PATH=/usr/bin:/bin:/usr/sbin:/sbin HOME=\"$HOME\" DEVELOPER_DIR=\"$DEVELOPER_DIR\" \\\n  make -C \"$SRCROOT\" -f Makefile.apple xcode-model\n";
+			shellScript = "# Generated by make, as on the command line, and out of Xcode's own\n# environment, which would mislead the tools it runs (momc, ormtool).\nexec env -i PATH=/usr/bin:/bin:/usr/sbin:/sbin HOME=\"$HOME\" DEVELOPER_DIR=\"$DEVELOPER_DIR\" \\\n  make -C \"$SRCROOT\" -f Makefile.apple xcode-model\n";
 			showEnvVarsInLog = 0;
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2341,30 +2270,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		0A978CA0D72B71C5012EF076 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = ORMRuntime;
-			targetProxy = E4FAEC103481341157C94D2C /* PBXContainerItemProxy */;
-		};
-		1743572503DB962A762819A3 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = ORMRuntime;
-			targetProxy = F176D4D36F1DFBB7F94A85C1 /* PBXContainerItemProxy */;
-		};
 		339087B3D73E416AD5BFD223 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 4D7EF247F4B7258C9392CF96 /* Model */;
 			targetProxy = EB32C46758D4FB5E873C270D /* PBXContainerItemProxy */;
-		};
-		59C909F7F04B0BC96E37F005 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = ORMRuntime;
-			targetProxy = 3F827B5724CF4E74FC636893 /* PBXContainerItemProxy */;
-		};
-		77A4B5F3174710F3B19F4472 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = ORMRuntime;
-			targetProxy = 0F7F97589432DE7A373C9B31 /* PBXContainerItemProxy */;
 		};
 		7A69DA12FCF2A68DB668C144 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2380,11 +2289,6 @@
 			isa = PBXTargetDependency;
 			target = 4D7EF247F4B7258C9392CF96 /* Model */;
 			targetProxy = 8BD6BF147F7310E3EAADCD6D /* PBXContainerItemProxy */;
-		};
-		E90E9653E8882AFEA2228A4E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = ORMRuntime;
-			targetProxy = 774C676E4BD9ECF61F7A8F1C /* PBXContainerItemProxy */;
 		};
 		EC9DE446E190A2132EBD2724 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;

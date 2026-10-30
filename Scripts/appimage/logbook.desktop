@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Logbook
+GenericName=Car logbook
+Comment=What each vehicle needs and when, what it had done, and what it cost
+Exec=AppRun %F
+Icon=logbook
+Terminal=false
+Categories=Office;

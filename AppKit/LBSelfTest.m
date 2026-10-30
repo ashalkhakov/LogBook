@@ -55,8 +55,9 @@ void LBSelfTestBegin(NSURL *root) {
     LBSelfTestRoot = root;
     LBSavedSettings = LBSavedSettingsNow();
     /* A server with no sign-in: the user the app is, whoever the Mac's user
-       said they were. */
-    LBSetDefault(@"LBUser", @"self-test@example.org");
+       said they were (in the pictures, the sample logbook's). */
+    BOOL pictures = [[NSProcessInfo processInfo].environment[@"LB_STEPS"] isEqualToString:@"pictures"];
+    LBSetDefault(@"LBUser", pictures ? @"alex@example.org" : @"self-test@example.org");
 }
 
 void LBSetDefault(NSString *key, id value) {
@@ -492,7 +493,7 @@ static void LBReportSteps(LBMainWindowController *controller) {
     [tabs selectTabViewItemWithIdentifier:@"reports"];
     LBSpin();
     NSString *costs = LBShowReport(controller, @"Costs by Month");
-    LBCheck(@"costs: the vehicle, its month's total in EUR", [costs containsString:@"Self-test Golf"] && [costs containsString:@"60.00"]
+    LBCheck(@"costs: the vehicle, its month's total in EUR", [costs containsString:@"Family Golf"] && [costs containsString:@"60.00"]
                 && [costs containsString:@"EUR"], nil);
     NSString *fuel = LBShowReport(controller, @"Fuel");
     /* LB_SCREENSHOT=file.png: the Reports tab too, beside it (macOS). */
@@ -501,7 +502,7 @@ static void LBReportSteps(LBMainWindowController *controller) {
         system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%@'", (long)controller.window.windowNumber, path].UTF8String);
     }
     LBCheck(@"fuel: the fill-up, a litre's price, the station", [fuel containsString:@"1.500"] && [fuel containsString:@"Shell"]
-                && [fuel containsString:@"Self-test Golf"], nil);
+                && [fuel containsString:@"Family Golf"], nil);
     NSString *logbook = LBShowReport(controller, @"Logbook");
     LBCheck(@"logbook: the fill-up, by kind", [logbook containsString:@"Fill-up"] && [logbook containsString:@"By kind"], nil);
     [controller.reports.viewer setValue:@"2001-01-01" forParameter:@"To"];
@@ -575,8 +576,10 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
             controller.lastError ?: schedule.lbEvery);
     NSUUID *firstID = schedule.id ? LBNamedUUID([@"start of " stringByAppendingString:schedule.id.UUIDString.lowercaseString]) : nil;
     Reminder *first = LBListed(controller, firstID);
+    /* Started today as the owner's day is (their time zone, this Mac's):
+       not UTC's, which is another day for hours after midnight. */
     LBCheck(@"started on the server: its first reminder listed, due 12 months on and at the fill-up's distance plus 15000 km",
-            first && first.lb_isOpen && [first.dueDate isEqualToDate:LBAddMonths(LBDay([NSDate date]), 12)]
+            first && first.lb_isOpen && [first.dueDate isEqualToDate:LBAddMonths(LBOwnerDay(kept, [NSDate date]), 12)]
                 && first.dueMileageQuantity.integerValue == 27345 && [first.lbStatus isEqualToString:@"Open"],
             first ? first.lbDue : tab.reminders.arrangedObjects);
     LBCheck(@"the schedule's next due shown", [schedule.lbNextDue isEqualToString:first.lbDue], schedule.lbNextDue);
@@ -776,6 +779,12 @@ static void LBSnapshot(NSWindow *window, NSString *name) {
     [view cacheDisplayInRect:view.bounds toBitmapImageRep:image];
     [[image TIFFRepresentation] writeToFile:[folder stringByAppendingPathComponent:[name stringByAppendingPathExtension:@"tiff"]]
                                  atomically:YES];
+    /* On macOS also as the window server shows it, the window alone
+       (layer-backed controls, such as the tabs' segments, draw only there). */
+    if ([[NSFileManager defaultManager] isExecutableFileAtPath:@"/usr/sbin/screencapture"]) {
+        NSString *png = [folder stringByAppendingPathComponent:[name stringByAppendingPathExtension:@"png"]];
+        system([NSString stringWithFormat:@"/usr/sbin/screencapture -x -o -l %ld '%@'", (long)window.windowNumber, png].UTF8String);
+    }
 }
 
 static NSDecimalNumber *LBN10(void) {
@@ -829,7 +838,7 @@ static void LBTypeInCell(NSWindow *window, NSString *table, NSInteger column, NS
 static void LBStockSettingsSteps(LBStockWindowController *stock, LBCatalogSettingsWindowController *settings) {
     NSWindow *window = settings.window;
     settings.quiet = YES;
-    LBType(window, @"catalogName", @"Self-test Workshop");
+    LBType(window, @"catalogName", @"Corner Workshop");
     LBType(window, @"catalogCurrency", @"USD");
     LBType(window, @"catalogPrefix", @"GAR");
     LBChoose(window, @"catalogSizeUnit", @"cm");
@@ -857,7 +866,7 @@ static void LBStockSettingsSteps(LBStockWindowController *stock, LBCatalogSettin
     }
     [places sortUsingSelector:@selector(compare:)];
     LBCheck(@"the server has its name, currency, prefix, size unit, warehouses and locations",
-            [kept.catalogName isEqualToString:@"Self-test Workshop"] && [kept.currency isEqualToString:@"USD"]
+            [kept.catalogName isEqualToString:@"Corner Workshop"] && [kept.currency isEqualToString:@"USD"]
                 && [kept.documentPrefix isEqualToString:@"GAR"] && [kept.sizeUnit.code isEqualToString:@"cm"]
                 && [places isEqualToArray:@[ @"Garage / Shelf A", @"Garage / Shelf B", @"Main / Default" ]],
             places);
@@ -871,7 +880,7 @@ static void LBStockSettingsSteps(LBStockWindowController *stock, LBCatalogSettin
             [NSString stringWithFormat:@"%@ %@", parts, bobs]);
     LBCheck(@"the customer shipped to 1 Yard Lane", [bobs.shippingAddress.addressLines isEqualToString:@"1 Yard Lane"],
             bobs.shippingAddress);
-    LBCheck(@"the stock window told: it lists the catalog by its new name", [stock.catalog.catalogName isEqualToString:@"Self-test Workshop"],
+    LBCheck(@"the stock window told: it lists the catalog by its new name", [stock.catalog.catalogName isEqualToString:@"Corner Workshop"],
             stock.catalog.catalogName);
     [settings close];
 }
@@ -1888,7 +1897,7 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
         if ([item.calendarTitle hasPrefix:@"Self-test Polo: "]) said = YES;
     }
     LBCheck(@"All Vehicles: both vehicles' entries in the month, each said with its vehicle",
-            calendar.allVehicles && said && [vehicles containsObject:@"Self-test Golf"] && [vehicles containsObject:@"Self-test Polo"],
+            calendar.allVehicles && said && [vehicles containsObject:@"Family Golf"] && [vehicles containsObject:@"Self-test Polo"],
             vehicles);
     if (getenv("LB_SCREENSHOT")) {
         NSString *path = [[@(getenv("LB_SCREENSHOT")) stringByDeletingPathExtension] stringByAppendingString:@"-all.png"];
@@ -1896,7 +1905,7 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
     }
     LBClick(window, @"calendarAllVehicles");
     vehicles = [NSSet setWithArray:[calendar.entries valueForKey:NSStringFromSelector(@selector(vehicleTitle))]];
-    LBCheck(@"and off: the chosen vehicle's only", !calendar.allVehicles && [vehicles isEqualToSet:[NSSet setWithObject:@"Self-test Golf"]],
+    LBCheck(@"and off: the chosen vehicle's only", !calendar.allVehicles && [vehicles isEqualToSet:[NSSet setWithObject:@"Family Golf"]],
             vehicles);
 }
 
@@ -1936,6 +1945,45 @@ static void LBConnectSteps(void) {
     LBSetDefault(@"LBUser", @"self-test@example.org");
 }
 
+/* LB_STEPS=pictures, over a server Tests/sample-logbook.py filled (as
+   Tests/pictures.sh runs it): the main window's tabs, the Family Golf
+   chosen, each written where LB_SNAPSHOTS says. Nothing is changed. */
+static void LBPictureSteps(LBMainWindowController *controller) {
+    NSWindow *window = controller.window;
+    NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
+    Vehicle *golf = nil;
+    for (Vehicle *vehicle in controller.vehicles.arrangedObjects) {
+        if ([vehicle.vehicleName isEqualToString:@"Family Golf"]) golf = vehicle;
+    }
+    LBCheck(@"the sample logbook's Family Golf", golf != nil, [controller.vehicles.arrangedObjects valueForKey:@"vehicleName"]);
+    if (!golf) return;
+    [controller.vehicles setSelectedObjects:@[ golf ]];
+    LBSpin();
+    [tabs selectTabViewItemWithIdentifier:@"vehicle"];
+    LBSpin();
+    LBSnapshot(window, @"vehicle");
+    [tabs selectTabViewItemWithIdentifier:@"records"];
+    LBSpin();
+    for (Record *record in controller.records.arrangedObjects) {
+        if ([record isKindOfClass:[Service class]]) [controller.records setSelectedObjects:@[ record ]];
+    }
+    LBSpin();
+    LBSnapshot(window, @"records");
+    [tabs selectTabViewItemWithIdentifier:@"reminders"];
+    LBSpin();
+    LBSnapshot(window, @"reminders");
+    [tabs selectTabViewItemWithIdentifier:@"calendar"];
+    controller.calendarController.allVehicles = YES;
+    LBSpin();
+    LBSnapshot(window, @"calendar");
+    [tabs selectTabViewItemWithIdentifier:@"reports"];
+    LBSpin();
+    LBShowReport(controller, @"Costs by Month");
+    LBSnapshot(window, @"report-costs");
+    LBShowReport(controller, @"Fuel");
+    LBSnapshot(window, @"report-fuel");
+}
+
 /* Whether the steps of the part run: every part, unless LB_STEPS names
    some ("stock", "logbook", or both, comma-separated). */
 static BOOL LBRuns(NSString *part) {
@@ -1957,19 +2005,19 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
                                           && controller.vehicles.selectedObjects.count == 1,
             [NSString stringWithFormat:@"%lu listed (%lu before), %lu chosen", (unsigned long)[controller.vehicles.arrangedObjects count],
                                        (unsigned long)before, (unsigned long)controller.vehicles.selectedObjects.count]);
-    LBType(window, @"vehicleName", @"Self-test Golf");
+    LBType(window, @"vehicleName", @"Family Golf");
     LBType(window, @"make", @"Volkswagen");
     LBType(window, @"carModel", @"Golf VII");
     LBType(window, @"manufactureYear", @"2016");
     LBType(window, @"fuel", @"Petrol");
     Vehicle *chosen = controller.vehicles.selectedObjects.firstObject;
-    LBCheck(@"what was typed is the vehicle's", [chosen.vehicleName isEqualToString:@"Self-test Golf"] && chosen.manufactureYear == 2016,
+    LBCheck(@"what was typed is the vehicle's", [chosen.vehicleName isEqualToString:@"Family Golf"] && chosen.manufactureYear == 2016,
             chosen.vehicleName);
     LBClick(window, @"save");
     LBCheck(@"saved", !controller.store.context.hasChanges && !controller.lastError,
             [NSString stringWithFormat:@"%@ / %@ / %@", controller.lastError, controller.store.context.updatedObjects,
                                        controller.store.context.insertedObjects]);
-    Vehicle *kept = LBVehicleNamed(@"Self-test Golf");
+    Vehicle *kept = LBVehicleNamed(@"Family Golf");
     LBCheck(@"the server has it", [kept.make isEqualToString:@"Volkswagen"] && [kept.carModel isEqualToString:@"Golf VII"], kept);
     LBCheck(@"its owner the user", [kept.owner.email isEqualToString:controller.store.user.email], kept.owner.email);
     LBSharingSteps(controller, kept);
@@ -1977,7 +2025,7 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
     LBAttachmentSteps(controller, kept);
     LBPreferenceSteps(controller);
     LBListSteps(controller);
-    LBReportDataSteps(controller, @"Self-test Golf");
+    LBReportDataSteps(controller, @"Family Golf");
     LBReportSteps(controller);
     LBReminderSteps(controller, kept);
     LBKindSteps(controller);
@@ -1993,6 +2041,10 @@ static void LBSteps(LBMainWindowController *controller) {
     [NSApp activateIgnoringOtherApps:YES];
     [window makeKeyAndOrderFront:nil];
     LBCheck(@"the window", window.isVisible, nil);
+    if ([[NSProcessInfo processInfo].environment[@"LB_STEPS"] isEqualToString:@"pictures"]) {
+        LBPictureSteps(controller);
+        return;
+    }
     if (LBRuns(@"logbook")) LBLogbookSteps(controller);
     if (LBRuns(@"stock")) LBStockSteps(controller);
     LBCheck(@"the user's saved settings as they were (the server, the user)", [LBSavedSettingsNow()[@"LBServer"] ?: @"" isEqual:LBSavedSettings[@"LBServer"] ?: @""]
