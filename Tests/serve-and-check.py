@@ -156,7 +156,8 @@ def serve(*settings):
     logs.append(log)
     command = ["true"] if given else [SERVER, "-StoreURL", "Temporary", "-Port", str(port), "-Localhost", "YES", *settings]
     server = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, text=True, env=environment)
-    for _ in range(100):
+    # Up to a minute: a CI runner can be slow to start it.
+    for _ in range(600):
         try:
             urllib.request.urlopen(urllib.request.Request(ROOT + "$metadata"), timeout=1).read()
             return server
@@ -167,7 +168,8 @@ def serve(*settings):
                 log.seek(0)
                 sys.exit("the server stopped: " + log.read())
             time.sleep(0.1)
-    return server
+    log.seek(0)
+    sys.exit("the server did not answer in 60 s: " + log.read())
 
 
 def stop(server):
