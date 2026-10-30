@@ -33,6 +33,10 @@
 			isa = PBXBuildFile;
 			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
 		};
+		044AA23AA30A8FF82812654E /* LBUpdater-Apple.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 63F76DCE6702DEFBD71EE19B /* LBUpdater-Apple.m */;
+		};
 		08173CC207BED2C97590BBBC /* OTelKit.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
@@ -249,6 +253,11 @@
 			isa = PBXBuildFile;
 			fileRef = 694E25C06D350F4886223FAB /* Lists.xib */;
 		};
+		6986B80AEB4431B480CEB16C /* Sparkle.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = DCD36BEFF925FD84E6C7A1B9 /* Sparkle.xcframework */;
+			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
 		6F4CEC1C995918B6B3F61C6F /* LogbookModel.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
@@ -340,6 +349,10 @@
 			isa = PBXBuildFile;
 			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
 			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		951C3BD335E1FB3ADA51120D /* Sparkle.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = DCD36BEFF925FD84E6C7A1B9 /* Sparkle.xcframework */;
 		};
 		9702E8799FE21A6131A21C3D /* LBCalendar.m */ = {
 			isa = PBXBuildFile;
@@ -435,6 +448,10 @@
 		B6C159C29CA09B6E7954B039 /* ORMRuntime.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
+		};
+		B71574A70BF424AC03F6ED06 /* Logbook.png */ = {
+			isa = PBXBuildFile;
+			fileRef = C7FB66AC7ED503D0CE991724 /* Logbook.png */;
 		};
 		B773B63B2D9EE0EACF095C02 /* LogbookModel.m */ = {
 			isa = PBXBuildFile;
@@ -699,6 +716,7 @@
 				E20C1F5F53018FE5F3B4A0E1 /* ODataSync.xcframework */,
 				FAF7EB020CC5CD818F33D8FE /* RDLKit.xcframework */,
 				EBBF24975BD9EA11CB47344D /* RDLKitUI.xcframework */,
+				6986B80AEB4431B480CEB16C /* Sparkle.xcframework */,
 			);
 			dstPath = "";
 			dstSubfolderSpec = 10;
@@ -965,6 +983,12 @@
 			path = LBStockCountWindowController.m;
 			sourceTree = "<group>";
 		};
+		44E6AFAB92461E18A2917098 /* BUILDING.md */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = net.daringfireball.markdown;
+			path = docs/BUILDING.md;
+			sourceTree = "<group>";
+		};
 		470AD526B3A4B8CA0ADFC09B /* README.md */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = net.daringfireball.markdown;
@@ -1005,6 +1029,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBServer.m;
+			sourceTree = "<group>";
+		};
+		54D9B95BA710144DC1887114 /* LBUpdater.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBUpdater.h;
 			sourceTree = "<group>";
 		};
 		556E7EB7554160D265539612 /* ODataKit.xcframework */ = {
@@ -1057,6 +1087,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBStockPhone.m;
+			sourceTree = "<group>";
+		};
+		63F76DCE6702DEFBD71EE19B /* LBUpdater-Apple.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = "LBUpdater-Apple.m";
 			sourceTree = "<group>";
 		};
 		6802924709AD07775C09BCA9 /* LBCatalogSettingsWindowController.h */ = {
@@ -1273,6 +1309,12 @@
 			path = Info.plist;
 			sourceTree = "<group>";
 		};
+		ACA24BABE028AF8EEFD9909B /* SERVER.md */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = net.daringfireball.markdown;
+			path = docs/SERVER.md;
+			sourceTree = "<group>";
+		};
 		B29454D488C4F49E273C15A0 /* Foundation.framework */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
@@ -1342,10 +1384,22 @@
 			path = LBMainWindowController.m;
 			sourceTree = "<group>";
 		};
+		BF538D42C29FF06E7EC61648 /* IOS.md */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = net.daringfireball.markdown;
+			path = docs/IOS.md;
+			sourceTree = "<group>";
+		};
 		C08971E109305EB254D7B26D /* Makefile.apple */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = text;
 			path = Makefile.apple;
+			sourceTree = "<group>";
+		};
+		C7FB66AC7ED503D0CE991724 /* Logbook.png */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text;
+			path = Logbook.png;
 			sourceTree = "<group>";
 		};
 		C869049B854785B7B1E6DA73 /* main.m */ = {
@@ -1439,6 +1493,13 @@
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBCalendarController.m;
 			sourceTree = "<group>";
+		};
+		DCD36BEFF925FD84E6C7A1B9 /* Sparkle.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = Sparkle.xcframework;
+			path = .deps/Sparkle.xcframework;
+			sourceTree = SOURCE_ROOT;
 		};
 		E0E116B48C451C1A3F4C444C /* LBProcedures.h */ = {
 			isa = PBXFileReference;
@@ -1558,6 +1619,7 @@
 				F9356E42A276A84634661374 /* ODataSync.xcframework */,
 				E4BA5B18C5D32D44013003E9 /* RDLKit.xcframework */,
 				B1DADC5231D11B5B7F3AAE89 /* RDLKitUI.xcframework */,
+				951C3BD335E1FB3ADA51120D /* Sparkle.xcframework */,
 				130ACC4A8E3B6F7BA8451590 /* AppKit.framework */,
 				7FA6C3922445DEB120B7D596 /* CoreData.framework */,
 				E0271BA8A232779DA9B7F057 /* Foundation.framework */,
@@ -1738,6 +1800,7 @@
 				A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */,
 				B3BCDF809368C6B4D2C11FE7 /* RDLKit.xcframework */,
 				584640704EF6A5925E5FAEBF /* RDLKitUI.xcframework */,
+				DCD36BEFF925FD84E6C7A1B9 /* Sparkle.xcframework */,
 				B29454D488C4F49E273C15A0 /* Foundation.framework */,
 				2AB66C65BE330D1517DF768E /* CoreData.framework */,
 				D9440F138977C55F58D15995 /* AppKit.framework */,
@@ -1809,7 +1872,10 @@
 				1B68139C28655401D5A5B21D /* LBStockOrderWindowController.m */,
 				D090AFF26F4A18054D8494CB /* LBStockWindowController.h */,
 				0909862880AB1C4AD4F5EE4E /* LBStockWindowController.m */,
+				54D9B95BA710144DC1887114 /* LBUpdater.h */,
+				63F76DCE6702DEFBD71EE19B /* LBUpdater-Apple.m */,
 				694E25C06D350F4886223FAB /* Lists.xib */,
+				C7FB66AC7ED503D0CE991724 /* Logbook.png */,
 				4FE96229781E69B34DF214C9 /* MainMenu.xib */,
 				F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */,
 				7B58A3F22B5132525D3F4330 /* Parts.xib */,
@@ -1869,8 +1935,11 @@
 				470AD526B3A4B8CA0ADFC09B /* README.md */,
 				C08971E109305EB254D7B26D /* Makefile.apple */,
 				0D9E881A6CBBB60E5366EA0B /* GNUmakefile */,
+				44E6AFAB92461E18A2917098 /* BUILDING.md */,
 				ABC75EAB861F9334630A50A4 /* CSDP.md */,
+				BF538D42C29FF06E7EC61648 /* IOS.md */,
 				B9015B2FA563A5832304923D /* PROCESSES.md */,
+				ACA24BABE028AF8EEFD9909B /* SERVER.md */,
 				2B558B9276F354D18EF708FE /* STOCK.md */,
 			);
 			name = Docs;
@@ -2030,6 +2099,7 @@
 				55163AC23A466DC095BC188A /* StockCount.xib */,
 				C4EC79F8329D4E41803D8946 /* CatalogSettings.xib */,
 				72F298546B4BBA2B1AD0CAED /* Parts.xib */,
+				B71574A70BF424AC03F6ED06 /* Logbook.png */,
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
 				528729F595FA1EDB414383AA /* Logbook.rdl */,
@@ -2248,6 +2318,7 @@
 				9FFA1CCB7AD055C596E55444 /* LBStockItemWindowController.m */,
 				C399DB33835639D25AA56269 /* LBStockOrderWindowController.m */,
 				4A7C39DF8D06BBC66581C911 /* LBStockWindowController.m */,
+				044AA23AA30A8FF82812654E /* LBUpdater-Apple.m */,
 				D150CB72C0373BBF67E78758 /* main.m */,
 				5AA4112F777D647934A73C69 /* UDCalendarView.m */,
 				B3E1A2A2285935D32D76562A /* UDQuantityField.m */,

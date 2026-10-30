@@ -54,7 +54,9 @@ def expand(text):
     return [w for w in text.split() if not w.startswith("$(")]
 
 
-APP_SOURCES = expand(make_value("GNUmakefile", "Logbook_OBJC_FILES"))
+# The GNUmakefile's, but each platform's half of a file split so (the
+# updater, AppKit/LBUpdater.h) the Apple one.
+APP_SOURCES = [f.replace("-GNUstep.m", "-Apple.m") for f in expand(make_value("GNUmakefile", "Logbook_OBJC_FILES"))]
 APP_RESOURCES = expand(make_value("GNUmakefile", "Logbook_RESOURCE_FILES"))
 SERVER_SOURCES = expand(make_value("GNUmakefile", "logbook-server_OBJC_FILES"))
 PROCEDURES_SOURCES = expand(make_value("GNUmakefile", "lb-procedures-check_OBJC_FILES"))
@@ -175,6 +177,8 @@ odatakit = {f: xcframework(f, ".deps") for f in ODATAKIT}
 rdlkit = {f: xcframework(f, ".deps") for f in RDLKIT}
 # ORMKit's runtime, of its release: macOS and iOS slices.
 ormruntime = xcframework("ORMRuntime", ".deps")
+# The Mac app's updates (AppKit/LBUpdater-Apple.m).
+sparkle = xcframework("Sparkle", ".deps")
 
 p_app = product("Logbook", "wrapper.application", "Logbook.app")
 p_ios = product("Logbook-iOS", "wrapper.application", "Logbook.app")
@@ -220,9 +224,9 @@ app_phases = [
     sources("Logbook", APP_SOURCES),
     phase("PBXResourcesBuildPhase", "Logbook", "Resources", [buildfile("Logbook", refs[r]) for r in APP_RESOURCES]),
     script("Logbook", "Copy the model", COPY_MODEL),
-    frameworks("Logbook", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT]
+    frameworks("Logbook", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle]
                + [sdk["AppKit"], sdk["CoreData"], sdk["Foundation"]]),
-    embed("Logbook", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT]),
+    embed("Logbook", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle]),
 ]
 ios_phases = [
     sources("Logbook-iOS", IOS_SOURCES),
@@ -257,7 +261,7 @@ for d in sorted({os.path.dirname(f) for f in ALL_FILES}):
     members = [f for f in ALL_FILES if os.path.dirname(f) == d]
     dir_groups.append(group(d, d, [refs[f] for f in by_stem(members)], d))
 g_docs = group("Docs", "Docs", [doc_refs[d] for d in DOCS])
-g_frameworks = group("Frameworks", "Frameworks", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT]
+g_frameworks = group("Frameworks", "Frameworks", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle]
                      + [sdk[f] for f in ("Foundation", "CoreData", "AppKit", "UIKit", "Security")])
 g_products = group("Products", "Products", [p_app, p_ios, p_server, p_procedures, p_sync])
 g_main = group("main", PROJECT, [g_docs] + dir_groups + [g_frameworks, g_products])

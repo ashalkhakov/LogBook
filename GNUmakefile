@@ -41,12 +41,14 @@ ORMTOOL ?= ormtool
 ifneq ($(LB_SERVER_ONLY),yes)
 APP_NAME = Logbook
 endif
-Logbook_OBJC_FILES = $(wildcard AppKit/*.m) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard Shared/*.m) $(LB_MODEL)/Constraints/LogbookValidation.m
+# The updater's GNUstep half (AppKit/LBUpdater.h); the Apple half is Makefile.apple's.
+Logbook_OBJC_FILES = $(filter-out AppKit/LBUpdater-Apple.m,$(wildcard AppKit/*.m)) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard Shared/*.m) $(LB_MODEL)/Constraints/LogbookValidation.m
 Logbook_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 Logbook_COREDATA_CODEGEN = yes
 Logbook_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity $(ODATASYNC_INCLUDE_DIRS)
 Logbook_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
-Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit
+# GSUpdater, the stack's: the app's updates (AppKit/LBUpdater-GNUstep.m).
+Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit -lGSUpdater
 Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib AppKit/Preferences.xib AppKit/Lists.xib AppKit/StockWindow.xib \
 	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib AppKit/Parts.xib AppKit/Logbook.png \
 	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl)

@@ -55,7 +55,10 @@ RDLKIT_DIRS ?= $(foreach f,RDLKit RDLKitUI,$(abspath .deps/$(f).xcframework/maco
 # XCFramework's macOS slice), and its ormtool beside the XCFrameworks.
 ORMKIT_PRODUCTS = $(abspath .deps/ORMRuntime.xcframework/macos-arm64_x86_64)
 CC = clang
-FLAGS = -fobjc-arc -fblocks -g -Wall -Wno-unused-parameter -mmacosx-version-min=14.0
+# Universal, as the app ships (gnustep-release-actions' macOS workflow
+# checks it): every XCFramework it links has both.
+ARCHS ?= -arch arm64 -arch x86_64
+FLAGS = -fobjc-arc -fblocks -g -Wall -Wno-unused-parameter -mmacosx-version-min=14.0 $(ARCHS)
 # The model's classes, generated as Xcode generates them.
 GENERATED = $(BUILD)/Generated
 # What is generated from the model (above), by ORMKit's ormtool.
@@ -146,19 +149,23 @@ $(BUILD)/lb-sync-check: $(MODEL)/.made $(SYNC_CHECK) $(wildcard Shared/*.h) $(GE
 
 # The desktop app: its code, its windows (the XIBs compiled), the model and
 # its tables in its resources.
-APP_SOURCES = $(wildcard AppKit/*.m) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard Shared/*.m) $(MODEL)/Constraints/LogbookValidation.m
+# The updater's Apple half (AppKit/LBUpdater.h); the GNUstep half is the GNUmakefile's.
+APP_SOURCES = $(filter-out AppKit/LBUpdater-GNUstep.m,$(wildcard AppKit/*.m)) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard Shared/*.m) $(MODEL)/Constraints/LogbookValidation.m
 XIBS = $(wildcard AppKit/*.xib)
 # Installed, the app finds its frameworks inside it (install copies them);
 # built, in .deps.
-APP_LIBS = $(addprefix -F,$(RDLKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(RDLKIT_DIRS)) \
+# Sparkle, the Mac app's updates (AppKit/LBUpdater-Apple.m), by the version
+# .github/pins.env names, in .deps.
+SPARKLE_DIR = $(abspath .deps/Sparkle.xcframework/macos-arm64_x86_64)
+APP_LIBS = $(addprefix -F,$(RDLKIT_DIRS) $(SPARKLE_DIR)) $(addprefix -Wl$(comma)-rpath$(comma),$(RDLKIT_DIRS) $(SPARKLE_DIR)) \
 	-Wl,-rpath,@executable_path/../Frameworks \
-	-framework RDLKitUI -framework RDLKit -framework AppKit
+	-framework RDLKitUI -framework RDLKit -framework Sparkle -framework AppKit
 $(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalendar/*.h UDQuantity/*.h) $(XIBS) $(wildcard Reports/*.rdl) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	rm -rf $@ && mkdir -p $@/Contents/MacOS $@/Contents/Resources
 	cp AppKit/Info.plist $@/Contents/
-	@test -d $(firstword $(RDLKIT_DIRS)) || { echo "no RDLKit in .deps: gnustep-release-actions' scripts/deps.sh apple, here"; exit 1; }
-	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(RDLKIT_DIRS)) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) $(APP_LIBS) -o $@/Contents/MacOS/Logbook
+	@test -d $(firstword $(RDLKIT_DIRS)) -a -d $(SPARKLE_DIR) || { echo "no RDLKit or Sparkle in .deps: gnustep-release-actions' scripts/deps.sh apple, here"; exit 1; }
+	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(RDLKIT_DIRS) $(SPARKLE_DIR)) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) $(APP_LIBS) -o $@/Contents/MacOS/Logbook
 	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null \
 	  || { echo "$$x does not compile (ibtool --errors --compile)"; rm -rf $@; exit 1; }; done
 	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $@/Contents/Resources/
@@ -174,8 +181,8 @@ check: all
 	else echo "no iPhone simulator here: the iOS self-test not run (make -f Makefile.apple ios-check)"; fi
 
 # The app as it ships: the frameworks it links inside it, from the
-# XCFrameworks' macOS slices (ORMRuntime, ODataKit's, RDLKit's).
-APP_FRAMEWORKS = $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(foreach d,$(ODATAKIT_DIRS) $(RDLKIT_DIRS),$(wildcard $(d)/*.framework))
+# XCFrameworks' macOS slices (ORMRuntime, ODataKit's, RDLKit's, Sparkle).
+APP_FRAMEWORKS = $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(foreach d,$(ODATAKIT_DIRS) $(RDLKIT_DIRS) $(SPARKLE_DIR),$(wildcard $(d)/*.framework))
 install: all
 	@test -n "$(DESTDIR)" || { echo "install: give DESTDIR"; exit 1; }
 	mkdir -p $(DESTDIR)

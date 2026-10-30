@@ -6,6 +6,11 @@
 #import "LBPreferencesController.h"
 #import "LBListsController.h"
 #import "LBStockWindowController.h"
+#import "LBUpdater.h"
+
+/* Logbook > Check for Updates… (MainMenu.xib), gone where there is no
+   updater (LBUpdater.h). */
+static const NSInteger LBCheckForUpdatesTag = 1001;
 
 @implementation LBAppController {
     LBConnectPanel *_panel;
@@ -14,6 +19,22 @@
     LBPreferencesController *_preferences;
     LBListsController *_lists;
     LBStockWindowController *_stock;
+    LBUpdater *_updater;
+}
+
+/* Updates, set up before the app finishes launching (as Sparkle asks), not
+   started in a self-test, which reaches no network. */
+- (void)applicationWillFinishLaunching:(NSNotification *)notification {
+    _updater = [[LBUpdater alloc] initStarting:LBSelfTestRoot == nil];
+    if (!_updater.available) {
+        NSMenu *menu = [[NSApp mainMenu] itemAtIndex:0].submenu;
+        NSInteger index = [menu indexOfItemWithTag:LBCheckForUpdatesTag];
+        if (index >= 0) [menu removeItemAtIndex:index];
+    }
+}
+
+- (IBAction)checkForUpdates:(id)sender {
+    [_updater checkForUpdates:sender];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
@@ -82,9 +103,10 @@
 }
 
 /* Preferences and lists only while there is a logbook, whose user they
-   are. */
+   are; updates while the updater can look for them. */
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     SEL action = item.action;
+    if (action == @selector(checkForUpdates:)) return _updater.canCheckForUpdates;
     BOOL needsLogbook = action == @selector(showPreferences:) || action == @selector(showExpenseKinds:) || action == @selector(showChecklists:)
                         || action == @selector(showExchangeRates:) || action == @selector(showStock:);
     return !needsLogbook || _window != nil;

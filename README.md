@@ -25,7 +25,7 @@ From [Releases](https://github.com/ashalkhakov/LogBook/releases/latest):
 
 | Platform | Download | Contains |
 |---|---|---|
-| macOS 14+ | `Logbook-macOS-*.zip` | The desktop app, signed and notarized |
+| macOS 14+ | `Logbook-macOS-*.zip` | The desktop app, signed and notarized; it updates itself (Logbook > Check for Updates…) |
 | Linux x86_64 | `Logbook-*.AppImage` | The desktop app, and the server (`… --server`) |
 | iOS | `Logbook-*-unsigned.ipa`, `Logbook-Simulator-*.zip` | Unsigned: sign the `.ipa` yourself to put it on a phone; the zip runs in the iOS Simulator |
 
@@ -126,7 +126,6 @@ flowchart LR
 - **No Windows build yet**, and no Android app.
 - **iOS**: unsigned, no App Store or TestFlight build; the icon is a
   placeholder. Managing and reporting stay with the desktop app.
-- **The Mac app does not update itself** yet.
 - Early days: the data model is settled, the apps are still growing.
 
 ## More

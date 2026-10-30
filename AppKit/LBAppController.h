@@ -29,6 +29,8 @@ NS_ASSUME_NONNULL_BEGIN
 // The stock window (LBStockWindowController.h): the catalogs, their items
 // and their stock, over the same server.
 - (IBAction)showStock:(nullable id)sender;
+// Updates, now (LBUpdater.h).
+- (IBAction)checkForUpdates:(nullable id)sender;
 @end
 
 NS_ASSUME_NONNULL_END
