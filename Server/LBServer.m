@@ -83,6 +83,14 @@ static NSError *LBError(NSInteger code, NSString *message) {
     return [NSError errorWithDomain:NSCocoaErrorDomain code:code userInfo:@{ NSLocalizedDescriptionKey: message }];
 }
 
+#ifndef LB_STORE_LIBRARY_FORMAT
+#if defined(__APPLE__)
+#define LB_STORE_LIBRARY_FORMAT @"lib%@.dylib"
+#else
+#define LB_STORE_LIBRARY_FORMAT @"lib%@.so"
+#endif
+#endif
+
 /* A store type by its short name; one nothing registered, its library
    loaded by name (libCDPostgreSQLStore), which registers it as it loads. */
 static NSString *LBStoreType(NSString *name) {
@@ -91,12 +99,9 @@ static NSString *LBStoreType(NSString *name) {
     NSString *type = known[name ?: @"SQLite"] ?: name;
     if (![NSPersistentStoreCoordinator registeredStoreTypes][type] &&
         [type rangeOfCharacterFromSet:[[NSCharacterSet alphanumericCharacterSet] invertedSet]].location == NSNotFound) {
-#if defined(__APPLE__)
-        NSString *library = [NSString stringWithFormat:@"lib%@.dylib", type];
-#else
-        NSString *library = [NSString stringWithFormat:@"lib%@.so", type];
-#endif
-        dlopen(library.fileSystemRepresentation, RTLD_NOW | RTLD_GLOBAL);
+        NSString *library = [NSString stringWithFormat:LB_STORE_LIBRARY_FORMAT, type];
+        /* By its UTF-8 name: -fileSystemRepresentation is UTF-16 on Windows. */
+        dlopen(library.UTF8String, RTLD_NOW | RTLD_GLOBAL);
     }
     return type;
 }
