@@ -148,10 +148,11 @@ after-all::
 	$(ODATAKIT_PERMISSIONS) check obj/Logbook.momd Server/Logbook.permissions.plist
 	cp Server/Logbook.permissions.plist obj/
 
-# Installed, the server finds them beside itself too.
+# Installed, the server finds them beside itself too (logbook-server.exe
+# on Windows).
 LB_SERVER_FILES = Logbook.momd Logbook.ormplans Logbook.permissions.plist
 after-install::
-	@server=$$(find "$(GNUSTEP_TOOLS)" -type f -name logbook-server -perm -u+x | head -n 1); \
+	@server=$$(find "$(GNUSTEP_TOOLS)" -type f \( -name logbook-server -o -name logbook-server.exe \) -perm -u+x | head -n 1); \
 	  [ -n "$$server" ] || { echo "install: no logbook-server under $(GNUSTEP_TOOLS)"; exit 1; }; \
 	  for f in $(LB_SERVER_FILES); do \
 	    rm -rf "$$(dirname "$$server")/$$f" && cp -R obj/$$f "$$(dirname "$$server")/" || exit 1; \
