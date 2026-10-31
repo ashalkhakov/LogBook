@@ -41,7 +41,7 @@ jobs:
     uses: ashalkhakov/gnustep-release-actions/.github/workflows/windows.yml@v1
     with:
       tag: ${{ inputs.tag }}
-      extra-packages: sqlite3 postgresql libmariadbclient dlfcn gdb
+      extra-packages: sqlite3 postgresql libmariadbclient dlfcn
     secrets: inherit
 
   macos:

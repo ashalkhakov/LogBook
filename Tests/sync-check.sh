@@ -36,23 +36,6 @@ done
 python3 "$here/seed.py" "$root" "$(python3 -c 'import json, sys; print(json.load(open(sys.argv[1]))["tokens"]["anna@example.org"])' "$tokens")"
 export LB_TOKENS="$tokens"
 status=0
-"$check" "$root" "$3" "$4" "$here/receipt-photo.jpg" &
-checkpid=$!
-# DIAGNOSTIC (temporary): on Windows, both processes' stacks mid-stall.
-case "$(uname -s)" in MINGW*|MSYS*)
-  ( for at in 40 50; do
-      sleep 10; [ $at = 40 ] && sleep 30
-      kill -0 $checkpid 2>/dev/null || exit 0
-      echo "=== DIAG at ${at}s: sockets"; netstat -ano -p tcp | grep -E "127.0.0.1:$port"
-      for p in $pid $checkpid; do
-        w=$(cat /proc/$p/winpid 2>/dev/null)
-        echo "=== DIAG at ${at}s: stacks of $p (win $w)"
-        gdb -batch -p "$w" -ex "thread apply all bt 25" 2>&1 | grep -vE "^\[New Thread|^warning:"
-      done
-    done ) &
-  diag=$!
-;; esac
-wait $checkpid || status=$?
-kill ${diag:-} 2>/dev/null || true
+"$check" "$root" "$3" "$4" "$here/receipt-photo.jpg" || status=$?
 [ $status -eq 0 ] || { echo "the server's log:"; cat "$log"; }
 exit $status
