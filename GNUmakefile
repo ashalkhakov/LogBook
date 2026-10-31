@@ -65,6 +65,12 @@ logbook-server_COREDATA_CODEGEN = yes
 logbook-server_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared $(ODATASYNC_INCLUDE_DIRS)
 logbook-server_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
 logbook-server_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
+# The server opens FreeCoreData's SQL stores with dlopen: dlfcn-win32 on
+# Windows, which names their DLLs its own way.
+ifneq ($(filter mingw% windows%,$(GNUSTEP_TARGET_OS)),)
+logbook-server_TOOL_LIBS += -ldl
+logbook-server_CPPFLAGS += '-DLB_STORE_LIBRARY_FORMAT=@"%@-0.dll"'
+endif
 
 # The procedures checked over a store of the model's own.
 lb-procedures-check_OBJC_FILES = Tests/LBProceduresCheck.m Shared/LBProcedures.m Shared/LBPlanned.m $(LB_MODEL)/Constraints/LogbookValidation.m
@@ -142,10 +148,11 @@ after-all::
 	$(ODATAKIT_PERMISSIONS) check obj/Logbook.momd Server/Logbook.permissions.plist
 	cp Server/Logbook.permissions.plist obj/
 
-# Installed, the server finds them beside itself too.
+# Installed, the server finds them beside itself too (logbook-server.exe
+# on Windows).
 LB_SERVER_FILES = Logbook.momd Logbook.ormplans Logbook.permissions.plist
 after-install::
-	@server=$$(find "$(GNUSTEP_TOOLS)" -type f -name logbook-server -perm -u+x | head -n 1); \
+	@server=$$(find "$(GNUSTEP_TOOLS)" -type f \( -name logbook-server -o -name logbook-server.exe \) -perm -u+x | head -n 1); \
 	  [ -n "$$server" ] || { echo "install: no logbook-server under $(GNUSTEP_TOOLS)"; exit 1; }; \
 	  for f in $(LB_SERVER_FILES); do \
 	    rm -rf "$$(dirname "$$server")/$$f" && cp -R obj/$$f "$$(dirname "$$server")/" || exit 1; \
