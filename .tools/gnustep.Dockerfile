@@ -9,9 +9,19 @@
 #   .tools/gnustep.sh make check
 FROM ubuntu:22.04
 ARG DEBIAN_FRONTEND=noninteractive
+# Packages over HTTPS: on some networks plain HTTP from Ubuntu's mirrors
+# arrives altered ("Hash Sum mismatch", "File has unexpected size"), which
+# retries do not cure. The image has no CA certificates to check the mirror's
+# with until it installs them, so that one install does not check the peer;
+# apt still checks every index against Ubuntu's signing key and every package
+# against the indexes, so nothing unsigned gets in.
+RUN sed -i 's#http://\(ports\|archive\|security\)\.ubuntu\.com#https://\1.ubuntu.com#' /etc/apt/sources.list \
+    && printf 'Acquire::Retries "5";\n' > /etc/apt/apt.conf.d/99-retries \
+    && apt-get -o Acquire::https::Verify-Peer=false update \
+    && apt-get -o Acquire::https::Verify-Peer=false install -y --no-install-recommends ca-certificates
 COPY .github/pins.env /tmp/pins.env
 RUN set -e; \
-    apt-get update; apt-get install -y --no-install-recommends ca-certificates curl xz-utils; \
+    apt-get update; apt-get install -y --no-install-recommends curl xz-utils; \
     for name in GNUSTEP_PATCHES FREECOREDATA GCDWEBSERVER ODATAKIT ORMKIT RDLKIT; do \
       version=$(sed -n "s/^${name}_VERSION=//p" /tmp/pins.env); \
       repo=$(echo "$name" | tr 'A-Z_' 'a-z-'); \
