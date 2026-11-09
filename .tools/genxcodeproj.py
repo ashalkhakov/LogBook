@@ -179,6 +179,8 @@ rdlkit = {f: xcframework(f, ".deps") for f in RDLKIT}
 ormruntime = xcframework("ORMRuntime", ".deps")
 # The Mac app's updates (AppKit/LBUpdater-Apple.m).
 sparkle = xcframework("Sparkle", ".deps")
+# XFormsKit's, which runs the model's forms in the desktop app.
+xformskit = xcframework("XFormsKit", ".deps")
 
 p_app = product("Logbook", "wrapper.application", "Logbook.app")
 p_ios = product("Logbook-iOS", "wrapper.application", "Logbook.app")
@@ -194,6 +196,8 @@ dest="$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}"
 mkdir -p "$dest"
 rsync -a --delete "$SRCROOT/build/Logbook.momd/" "$dest/Logbook.momd/"
 cp "$SRCROOT/build/Logbook.ormplans" "$dest/"
+# The model's forms, by ormtool xforms (the desktop app's).
+if [ -d "$SRCROOT/build/Model/Forms" ] && [ "$PLATFORM_NAME" = macosx ]; then cp "$SRCROOT/build/Model/Forms/"* "$dest/"; fi
 """
 
 
@@ -224,9 +228,9 @@ app_phases = [
     sources("Logbook", APP_SOURCES),
     phase("PBXResourcesBuildPhase", "Logbook", "Resources", [buildfile("Logbook", refs[r]) for r in APP_RESOURCES]),
     script("Logbook", "Copy the model", COPY_MODEL),
-    frameworks("Logbook", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle]
+    frameworks("Logbook", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle, xformskit]
                + [sdk["AppKit"], sdk["CoreData"], sdk["Foundation"]]),
-    embed("Logbook", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle]),
+    embed("Logbook", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle, xformskit]),
 ]
 ios_phases = [
     sources("Logbook-iOS", IOS_SOURCES),
@@ -261,7 +265,7 @@ for d in sorted({os.path.dirname(f) for f in ALL_FILES}):
     members = [f for f in ALL_FILES if os.path.dirname(f) == d]
     dir_groups.append(group(d, d, [refs[f] for f in by_stem(members)], d))
 g_docs = group("Docs", "Docs", [doc_refs[d] for d in DOCS])
-g_frameworks = group("Frameworks", "Frameworks", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle]
+g_frameworks = group("Frameworks", "Frameworks", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle, xformskit]
                      + [sdk[f] for f in ("Foundation", "CoreData", "AppKit", "UIKit", "Security")])
 g_products = group("Products", "Products", [p_app, p_ios, p_server, p_procedures, p_sync])
 g_main = group("main", PROJECT, [g_docs] + dir_groups + [g_frameworks, g_products])

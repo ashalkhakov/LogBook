@@ -39,7 +39,9 @@
 # it is generated from it by ORMKit's ormtool, into build/Model -- the Core
 # Data model (Logbook.xcdatamodeld), the code and tables that keep its rules
 # (Constraints/: LogbookValidation.h and .m, Logbook.ormplans) and its
-# listing (Logbook.forml) -- and never kept in git.
+# listing (Logbook.forml), and its forms as XFormsKit runs them (Forms/:
+# <Form>.xhtml and <Form>.ormform, by ormtool xforms) -- and never kept in
+# git.
 
 comma = ,
 BUILD ?= build
@@ -54,6 +56,10 @@ RDLKIT_DIRS ?= $(foreach f,RDLKit RDLKitUI,$(abspath .deps/$(f).xcframework/maco
 # ORMRuntime.framework, of the ORMKit release .github/pins.env names (its
 # XCFramework's macOS slice), and its ormtool beside the XCFrameworks.
 ORMKIT_PRODUCTS = $(abspath .deps/ORMRuntime.xcframework/macos-arm64_x86_64)
+# XFormsKit's, which runs the model's forms in the desktop app (and the
+# form's check): its XCFramework in .deps, or XFORMSKIT_DIR another macOS
+# slice of it.
+XFORMSKIT_DIR ?= $(abspath .deps/XFormsKit.xcframework/macos-arm64_x86_64)
 CC = clang
 # Universal, as the app ships (gnustep-release-actions' macOS workflow
 # checks it): every XCFramework it links has both.
@@ -63,7 +69,7 @@ FLAGS = -fobjc-arc -fblocks -g -Wall -Wno-unused-parameter -mmacosx-version-min=
 GENERATED = $(BUILD)/Generated
 # What is generated from the model (above), by ORMKit's ormtool.
 MODEL = $(BUILD)/Model
-ORMTOOL = $(abspath .deps/bin/ormtool)
+ORMTOOL ?= $(abspath .deps/bin/ormtool)
 INC = -I$(MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
 LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(ODATAKIT_DIRS)) \
 	-F$(ORMKIT_PRODUCTS) -Wl,-rpath,$(ORMKIT_PRODUCTS) \
@@ -72,7 +78,7 @@ LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(
 
 .PHONY: all check install installcheck clean ios ios-check ios-install ios-installcheck
 APP = $(BUILD)/Logbook.app
-all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(BUILD)/Logbook.permissions.plist $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-stock-check $(BUILD)/lb-sync-check
+all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(BUILD)/Logbook.permissions.plist $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-stock-check $(BUILD)/lb-sync-check $(BUILD)/lb-form-check
 
 # ORMKit's runtime, and its ormtool, which generates from the model: the
 # release's, in .deps.
@@ -85,6 +91,7 @@ $(MODEL)/.made: Model/Logbook.orm $(ORMTOOL)
 	$(ORMTOOL) coredata Model/Logbook.orm $(MODEL)/Logbook.xcdatamodeld Logbook \
 	  --validation $(MODEL)/Constraints >$(MODEL)/mapping.txt
 	$(ORMTOOL) forml Model/Logbook.orm $(MODEL)/Logbook.forml
+	$(ORMTOOL) xforms Model/Logbook.orm $(MODEL)/Forms/ >$(MODEL)/forms.txt
 	touch $@
 
 $(MODEL)/Constraints/LogbookValidation.m: $(MODEL)/.made ;
@@ -147,8 +154,16 @@ SYNC_CHECK = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shar
 $(BUILD)/lb-sync-check: $(MODEL)/.made $(SYNC_CHECK) $(wildcard Shared/*.h) $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) $(SYNC_CHECK) $(GENERATED)/*.m $(LIBS) -o $@
 
-# The desktop app: its code, its windows (the XIBs compiled), the model and
-# its tables in its resources.
+# The model's forms run against a store of their own and against a server
+# (Tests/LBFormCheck.m): LBFormHost, XFormsKit.
+FORM_CHECK = Tests/LBFormCheck.m Shared/LBFormHost.m Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+
+$(BUILD)/lb-form-check: $(MODEL)/.made $(FORM_CHECK) Shared/LBFormHost.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	$(CC) $(FLAGS) $(INC) -F$(XFORMSKIT_DIR) $(FORM_CHECK) $(GENERATED)/*.m $(LIBS) \
+	  -F$(XFORMSKIT_DIR) -Wl,-rpath,$(XFORMSKIT_DIR) -framework XFormsKit -o $@
+
+# The desktop app: its code, its windows (the XIBs compiled), the model, its
+# tables and its forms in its resources.
 # The updater's Apple half (AppKit/LBUpdater.h); the GNUstep half is the GNUmakefile's.
 APP_SOURCES = $(filter-out AppKit/LBUpdater-GNUstep.m,$(wildcard AppKit/*.m)) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard Shared/*.m) $(MODEL)/Constraints/LogbookValidation.m
 XIBS = $(wildcard AppKit/*.xib)
@@ -157,22 +172,23 @@ XIBS = $(wildcard AppKit/*.xib)
 # Sparkle, the Mac app's updates (AppKit/LBUpdater-Apple.m), by the version
 # .github/pins.env names, in .deps.
 SPARKLE_DIR = $(abspath .deps/Sparkle.xcframework/macos-arm64_x86_64)
-APP_LIBS = $(addprefix -F,$(RDLKIT_DIRS) $(SPARKLE_DIR)) $(addprefix -Wl$(comma)-rpath$(comma),$(RDLKIT_DIRS) $(SPARKLE_DIR)) \
+APP_LIBS = $(addprefix -F,$(RDLKIT_DIRS) $(SPARKLE_DIR) $(XFORMSKIT_DIR)) $(addprefix -Wl$(comma)-rpath$(comma),$(RDLKIT_DIRS) $(SPARKLE_DIR) $(XFORMSKIT_DIR)) \
 	-Wl,-rpath,@executable_path/../Frameworks \
-	-framework RDLKitUI -framework RDLKit -framework Sparkle -framework AppKit
+	-framework RDLKitUI -framework RDLKit -framework Sparkle -framework XFormsKit -framework AppKit
 $(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalendar/*.h UDQuantity/*.h) $(XIBS) $(wildcard Reports/*.rdl) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	rm -rf $@ && mkdir -p $@/Contents/MacOS $@/Contents/Resources
 	cp AppKit/Info.plist $@/Contents/
 	@test -d $(firstword $(RDLKIT_DIRS)) -a -d $(SPARKLE_DIR) || { echo "no RDLKit or Sparkle in .deps: gnustep-release-actions' scripts/deps.sh apple, here"; exit 1; }
-	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(RDLKIT_DIRS) $(SPARKLE_DIR)) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) $(APP_LIBS) -o $@/Contents/MacOS/Logbook
+	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(RDLKIT_DIRS) $(SPARKLE_DIR) $(XFORMSKIT_DIR)) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) $(APP_LIBS) -o $@/Contents/MacOS/Logbook
 	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null \
 	  || { echo "$$x does not compile (ibtool --errors --compile)"; rm -rf $@; exit 1; }; done
-	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $@/Contents/Resources/
+	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $(MODEL)/Forms/* $@/Contents/Resources/
 
 check: all
 	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	$(BUILD)/lb-stock-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
+	Tests/form-check.sh $(BUILD)/logbook-server $(BUILD)/lb-form-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
 	Tests/sync-check.sh $(BUILD)/logbook-server $(BUILD)/lb-sync-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	Tests/app-check.sh $(BUILD)/logbook-server $(APP)/Contents/MacOS/Logbook
@@ -182,7 +198,7 @@ check: all
 
 # The app as it ships: the frameworks it links inside it, from the
 # XCFrameworks' macOS slices (ORMRuntime, ODataKit's, RDLKit's, Sparkle).
-APP_FRAMEWORKS = $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(foreach d,$(ODATAKIT_DIRS) $(RDLKIT_DIRS) $(SPARKLE_DIR),$(wildcard $(d)/*.framework))
+APP_FRAMEWORKS = $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(foreach d,$(ODATAKIT_DIRS) $(RDLKIT_DIRS) $(SPARKLE_DIR) $(XFORMSKIT_DIR),$(wildcard $(d)/*.framework))
 install: all
 	@test -n "$(DESTDIR)" || { echo "install: give DESTDIR"; exit 1; }
 	mkdir -p $(DESTDIR)
@@ -211,7 +227,7 @@ IOS_BUILD = $(BUILD)/ios
 ios_slice = $(if $(filter iphonesimulator,$(1)),ios-arm64_x86_64-simulator,ios-arm64)
 ios_target = arm64-apple-ios$(IOS_MIN)$(if $(filter iphonesimulator,$(1)),-simulator)
 ios_destination = $(if $(filter iphonesimulator,$(1)),generic/platform=iOS Simulator,generic/platform=iOS)
-IOS_SOURCES = $(wildcard iOS/*.m) $(filter-out Shared/LBStore.m Shared/LBReportData.m,$(wildcard Shared/*.m)) \
+IOS_SOURCES = $(wildcard iOS/*.m) $(filter-out Shared/LBStore.m Shared/LBReportData.m Shared/LBFormHost.m,$(wildcard Shared/*.m)) \
 	$(MODEL)/Constraints/LogbookValidation.m
 IOS_FLAGS = -fobjc-arc -fmodules -g -Wall -Wno-unused-parameter -I$(MODEL)/Constraints -IShared -IiOS -I$(GENERATED)
 
