@@ -41,6 +41,8 @@
 #import "LBCatalogSettingsWindowController.h"
 #import "LBPartsPanelController.h"
 #import "LBStockDisplay.h"
+#import "LBFormWindowController.h"
+#import "LBFormHost.h"
 
 NSURL *LBSelfTestRoot;
 /* The user's saved settings as the self-test began. */
@@ -1991,6 +1993,92 @@ static BOOL LBRuns(NSString *part) {
     return !only.length || [[only componentsSeparatedByString:@","] containsObject:part];
 }
 
+/* The form's control of the element: among the controls, and in their
+   groups (a compound's parts). */
+static XFControl *LBFormField(NSArray<XFControl *> *controls, NSString *element) {
+    for (XFControl *control in controls) {
+        if ([control isKindOfClass:[XFGroup class]]) {
+            XFControl *found = LBFormField(((XFGroup *)control).children, element);
+            if (found) return found;
+        } else if ([control.boundNode.localName isEqualToString:element]) {
+            return control;
+        }
+    }
+    return nil;
+}
+
+/* The button of the title in the view, or under it. */
+static NSButton *LBButtonTitled(NSView *view, NSString *title) {
+    if ([view isKindOfClass:[NSButton class]] && [((NSButton *)view).title isEqualToString:title]) return (NSButton *)view;
+    for (NSView *each in view.subviews) {
+        NSButton *found = LBButtonTitled(each, title);
+        if (found) return found;
+    }
+    return nil;
+}
+
+/* A fill-up recorded with the form generated from the model (File > Record
+   a Fill-Up with the Form…): its window (FormWindow.xib) connected, the
+   form in it opened for the chosen vehicle, filled in through XFormsKit and
+   saved with its own Save; the server has it, the records list it. */
+static void LBFormSteps(LBMainWindowController *controller, Vehicle *kept) {
+    for (Vehicle *vehicle in controller.vehicles.arrangedObjects) {
+        if ([vehicle.id isEqual:kept.id]) [controller.vehicles setSelectedObjects:@[ vehicle ]];
+    }
+    LBSpin();
+    NSMenuItem *item = [[NSApp.mainMenu itemWithTitle:@"File"].submenu itemWithTitle:@"Record a Fill-Up with the Form…"];
+    LBCheck(@"File offers Record a Fill-Up with the Form…", item.action == @selector(recordFillUpWithForm:), item);
+    [controller recordFillUpWithForm:item];
+    LBSpin();
+    LBFormWindowController *form = controller.formWindow;
+    LBCheck(@"the form opened", form != nil, controller.lastError);
+    NSWindow *window = form.window;
+    LBCheck(@"the form's window, from its XIB, connected", window.isVisible && form.formScroll && form.messageLabel && form.closeButton
+                                                               && [form.formScroll.documentView isKindOfClass:[XFFormView class]],
+            form.formScroll.documentView);
+    XFProcessor *processor = form.host.processor;
+    LBCheck(@"opened for the vehicle, entered by the user",
+            [form.host.instance[@"vehicle"] isEqualToString:kept.id.UUIDString]
+                && [form.host.instance[@"enteredBy"] isEqualToString:controller.store.user.email],
+            form.host.instance);
+    NSDictionary *values = @{ @"timestamp" : @"2026-11-10T08:30:00Z", @"mileageQuantity" : @"12500", @"mileageDistanceUnit" : @"km",
+                              @"volumeQuantity" : @"38", @"volumeVolumeUnit" : @"L", @"fuel" : @"Petrol 95", @"station" : @"Aral",
+                              @"totalAmount" : @"57", @"totalCurrency" : @"EUR", @"driver" : controller.store.user.email,
+                              @"filledTheTank" : @"true" };
+    [values enumerateKeysAndObjectsUsingBlock:^(NSString *element, NSString *value, BOOL *stop) {
+        XFControl *control = LBFormField(processor.controls, element);
+        NSError *error = nil;
+        if (!control || ![processor setValue:value ofControl:control error:&error]) {
+            LBCheck([NSString stringWithFormat:@"the form's %@ entered", element], NO, error ?: @"no control");
+        }
+    }];
+    XFFormView *view = form.formScroll.documentView;
+    [view reloadFromProcessor];
+    LBSpin();
+    LBCheck(@"its price per unit worked out", [form.host.instance[@"pricePerUnit"] doubleValue] == 1.5, form.host.instance[@"pricePerUnit"]);
+    if (getenv("LB_FORM_SCREENSHOT")) {
+        system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%s'", (long)window.windowNumber, getenv("LB_FORM_SCREENSHOT")].UTF8String);
+    }
+    NSButton *save = LBButtonTitled(view, @"Save");
+    LBCheck(@"the form's own Save", save != nil, nil);
+    [save performClick:nil];
+    LBSpin();
+    NSString *key = form.host.savedKey;
+    LBCheck(@"saved, and the window closed", key.length && !window.isVisible, form.host.formMessages);
+    [LBServerSide.context refreshObject:kept mergeChanges:NO];
+    FillUp *sent = nil;
+    for (Record *record in kept.records) {
+        if ([record isKindOfClass:[FillUp class]] && [((FillUp *)record).station isEqualToString:@"Aral"]) sent = (FillUp *)record;
+    }
+    LBCheck(@"the server has the form's fill-up",
+            sent && sent.volumeQuantity.integerValue == 38 && sent.totalAmount.integerValue == 57 && sent.filledTheTank
+                && [sent.enteredBy.email isEqualToString:controller.store.user.email],
+            sent);
+    FillUp *chosen = controller.records.selectedObjects.firstObject;
+    LBCheck(@"and the vehicle's records list it, chosen", [chosen isKindOfClass:[FillUp class]] && [chosen.station isEqualToString:@"Aral"],
+            chosen);
+}
+
 /* The logbook's steps: a vehicle added, and everything done with it. */
 static void LBLogbookSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
@@ -2032,6 +2120,7 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
     LBCalendarViewAlone();
     LBCalendarSteps(controller);
     LBQuantityFieldAlone();
+    LBFormSteps(controller, kept);
     LBConnectSteps();
 }
 

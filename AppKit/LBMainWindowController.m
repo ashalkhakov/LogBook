@@ -25,6 +25,7 @@
 #import "LBPartsPanelController.h"
 #import "LBStockEditor.h"
 #import "LBStockProcedures.h"
+#import "LBFormWindowController.h"
 
 static void *LBVehicleChosen = &LBVehicleChosen;
 static void *LBRecordChosen = &LBRecordChosen;
@@ -36,6 +37,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @property (nonatomic, readwrite, copy) NSArray<TyreSet *> *tyreSets;
 @property (nonatomic, readwrite, copy) NSArray<Trip *> *trips;
 @property (nonatomic, readwrite, copy) NSArray<CostKind *> *serviceKinds;
+@property (nonatomic, readwrite, strong, nullable) LBFormWindowController *formWindow;
 @end
 
 @implementation LBMainWindowController {
@@ -521,6 +523,31 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         _partsPanel.quiet = _quiet;
     }
     [_partsPanel showWindow:sender];
+}
+
+- (IBAction)recordFillUpWithForm:(id)sender {
+    Vehicle *vehicle = [self chosenVehicle];
+    if (!vehicle.id) return;
+    [_formWindow close:nil];
+    NSError *error = nil;
+    _formWindow = [[LBFormWindowController alloc] initWithFormNamed:@"RecordFillUp" store:_store
+                                                              given:@{ @"vehicle" : vehicle.id.UUIDString,
+                                                                       @"enteredBy" : _store.user.email ?: @"" }
+                                                              error:&error];
+    if (!_formWindow) {
+        [self reportError:error];
+        return;
+    }
+    __weak LBMainWindowController *weakSelf = self;
+    _formWindow.savedHandler = ^(NSString *key) {
+        LBMainWindowController *controller = weakSelf;
+        [controller readAgain];
+        NSUUID *saved = [[NSUUID alloc] initWithUUIDString:key];
+        for (Record *record in controller.records.arrangedObjects) {
+            if ([((id<LBIdentified>)record).id isEqual:saved]) [controller.records setSelectedObjects:@[ record ]];
+        }
+    };
+    [_formWindow showWindow:sender];
 }
 
 - (IBAction)save:(id)sender {

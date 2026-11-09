@@ -11,7 +11,7 @@
 
 @class LBStore, User, TyreSet, Trip, Vehicle, DistanceUnit, CostKind, Attachment, LBReportsController, LBRemindersController, LBAnswersController, LBCalendarController, Record;
 
-@class LBPartsPanelController;
+@class LBPartsPanelController, LBFormWindowController;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -118,6 +118,11 @@ NS_ASSUME_NONNULL_BEGIN
 // The chosen service's or tyre change's parts, in a panel of their own
 // (LBPartsPanelController); its window while it is open.
 - (IBAction)showParts:(nullable id)sender;
+// A fill-up of the chosen vehicle recorded with the form generated from
+// the model (RecordFillUp, LBFormWindowController.h), in a window of its
+// own; saved, the records read again and the new one chosen.
+- (IBAction)recordFillUpWithForm:(nullable id)sender;
+@property (nonatomic, readonly, strong, nullable) LBFormWindowController *formWindow;
 @property (nonatomic, readonly, strong, nullable) LBPartsPanelController *partsPanel;
 // The changes sent; the rules' refusals and the warnings said.
 - (IBAction)save:(nullable id)sender;
