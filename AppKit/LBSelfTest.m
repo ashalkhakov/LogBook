@@ -1,4 +1,5 @@
 #import "LBSelfTest.h"
+#import <objc/runtime.h>
 #import "LBConnectPanel.h"
 #import "LBMainWindowController.h"
 #import "LBStore.h"
@@ -2027,7 +2028,7 @@ static void LBFormSteps(LBMainWindowController *controller, Vehicle *kept) {
     }
     LBSpin();
     NSMenuItem *item = [[NSApp.mainMenu itemWithTitle:@"File"].submenu itemWithTitle:@"Record a Fill-Up with the Form…"];
-    LBCheck(@"File offers Record a Fill-Up with the Form…", item.action == @selector(recordFillUpWithForm:), item);
+    LBCheck(@"File offers Record a Fill-Up with the Form…", sel_isEqual(item.action, @selector(recordFillUpWithForm:)), item);
     [controller recordFillUpWithForm:item];
     LBSpin();
     LBFormWindowController *form = controller.formWindow;
@@ -2057,7 +2058,11 @@ static void LBFormSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBSpin();
     LBCheck(@"its price per unit worked out", [form.host.instance[@"pricePerUnit"] doubleValue] == 1.5, form.host.instance[@"pricePerUnit"]);
     if (getenv("LB_FORM_SCREENSHOT")) {
+#ifdef GNUSTEP
+        system([NSString stringWithFormat:@"import -window root '%s'", getenv("LB_FORM_SCREENSHOT")].UTF8String);
+#else
         system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%s'", (long)window.windowNumber, getenv("LB_FORM_SCREENSHOT")].UTF8String);
+#endif
     }
     NSButton *save = LBButtonTitled(view, @"Save");
     LBCheck(@"the form's own Save", save != nil, nil);
