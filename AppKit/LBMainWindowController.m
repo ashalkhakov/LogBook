@@ -26,6 +26,7 @@
 #import "LBStockEditor.h"
 #import "LBStockProcedures.h"
 #import "LBFormWindowController.h"
+#import "LBFillUpWindowController.h"
 
 static void *LBVehicleChosen = &LBVehicleChosen;
 static void *LBRecordChosen = &LBRecordChosen;
@@ -38,6 +39,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @property (nonatomic, readwrite, copy) NSArray<Trip *> *trips;
 @property (nonatomic, readwrite, copy) NSArray<CostKind *> *serviceKinds;
 @property (nonatomic, readwrite, strong, nullable) LBFormWindowController *formWindow;
+@property (nonatomic, readwrite, strong, nullable) LBFillUpWindowController *fillUpWindow;
 @end
 
 @implementation LBMainWindowController {
@@ -525,21 +527,17 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_partsPanel showWindow:sender];
 }
 
-- (IBAction)recordFillUpWithForm:(id)sender {
+/* RecordFillUp's inputs: the chosen vehicle, entered by the user. */
+- (NSDictionary<NSString *, NSString *> *)fillUpGiven {
     Vehicle *vehicle = [self chosenVehicle];
-    if (!vehicle.id) return;
-    [_formWindow close:nil];
-    NSError *error = nil;
-    _formWindow = [[LBFormWindowController alloc] initWithFormNamed:@"RecordFillUp" store:_store
-                                                              given:@{ @"vehicle" : vehicle.id.UUIDString,
-                                                                       @"enteredBy" : _store.user.email ?: @"" }
-                                                              error:&error];
-    if (!_formWindow) {
-        [self reportError:error];
-        return;
-    }
+    if (!vehicle.id) return nil;
+    return @{ @"vehicle" : vehicle.id.UUIDString, @"enteredBy" : _store.user.email ?: @"" };
+}
+
+/* What a fill-up form saved: the records read again, it chosen. */
+- (void (^)(NSString *))fillUpSaved {
     __weak LBMainWindowController *weakSelf = self;
-    _formWindow.savedHandler = ^(NSString *key) {
+    return ^(NSString *key) {
         LBMainWindowController *controller = weakSelf;
         [controller readAgain];
         NSUUID *saved = [[NSUUID alloc] initWithUUIDString:key];
@@ -547,6 +545,33 @@ static void *LBRecordsChanged = &LBRecordsChanged;
             if ([((id<LBIdentified>)record).id isEqual:saved]) [controller.records setSelectedObjects:@[ record ]];
         }
     };
+}
+
+- (IBAction)recordFillUp:(id)sender {
+    NSDictionary *given = [self fillUpGiven];
+    if (!given) return;
+    [_fillUpWindow close:nil];
+    NSError *error = nil;
+    _fillUpWindow = [[LBFillUpWindowController alloc] initWithStore:_store given:given error:&error];
+    if (!_fillUpWindow) {
+        [self reportError:error];
+        return;
+    }
+    _fillUpWindow.savedHandler = [self fillUpSaved];
+    [_fillUpWindow showWindow:sender];
+}
+
+- (IBAction)recordFillUpWithForm:(id)sender {
+    NSDictionary *given = [self fillUpGiven];
+    if (!given) return;
+    [_formWindow close:nil];
+    NSError *error = nil;
+    _formWindow = [[LBFormWindowController alloc] initWithFormNamed:@"RecordFillUp" store:_store given:given error:&error];
+    if (!_formWindow) {
+        [self reportError:error];
+        return;
+    }
+    _formWindow.savedHandler = [self fillUpSaved];
     [_formWindow showWindow:sender];
 }
 

@@ -4,8 +4,9 @@
 // first). What the form cannot say at a field is said under it; saved,
 // the window closes and the vehicle's records show what it made.
 //
-// File > Record a Fill-Up with the Form…: RecordFillUp, for the chosen
-// vehicle (Model/Logbook.orm's form, docs/FORMS.md).
+// File > Record a Fill-Up with the Generated Form…: RecordFillUp, for the
+// chosen vehicle (Model/Logbook.orm's form, docs/FORMS.md); Logbook's own
+// view of the same form is LBFillUpWindowController.
 
 #import <AppKit/AppKit.h>
 

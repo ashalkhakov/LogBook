@@ -33,7 +33,9 @@ a receipt's photo among what they sync (`Tests/LBSyncCheck.m`); then
 `Tests/app-check.sh` drives the desktop app against one: every kind of
 record added from its Add menu, its form typed into, saved, corrected and
 saved again, each checked at the server, and a fill-up recorded with the
-model's form (File > Record a Fill-Up with the Form…).
+model's form both ways: Logbook's own window over the form's contract
+(File > Record a Fill-Up…) and the generated one (File > Record a Fill-Up
+with the Generated Form…).
 
 ## The README's pictures
 

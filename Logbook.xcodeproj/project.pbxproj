@@ -123,6 +123,10 @@
 			isa = PBXBuildFile;
 			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
 		};
+		2C2C66E4B2EA58564AE99733 /* LBFormValues.m */ = {
+			isa = PBXBuildFile;
+			fileRef = A3417EE9EC39BE87936D3D2D /* LBFormValues.m */;
+		};
 		2F0AD006936F61F57E9B38F3 /* LBFormWindowController.m */ = {
 			isa = PBXBuildFile;
 			fileRef = F9C303796FCDC3EF3982D71B /* LBFormWindowController.m */;
@@ -379,6 +383,10 @@
 			isa = PBXBuildFile;
 			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
 		};
+		9B0D2632489F1C190780AFCF /* LBFillUpWindowController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = B8246209F41C5CE0F68EF521 /* LBFillUpWindowController.m */;
+		};
 		9B3FE38F441D5FFFA5161082 /* LBCalendar.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 1D9F102F5FD4B4919A213D1F /* LBCalendar.m */;
@@ -474,6 +482,10 @@
 			isa = PBXBuildFile;
 			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
 		};
+		C0146742C2E60E8FE314F83A /* FillUpWindow.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = F5343AF93F84B8A9943CABA1 /* FillUpWindow.xib */;
+		};
 		C151D3F90E7A8315F69EF777 /* LBConnectPanel.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */;
@@ -534,6 +546,10 @@
 		CED58ABEA9D41F3D78CB5077 /* LBProcedures.m */ = {
 			isa = PBXBuildFile;
 			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
+		};
+		CF445F92AAAEDF4AF89F76EB /* FormWindow.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = D8E1D894790D7AFABC52E511 /* FormWindow.xib */;
 		};
 		D0491AE320E3E648A7959456 /* ORMRuntime.xcframework */ = {
 			isa = PBXBuildFile;
@@ -1260,6 +1276,12 @@
 			path = LBFormHost.m;
 			sourceTree = "<group>";
 		};
+		9178E44C86C664EF819137C6 /* LBFillUpWindowController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBFillUpWindowController.h;
+			sourceTree = "<group>";
+		};
 		9750D2C25C5635F5B2261855 /* LBStore.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1294,6 +1316,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBPartsPanelController.m;
+			sourceTree = "<group>";
+		};
+		A3417EE9EC39BE87936D3D2D /* LBFormValues.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBFormValues.m;
 			sourceTree = "<group>";
 		};
 		A3647A7FA7ED738095E6DCDB /* README.md */ = {
@@ -1403,6 +1431,12 @@
 			path = System/Library/Frameworks/UIKit.framework;
 			sourceTree = SDKROOT;
 		};
+		B8246209F41C5CE0F68EF521 /* LBFillUpWindowController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBFillUpWindowController.m;
+			sourceTree = "<group>";
+		};
 		B84277BF72A1805D5D8DB7FC /* LBStockCountWindowController.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1500,6 +1534,12 @@
 			path = LBSelfTest.m;
 			sourceTree = "<group>";
 		};
+		D8E1D894790D7AFABC52E511 /* FormWindow.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = FormWindow.xib;
+			sourceTree = "<group>";
+		};
 		D9440F138977C55F58D15995 /* AppKit.framework */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
@@ -1562,6 +1602,12 @@
 			path = LBStockItemWindowController.m;
 			sourceTree = "<group>";
 		};
+		EB16200FD86C6DDB04D51064 /* LBFormValues.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBFormValues.h;
+			sourceTree = "<group>";
+		};
 		EEE3822C8E2C03EB633ED3AE /* Fuel.rdl */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = text.xml;
@@ -1584,6 +1630,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
 			path = StockWindow.xib;
+			sourceTree = "<group>";
+		};
+		F5343AF93F84B8A9943CABA1 /* FillUpWindow.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = FillUpWindow.xib;
 			sourceTree = "<group>";
 		};
 		F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */ = {
@@ -1886,6 +1938,8 @@
 			children = (
 				2432BF71F62D11F0DCE041C6 /* CatalogSettings.xib */,
 				F8746362A46CB5E2C52D1A7E /* ConnectPanel.xib */,
+				F5343AF93F84B8A9943CABA1 /* FillUpWindow.xib */,
+				D8E1D894790D7AFABC52E511 /* FormWindow.xib */,
 				ABFDBC32D4665ABB05B1F819 /* Info.plist */,
 				1858D9209D5FE7B48B58866F /* LBAnswersController.h */,
 				7D121C7DECA61E76A9483A71 /* LBAnswersController.m */,
@@ -1899,6 +1953,10 @@
 				4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */,
 				324BB6A3D9A9BE9DE4F32543 /* LBCurrencies.h */,
 				5F97649AA937E1D48D47004D /* LBCurrencies.m */,
+				9178E44C86C664EF819137C6 /* LBFillUpWindowController.h */,
+				B8246209F41C5CE0F68EF521 /* LBFillUpWindowController.m */,
+				EB16200FD86C6DDB04D51064 /* LBFormValues.h */,
+				A3417EE9EC39BE87936D3D2D /* LBFormValues.m */,
 				844A43533F14A82D94E4891D /* LBFormWindowController.h */,
 				F9C303796FCDC3EF3982D71B /* LBFormWindowController.m */,
 				B4B350AF69C986E38E58A1AF /* LBListsController.h */,
@@ -2154,6 +2212,8 @@
 				55163AC23A466DC095BC188A /* StockCount.xib */,
 				C4EC79F8329D4E41803D8946 /* CatalogSettings.xib */,
 				72F298546B4BBA2B1AD0CAED /* Parts.xib */,
+				CF445F92AAAEDF4AF89F76EB /* FormWindow.xib */,
+				C0146742C2E60E8FE314F83A /* FillUpWindow.xib */,
 				B71574A70BF424AC03F6ED06 /* Logbook.png */,
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
@@ -2361,6 +2421,8 @@
 				C850D84A632E628032978828 /* LBCatalogSettingsWindowController.m */,
 				C151D3F90E7A8315F69EF777 /* LBConnectPanel.m */,
 				529DADF700964FC6237620B6 /* LBCurrencies.m */,
+				9B0D2632489F1C190780AFCF /* LBFillUpWindowController.m */,
+				2C2C66E4B2EA58564AE99733 /* LBFormValues.m */,
 				2F0AD006936F61F57E9B38F3 /* LBFormWindowController.m */,
 				D66D87A70D3592981C2035CD /* LBListsController.m */,
 				54D6EE49D6E938F7DDAE8527 /* LBMainWindowController.m */,
