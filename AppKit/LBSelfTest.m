@@ -37,6 +37,8 @@
 #import "LBStockWindowController.h"
 #import "LBStockItemWindowController.h"
 #import "LBStockOrderWindowController.h"
+#import "LBTasksWindowController.h"
+#import "LBTasks.h"
 #import "LBStockCountWindowController.h"
 #import "LBCatalogSettingsWindowController.h"
 #import "LBPartsPanelController.h"
@@ -983,10 +985,43 @@ static void LBStockCardSteps(LBStockItemWindowController *card) {
             rule);
 }
 
+/* Window > Tasks, shown, as a user chooses it. */
+static LBTasksWindowController *LBTasksWindow(void) {
+    [NSApp sendAction:@selector(showTasks:) to:nil from:nil];
+    LBSpin();
+    for (NSWindow *window in NSApp.windows) {
+        if ([window.identifier isEqualToString:@"tasksWindow"] && window.isVisible) return window.windowController;
+    }
+    return nil;
+}
+
+/* The names of the open tasks about the order, once they are as expected
+   (the server's engine works after each save), or 5 s on: the list asked
+   again, as Refresh does. */
+static NSArray<NSString *> *LBTasksOf(LBTasksWindowController *tasks, NSManagedObject *order, NSArray<NSString *> *expected) {
+    NSString *key = [[order valueForKey:@"id"] UUIDString];
+    NSArray<NSString *> *names = nil;
+    for (int i = 0; i < 25; i++) {
+        LBClick(tasks.window, @"refresh");
+        NSMutableArray *found = [NSMutableArray array];
+        for (LBTask *task in tasks.openTasks) {
+            if ([task.businessKey isEqualToString:key]) [found addObject:task.name];
+        }
+        names = found;
+        if ([names isEqualToArray:expected]) break;
+        LBSpin();
+    }
+    return names;
+}
+
 /* Sales and purchases, each in its window, as a user writes them: a sale
    to Bob of three bolts, numbered, confirmed, shipped in two from Shelf A;
    a purchase from Parts Ltd of ten brackets at a cost of 1, confirmed,
-   received in two at Default, a damaged one sent back. Each the server's. */
+   received in two at Default, a damaged one sent back. Each the server's.
+   The purchase's process (Server/LBWorkflow.h) follows it in Window >
+   Tasks: Confirm the order, then Receive the goods, then nothing. Another
+   purchase's Confirm the order opened from there, in the order's window
+   titled with it, cancelled: its task gone. */
 static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, StockItem *bracket) {
     [stock.tabs selectTabViewItemWithIdentifier:@"saleOrders"];
     LBSpin();
@@ -1036,8 +1071,14 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBTypeInCell(window, @"linesTable", 1, @"10");
     LBTypeInCell(window, @"linesTable", 2, @"1");
     LBSavedIn(purchase, @"its line, 10 brackets at 1, saved");
+    LBTasksWindowController *tasks = LBTasksWindow();
+    NSArray *names = LBTasksOf(tasks, bought, @[ @"Confirm the order" ]);
+    LBCheck(@"Window > Tasks: its Confirm the order", [names isEqualToArray:@[ @"Confirm the order" ]], tasks.messageLabel.stringValue ?: names);
+    [window makeKeyAndOrderFront:nil];
     LBClick(window, @"confirmOrder");
     LBCheck(@"confirmed", [bought.orderState isEqualToString:@"Confirmed"] && !purchase.lastError, purchase.lastError ?: bought.orderState);
+    names = LBTasksOf(tasks, bought, @[ @"Receive the goods" ]);
+    LBCheck(@"its task completed by the server: Receive the goods", [names isEqualToArray:@[ @"Receive the goods" ]], names);
     LBChoose(window, @"moveAt", @"Main / Default");
     LBType(window, @"moveQuantity", @"4");
     [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];
@@ -1049,6 +1090,10 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
             [bought.lbFilled isEqualToString:@"Received"] && purchase.documents.count == 2
                 && [brackets compare:[bracketsBefore decimalNumberByAdding:LBN10()]] == NSOrderedSame,
             purchase.lastError ?: brackets);
+    names = LBTasksOf(tasks, bought, @[]);
+    LBCheck(@"its process done: no task of its left", names.count == 0, names);
+    [LBServerContext() refreshAllObjects];
+    LBCheck(@"and the order closed by it", [[LBServerOf(bought) orderState] isEqualToString:@"Closed"], [LBServerOf(bought) orderState]);
     LBChoose(window, @"returnReason", @"Damaged");
     LBType(window, @"moveQuantity", @"1");
     [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];
@@ -1061,6 +1106,37 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
             purchase.lastError ?: left);
     LBSnapshot(window, @"stock-purchase");
     [purchase close];
+
+    LBClick(stock.window, @"newPurchase");
+    LBStockOrderWindowController *another = LBOpened(stock, [LBStockOrderWindowController class]);
+    another.quiet = YES;
+    PurchaseOrder *second = (PurchaseOrder *)another.order;
+    LBSavedIn(another, @"another purchase, PO-GAR-0002, saved a draft");
+    [another close];
+    names = LBTasksOf(tasks, second, @[ @"Confirm the order" ]);
+    NSUInteger row = [tasks.openTasks indexOfObjectPassingTest:^BOOL(LBTask *task, NSUInteger i, BOOL *stop) {
+        return [task.businessKey isEqualToString:second.id.UUIDString];
+    }];
+    LBCheck(@"its Confirm the order listed", row != NSNotFound, names);
+    if (row != NSNotFound) {
+        [tasks.window makeKeyAndOrderFront:nil];
+        [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+        LBClick(tasks.window, @"open");
+        LBStockOrderWindowController *step = tasks.orderWindow;
+        step.quiet = YES;
+        LBCheck(@"opened in the order's window, titled with the task", step.window.isVisible
+                    && [step.window.title isEqualToString:@"PO-GAR-0002 — Confirm the order"],
+                step.window.title);
+        LBSnapshot(tasks.window, @"tasks");
+        LBClick(step.window, @"cancelOrder");
+        LBCheck(@"cancelled there: the title says the task no more", [[step.order valueForKey:@"orderState"] isEqualToString:@"Cancelled"]
+                    && [step.window.title isEqualToString:@"PO-GAR-0002"],
+                step.lastError ?: step.window.title);
+        names = LBTasksOf(tasks, second, @[]);
+        LBCheck(@"and its task gone from the list", names.count == 0, names);
+        [step close];
+    }
+    [tasks close];
     [stock.tabs selectTabViewItemWithIdentifier:@"saleOrders"];
     LBSpin();
     LBCheck(@"the stock window told: its sale shipped", [[stock.saleOrders.firstObject lbFilled] isEqualToString:@"Shipped"],
@@ -1141,8 +1217,9 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
             stock.overviewItems.integerValue == 3 && stock.overviewCategories.integerValue == 1 && stock.overviewLocations.integerValue == 3
                 && stock.overviewSuppliers.integerValue == 1 && stock.overviewCustomers.integerValue == 1,
             [NSString stringWithFormat:@"%@ %@ %@", stock.overviewItems, stock.overviewLocations, stock.overviewSuppliers]);
-    LBCheck(@"the bolts' rule due, the sale and the purchase open",
-            stock.rulesDue.count == 1 && [[stock.rulesDue.firstObject stockItem].itemName isEqualToString:@"Bolt"] && stock.ordersOpen.count == 2,
+    LBCheck(@"the bolts' rule due, the sale open: the purchase closed by its process, all received",
+            stock.rulesDue.count == 1 && [[stock.rulesDue.firstObject stockItem].itemName isEqualToString:@"Bolt"]
+                && [[stock.ordersOpen valueForKey:@"lb_number"] isEqualToArray:@[ @"SO-GAR-0001" ]],
             [stock.ordersOpen valueForKey:@"lb_number"]);
     NSDecimalNumber *bolts = [LBServerOf(bolt) totalQuantity];
     LBCheck(@"what it holds weighs and takes up: the bolts', 10 g and 5 cm3 each, in kg and cm",

@@ -147,6 +147,10 @@
 			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
 			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
 		};
+		3E8947C4E7D3BE07ECE29527 /* LBTasksWindowController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 526FFAAA5962D49791B39417 /* LBTasksWindowController.m */;
+		};
 		3F41127A5339F1DA846D2D0A /* LBConflicts.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 690202E342F3343CCC4A45AF /* LBConflicts.m */;
@@ -270,9 +274,17 @@
 			isa = PBXBuildFile;
 			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
 		};
+		70729DFCD31B9162AEE7E120 /* TasksWindow.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 8D341169CE8F76D36154B583 /* TasksWindow.xib */;
+		};
 		72002D4BD2DCA11921ABE026 /* LBPermissions.m */ = {
 			isa = PBXBuildFile;
 			fileRef = B3290AF8A39A8F14A152A2F3 /* LBPermissions.m */;
+		};
+		7204C89B8654DCCB36E71B6E /* LBTasks.m */ = {
+			isa = PBXBuildFile;
+			fileRef = A95A50DBF58ADE2AB8422970 /* LBTasks.m */;
 		};
 		7244EDA8B6345047E44AA6D3 /* MainWindow.xib */ = {
 			isa = PBXBuildFile;
@@ -1047,6 +1059,12 @@
 			path = LBStockActions.h;
 			sourceTree = "<group>";
 		};
+		526FFAAA5962D49791B39417 /* LBTasksWindowController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBTasksWindowController.m;
+			sourceTree = "<group>";
+		};
 		5495040375CD673C4E4A74CE /* LBServer.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -1209,6 +1227,12 @@
 			path = LBStockDisplay.m;
 			sourceTree = "<group>";
 		};
+		87A5A55DD7A5B68A8E9F42A0 /* LBTasks.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBTasks.h;
+			sourceTree = "<group>";
+		};
 		883F7B11593A75CB7C5E95E0 /* StockSale.xib */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
@@ -1231,6 +1255,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBListsController.m;
+			sourceTree = "<group>";
+		};
+		8D341169CE8F76D36154B583 /* TasksWindow.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = TasksWindow.xib;
 			sourceTree = "<group>";
 		};
 		8E4DEB47F2B8FE1066461830 /* WorkflowKitOData.xcframework */ = {
@@ -1319,6 +1349,12 @@
 			includeInIndex = 0;
 			path = "logbook-server";
 			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		A95A50DBF58ADE2AB8422970 /* LBTasks.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBTasks.m;
+			sourceTree = "<group>";
 		};
 		A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */ = {
 			isa = PBXFileReference;
@@ -1468,6 +1504,12 @@
 			name = ODataService.xcframework;
 			path = .deps/ODataService.xcframework;
 			sourceTree = SOURCE_ROOT;
+		};
+		CBAE16E841908FD28440E49F /* LBTasksWindowController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBTasksWindowController.h;
+			sourceTree = "<group>";
 		};
 		CBBE62FB66CDAB94534A27DE /* LBiOSSelfTest.h */ = {
 			isa = PBXFileReference;
@@ -1934,6 +1976,10 @@
 				1B68139C28655401D5A5B21D /* LBStockOrderWindowController.m */,
 				D090AFF26F4A18054D8494CB /* LBStockWindowController.h */,
 				0909862880AB1C4AD4F5EE4E /* LBStockWindowController.m */,
+				87A5A55DD7A5B68A8E9F42A0 /* LBTasks.h */,
+				A95A50DBF58ADE2AB8422970 /* LBTasks.m */,
+				CBAE16E841908FD28440E49F /* LBTasksWindowController.h */,
+				526FFAAA5962D49791B39417 /* LBTasksWindowController.m */,
 				54D9B95BA710144DC1887114 /* LBUpdater.h */,
 				63F76DCE6702DEFBD71EE19B /* LBUpdater-Apple.m */,
 				694E25C06D350F4886223FAB /* Lists.xib */,
@@ -1947,6 +1993,7 @@
 				FA5B18C260290594D3ADCF14 /* StockPurchase.xib */,
 				883F7B11593A75CB7C5E95E0 /* StockSale.xib */,
 				F32AA887B6CB0E32A179DED7 /* StockWindow.xib */,
+				8D341169CE8F76D36154B583 /* TasksWindow.xib */,
 				9F9B62C3CEAF21088CC988DF /* main.m */,
 			);
 			path = AppKit;
@@ -2161,6 +2208,7 @@
 				55163AC23A466DC095BC188A /* StockCount.xib */,
 				C4EC79F8329D4E41803D8946 /* CatalogSettings.xib */,
 				72F298546B4BBA2B1AD0CAED /* Parts.xib */,
+				70729DFCD31B9162AEE7E120 /* TasksWindow.xib */,
 				B71574A70BF424AC03F6ED06 /* Logbook.png */,
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
@@ -2382,6 +2430,8 @@
 				9FFA1CCB7AD055C596E55444 /* LBStockItemWindowController.m */,
 				C399DB33835639D25AA56269 /* LBStockOrderWindowController.m */,
 				4A7C39DF8D06BBC66581C911 /* LBStockWindowController.m */,
+				7204C89B8654DCCB36E71B6E /* LBTasks.m */,
+				3E8947C4E7D3BE07ECE29527 /* LBTasksWindowController.m */,
 				044AA23AA30A8FF82812654E /* LBUpdater-Apple.m */,
 				D150CB72C0373BBF67E78758 /* main.m */,
 				5AA4112F777D647934A73C69 /* UDCalendarView.m */,

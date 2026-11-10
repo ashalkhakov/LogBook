@@ -5,7 +5,7 @@
 
 #import "LBStockEditor.h"
 
-@class Location, StockItem;
+@class Location, StockItem, LBTask, LBTasks;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -36,6 +36,14 @@ NS_ASSUME_NONNULL_BEGIN
 // Why a line comes back (goes back): one of returnReasons.
 @property (nonatomic, readonly, copy) NSArray<NSString *> *returnReasons;
 @property (nonatomic, copy) NSString *returnReason;
+
+// The process's task it was opened for (LBTasksWindowController.h), named
+// in its title. Its step done here -- Confirm or Cancel for
+// ConfirmPurchaseOrder, Receive for ReceiveGoods -- the server completes
+// the task (Server/LBWorkflow.h), as it would for the step done anywhere;
+// the title says it no more, and the tasks are asked again. nil: no task.
+@property (nonatomic, strong, nullable) LBTask *task;
+@property (nonatomic, strong, nullable) LBTasks *tasks;
 
 // The server's Confirm, Close, Cancel and Reopen.
 - (IBAction)confirmOrder:(nullable id)sender;

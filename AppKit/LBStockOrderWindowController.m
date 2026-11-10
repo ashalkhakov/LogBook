@@ -1,4 +1,5 @@
 #import "LBStockOrderWindowController.h"
+#import "LBTasks.h"
 #import "LBStore.h"
 #import "LBStockDisplay.h"
 
@@ -33,7 +34,7 @@
 
 - (void)windowDidLoad {
     [super windowDidLoad];
-    [self.window bind:NSTitleBinding toObject:self withKeyPath:@"order.lb_number" options:nil];
+    [self.window bind:NSTitleBinding toObject:self withKeyPath:@"windowTitle" options:nil];
 }
 
 - (NSArray<NSArrayController *> *)editedControllers {
@@ -66,7 +67,27 @@
 #pragma mark Its state
 
 - (void)act:(NSString *)name {
-    [self performAction:name on:_order parameters:nil];
+    if ([self performAction:name on:_order parameters:nil] && [@[ @"Confirm", @"Cancel" ] containsObject:name]) {
+        [self stepDone:@"ConfirmPurchaseOrder"];
+    }
+}
+
+/* The step of the form's done here, and so its task, by the server: the
+   title says it no more, and the tasks are asked again. */
+- (void)stepDone:(NSString *)form {
+    if (![_task.formName isEqualToString:form]) return;
+    self.task = nil;
+    [_tasks noteChange];
+}
+
+/* Its title: the order's number, and the task it was opened for. */
+- (NSString *)windowTitle {
+    NSString *number = [_order valueForKey:@"lb_number"] ?: @"";
+    return _task ? [NSString stringWithFormat:@"%@ — %@", number, _task.name] : number;
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingWindowTitle {
+    return [NSSet setWithObjects:@"order.lb_number", @"task", nil];
 }
 
 - (IBAction)confirmOrder:(id)sender {
@@ -132,8 +153,10 @@ static NSDictionary *LBLinesParameter(NSArray *lines, NSArray<NSDecimalNumber *>
 
 - (void)move:(NSArray *)lines quantities:(NSArray<NSDecimalNumber *> *)quantities {
     if (!_moveAt) return [self refuse:_sale ? @"Choose where from." : @"Choose where."];
-    [self performAction:_sale ? @"Ship" : @"Receive" on:_order
-             parameters:@{ @"Lines": LBLinesParameter(lines, quantities), (_sale ? @"From" : @"At"): _moveAt }];
+    if ([self performAction:_sale ? @"Ship" : @"Receive" on:_order
+                 parameters:@{ @"Lines": LBLinesParameter(lines, quantities), (_sale ? @"From" : @"At"): _moveAt }] && !_sale) {
+        [self stepDone:@"ReceiveGoods"];
+    }
 }
 
 - (IBAction)moveLine:(id)sender {

@@ -8,8 +8,8 @@
 // saved as a draft, from Reorder or entered, starts it once it is saved, its variable
 // purchaseOrder the order's id. Its people's tasks are done with the
 // model's forms (ConfirmPurchaseOrder, ReceiveGoods), which the app shows
-// in its own screens, submitting through the order's actions (Confirm,
-// Cancel, Receive) and then completing the task; its service tasks are
+// in its own screens; the order's actions there (Confirm, Cancel, Receive)
+// complete the tasks, as they do from anywhere; its service tasks are
 // here:
 //
 //   orderReceived   fullyReceived, whether nothing of the order is
@@ -42,9 +42,13 @@ NS_ASSUME_NONNULL_BEGIN
 // out), everyone is a trial user who may work every task.
 - (ODataService *)serviceAtRoot:(NSURL *)root signedIn:(BOOL)signedIn;
 
-// Each purchase order saved as a draft, by any context over the logbook's
-// store, starts procure to receipt once it is saved (its id the variable
-// purchaseOrder, and the business key): a save refused starts nothing.
+// The processes follow the logbook's saves, whoever made them, once each is
+// done (a save refused does nothing): a purchase order saved as a draft
+// starts procure to receipt (its id the variable purchaseOrder, and the
+// business key); one confirmed or cancelled completes its Confirm the
+// order (orderState its state); a receipt of one completes its Receive
+// the goods. Posted on the main queue each time the engine has done so.
+FOUNDATION_EXPORT NSNotificationName const LBWorkflowDidSettleNotification;
 
 @end
 

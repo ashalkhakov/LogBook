@@ -323,10 +323,15 @@ saved as a draft (Reorder's, or one entered) starts it once it is saved.
 A manager confirms it, or cancels it, with the model's form
 ConfirmPurchaseOrder (the order's `Confirm` or `Cancel`); a keeper receives
 its goods with ReceiveGoods (the order's `Receive`), as often as they come;
-once nothing is outstanding the process closes the order. The forms are the
+once nothing is outstanding the process closes the order. The process
+follows the facts, whoever changes them: the server completes a task as
+its step is done, wherever it is done (the order confirmed or cancelled,
+a receipt made), so nobody completes one by hand. The forms are the
 model's (ORMKit's docs/FORMS.md), and the process imports the model: what a
-task is done with is checked as the processes are built (`wf-build`), and
-its form shown in the app's own screens. Its API is the server's
+task is done with is checked as the processes are built (`wf-build`).
+**Window > Tasks** lists the open tasks, the oldest first, each with its
+order; Open shows the order in its own window, titled with the task, where
+its step is done. Its API is the server's
 `workflow/` (WorkflowKit's `WFODataService.h`); with no one signed in, a
 trial user may work every task. `Tests/process-check.py` runs it over
 HTTP. Stock counts, and picking and packing, are to follow: what a count
