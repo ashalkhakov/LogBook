@@ -1,5 +1,4 @@
 #import "LBSelfTest.h"
-#import <objc/runtime.h>
 #import "LBConnectPanel.h"
 #import "LBMainWindowController.h"
 #import "LBStore.h"
@@ -2028,7 +2027,7 @@ static void LBFormSteps(LBMainWindowController *controller, Vehicle *kept) {
     }
     LBSpin();
     NSMenuItem *item = [[NSApp.mainMenu itemWithTitle:@"File"].submenu itemWithTitle:@"Record a Fill-Up with the Form…"];
-    LBCheck(@"File offers Record a Fill-Up with the Form…", sel_isEqual(item.action, @selector(recordFillUpWithForm:)), item);
+    LBCheck(@"File offers Record a Fill-Up with the Form…", [NSStringFromSelector(item.action) isEqualToString:@"recordFillUpWithForm:"], item);
     [controller recordFillUpWithForm:item];
     LBSpin();
     LBFormWindowController *form = controller.formWindow;
