@@ -87,17 +87,6 @@
                                     <action selector="revertChanges:" target="-1" id="revertItemAction"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="separatorForms"/>
-                            <menuItem title="Record a Fill-Up…" id="recordFillUp">
-                                <connections>
-                                    <action selector="recordFillUp:" target="-1" id="recordFillUpAction"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Record a Fill-Up with the Generated Form…" id="recordFillUpWithForm">
-                                <connections>
-                                    <action selector="recordFillUpWithForm:" target="-1" id="recordFillUpWithFormAction"/>
-                                </connections>
-                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="separator4"/>
                             <menuItem title="Close" keyEquivalent="w" id="close">
                                 <connections>

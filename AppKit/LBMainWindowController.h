@@ -11,7 +11,7 @@
 
 @class LBStore, User, TyreSet, Trip, Vehicle, DistanceUnit, CostKind, Attachment, LBReportsController, LBRemindersController, LBAnswersController, LBCalendarController, Record;
 
-@class LBPartsPanelController, LBFormWindowController, LBFillUpWindowController;
+@class LBPartsPanelController;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -46,13 +46,19 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *shareEmail;
 
 // The chosen record under its entity's name (none when there is no one
-// record chosen): what each form's controller binds its content to.
+// record chosen): what each form's controller binds its content to. A
+// fill-up is there as the model's RecordFillUp form has it (LBFormValues:
+// its values, written through to the record; its choices; saved by the
+// form, a refusal said under the field it is about).
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> *chosenRecords;
 // What the pick lists are ordered by: their objects' titles.
 @property (nonatomic, readonly, copy) NSArray<NSSortDescriptor *> *byTitle;
 // Who drives the chosen vehicle (its owner, and those it is shared with),
 // and its tyre sets: what a record's form chooses from.
 @property (nonatomic, readonly, copy) NSArray<User *> *drivers;
+// Who may have driven the chosen fill-up: the RecordFillUp form's choices
+// (those who drive its vehicle), as its tab's pop-up offers them.
+@property (nonatomic, readonly, copy) NSArray<User *> *fillUpDrivers;
 @property (nonatomic, readonly, copy) NSArray<TyreSet *> *tyreSets;
 // Its trips, the latest first: what an income is picked for.
 @property (nonatomic, readonly, copy) NSArray<Trip *> *trips;
@@ -118,15 +124,6 @@ NS_ASSUME_NONNULL_BEGIN
 // The chosen service's or tyre change's parts, in a panel of their own
 // (LBPartsPanelController); its window while it is open.
 - (IBAction)showParts:(nullable id)sender;
-// A fill-up of the chosen vehicle recorded with the model's RecordFillUp
-// form, in a window of its own: Logbook's own view of it
-// (LBFillUpWindowController.h), or the one generated from the model
-// (LBFormWindowController.h); saved, the records read again and the new
-// one chosen.
-- (IBAction)recordFillUp:(nullable id)sender;
-- (IBAction)recordFillUpWithForm:(nullable id)sender;
-@property (nonatomic, readonly, strong, nullable) LBFillUpWindowController *fillUpWindow;
-@property (nonatomic, readonly, strong, nullable) LBFormWindowController *formWindow;
 @property (nonatomic, readonly, strong, nullable) LBPartsPanelController *partsPanel;
 // The changes sent; the rules' refusals and the warnings said.
 - (IBAction)save:(nullable id)sender;

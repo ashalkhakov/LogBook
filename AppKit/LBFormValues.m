@@ -22,6 +22,13 @@ static NSLocale *LBFormPOSIX(void) {
     return self;
 }
 
+- (instancetype)initWithSession:(ORMFormSession *)session object:(NSManagedObject *)object {
+    if ((self = [self initWithSession:session context:object.managedObjectContext])) {
+        _object = object;
+    }
+    return self;
+}
+
 - (void)reload {
     for (ORMFormElement *element in _session.form.elements) [self willChangeValueForKey:element.name];
     for (ORMFormElement *element in [_session.form.elements reverseObjectEnumerator]) [self didChangeValueForKey:element.name];
@@ -82,6 +89,7 @@ static NSLocale *LBFormPOSIX(void) {
     }
     [self willChangeValueForKey:name];
     [_session setValue:text forElement:name];
+    if (_object && _object.entity.propertiesByName[name]) [_object setValue:value forKey:name];
     [self didChangeValueForKey:name];
     if (_changedHandler) _changedHandler(name);
 }
@@ -96,6 +104,61 @@ static NSLocale *LBFormPOSIX(void) {
         if (object) [objects addObject:object];
     }
     return objects;
+}
+
+#pragma mark Refusals at their controls
+
+/* The problem labels under the view: the elements each is for. */
+static void LBProblemLabels(NSView *view, NSMutableDictionary<NSArray<NSString *> *, NSTextField *> *found) {
+    for (NSView *subview in view.subviews) {
+        if ([subview.identifier hasPrefix:@"problem-"] && [subview isKindOfClass:[NSTextField class]]) {
+            found[[[subview.identifier substringFromIndex:[@"problem-" length]] componentsSeparatedByString:@"-"]] = (NSTextField *)subview;
+        }
+        LBProblemLabels(subview, found);
+    }
+}
+
+- (NSArray<NSString *> *)showErrors:(NSDictionary<NSString *, NSString *> *)errors under:(NSView *)view {
+    NSMutableDictionary *labels = [NSMutableDictionary dictionary];
+    LBProblemLabels(view, labels);
+    NSMutableDictionary *left = [errors mutableCopy];
+    [labels enumerateKeysAndObjectsUsingBlock:^(NSArray<NSString *> *elements, NSTextField *label, BOOL *stop) {
+        NSMutableArray *said = [NSMutableArray array];
+        for (NSString *element in elements) {
+            if (errors[element]) [said addObject:errors[element]];
+            [left removeObjectForKey:element];
+        }
+        label.stringValue = [said componentsJoinedByString:@" "];
+    }];
+    NSMutableArray *rest = [NSMutableArray array];
+    for (NSString *element in left) {
+        ORMFormElement *known = element.length ? [_session.form elementNamed:element] : nil;
+        [rest addObject:known ? [NSString stringWithFormat:@"%@: %@", known.label, left[element]] : left[element]];
+    }
+    return rest;
+}
+
++ (NSString *)problemAt:(NSString *)element under:(NSView *)view {
+    NSMutableDictionary *labels = [NSMutableDictionary dictionary];
+    LBProblemLabels(view, labels);
+    for (NSArray<NSString *> *elements in labels) {
+        if ([elements containsObject:element]) return ((NSTextField *)labels[elements]).stringValue ?: @"";
+    }
+    return @"";
+}
+
++ (void)clearProblemAt:(NSString *)element under:(NSView *)view {
+    NSMutableDictionary *labels = [NSMutableDictionary dictionary];
+    LBProblemLabels(view, labels);
+    for (NSArray<NSString *> *elements in labels) {
+        if ([elements containsObject:element]) ((NSTextField *)labels[elements]).stringValue = @"";
+    }
+}
+
+- (NSDictionary<NSString *, NSArray<NSManagedObject *> *> *)choices {
+    NSMutableDictionary *choices = [NSMutableDictionary dictionary];
+    for (NSString *name in [_session.form choiceNames]) choices[name] = [self choicesNamed:name error:NULL] ?: @[];
+    return choices;
 }
 
 @end

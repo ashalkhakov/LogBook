@@ -1,7 +1,7 @@
 # Building Logbook
 
 It builds on the releases `.github/pins.env` names: the GNUstep stack,
-FreeCoreData, ODataKit, ORMKit, RDLKit and XFormsKit (`scripts/deps.sh` from
+FreeCoreData, ODataKit, ORMKit and RDLKit (`scripts/deps.sh` from
 gnustep-release-actions fetches them: `apple` into `.deps`, `linux` into
 `/opt/gnustep`). CI (`.github/workflows/build.yml`) builds and checks it
 on Linux, macOS and iOS, and uploads the apps: Linux's an AppImage with
@@ -32,10 +32,8 @@ in; `Tests/sync-check.sh` syncs two devices' offline stores through one,
 a receipt's photo among what they sync (`Tests/LBSyncCheck.m`); then
 `Tests/app-check.sh` drives the desktop app against one: every kind of
 record added from its Add menu, its form typed into, saved, corrected and
-saved again, each checked at the server, and a fill-up recorded with the
-model's form both ways: Logbook's own window over the form's contract
-(File > Record a Fill-Up…) and the generated one (File > Record a Fill-Up
-with the Generated Form…).
+saved again, each checked at the server; a fill-up's saved through the
+model's form, refused under its driver's pop-up when it has none.
 
 ## The README's pictures
 
@@ -73,21 +71,20 @@ server use is generated from it by the build, into `build/Model`
 - `Logbook.forml`, the listing: every statement of the model, a line each,
   as the verbalizer says it, for reading and for copying lines from;
 - `Forms/`: each of the model's forms (a query of the kind Form, ORMKit's
-  docs/FORMS.md) as XFormsKit runs it, by `ormtool xforms`:
-  `<Form>.xhtml`, the XForms document (its fields, the model's constraints
-  as its checks, said in the model's words), and `<Form>.ormform`, the
-  plans its reads, choices and save stand for. The desktop app keeps them
-  in its resources; `Shared/LBFormHost.m` answers what they ask (`form:read`,
-  `form:choices/<name>`, `form:save`) from the store, saved as any change
-  is, or from the server's OData service.
+  docs/FORMS.md), by `ormtool xforms`: `<Form>.ormform`, its contract (what
+  it is given, what is entered and shown, the choices it offers, what a
+  save writes) and the plans its read, choices and save stand for; the
+  desktop app keeps them in its resources. (`<Form>.xhtml`, the XForms
+  document generated beside it, is not used.)
 
   `RecordFillUp` is the one there is: a fill-up of a vehicle, the vehicle
   and who enters it given, its driver chosen from those who drive the
   vehicle, its price per unit worked out. Its outline is in the model
-  (`ormtool forml` lists it; the designer's Queries window edits it), and
-  changing it changes the form the next build makes. File > Record a
-  Fill-Up with the Form… opens it for the chosen vehicle, beside the
-  fill-up's own hand-made form.
+  (`ormtool forml` lists it; the designer's Queries window edits it). Its
+  view is the fill-up's own tab: its fields are the form's elements by
+  name (`AppKit/LBFormValues.h`), its driver pop-up the form's choices,
+  and a fill-up is saved by the form (ORMKit's ORMFormSession), a refusal
+  said under the field it is about.
 
 None of it is kept in git, nor edited: it is made again whenever the
 model, or ormtool, changes.

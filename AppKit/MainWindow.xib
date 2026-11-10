@@ -875,7 +875,7 @@
                                                                 </connections>
                                                             </textField>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpMileageLabel">
-                                                                <rect key="frame" x="8" y="259" width="112" height="17"/>
+                                                                <rect key="frame" x="8" y="245" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Odometer:" id="FillUpMileageLabelCell">
                                                                     <font key="font" metaFont="system"/>
@@ -884,7 +884,7 @@
                                                                 </textFieldCell>
                                                             </textField>
                                                             <customView identifier="FillUpMileage" id="FillUpMileage" customClass="UDQuantityField">
-                                                                <rect key="frame" x="128" y="254" width="232" height="26"/>
+                                                                <rect key="frame" x="128" y="240" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <userDefinedRuntimeAttributes>
                                                                     <userDefinedRuntimeAttribute type="number" keyPath="decimals">
@@ -905,7 +905,7 @@
                                                                 </connections>
                                                             </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpVolumeLabel">
-                                                                <rect key="frame" x="8" y="229" width="112" height="17"/>
+                                                                <rect key="frame" x="8" y="201" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Volume:" id="FillUpVolumeLabelCell">
                                                                     <font key="font" metaFont="system"/>
@@ -914,7 +914,7 @@
                                                                 </textFieldCell>
                                                             </textField>
                                                             <customView identifier="FillUpVolume" id="FillUpVolume" customClass="UDQuantityField">
-                                                                <rect key="frame" x="128" y="224" width="232" height="26"/>
+                                                                <rect key="frame" x="128" y="196" width="232" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <userDefinedRuntimeAttributes>
                                                                     <userDefinedRuntimeAttribute type="number" keyPath="decimals">
@@ -935,7 +935,7 @@
                                                                 </connections>
                                                             </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpFuelLabel">
-                                                                <rect key="frame" x="8" y="199" width="112" height="17"/>
+                                                                <rect key="frame" x="8" y="157" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Fuel:" id="FillUpFuelLabelCell">
                                                                     <font key="font" metaFont="system"/>
@@ -944,7 +944,7 @@
                                                                 </textFieldCell>
                                                             </textField>
                                                             <textField verticalHuggingPriority="750" identifier="FillUpFuel" id="FillUpFuel">
-                                                                <rect key="frame" x="128" y="196" width="230" height="22"/>
+                                                                <rect key="frame" x="128" y="154" width="230" height="22"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="FillUpFuelCell">
                                                                     
@@ -961,7 +961,7 @@
                                                                 </connections>
                                                             </textField>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpTotalLabel">
-                                                                <rect key="frame" x="8" y="169" width="112" height="17"/>
+                                                                <rect key="frame" x="8" y="113" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Cost:" id="FillUpTotalLabelCell">
                                                                     <font key="font" metaFont="system"/>
@@ -970,7 +970,7 @@
                                                                 </textFieldCell>
                                                             </textField>
                                                             <customView identifier="FillUpTotal" id="FillUpTotal" customClass="UDQuantityField">
-                                                                <rect key="frame" x="128" y="164" width="230" height="26"/>
+                                                                <rect key="frame" x="128" y="108" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <userDefinedRuntimeAttributes>
                                                                     <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
@@ -1018,7 +1018,7 @@
                                                                 </connections>
                                                             </textField>
                                                             <button identifier="FillUpFull" id="FillUpFull">
-                                                                <rect key="frame" x="494" y="258" width="230" height="18"/>
+                                                                <rect key="frame" x="494" y="244" width="230" height="18"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <buttonCell key="cell" type="check" title="Filled the tank" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="FillUpFullCell">
                                                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -1029,7 +1029,7 @@
                                                                 </connections>
                                                             </button>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpDriverLabel">
-                                                                <rect key="frame" x="374" y="229" width="112" height="17"/>
+                                                                <rect key="frame" x="374" y="201" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Driver:" id="FillUpDriverLabelCell">
                                                                     <font key="font" metaFont="system"/>
@@ -1038,7 +1038,7 @@
                                                                 </textFieldCell>
                                                             </textField>
                                                             <popUpButton verticalHuggingPriority="750" identifier="FillUpDriver" id="FillUpDriver">
-                                                                <rect key="frame" x="492" y="224" width="234" height="26"/>
+                                                                <rect key="frame" x="492" y="196" width="234" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="FillUpDriverCell">
                                                                     <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -1046,8 +1046,8 @@
                                                                     <menu key="menu" id="FillUpDriverMenu"/>
                                                                 </popUpButtonCell>
                                                                 <connections>
-                                                                    <binding destination="-2" name="content" keyPath="drivers" id="FillUpDriverContent"/>
-                                                                    <binding destination="-2" name="contentValues" keyPath="drivers.lbTitle" previousBinding="FillUpDriverContent" id="FillUpDriverValues">
+                                                                    <binding destination="-2" name="content" keyPath="fillUpDrivers" id="FillUpDriverContent"/>
+                                                                    <binding destination="-2" name="contentValues" keyPath="fillUpDrivers.lbTitle" previousBinding="FillUpDriverContent" id="FillUpDriverValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
@@ -1057,7 +1057,7 @@
                                                                 </connections>
                                                             </popUpButton>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpNoteLabel">
-                                                                <rect key="frame" x="374" y="199" width="112" height="17"/>
+                                                                <rect key="frame" x="374" y="157" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="FillUpNoteLabelCell">
                                                                     <font key="font" metaFont="system"/>
@@ -1066,7 +1066,7 @@
                                                                 </textFieldCell>
                                                             </textField>
                                                             <textField verticalHuggingPriority="750" identifier="FillUpNote" id="FillUpNote">
-                                                                <rect key="frame" x="494" y="196" width="230" height="22"/>
+                                                                <rect key="frame" x="494" y="154" width="230" height="22"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="FillUpNoteCell">
                                                                     
@@ -1083,7 +1083,7 @@
                                                                 </connections>
                                                             </textField>
                                                                                                                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="FillUpChargedLabel">
-                                                                <rect key="frame" x="374" y="169" width="112" height="17"/>
+                                                                <rect key="frame" x="374" y="113" width="112" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Charged:" id="FillUpChargedLabelCell">
                                                                     <font key="font" metaFont="system"/>
@@ -1092,7 +1092,7 @@
                                                                 </textFieldCell>
                                                             </textField>
                                                             <customView identifier="FillUpCharged" id="FillUpCharged" customClass="UDQuantityField">
-                                                                <rect key="frame" x="494" y="164" width="230" height="26"/>
+                                                                <rect key="frame" x="494" y="108" width="230" height="26"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <userDefinedRuntimeAttributes>
                                                                     <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
@@ -1113,6 +1113,96 @@
                                                                     </binding>
                                                                 </connections>
                                                             </customView>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="problem-timestamp" id="FillUpProblem0">
+                                                                <rect key="frame" x="128" y="271" width="230" height="14"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="FillUpProblem0Cell">
+                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                    <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="problem-mileageQuantity-mileageDistanceUnit" id="FillUpProblem1">
+                                                                <rect key="frame" x="128" y="225" width="230" height="14"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="FillUpProblem1Cell">
+                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                    <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="problem-volumeQuantity-volumeVolumeUnit" id="FillUpProblem2">
+                                                                <rect key="frame" x="128" y="181" width="230" height="14"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="FillUpProblem2Cell">
+                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                    <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="problem-fuel" id="FillUpProblem3">
+                                                                <rect key="frame" x="128" y="139" width="230" height="14"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="FillUpProblem3Cell">
+                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                    <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="problem-totalAmount-totalCurrency" id="FillUpProblem4">
+                                                                <rect key="frame" x="128" y="93" width="230" height="14"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="FillUpProblem4Cell">
+                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                    <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="problem-station" id="FillUpProblem5">
+                                                                <rect key="frame" x="494" y="271" width="230" height="14"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="FillUpProblem5Cell">
+                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                    <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="problem-filledTheTank" id="FillUpProblem6">
+                                                                <rect key="frame" x="494" y="229" width="230" height="14"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="FillUpProblem6Cell">
+                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                    <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="problem-driver" id="FillUpProblem7">
+                                                                <rect key="frame" x="494" y="181" width="230" height="14"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="FillUpProblem7Cell">
+                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                    <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="problem-note" id="FillUpProblem8">
+                                                                <rect key="frame" x="494" y="139" width="230" height="14"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="FillUpProblem8Cell">
+                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                    <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="problem-chargedAmount-chargedCurrency" id="FillUpProblem9">
+                                                                <rect key="frame" x="494" y="93" width="230" height="14"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="FillUpProblem9Cell">
+                                                                    <font key="font" metaFont="smallSystem"/>
+                                                                    <color key="textColor" name="systemRedColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>

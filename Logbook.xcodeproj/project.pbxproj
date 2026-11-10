@@ -65,11 +65,6 @@
 			isa = PBXBuildFile;
 			fileRef = D9440F138977C55F58D15995 /* AppKit.framework */;
 		};
-		169CC9A4099C8A1589D34DA0 /* XFormsKit.xcframework */ = {
-			isa = PBXBuildFile;
-			fileRef = 4C270881C21B8EE25B280A37 /* XFormsKit.xcframework */;
-			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
-		};
 		17A5EC43F70F3F6A0365515A /* LBStockCountWindowController.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 409C3F87EC54981EE98BFB26 /* LBStockCountWindowController.m */;
@@ -126,10 +121,6 @@
 		2C2C66E4B2EA58564AE99733 /* LBFormValues.m */ = {
 			isa = PBXBuildFile;
 			fileRef = A3417EE9EC39BE87936D3D2D /* LBFormValues.m */;
-		};
-		2F0AD006936F61F57E9B38F3 /* LBFormWindowController.m */ = {
-			isa = PBXBuildFile;
-			fileRef = F9C303796FCDC3EF3982D71B /* LBFormWindowController.m */;
 		};
 		32DC1571D7A282CCA89980FB /* ODataIncrementalStore.xcframework */ = {
 			isa = PBXBuildFile;
@@ -241,10 +232,6 @@
 			isa = PBXBuildFile;
 			fileRef = B7670FC7C874BC5F07604ED6 /* LBDisplay.m */;
 		};
-		59B2B5DC84756D646D003158 /* LBFormHost.m */ = {
-			isa = PBXBuildFile;
-			fileRef = 912D501BE111374C51FA9B3D /* LBFormHost.m */;
-		};
 		5AA4112F777D647934A73C69 /* UDCalendarView.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 3F95716F05CFEC8CCCF58196 /* UDCalendarView.m */;
@@ -350,10 +337,6 @@
 			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
 			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
 		};
-		8C533E9B4AF1CA218600669E /* XFormsKit.xcframework */ = {
-			isa = PBXBuildFile;
-			fileRef = 4C270881C21B8EE25B280A37 /* XFormsKit.xcframework */;
-		};
 		8D6F15BAC6E1F97A4B29026F /* CoreData.framework */ = {
 			isa = PBXBuildFile;
 			fileRef = 2AB66C65BE330D1517DF768E /* CoreData.framework */;
@@ -382,10 +365,6 @@
 		9A2330CCE28224322303C700 /* OTelKit.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 1AA616881FDF64023A455351 /* OTelKit.xcframework */;
-		};
-		9B0D2632489F1C190780AFCF /* LBFillUpWindowController.m */ = {
-			isa = PBXBuildFile;
-			fileRef = B8246209F41C5CE0F68EF521 /* LBFillUpWindowController.m */;
 		};
 		9B3FE38F441D5FFFA5161082 /* LBCalendar.m */ = {
 			isa = PBXBuildFile;
@@ -482,10 +461,6 @@
 			isa = PBXBuildFile;
 			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
 		};
-		C0146742C2E60E8FE314F83A /* FillUpWindow.xib */ = {
-			isa = PBXBuildFile;
-			fileRef = F5343AF93F84B8A9943CABA1 /* FillUpWindow.xib */;
-		};
 		C151D3F90E7A8315F69EF777 /* LBConnectPanel.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */;
@@ -546,10 +521,6 @@
 		CED58ABEA9D41F3D78CB5077 /* LBProcedures.m */ = {
 			isa = PBXBuildFile;
 			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
-		};
-		CF445F92AAAEDF4AF89F76EB /* FormWindow.xib */ = {
-			isa = PBXBuildFile;
-			fileRef = D8E1D894790D7AFABC52E511 /* FormWindow.xib */;
 		};
 		D0491AE320E3E648A7959456 /* ORMRuntime.xcframework */ = {
 			isa = PBXBuildFile;
@@ -750,7 +721,6 @@
 				FAF7EB020CC5CD818F33D8FE /* RDLKit.xcframework */,
 				EBBF24975BD9EA11CB47344D /* RDLKitUI.xcframework */,
 				6986B80AEB4431B480CEB16C /* Sparkle.xcframework */,
-				169CC9A4099C8A1589D34DA0 /* XFormsKit.xcframework */,
 			);
 			dstPath = "";
 			dstSubfolderSpec = 10;
@@ -1035,13 +1005,6 @@
 			path = LBConnectPanel.m;
 			sourceTree = "<group>";
 		};
-		4C270881C21B8EE25B280A37 /* XFormsKit.xcframework */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = wrapper.xcframework;
-			name = XFormsKit.xcframework;
-			path = .deps/XFormsKit.xcframework;
-			sourceTree = SOURCE_ROOT;
-		};
 		4DDC4EDEB5B9B0DABA7644A1 /* LBStockEditor.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1116,12 +1079,6 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = LBConnectPanel.h;
-			sourceTree = "<group>";
-		};
-		5F24F2FFD7DDBF1518755002 /* LBFormHost.h */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.h;
-			path = LBFormHost.h;
 			sourceTree = "<group>";
 		};
 		5F97649AA937E1D48D47004D /* LBCurrencies.m */ = {
@@ -1228,12 +1185,6 @@
 			path = Logbook.orm;
 			sourceTree = "<group>";
 		};
-		844A43533F14A82D94E4891D /* LBFormWindowController.h */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.h;
-			path = LBFormWindowController.h;
-			sourceTree = "<group>";
-		};
 		87A06910E93B88B1492B7095 /* LBStockDisplay.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -1268,18 +1219,6 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBStockActions.m;
-			sourceTree = "<group>";
-		};
-		912D501BE111374C51FA9B3D /* LBFormHost.m */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.objc;
-			path = LBFormHost.m;
-			sourceTree = "<group>";
-		};
-		9178E44C86C664EF819137C6 /* LBFillUpWindowController.h */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.h;
-			path = LBFillUpWindowController.h;
 			sourceTree = "<group>";
 		};
 		9750D2C25C5635F5B2261855 /* LBStore.h */ = {
@@ -1431,12 +1370,6 @@
 			path = System/Library/Frameworks/UIKit.framework;
 			sourceTree = SDKROOT;
 		};
-		B8246209F41C5CE0F68EF521 /* LBFillUpWindowController.m */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.objc;
-			path = LBFillUpWindowController.m;
-			sourceTree = "<group>";
-		};
 		B84277BF72A1805D5D8DB7FC /* LBStockCountWindowController.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1534,12 +1467,6 @@
 			path = LBSelfTest.m;
 			sourceTree = "<group>";
 		};
-		D8E1D894790D7AFABC52E511 /* FormWindow.xib */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = file.xib;
-			path = FormWindow.xib;
-			sourceTree = "<group>";
-		};
 		D9440F138977C55F58D15995 /* AppKit.framework */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = wrapper.framework;
@@ -1632,12 +1559,6 @@
 			path = StockWindow.xib;
 			sourceTree = "<group>";
 		};
-		F5343AF93F84B8A9943CABA1 /* FillUpWindow.xib */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = file.xib;
-			path = FillUpWindow.xib;
-			sourceTree = "<group>";
-		};
 		F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
@@ -1654,12 +1575,6 @@
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
 			path = ConnectPanel.xib;
-			sourceTree = "<group>";
-		};
-		F9C303796FCDC3EF3982D71B /* LBFormWindowController.m */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.objc;
-			path = LBFormWindowController.m;
 			sourceTree = "<group>";
 		};
 		FA5B18C260290594D3ADCF14 /* StockPurchase.xib */ = {
@@ -1721,7 +1636,6 @@
 				E4BA5B18C5D32D44013003E9 /* RDLKit.xcframework */,
 				B1DADC5231D11B5B7F3AAE89 /* RDLKitUI.xcframework */,
 				951C3BD335E1FB3ADA51120D /* Sparkle.xcframework */,
-				8C533E9B4AF1CA218600669E /* XFormsKit.xcframework */,
 				130ACC4A8E3B6F7BA8451590 /* AppKit.framework */,
 				7FA6C3922445DEB120B7D596 /* CoreData.framework */,
 				E0271BA8A232779DA9B7F057 /* Foundation.framework */,
@@ -1903,7 +1817,6 @@
 				B3BCDF809368C6B4D2C11FE7 /* RDLKit.xcframework */,
 				584640704EF6A5925E5FAEBF /* RDLKitUI.xcframework */,
 				DCD36BEFF925FD84E6C7A1B9 /* Sparkle.xcframework */,
-				4C270881C21B8EE25B280A37 /* XFormsKit.xcframework */,
 				B29454D488C4F49E273C15A0 /* Foundation.framework */,
 				2AB66C65BE330D1517DF768E /* CoreData.framework */,
 				D9440F138977C55F58D15995 /* AppKit.framework */,
@@ -1938,8 +1851,6 @@
 			children = (
 				2432BF71F62D11F0DCE041C6 /* CatalogSettings.xib */,
 				F8746362A46CB5E2C52D1A7E /* ConnectPanel.xib */,
-				F5343AF93F84B8A9943CABA1 /* FillUpWindow.xib */,
-				D8E1D894790D7AFABC52E511 /* FormWindow.xib */,
 				ABFDBC32D4665ABB05B1F819 /* Info.plist */,
 				1858D9209D5FE7B48B58866F /* LBAnswersController.h */,
 				7D121C7DECA61E76A9483A71 /* LBAnswersController.m */,
@@ -1953,12 +1864,8 @@
 				4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */,
 				324BB6A3D9A9BE9DE4F32543 /* LBCurrencies.h */,
 				5F97649AA937E1D48D47004D /* LBCurrencies.m */,
-				9178E44C86C664EF819137C6 /* LBFillUpWindowController.h */,
-				B8246209F41C5CE0F68EF521 /* LBFillUpWindowController.m */,
 				EB16200FD86C6DDB04D51064 /* LBFormValues.h */,
 				A3417EE9EC39BE87936D3D2D /* LBFormValues.m */,
-				844A43533F14A82D94E4891D /* LBFormWindowController.h */,
-				F9C303796FCDC3EF3982D71B /* LBFormWindowController.m */,
 				B4B350AF69C986E38E58A1AF /* LBListsController.h */,
 				8A5F3F17FFB494ABBD32CCDE /* LBListsController.m */,
 				E162B1147B7C390BF620F05A /* LBMainWindowController.h */,
@@ -2018,8 +1925,6 @@
 				690202E342F3343CCC4A45AF /* LBConflicts.m */,
 				D371E9DF0A4D53CA5C5BEBEF /* LBDisplay.h */,
 				B7670FC7C874BC5F07604ED6 /* LBDisplay.m */,
-				5F24F2FFD7DDBF1518755002 /* LBFormHost.h */,
-				912D501BE111374C51FA9B3D /* LBFormHost.m */,
 				720CFEC4A9475E281A1CF956 /* LBLocalStore.h */,
 				2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */,
 				78A28AAA1E8F8D6377B0D29E /* LBPlanned.h */,
@@ -2212,8 +2117,6 @@
 				55163AC23A466DC095BC188A /* StockCount.xib */,
 				C4EC79F8329D4E41803D8946 /* CatalogSettings.xib */,
 				72F298546B4BBA2B1AD0CAED /* Parts.xib */,
-				CF445F92AAAEDF4AF89F76EB /* FormWindow.xib */,
-				C0146742C2E60E8FE314F83A /* FillUpWindow.xib */,
 				B71574A70BF424AC03F6ED06 /* Logbook.png */,
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
@@ -2240,7 +2143,7 @@
 			outputPaths = (
 			);
 			shellPath = /bin/sh;
-			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The model's forms, by ormtool xforms (the desktop app's).\nif [ -d \"$SRCROOT/build/Model/Forms\" ] && [ \"$PLATFORM_NAME\" = macosx ]; then cp \"$SRCROOT/build/Model/Forms/\"* \"$dest/\"; fi\n";
+			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The model's forms' tables, by ormtool xforms (the desktop app's).\nif [ -d \"$SRCROOT/build/Model/Forms\" ] && [ \"$PLATFORM_NAME\" = macosx ]; then cp \"$SRCROOT/build/Model/Forms/\"*.ormform \"$dest/\"; fi\n";
 			showEnvVarsInLog = 0;
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2280,7 +2183,7 @@
 			outputPaths = (
 			);
 			shellPath = /bin/sh;
-			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The model's forms, by ormtool xforms (the desktop app's).\nif [ -d \"$SRCROOT/build/Model/Forms\" ] && [ \"$PLATFORM_NAME\" = macosx ]; then cp \"$SRCROOT/build/Model/Forms/\"* \"$dest/\"; fi\n# The self-test's photo of a receipt, in the simulator's app only.\nif [ \"$PLATFORM_NAME\" = iphonesimulator ]; then cp \"$SRCROOT/Tests/receipt-photo.jpg\" \"$dest/SelfTestReceipt.jpg\"; fi\n";
+			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The model's forms' tables, by ormtool xforms (the desktop app's).\nif [ -d \"$SRCROOT/build/Model/Forms\" ] && [ \"$PLATFORM_NAME\" = macosx ]; then cp \"$SRCROOT/build/Model/Forms/\"*.ormform \"$dest/\"; fi\n# The self-test's photo of a receipt, in the simulator's app only.\nif [ \"$PLATFORM_NAME\" = iphonesimulator ]; then cp \"$SRCROOT/Tests/receipt-photo.jpg\" \"$dest/SelfTestReceipt.jpg\"; fi\n";
 			showEnvVarsInLog = 0;
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2300,7 +2203,7 @@
 			outputPaths = (
 			);
 			shellPath = /bin/sh;
-			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The model's forms, by ormtool xforms (the desktop app's).\nif [ -d \"$SRCROOT/build/Model/Forms\" ] && [ \"$PLATFORM_NAME\" = macosx ]; then cp \"$SRCROOT/build/Model/Forms/\"* \"$dest/\"; fi\n";
+			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The model's forms' tables, by ormtool xforms (the desktop app's).\nif [ -d \"$SRCROOT/build/Model/Forms\" ] && [ \"$PLATFORM_NAME\" = macosx ]; then cp \"$SRCROOT/build/Model/Forms/\"*.ormform \"$dest/\"; fi\n";
 			showEnvVarsInLog = 0;
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2320,7 +2223,7 @@
 			outputPaths = (
 			);
 			shellPath = /bin/sh;
-			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The model's forms, by ormtool xforms (the desktop app's).\nif [ -d \"$SRCROOT/build/Model/Forms\" ] && [ \"$PLATFORM_NAME\" = macosx ]; then cp \"$SRCROOT/build/Model/Forms/\"* \"$dest/\"; fi\n";
+			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The model's forms' tables, by ormtool xforms (the desktop app's).\nif [ -d \"$SRCROOT/build/Model/Forms\" ] && [ \"$PLATFORM_NAME\" = macosx ]; then cp \"$SRCROOT/build/Model/Forms/\"*.ormform \"$dest/\"; fi\n";
 			showEnvVarsInLog = 0;
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2340,7 +2243,7 @@
 			outputPaths = (
 			);
 			shellPath = /bin/sh;
-			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The model's forms, by ormtool xforms (the desktop app's).\nif [ -d \"$SRCROOT/build/Model/Forms\" ] && [ \"$PLATFORM_NAME\" = macosx ]; then cp \"$SRCROOT/build/Model/Forms/\"* \"$dest/\"; fi\n";
+			shellScript = "# The model, compiled, and its tables (made by the Model target).\ndest=\"$TARGET_BUILD_DIR/${UNLOCALIZED_RESOURCES_FOLDER_PATH:-.}\"\nmkdir -p \"$dest\"\nrsync -a --delete \"$SRCROOT/build/Logbook.momd/\" \"$dest/Logbook.momd/\"\ncp \"$SRCROOT/build/Logbook.ormplans\" \"$dest/\"\n# The model's forms' tables, by ormtool xforms (the desktop app's).\nif [ -d \"$SRCROOT/build/Model/Forms\" ] && [ \"$PLATFORM_NAME\" = macosx ]; then cp \"$SRCROOT/build/Model/Forms/\"*.ormform \"$dest/\"; fi\n";
 			showEnvVarsInLog = 0;
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2421,9 +2324,7 @@
 				C850D84A632E628032978828 /* LBCatalogSettingsWindowController.m */,
 				C151D3F90E7A8315F69EF777 /* LBConnectPanel.m */,
 				529DADF700964FC6237620B6 /* LBCurrencies.m */,
-				9B0D2632489F1C190780AFCF /* LBFillUpWindowController.m */,
 				2C2C66E4B2EA58564AE99733 /* LBFormValues.m */,
-				2F0AD006936F61F57E9B38F3 /* LBFormWindowController.m */,
 				D66D87A70D3592981C2035CD /* LBListsController.m */,
 				54D6EE49D6E938F7DDAE8527 /* LBMainWindowController.m */,
 				C71545DED797070E07AAE675 /* LBPartsPanelController.m */,
@@ -2443,7 +2344,6 @@
 				9B3FE38F441D5FFFA5161082 /* LBCalendar.m */,
 				E4BB8CF203F232AF1CA4BAFE /* LBConflicts.m */,
 				4585977F8EC64CE45902C9E3 /* LBDisplay.m */,
-				59B2B5DC84756D646D003158 /* LBFormHost.m */,
 				A3EAE0A410A2F53727F78C99 /* LBLocalStore.m */,
 				5B672684CC818796AB007ED1 /* LBPlanned.m */,
 				341E885D3AA2F3A42B7F04CC /* LBProcedures.m */,
