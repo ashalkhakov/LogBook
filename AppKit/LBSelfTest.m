@@ -65,7 +65,8 @@ void LBSelfTestBegin(NSURL *root) {
 void LBSetDefault(NSString *key, id value) {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if (!LBSelfTestRoot) {
-        [defaults setObject:value forKey:key];
+        if (value) [defaults setObject:value forKey:key];
+        else [defaults removeObjectForKey:key];
         return;
     }
     NSMutableDictionary *run = [[defaults volatileDomainForName:NSArgumentDomain] mutableCopy] ?: [NSMutableDictionary dictionary];
@@ -1924,13 +1925,15 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
 
 /* A server that asks no one, and an app that does not know its user: the
    panel asks who they are, refuses what is not an email, and connects as
-   the one given, kept (for this run only, being a self-test). */
+   the one given, kept (for this run only, being a self-test). Signed out,
+   the user is forgotten, and the panel shown again waits to be told to
+   connect. */
 static void LBConnectSteps(void) {
     LBSetDefault(@"LBUser", @"");
     LBConnectPanel *panel = [[LBConnectPanel alloc] init];
     LBConnected *connected = [[LBConnected alloc] init];
     panel.delegate = connected;
-    [panel showWithServer:LBSelfTestRoot.absoluteString];
+    [panel showWithServer:LBSelfTestRoot.absoluteString connecting:YES];
     for (int i = 0; i < 50 && [panel.emailField isHidden]; i++) LBSpin();
     LBCheck(@"connecting to a server that asks no one, with no user known: asked for an email",
             ![panel.emailField isHidden] && !connected.signIn, panel.statusLabel.stringValue);
@@ -1944,6 +1947,23 @@ static void LBConnectSteps(void) {
                 && [[[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"] isEqualToString:@"driver@example.org"],
             [[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"]);
     [panel close];
+    [LBConnectPanel signOut:connected.signIn];
+    LBCheck(@"signed out of a server that asks no one: its user forgotten",
+            ![[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"].length,
+            [[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"]);
+    LBConnectPanel *again = [[LBConnectPanel alloc] init];
+    LBConnected *reconnected = [[LBConnected alloc] init];
+    again.delegate = reconnected;
+    [again showWithServer:nil connecting:NO];
+    for (int i = 0; i < 20; i++) LBSpin();
+    LBCheck(@"the panel after signing out: the server offered, waiting to be told to connect",
+            !reconnected.signIn && [again.emailField isHidden] && again.serverField.stringValue.length && again.connectButton.enabled,
+            again.statusLabel.stringValue);
+    LBClick(again.window, @"connect");
+    for (int i = 0; i < 50 && [again.emailField isHidden]; i++) LBSpin();
+    LBCheck(@"told to connect: asked who the user is again", ![again.emailField isHidden] && !reconnected.signIn,
+            again.statusLabel.stringValue);
+    [again close];
     LBSetDefault(@"LBUser", @"self-test@example.org");
 }
 

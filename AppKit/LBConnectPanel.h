@@ -4,7 +4,8 @@
 // shows until the server lets the app in; or, a server that asks no one
 // (to try it out), as the email the user gives, asked for once and kept
 // (LBUser). The server it connected to is kept (LBServer), and offered next
-// time.
+// time: connected to at once as the app starts, waited on after Connect…
+// or Sign Out, whose user is forgotten when the server asked no one.
 
 #import <AppKit/AppKit.h>
 #import <ODataSync/ODataSignIn.h>
@@ -29,9 +30,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSTextField *emailField;
 @property (nonatomic, weak, nullable) id<LBConnectPanelDelegate> delegate;
 
-// Shown, the address given (nil: the last one) and, when there is one,
-// connected to at once.
-- (void)showWithServer:(nullable NSString *)address;
+// Shown, the address given (nil: the last one) and, when there is one and
+// connecting, connected to at once; otherwise the user presses Connect.
+- (void)showWithServer:(nullable NSString *)address connecting:(BOOL)connecting;
+// Signed out: from the server's sign-in, or, a server that asks no one,
+// the user who said who they were forgotten, to be asked again.
++ (void)signOut:(ODataSignIn *)signIn;
 - (IBAction)connect:(nullable id)sender;
 - (IBAction)openPage:(nullable id)sender;
 @end

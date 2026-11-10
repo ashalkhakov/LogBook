@@ -38,7 +38,7 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
-    [self showPanelWithServer:LBSelfTestRoot.absoluteString];
+    [self showPanelWithServer:LBSelfTestRoot.absoluteString connecting:YES];
 }
 
 /* The last window closed by the user: the app done. Connecting
@@ -53,23 +53,24 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     return !_window || [_window shouldClose] ? NSTerminateNow : NSTerminateCancel;
 }
 
-- (void)showPanelWithServer:(NSString *)address {
+- (void)showPanelWithServer:(NSString *)address connecting:(BOOL)connecting {
     _panel = [[LBConnectPanel alloc] init];
     _panel.delegate = self;
-    [_panel showWithServer:address];
+    [_panel showWithServer:address connecting:connecting];
 }
 
 - (IBAction)connect:(id)sender {
     if (_window && ![_window shouldClose]) return;
     [self closeLogbook];
-    [self showPanelWithServer:nil];
+    [self showPanelWithServer:nil connecting:NO];
 }
 
 - (IBAction)signOut:(id)sender {
     if (_window && ![_window shouldClose]) return;
-    [_signIn signOut];
+    [LBConnectPanel signOut:_signIn];
+    _signIn = nil;
     [self closeLogbook];
-    [self showPanelWithServer:nil];
+    [self showPanelWithServer:nil connecting:NO];
 }
 
 - (IBAction)showPreferences:(id)sender {
@@ -136,7 +137,7 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
             exit(1);
         }
         [[NSAlert alertWithError:error] runModal];
-        [self showPanelWithServer:nil];
+        [self showPanelWithServer:nil connecting:NO];
         return;
     }
     _store = store;
