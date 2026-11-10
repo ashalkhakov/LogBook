@@ -990,7 +990,7 @@ static LBTasksWindowController *LBTasksWindow(void) {
     [NSApp sendAction:@selector(showTasks:) to:nil from:nil];
     LBSpin();
     for (NSWindow *window in NSApp.windows) {
-        if ([window.identifier isEqualToString:@"tasksWindow"] && window.isVisible) return window.windowController;
+        if ([window.windowController isKindOfClass:[LBTasksWindowController class]] && window.isVisible) return window.windowController;
     }
     return nil;
 }
@@ -1092,8 +1092,9 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
             purchase.lastError ?: brackets);
     names = LBTasksOf(tasks, bought, @[]);
     LBCheck(@"its process done: no task of its left", names.count == 0, names);
-    [LBServerContext() refreshAllObjects];
-    LBCheck(@"and the order closed by it", [[LBServerOf(bought) orderState] isEqualToString:@"Closed"], [LBServerOf(bought) orderState]);
+    PurchaseOrder *kept = LBServerOf(bought);
+    [kept.managedObjectContext refreshObject:kept mergeChanges:NO];
+    LBCheck(@"and the order closed by it", [kept.orderState isEqualToString:@"Closed"], kept.orderState);
     LBChoose(window, @"returnReason", @"Damaged");
     LBType(window, @"moveQuantity", @"1");
     [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];
@@ -1114,9 +1115,10 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBSavedIn(another, @"another purchase, PO-GAR-0002, saved a draft");
     [another close];
     names = LBTasksOf(tasks, second, @[ @"Confirm the order" ]);
-    NSUInteger row = [tasks.openTasks indexOfObjectPassingTest:^BOOL(LBTask *task, NSUInteger i, BOOL *stop) {
-        return [task.businessKey isEqualToString:second.id.UUIDString];
-    }];
+    NSUInteger row = NSNotFound;
+    for (NSUInteger i = 0; i < tasks.openTasks.count && row == NSNotFound; i++) {
+        if ([tasks.openTasks[i].businessKey isEqualToString:second.id.UUIDString]) row = i;
+    }
     LBCheck(@"its Confirm the order listed", row != NSNotFound, names);
     if (row != NSNotFound) {
         [tasks.window makeKeyAndOrderFront:nil];

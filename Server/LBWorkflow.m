@@ -81,7 +81,8 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
     if (!(self = [super init])) return nil;
     _coordinator = coordinator;
     _queue = dispatch_queue_create("logbook.workflow", DISPATCH_QUEUE_SERIAL);
-    NSURL *storeURL = coordinator.persistentStores.firstObject.URL;
+    NSPersistentStore *logbook = coordinator.persistentStores.firstObject;
+    NSURL *storeURL = logbook.URL;
     NSURL *beside = storeURL.isFileURL ? [storeURL URLByDeletingLastPathComponent]
                                        : [NSURL fileURLWithPath:[NSFileManager defaultManager].currentDirectoryPath];
     BOOL inMemory = temporary || [[c setting:@"Workflow"] isEqual:@"Temporary"];
@@ -145,9 +146,9 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
                 NSLog(@"Logbook: procure to receipt not started for %@: %@", orderId, error.localizedDescription);
             }
         }
-        [decided enumerateKeysAndObjectsUsingBlock:^(NSString *orderId, NSString *state, BOOL *stop) {
-            [self completeStep:@"confirm" of:orderId variables:@{ @"orderState" : state }];
-        }];
+        for (NSString *orderId in decided) {
+            [self completeStep:@"confirm" of:orderId variables:@{ @"orderState" : decided[orderId] }];
+        }
         for (NSString *orderId in received) {
             [self completeStep:@"receive" of:orderId variables:@{}];
         }
