@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="procure-to-receipt-definitions" targetNamespace="https://github.com/ashalkhakov/LogBook">
+  <bpmn:import importType="http://schemas.neumont.edu/ORM/2006-04/ORMRoot" location="Logbook.orm" namespace="Logbook"/>
+  <bpmn:process id="procureToReceipt" name="Procure to receipt" isExecutable="true">
+    <bpmn:documentation>A draft purchase order, from Reorder, to its goods received (docs/STOCK.md, Orders and Receiving). Its variable purchaseOrder is the order's id. A manager confirms it or cancels it, with the model's ConfirmPurchaseOrder form (the order's Confirm or Cancel); a keeper receives its goods with ReceiveGoods (the order's Receive), as often as they come; once nothing is outstanding the order is closed.</bpmn:documentation>
+    <bpmn:startEvent id="drafted" name="Draft made"/>
+    <bpmn:userTask id="confirm" name="Confirm the order" camunda:candidateGroups="managers" camunda:formKey="ormkit:form:ConfirmPurchaseOrder"/>
+    <bpmn:exclusiveGateway id="confirmed" name="Confirmed?" default="toCancelled"/>
+    <bpmn:endEvent id="cancelled" name="Cancelled"/>
+    <bpmn:userTask id="receive" name="Receive the goods" camunda:candidateGroups="keepers" camunda:formKey="ormkit:form:ReceiveGoods"/>
+    <bpmn:serviceTask id="check" name="All received?" camunda:delegateExpression="${orderReceived}"/>
+    <bpmn:exclusiveGateway id="received" name="All received?" default="toReceiveAgain"/>
+    <bpmn:serviceTask id="close" name="Close the order" camunda:delegateExpression="${closeOrder}"/>
+    <bpmn:endEvent id="closed" name="Closed"/>
+    <bpmn:sequenceFlow id="toConfirm" sourceRef="drafted" targetRef="confirm"/>
+    <bpmn:sequenceFlow id="toConfirmed" sourceRef="confirm" targetRef="confirmed"/>
+    <bpmn:sequenceFlow id="toReceive" sourceRef="confirmed" targetRef="receive">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">orderState = "Confirmed"</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="toCancelled" sourceRef="confirmed" targetRef="cancelled"/>
+    <bpmn:sequenceFlow id="toCheck" sourceRef="receive" targetRef="check"/>
+    <bpmn:sequenceFlow id="toReceived" sourceRef="check" targetRef="received"/>
+    <bpmn:sequenceFlow id="toClose" sourceRef="received" targetRef="close">
+      <bpmn:conditionExpression xsi:type="bpmn:tFormalExpression">fullyReceived = true</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="toReceiveAgain" sourceRef="received" targetRef="receive"/>
+    <bpmn:sequenceFlow id="toClosed" sourceRef="close" targetRef="closed"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="procureToReceipt_Diagram">
+    <bpmndi:BPMNPlane id="procureToReceipt_Plane" bpmnElement="procureToReceipt">
+      <bpmndi:BPMNShape id="drafted_Shape" bpmnElement="drafted">
+        <dc:Bounds x="80" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="confirm_Shape" bpmnElement="confirm">
+        <dc:Bounds x="170" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="confirmed_Shape" bpmnElement="confirmed" isMarkerVisible="true">
+        <dc:Bounds x="320" y="95" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="cancelled_Shape" bpmnElement="cancelled">
+        <dc:Bounds x="327" y="232" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="receive_Shape" bpmnElement="receive">
+        <dc:Bounds x="420" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="check_Shape" bpmnElement="check">
+        <dc:Bounds x="570" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="received_Shape" bpmnElement="received" isMarkerVisible="true">
+        <dc:Bounds x="720" y="95" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="close_Shape" bpmnElement="close">
+        <dc:Bounds x="820" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="closed_Shape" bpmnElement="closed">
+        <dc:Bounds x="970" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="toConfirm_Edge" bpmnElement="toConfirm">
+        <di:waypoint x="116" y="120"/>
+        <di:waypoint x="170" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toConfirmed_Edge" bpmnElement="toConfirmed">
+        <di:waypoint x="270" y="120"/>
+        <di:waypoint x="320" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toReceive_Edge" bpmnElement="toReceive">
+        <di:waypoint x="370" y="120"/>
+        <di:waypoint x="420" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toCancelled_Edge" bpmnElement="toCancelled">
+        <di:waypoint x="345" y="145"/>
+        <di:waypoint x="345" y="232"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toCheck_Edge" bpmnElement="toCheck">
+        <di:waypoint x="520" y="120"/>
+        <di:waypoint x="570" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toReceived_Edge" bpmnElement="toReceived">
+        <di:waypoint x="670" y="120"/>
+        <di:waypoint x="720" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toClose_Edge" bpmnElement="toClose">
+        <di:waypoint x="770" y="120"/>
+        <di:waypoint x="820" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toReceiveAgain_Edge" bpmnElement="toReceiveAgain">
+        <di:waypoint x="745" y="145"/>
+        <di:waypoint x="745" y="210"/>
+        <di:waypoint x="470" y="210"/>
+        <di:waypoint x="470" y="160"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toClosed_Edge" bpmnElement="toClosed">
+        <di:waypoint x="920" y="120"/>
+        <di:waypoint x="970" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

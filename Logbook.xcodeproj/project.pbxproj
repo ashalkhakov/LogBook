@@ -81,6 +81,10 @@
 			isa = PBXBuildFile;
 			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
 		};
+		1FF8C7C457EED49F516F6B7A /* WorkflowKit.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 9C514FCE6BBB463148F5C3AF /* WorkflowKit.xcframework */;
+		};
 		20F1409E469AF3CE4125FEB3 /* StockPurchase.xib */ = {
 			isa = PBXBuildFile;
 			fileRef = FA5B18C260290594D3ADCF14 /* StockPurchase.xib */;
@@ -281,6 +285,10 @@
 		743FCF79A5D881093D2F7D31 /* LBProceduresCheck.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 892723880096458A3BA80B0E /* LBProceduresCheck.m */;
+		};
+		75B83D46D2555B96242886F9 /* WorkflowKitOData.xcframework */ = {
+			isa = PBXBuildFile;
+			fileRef = 8E4DEB47F2B8FE1066461830 /* WorkflowKitOData.xcframework */;
 		};
 		76BD0C0C6014EC946C220ED3 /* LBLocalStore.m */ = {
 			isa = PBXBuildFile;
@@ -557,6 +565,10 @@
 		DFBD0FF8323401C8CF5C5DF2 /* LBSelfTest.m */ = {
 			isa = PBXBuildFile;
 			fileRef = D754F8EB42F3ADAE0E299F79 /* LBSelfTest.m */;
+		};
+		DFF8BE7FBCC4E2AA66B5246E /* LBWorkflow.m */ = {
+			isa = PBXBuildFile;
+			fileRef = A2E053C015E7AD1CE22B8AD9 /* LBWorkflow.m */;
 		};
 		E0271BA8A232779DA9B7F057 /* Foundation.framework */ = {
 			isa = PBXBuildFile;
@@ -939,6 +951,12 @@
 			path = LBPreferencesController.m;
 			sourceTree = "<group>";
 		};
+		349C171282D71AC51B920520 /* LBWorkflow.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBWorkflow.h;
+			sourceTree = "<group>";
+		};
 		354385FB5717E232F0F7E8EE /* CostsByMonth.rdl */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = text.xml;
@@ -1215,6 +1233,13 @@
 			path = LBListsController.m;
 			sourceTree = "<group>";
 		};
+		8E4DEB47F2B8FE1066461830 /* WorkflowKitOData.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = WorkflowKitOData.xcframework;
+			path = .deps/WorkflowKitOData.xcframework;
+			sourceTree = SOURCE_ROOT;
+		};
 		8FFC2E603D7AF3D2D3036778 /* LBStockActions.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -1239,6 +1264,13 @@
 			path = LBActions.h;
 			sourceTree = "<group>";
 		};
+		9C514FCE6BBB463148F5C3AF /* WorkflowKit.xcframework */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.xcframework;
+			name = WorkflowKit.xcframework;
+			path = .deps/WorkflowKit.xcframework;
+			sourceTree = SOURCE_ROOT;
+		};
 		9E4DA9E6FA751F2E5CD4DA94 /* LBStockProcedures.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -1255,6 +1287,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBPartsPanelController.m;
+			sourceTree = "<group>";
+		};
+		A2E053C015E7AD1CE22B8AD9 /* LBWorkflow.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBWorkflow.m;
 			sourceTree = "<group>";
 		};
 		A3417EE9EC39BE87936D3D2D /* LBFormValues.m */ = {
@@ -1703,6 +1741,8 @@
 				5D94A5DD7856A07B0715EA8D /* HTTPServerKit.xcframework */,
 				2894B8B4A38390D3572EB3C3 /* ODataService.xcframework */,
 				1DFFCB4F560559D913842944 /* ODataSync.xcframework */,
+				1FF8C7C457EED49F516F6B7A /* WorkflowKit.xcframework */,
+				75B83D46D2555B96242886F9 /* WorkflowKitOData.xcframework */,
 				8D6F15BAC6E1F97A4B29026F /* CoreData.framework */,
 				DE8B3107DA8A2881A7B20B8E /* Foundation.framework */,
 			);
@@ -1750,6 +1790,8 @@
 				5495040375CD673C4E4A74CE /* LBServer.m */,
 				51DCC5F4B817A5A8F196A22C /* LBStockActions.h */,
 				8FFC2E603D7AF3D2D3036778 /* LBStockActions.m */,
+				349C171282D71AC51B920520 /* LBWorkflow.h */,
+				A2E053C015E7AD1CE22B8AD9 /* LBWorkflow.m */,
 			);
 			path = Server;
 			sourceTree = "<group>";
@@ -1817,6 +1859,8 @@
 				B3BCDF809368C6B4D2C11FE7 /* RDLKit.xcframework */,
 				584640704EF6A5925E5FAEBF /* RDLKitUI.xcframework */,
 				DCD36BEFF925FD84E6C7A1B9 /* Sparkle.xcframework */,
+				9C514FCE6BBB463148F5C3AF /* WorkflowKit.xcframework */,
+				8E4DEB47F2B8FE1066461830 /* WorkflowKitOData.xcframework */,
 				B29454D488C4F49E273C15A0 /* Foundation.framework */,
 				2AB66C65BE330D1517DF768E /* CoreData.framework */,
 				D9440F138977C55F58D15995 /* AppKit.framework */,
@@ -2258,6 +2302,7 @@
 				72002D4BD2DCA11921ABE026 /* LBPermissions.m */,
 				E289951E04B658755D707518 /* LBActions.m */,
 				12C05C6C77089D0DBA1BF697 /* LBStockActions.m */,
+				DFF8BE7FBCC4E2AA66B5246E /* LBWorkflow.m */,
 				E94AAE5B2D1D4E48E3B14872 /* LBProcedures.m */,
 				ED0682A83722AC2571A66BC4 /* LBStockProcedures.m */,
 				6F4CEC1C995918B6B3F61C6F /* LogbookModel.m */,

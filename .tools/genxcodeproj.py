@@ -179,6 +179,9 @@ rdlkit = {f: xcframework(f, ".deps") for f in RDLKIT}
 ormruntime = xcframework("ORMRuntime", ".deps")
 # The Mac app's updates (AppKit/LBUpdater-Apple.m).
 sparkle = xcframework("Sparkle", ".deps")
+# WorkflowKit's engine and its API: the server's processes (Server/LBWorkflow.h).
+WORKFLOWKIT = ["WorkflowKit", "WorkflowKitOData"]
+workflowkit = {f: xcframework(f, ".deps") for f in WORKFLOWKIT}
 
 p_app = product("Logbook", "wrapper.application", "Logbook.app")
 p_ios = product("Logbook-iOS", "wrapper.application", "Logbook.app")
@@ -241,9 +244,9 @@ if [ "$PLATFORM_NAME" = iphonesimulator ]; then cp "$SRCROOT/Tests/receipt-photo
 ]
 
 
-def tool_phases(name, files):
+def tool_phases(name, files, extra=()):
     return [sources(name, files), script(name, "Copy the model", COPY_MODEL),
-            frameworks(name, [ormruntime] + ODATA + [sdk["CoreData"], sdk["Foundation"]])]
+            frameworks(name, [ormruntime] + ODATA + list(extra) + [sdk["CoreData"], sdk["Foundation"]])]
 
 
 # Groups.
@@ -263,7 +266,7 @@ for d in sorted({os.path.dirname(f) for f in ALL_FILES}):
     members = [f for f in ALL_FILES if os.path.dirname(f) == d]
     dir_groups.append(group(d, d, [refs[f] for f in by_stem(members)], d))
 g_docs = group("Docs", "Docs", [doc_refs[d] for d in DOCS])
-g_frameworks = group("Frameworks", "Frameworks", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle]
+g_frameworks = group("Frameworks", "Frameworks", [ormruntime] + ODATA + [rdlkit[f] for f in RDLKIT] + [sparkle] + [workflowkit[f] for f in WORKFLOWKIT]
                      + [sdk[f] for f in ("Foundation", "CoreData", "AppKit", "UIKit", "Security")])
 g_products = group("Products", "Products", [p_app, p_ios, p_server, p_procedures, p_sync])
 g_main = group("main", PROJECT, [g_docs] + dir_groups + [g_frameworks, g_products])
@@ -392,7 +395,7 @@ def target(name, phases, prod, ptype, base=None):
 
 t_app = target("Logbook", app_phases, p_app, "com.apple.product-type.application")
 t_ios = target("Logbook-iOS", ios_phases, p_ios, "com.apple.product-type.application", xcconfig_ref)
-t_server = target("logbook-server", tool_phases("logbook-server", SERVER_SOURCES), p_server,
+t_server = target("logbook-server", tool_phases("logbook-server", SERVER_SOURCES, [workflowkit[f] for f in WORKFLOWKIT]), p_server,
                   "com.apple.product-type.tool")
 t_procedures = target("lb-procedures-check", tool_phases("lb-procedures-check", PROCEDURES_SOURCES), p_procedures,
                       "com.apple.product-type.tool")

@@ -26,6 +26,10 @@
 //                (HSApplication.h)
 //   AllowAnonymous  NO: a request that names no one is refused (default
 //                YES, for trying it out)
+//   Workflow     the processes' store (LBWorkflow.h; default Workflow.sqlite
+//                beside the logbook's; Temporary with a temporary one)
+//   Processes    the processes, as wf-build built them (default
+//                Logbook.wfdeployment beside the server)
 //   Permissions  who may see and change the stock, as relations (default
 //                Logbook.permissions.plist here; ODataKit's
 //                docs/permissions.md): read once a sign-in is set, and one
@@ -49,6 +53,7 @@
 #import "LBActions.h"
 #import "LBProcedures.h"
 #import "LBStockProcedures.h"
+#import "LBWorkflow.h"
 #include <dlfcn.h>
 #include <stdlib.h>
 
@@ -59,13 +64,15 @@
 + (NSString *)environmentPrefix { return @"LB_"; }
 + (NSArray<NSString *> *)knownSettings {
     return [[super knownSettings] arrayByAddingObjectsFromArray:@[ @"Model", @"Plans", @"StoreType", @"StoreURL", @"ServiceRoot",
-                                                                   @"AllowAnonymous", @"Permissions" ]];
+                                                                   @"AllowAnonymous", @"Permissions", @"Workflow", @"Processes" ]];
 }
 @end
 
 @interface LBServer : HSApplication
 @property (nonatomic, strong) ODataService *service;
 @property (nonatomic, strong) ODataSyncService *histories;
+@property (nonatomic, strong) LBWorkflow *workflow;
+@property (nonatomic, strong) ODataService *workflowService;
 @end
 
 @implementation LBServer
@@ -206,6 +213,15 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
         ?: [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%lu/odata/", c.bindToLocalhost ? @"127.0.0.1" : [NSProcessInfo processInfo].hostName,
                                                             (unsigned long)c.port]];
     _service = [[ODataService alloc] initWithPersistentStoreCoordinator:coordinator serviceRoot:root];
+    /* The processes (LBWorkflow.h), beside the store; their API beside the
+       logbook's, at workflow/. */
+    _workflow = [[LBWorkflow alloc] initWithConfiguration:c coordinator:coordinator
+                                           temporaryStore:LBTemporaryStore != nil || [[c setting:@"Workflow"] isEqual:@"Temporary"]
+                                                    error:error];
+    if (!_workflow) return NO;
+    _workflowService = [_workflow serviceAtRoot:[root URLByAppendingPathComponent:@"../workflow/"].absoluteURL.standardizedURL
+                                       signedIn:[c setting:@"TrustedUserHeader"] || [c setting:@"JWTIssuer"]
+                                                || [c setting:@"IntrospectionEndpoint"]];
     _service.allowsAnonymousRequests = [c flag:@"AllowAnonymous" otherwise:YES];
     _service.allowsAnonymousMetadata = YES;
     /* Before each save of what clients write: the reminders the events in
@@ -261,6 +277,7 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
 - (void)configureModules:(NSMutableArray<id<HSModule>> *)modules {
     [super configureModules:modules];
     [modules addObject:[[ODataServiceModule alloc] initWithService:_service]];
+    [modules addObject:[[ODataServiceModule alloc] initWithService:_workflowService]];
 }
 
 @end
