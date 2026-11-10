@@ -86,6 +86,12 @@ server use is generated from it by the build, into `build/Model`
   and a fill-up is saved by the form (ORMKit's ORMFormSession), a refusal
   said under the field it is about.
 
+  `Model/Records.flow` is a flow of the model's (ORMKit's docs/FORMS.md,
+  Flows): its Vehicles list leads, a vehicle chosen, to RecordFillUp for
+  it, and back once it is saved or cancelled; who enters it is left to the
+  app, the user signed in. `make check` checks it against the model
+  (`ormtool flow`).
+
 None of it is kept in git, nor edited: it is made again whenever the
 model, or ormtool, changes.
 

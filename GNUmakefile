@@ -176,6 +176,7 @@ after-install::
 XVFB = $(if $(DISPLAY),,$(shell command -v xvfb-run >/dev/null 2>&1 && echo xvfb-run -a))
 
 check:: all
+	$(ORMTOOL) flow Model/Logbook.orm Model/Records.flow
 	obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
 	obj/lb-stock-check obj/Logbook.momd obj/Logbook.ormplans
 	Tests/form-check.sh obj/logbook-server obj/lb-form-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms

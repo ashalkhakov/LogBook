@@ -32319,6 +32319,10 @@ came back) at its price; nothing, once all of it came back.</ormq:Note>
 				<ormq:Value id="_BDD66287-4189-4294-9CDD-E3C3B0EC673F" ref="_12F44F5C-7BEC-4B7C-AE04-FF3736EC0C54" Name="Amount" Expression="multiply(subtract(#_347E11A3-FB7E-4E60-9ACF-F237C58D7AE2, coalesce(#_6DF3F1EB-2F70-446F-B9B5-289F57C73775, 0)), #_B53EE8CD-6879-4045-A07D-454529A3B901)" Projected="true" Comparison="&gt;" Value="0" />
 			</ormq:Node>
 		</ormq:Query>
+		<ormq:Query id="_19702A0B-A694-469C-AF47-1305B1211F4A" Name="Vehicles">
+			<ormq:Note>The vehicles, each listed: where a flow's fill-up begins (Model/Records.flow).</ormq:Note>
+			<ormq:Node id="_5A5ADED9-245F-4FA1-8618-60F506204DBF" ref="_0828CE7B-EC8E-43DD-8C93-D26D85C028EF" Projected="true" />
+		</ormq:Query>
 		<ormq:Query id="_D82E99E7-32B4-4BBF-A1E9-1DA15731A80C" Name="RecordFillUp" Kind="Form">
 			<ormq:Node id="_94FF860C-4A0D-4E01-86F2-FE397C6B65E6" ref="_4722F84A-923A-4586-9A1C-3B81A396C151">
 				<ormq:Step id="_6C21EB9E-B9B4-4C33-AFD0-3DAA434973DF" ref="_B216F871-5305-45E0-86C0-0136D901CDC6" Role="_9E39171D-A1A8-4494-9AEF-2FBC80042310">

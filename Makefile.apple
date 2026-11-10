@@ -181,6 +181,7 @@ $(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalenda
 	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $(MODEL)/Forms/*.ormform $@/Contents/Resources/
 
 check: all
+	$(ORMTOOL) flow Model/Logbook.orm Model/Records.flow
 	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	$(BUILD)/lb-stock-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	Tests/form-check.sh $(BUILD)/logbook-server $(BUILD)/lb-form-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms
