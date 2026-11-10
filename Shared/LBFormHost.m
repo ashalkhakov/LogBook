@@ -1,5 +1,6 @@
 #import "LBFormHost.h"
 #import <ORMRuntime/ORMForm.h>
+#import <ORMRuntime/ORMFormSession.h>
 #import <ORMRuntime/ORMQueryOData.h>
 #import <ODataKit/ODataTransport.h>
 #import <ODataSync/ODataSignIn.h>
@@ -27,46 +28,14 @@
 
 @end
 
-/* Until done says so: the main run loop kept turning meanwhile, so that an
-   answer finished on it (a sign-in's) arrives. */
-static void LBFormWait(BOOL (^done)(void)) {
-    while (!done()) {
-        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.02]];
-    }
-}
-
-/* A value of the service's JSON as the instance has it. */
-static NSString *LBFormText(id value, NSString *keyName) {
-    if ([value isKindOfClass:[NSArray class]]) return LBFormText([value firstObject], keyName);
-    if ([value isKindOfClass:[NSDictionary class]]) {
-        for (NSString *name in value) {
-            if ([name caseInsensitiveCompare:keyName ?: @""] == NSOrderedSame) return LBFormText(value[name], nil);
-        }
-        return @"";
-    }
-    if ([value isKindOfClass:[NSString class]]) return value;
-    if ([value isKindOfClass:[NSUUID class]]) return [value UUIDString];
-    if ([value respondsToSelector:@selector(stringValue)]) return [value stringValue];
-    return @"";
-}
-
 static NSError *LBFormError(NSString *text) {
     return [NSError errorWithDomain:@"LBFormHost" code:1 userInfo:@{ NSLocalizedDescriptionKey : text }];
 }
 
 @implementation LBFormHost {
     NSString *_document;
-    NSManagedObjectContext *_context;
-    BOOL (^_saving)(NSManagedObjectContext *, NSError **);
-    NSURL *_root;
-    NSManagedObjectModel *_model;
-    LBFormServiceTransport *_transport;
-    /* The object as the service gave it, to change no more of it than was
-       changed, and its version (If-Match). */
-    NSDictionary<NSString *, NSString *> *_original;
-    NSString *_etag;
+    ORMFormSession *_session;
     NSArray<NSString *> *_formMessages;
-    NSString *_savedKey;
 }
 
 - (instancetype)init {
@@ -93,30 +62,31 @@ static NSError *LBFormError(NSString *text) {
 
 - (instancetype)initWithForm:(ORMForm *)form document:(NSString *)xml given:(NSDictionary<NSString *, NSString *> *)given {
     if ((self = [super init])) {
-        _form = form;
         _document = [xml copy];
-        _given = [given copy];
+        _session = [[ORMFormSession alloc] initWithForm:form given:given];
         _formMessages = @[];
     }
     return self;
 }
 
+- (ORMForm *)form { return _session.form; }
+- (NSDictionary<NSString *, NSString *> *)given { return _session.given; }
+- (ORMFormSession *)session { return _session; }
+- (NSString *)key { return _session.key; }
+- (void)setKey:(NSString *)key { _session.key = key; }
+
 - (void)useContext:(NSManagedObjectContext *)context saving:(BOOL (^)(NSManagedObjectContext *, NSError **))saving {
-    _context = context;
-    _saving = [saving copy];
-    _root = nil;
+    [_session useContext:context saving:saving];
 }
 
 - (void)useServiceRoot:(NSURL *)root model:(NSManagedObjectModel *)model signIn:(ODataSignIn *)signIn {
-    _root = root;
-    _model = model;
-    _transport = [[LBFormServiceTransport alloc] init];
-    _transport.signIn = signIn;
-    _context = nil;
+    LBFormServiceTransport *transport = [[LBFormServiceTransport alloc] init];
+    transport.signIn = signIn;
+    [_session useServiceRoot:root model:model transport:transport];
 }
 
 - (NSArray<NSString *> *)formMessages { return _formMessages; }
-- (NSString *)savedKey { return _savedKey; }
+- (NSString *)savedKey { return _session.savedKey; }
 
 - (XFProcessor *)makeProcessor:(NSError **)error {
     XFSchemeTransport *transport = [[XFSchemeTransport alloc] init];
@@ -183,87 +153,34 @@ static XFSubmissionResponse *LBFormResponse(NSInteger status, NSString *xml) {
     return response;
 }
 
-/* The instance as XML: its document element the anchor's entity, an
-   element of each, in the form's order. */
-- (NSString *)XMLOf:(NSDictionary<NSString *, NSString *> *)instance {
-    NSXMLElement *root = [NSXMLElement elementWithName:_form.entityName];
-    for (ORMFormElement *element in _form.elements) {
-        [root addChild:[NSXMLElement elementWithName:element.name stringValue:instance[element.name] ?: @""]];
+/* The values as XML: its document element the anchor's entity, an element
+   of each, in the form's order. */
+- (NSString *)XMLOf:(NSDictionary<NSString *, NSString *> *)values {
+    NSXMLElement *root = [NSXMLElement elementWithName:self.form.entityName];
+    for (ORMFormElement *element in self.form.elements) {
+        [root addChild:[NSXMLElement elementWithName:element.name stringValue:values[element.name] ?: @""]];
     }
     return [root XMLString];
 }
 
-- (NSDictionary<NSString *, NSString *> *)instanceOfXML:(NSString *)xml {
+- (NSDictionary<NSString *, NSString *> *)valuesOfXML:(NSString *)xml {
     NSXMLDocument *document = xml ? [[NSXMLDocument alloc] initWithXMLString:xml options:0 error:NULL] : nil;
-    NSMutableDictionary *instance = [NSMutableDictionary dictionary];
+    NSMutableDictionary *values = [NSMutableDictionary dictionary];
     for (NSXMLNode *child in [[document rootElement] children]) {
-        if ([child kind] == NSXMLElementKind) instance[[child localName]] = [child stringValue] ?: @"";
+        if ([child kind] == NSXMLElementKind) values[[child localName]] = [child stringValue] ?: @"";
     }
-    return instance;
+    return values;
 }
 
 - (XFSubmissionResponse *)read:(NSDictionary *)values error:(NSError **)error {
-    NSString *key = [values[_form.keyElement] length] > 0 ? values[_form.keyElement] : _key;
-    _original = nil;
-    _etag = nil;
-    if ([key length] == 0) return LBFormResponse(200, [self XMLOf:[_form instanceGiven:_given]]);
-    NSDictionary *instance = _context ? [_form readKey:key inContext:_context error:error] : [self readFromService:key error:error];
-    if (!instance) return nil;
-    _original = _context ? nil : instance;
-    return LBFormResponse(200, [self XMLOf:instance]);
-}
-
-/* Every row the request reads from the service, and its objects. */
-- (NSArray<NSArray *> *)rowsOf:(ORMQueryOData *)request objects:(NSArray **)objects error:(NSError **)error {
-    ORMQueryODataCursor *cursor = [request cursorWithTransport:_transport serviceRoot:_root];
-    NSMutableArray *rows = [NSMutableArray array], *read = [NSMutableArray array];
-    __block NSError *failure = nil;
-    while (!cursor.atEnd && !failure) {
-        __block BOOL done = NO;
-        [cursor nextPage:100 completion:^(ORMQueryResult *page, NSError *pageError) {
-            [rows addObjectsFromArray:page.rows ?: @[]];
-            [read addObjectsFromArray:page.objects ?: @[]];
-            failure = page ? nil : pageError;
-            done = YES;
-        }];
-        LBFormWait(^BOOL { return done; });
-    }
-    if (failure) {
-        if (error) *error = failure;
-        return nil;
-    }
-    if (objects) *objects = read;
-    return rows;
-}
-
-- (NSDictionary<NSString *, NSString *> *)readFromService:(NSString *)key error:(NSError **)error {
-    ORMQueryOData *request = [_form readRequestForKey:key model:_model error:error];
-    NSArray *objects = nil;
-    NSArray *rows = request ? [self rowsOf:request objects:&objects error:error] : nil;
-    if (!rows) return nil;
-    if ([rows count] == 0) {
-        if (error) *error = LBFormError([NSString stringWithFormat:@"There is no %@ %@.", _form.entityName, key]);
-        return nil;
-    }
-    id object = [objects firstObject];
-    _etag = [object isKindOfClass:[NSDictionary class]] ? object[@"@odata.etag"] : nil;
-    return [_form instanceOfRow:[rows firstObject]];
+    if ([values[self.form.keyElement] length] > 0) _session.key = values[self.form.keyElement];
+    if (![_session open:error]) return nil;
+    return LBFormResponse(200, [self XMLOf:_session.values]);
 }
 
 - (XFSubmissionResponse *)choices:(NSString *)name values:(NSDictionary *)values error:(NSError **)error {
-    NSArray<NSString *> *keys;
-    if (_context) {
-        keys = [_form choicesNamed:name values:values inContext:_context error:error];
-    } else {
-        ORMQueryOData *request = [_form choicesRequestNamed:name values:values model:_model error:error];
-        NSArray *rows = request ? [self rowsOf:request objects:NULL error:error] : nil;
-        NSMutableArray *found = rows ? [NSMutableArray array] : nil;
-        for (NSArray *row in rows) {
-            NSString *key = LBFormText([row firstObject], [_form elementNamed:name].keyName);
-            if ([key length] > 0 && ![found containsObject:key]) [found addObject:key];
-        }
-        keys = found;
-    }
+    [_session setValues:values];
+    NSArray<NSString *> *keys = [_session choicesNamed:name error:error];
     if (!keys) return nil;
     NSXMLElement *choices = [NSXMLElement elementWithName:@"choices"];
     for (NSString *key in keys) {
@@ -274,66 +191,27 @@ static XFSubmissionResponse *LBFormResponse(NSInteger status, NSString *xml) {
     return LBFormResponse(200, [choices XMLString]);
 }
 
-/* Refused: what is said of a field said there, the rest the form's. */
-- (XFSubmissionResponse *)refused:(NSDictionary<NSString *, NSString *> *)errors {
-    NSMutableDictionary *atFields = [NSMutableDictionary dictionary];
-    NSMutableArray *messages = [NSMutableArray array];
-    [errors enumerateKeysAndObjectsUsingBlock:^(NSString *element, NSString *text, BOOL *stop) {
-        if ([element length] > 0 && [self->_form elementNamed:element]) atFields[element] = text;
-        else [messages addObject:text];
-    }];
-    [messages addObjectsFromArray:[_processor.model setHostErrors:atFields]];
-    _formMessages = messages;
-    return LBFormResponse(422, @"<refused/>");
-}
-
 - (XFSubmissionResponse *)save:(XFSubmissionRequest *)request error:(NSError **)error {
-    NSDictionary *instance = [self instanceOfXML:request.body];
+    [_session setValues:[self valuesOfXML:request.body]];
     _formMessages = @[];
-    _savedKey = nil;
-    if (_context) {
-        NSDictionary *errors = nil;
-        NSError *failure = nil;
-        NSManagedObject *saved = [_form save:instance inContext:_context saving:_saving errors:&errors error:&failure];
-        if (!saved) {
-            /* The context the form's own: what saving it changed before it
-               was refused (the rules' preparations) undone too. */
-            [_context rollback];
-            return [self refused:[errors count] ? errors : @{ @"" : failure.localizedDescription ?: @"Not saved." }];
+    NSError *failure = nil;
+    if (![_session save:&failure]) {
+        if (failure) {
+            if (error) *error = failure;
+            return nil;
         }
-        _savedKey = LBFormText([saved valueForKey:_form.keyElement], nil);
-        return LBFormResponse(200, [self XMLOf:[_form readKey:_savedKey inContext:_context error:NULL] ?: instance]);
+        /* Refused: what is said of a field said there, the rest the form's. */
+        NSMutableDictionary *atFields = [NSMutableDictionary dictionary];
+        NSMutableArray *messages = [NSMutableArray array];
+        [_session.errors enumerateKeysAndObjectsUsingBlock:^(NSString *element, NSString *text, BOOL *stop) {
+            if ([element length] > 0 && [self.form elementNamed:element]) atFields[element] = text;
+            else [messages addObject:text];
+        }];
+        [messages addObjectsFromArray:[_processor.model setHostErrors:atFields]];
+        _formMessages = messages;
+        return LBFormResponse(422, @"<refused/>");
     }
-    ORMFormRequest *save = [_form saveRequestFor:instance original:_original etag:_etag model:_model error:error];
-    if (!save) return nil;
-    NSMutableURLRequest *http = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:save.path relativeToURL:_root]];
-    http.HTTPMethod = save.method;
-    http.HTTPBody = [save bodyData];
-    [save.headers enumerateKeysAndObjectsUsingBlock:^(NSString *name, NSString *value, BOOL *stop) {
-        [http setValue:value forHTTPHeaderField:name];
-    }];
-    [http setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    [http setValue:@"return=representation" forHTTPHeaderField:@"Prefer"];
-    ODataExchange *exchange = [[ODataExchange alloc] initWithRequest:http target:nil action:NULL];
-    [_transport startExchange:exchange];
-    LBFormWait(^BOOL { return exchange.isFinished; });
-    NSInteger status = [(NSHTTPURLResponse *)exchange.URLResponse statusCode];
-    if (exchange.error || status == 0) {
-        if (error) *error = exchange.error ?: LBFormError(@"The server did not answer.");
-        return nil;
-    }
-    if (status >= 400) {
-        NSDictionary *errors = [_form elementErrorsOfResponse:exchange.data ?: [NSData data] model:_model];
-        return [self refused:[errors count] ? errors : @{ @"" : [NSString stringWithFormat:@"The server refused it (%ld).", (long)status] }];
-    }
-    NSString *key = instance[_form.keyElement];
-    if ([key length] == 0 && exchange.data) {
-        key = LBFormText([NSJSONSerialization JSONObjectWithData:exchange.data options:0 error:NULL], _form.keyElement);
-    }
-    _savedKey = key;
-    NSDictionary *read = [key length] ? [self readFromService:key error:NULL] : nil;
-    _original = read;
-    return LBFormResponse(200, [self XMLOf:read ?: instance]);
+    return LBFormResponse(200, [self XMLOf:_session.values]);
 }
 
 @end

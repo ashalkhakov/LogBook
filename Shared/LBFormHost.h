@@ -12,14 +12,15 @@
 // server; a check's own store), saved as its owner saves, or straight
 // against the server's OData service. A save refused is said at the
 // fields it is about (XFModel's host errors) and in the form's own words
-// for the rest (formMessages). The desktop app's and the checks'; not the
-// iOS app's.
+// for the rest (formMessages). What it answers comes from an ORMFormSession
+// (ORMRuntime), the form's contract run, which a view of the app's own runs
+// as well. The desktop app's and the checks'; not the iOS app's.
 
 #pragma once
 #import <CoreData/CoreData.h>
 #import <XFormsKit/XFormsKit.h>
 
-@class ORMForm, ODataSignIn;
+@class ORMForm, ORMFormSession, ODataSignIn;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -38,6 +39,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)init NS_UNAVAILABLE;
 @property (nonatomic, readonly, strong) ORMForm *form;
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, NSString *> *given;
+// The form being filled in, which the document's reads, choices and save
+// are answered from.
+@property (nonatomic, readonly, strong) ORMFormSession *session;
 
 // Against a context of the form's own, on its queue (the main one), saved
 // by saving (the app's own way: LBStore's -saveContext:error:), or by the
