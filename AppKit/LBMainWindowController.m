@@ -25,6 +25,9 @@
 #import "LBPartsPanelController.h"
 #import "LBStockEditor.h"
 #import "LBStockProcedures.h"
+#import "LBFormValues.h"
+#import <ORMRuntime/ORMForm.h>
+#import <ORMRuntime/ORMFormSession.h>
 
 static void *LBVehicleChosen = &LBVehicleChosen;
 static void *LBRecordChosen = &LBRecordChosen;
@@ -32,6 +35,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 @interface LBMainWindowController ()
 @property (nonatomic, readwrite, copy) NSDictionary<NSString *, id> *chosenRecords;
+@property (nonatomic, readwrite, copy) NSArray<User *> *fillUpDrivers;
 @property (nonatomic, readwrite, copy) NSArray<User *> *drivers;
 @property (nonatomic, readwrite, copy) NSArray<TyreSet *> *tyreSets;
 @property (nonatomic, readwrite, copy) NSArray<Trip *> *trips;
@@ -41,6 +45,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @implementation LBMainWindowController {
     NSArray<NSString *> *_tyreSetTitles;
     NSArray<NSString *> *_tripTitles;
+    /* The chosen fill-up as the model's RecordFillUp form has it. */
+    LBFormValues *_fillUpForm;
 }
 
 - (instancetype)initWithStore:(LBStore *)store {
@@ -155,12 +161,45 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_calendarController refresh];
 }
 
+/* A fill-up as the model's RecordFillUp form (ORMKit's docs/FORMS.md):
+   its inputs the vehicle and who entered it, read from the store's context
+   as it is now, what is typed written through to the record (the list
+   shows it as it is typed), its drivers the form's choices, and saved by
+   the form, as the store saves. What a save refused of a field is said
+   under it, and gone once the field changes. nil where the form is not in
+   the app or cannot read the fill-up: the tab binds the record itself. */
+- (LBFormValues *)formOfFillUp:(FillUp *)fillUp {
+    ORMForm *form = [ORMForm formNamed:@"RecordFillUp" error:NULL];
+    if (!form) return nil;
+    /* A new one is given its key now, as saving it would: the form edits
+       it by its key. */
+    if (!fillUp.id) fillUp.id = [NSUUID UUID];
+    ORMFormSession *session = [[ORMFormSession alloc] initWithForm:form
+                                                             given:@{ @"vehicle" : (fillUp.vehicle ?: [self chosenVehicle]).id.UUIDString ?: @"",
+                                                                      @"enteredBy" : fillUp.enteredBy.email ?: _store.user.email ?: @"" }];
+    LBStore *store = _store;
+    [session useContext:self.context saving:^BOOL(NSManagedObjectContext *context, NSError **failure) {
+        return [store save:failure];
+    }];
+    session.key = fillUp.id.UUIDString;
+    if (![session open:NULL]) return nil;
+    LBFormValues *values = [[LBFormValues alloc] initWithSession:session object:fillUp];
+    __weak NSTabView *forms = _recordForms;
+    values.changedHandler = ^(NSString *element) {
+        [LBFormValues clearProblemAt:element under:forms];
+    };
+    return values;
+}
+
 /* The chosen record's form shown, given the record. */
 - (void)recordChosen {
     NSArray *chosen = _records.selectedObjects;
     Record *record = chosen.count == 1 ? chosen[0] : nil;
     NSString *kind = record.entity.name;
-    self.chosenRecords = kind ? @{ kind: record } : @{};
+    _fillUpForm = [record isKindOfClass:[FillUp class]] ? [self formOfFillUp:(FillUp *)record] : nil;
+    self.fillUpDrivers = (NSArray<User *> *)_fillUpForm.choices[@"driver"] ?: self.drivers;
+    self.chosenRecords = kind ? @{ kind: _fillUpForm ?: record } : @{};
+    [_fillUpForm showErrors:@{} under:_recordForms];
     NSInteger form = [_recordForms indexOfTabViewItemWithIdentifier:kind ?: @"none"];
     [_recordForms selectTabViewItemAtIndex:form == NSNotFound ? 0 : form];
     [self answersChanged];
@@ -423,6 +462,28 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 - (BOOL)saveChanges {
     NSError *error = nil;
+    /* A fill-up changed is saved by its form, the rest with it: a refusal
+       of its fields said under them, the rest as any save's. */
+    FillUp *fillUp = (FillUp *)_fillUpForm.object;
+    /* The record is kept as it is typed, and Save may have completed it
+       since (its readings), or added it to its vehicle after it was
+       chosen: the form opened on it as it is now, its inputs its own. */
+    LBFormValues *form = fillUp && (fillUp.hasChanges || fillUp.isInserted) ? [self formOfFillUp:fillUp] : nil;
+    if (form) {
+        if (![form.session save:&error]) {
+            NSArray<NSString *> *rest = error ? @[] : [form showErrors:form.session.errors under:_recordForms];
+            if (!error && rest.count) {
+                error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSValidationMultipleErrorsError
+                                        userInfo:@{ NSLocalizedDescriptionKey : @"The fill-up was not saved.",
+                                                    NSLocalizedRecoverySuggestionErrorKey : [rest componentsJoinedByString:@"\n"] }];
+            }
+            if (error) [self reportError:[self willPresentError:error]];
+            else _lastError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSValidationMultipleErrorsError
+                                              userInfo:@{ NSLocalizedDescriptionKey : @"The fill-up was not saved: see under its fields." }];
+            return NO;
+        }
+        [_fillUpForm showErrors:@{} under:_recordForms];
+    }
     /* A record's parts shipped as the server saves: the stock windows told. */
     BOOL stock = NO;
     for (NSManagedObject *object in [self.context.insertedObjects setByAddingObjectsFromSet:self.context.updatedObjects]) {

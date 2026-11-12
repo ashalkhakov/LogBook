@@ -39,7 +39,9 @@
 # it is generated from it by ORMKit's ormtool, into build/Model -- the Core
 # Data model (Logbook.xcdatamodeld), the code and tables that keep its rules
 # (Constraints/: LogbookValidation.h and .m, Logbook.ormplans) and its
-# listing (Logbook.forml) -- and never kept in git.
+# listing (Logbook.forml), and its forms' contracts (Forms/<Form>.ormform,
+# by ormtool xforms: the fill-up's tab runs RecordFillUp's) -- and never
+# kept in git.
 
 comma = ,
 BUILD ?= build
@@ -63,7 +65,7 @@ FLAGS = -fobjc-arc -fblocks -g -Wall -Wno-unused-parameter -mmacosx-version-min=
 GENERATED = $(BUILD)/Generated
 # What is generated from the model (above), by ORMKit's ormtool.
 MODEL = $(BUILD)/Model
-ORMTOOL = $(abspath .deps/bin/ormtool)
+ORMTOOL ?= $(abspath .deps/bin/ormtool)
 INC = -I$(MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
 LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(ODATAKIT_DIRS)) \
 	-F$(ORMKIT_PRODUCTS) -Wl,-rpath,$(ORMKIT_PRODUCTS) \
@@ -72,7 +74,7 @@ LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(
 
 .PHONY: all check install installcheck clean ios ios-check ios-install ios-installcheck
 APP = $(BUILD)/Logbook.app
-all: $(BUILD)/logbook-server $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(BUILD)/Logbook.permissions.plist $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-stock-check $(BUILD)/lb-sync-check
+all: $(BUILD)/logbook-server $(BUILD)/Logbook.wfdeployment $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(BUILD)/Logbook.permissions.plist $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-stock-check $(BUILD)/lb-sync-check $(BUILD)/lb-form-check
 
 # ORMKit's runtime, and its ormtool, which generates from the model: the
 # release's, in .deps.
@@ -85,6 +87,7 @@ $(MODEL)/.made: Model/Logbook.orm $(ORMTOOL)
 	$(ORMTOOL) coredata Model/Logbook.orm $(MODEL)/Logbook.xcdatamodeld Logbook \
 	  --validation $(MODEL)/Constraints >$(MODEL)/mapping.txt
 	$(ORMTOOL) forml Model/Logbook.orm $(MODEL)/Logbook.forml
+	$(ORMTOOL) xforms Model/Logbook.orm $(MODEL)/Forms/ >$(MODEL)/forms.txt
 	touch $@
 
 $(MODEL)/Constraints/LogbookValidation.m: $(MODEL)/.made ;
@@ -119,11 +122,24 @@ xcode-model: $(MODEL)/.made $(GENERATED)/.made $(BUILD)/Logbook.momd $(BUILD)/Lo
 $(GENERATED)/LogbookClasses.inc: $(GENERATED)/.made
 	for m in $(GENERATED)/*.m; do echo "#include \"$$(basename $$m)\""; done > $@
 
-SERVER = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Server/LBStockActions.m Shared/LBProcedures.m \
+SERVER = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Server/LBStockActions.m Server/LBWorkflow.m Shared/LBProcedures.m \
 	Shared/LBStockProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+# WorkflowKit's engine and its API (LBWorkflow.h): its XCFrameworks in .deps,
+# or WORKFLOWKIT_DIRS other macOS slices of them; its wf-build, which builds
+# the processes, WFBUILD.
+WORKFLOWKIT_DIRS ?= $(foreach f,WorkflowKit WorkflowKitOData,$(abspath .deps/$(f).xcframework/macos-arm64_x86_64))
+WFBUILD ?= $(abspath .deps/bin/wf-build)
 
-$(BUILD)/logbook-server: $(MODEL)/.made $(SERVER) Server/LBPermissions.h Server/LBActions.h Server/LBStockActions.h Shared/LBProcedures.h Shared/LBStockProcedures.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
-	$(CC) $(FLAGS) $(INC) $(SERVER) $(GENERATED)/*.m $(LIBS) -o $@
+$(BUILD)/logbook-server: $(MODEL)/.made $(SERVER) Server/LBPermissions.h Server/LBActions.h Server/LBStockActions.h Server/LBWorkflow.h Shared/LBProcedures.h Shared/LBStockProcedures.h $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(BUILD)/Logbook.wfdeployment
+	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(WORKFLOWKIT_DIRS)) $(SERVER) $(GENERATED)/*.m $(LIBS) \
+	  $(addprefix -F,$(WORKFLOWKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(WORKFLOWKIT_DIRS)) -framework WorkflowKitOData -framework WorkflowKit -o $@
+
+# The model's processes (Model/*.bpmn), with the model they import, built
+# and checked by wf-build as the server deploys them.
+$(BUILD)/Logbook.wfdeployment: Model/Logbook.orm $(wildcard Model/*.bpmn)
+	rm -rf $(BUILD)/processes $@ && mkdir -p $(BUILD)/processes
+	cp Model/Logbook.orm Model/*.bpmn $(BUILD)/processes/
+	$(WFBUILD) -name Logbook -o $@ $(BUILD)/processes
 
 # The procedures checked over a store of the model's own.
 PROCEDURES = Shared/LBProcedures.m Shared/LBPlanned.m $(MODEL)/Constraints/LogbookValidation.m
@@ -147,8 +163,15 @@ SYNC_CHECK = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shar
 $(BUILD)/lb-sync-check: $(MODEL)/.made $(SYNC_CHECK) $(wildcard Shared/*.h) $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) $(SYNC_CHECK) $(GENERATED)/*.m $(LIBS) -o $@
 
-# The desktop app: its code, its windows (the XIBs compiled), the model and
-# its tables in its resources.
+# The model's fill-up form run against a store of its own and against a
+# server (Tests/LBFormCheck.m), as the app's fill-up tab runs it.
+FORM_CHECK = Tests/LBFormCheck.m Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+
+$(BUILD)/lb-form-check: $(MODEL)/.made $(FORM_CHECK) $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	$(CC) $(FLAGS) $(INC) $(FORM_CHECK) $(GENERATED)/*.m $(LIBS) -o $@
+
+# The desktop app: its code, its windows (the XIBs compiled), the model, its
+# tables and its forms' contracts in its resources.
 # The updater's Apple half (AppKit/LBUpdater.h); the GNUstep half is the GNUmakefile's.
 APP_SOURCES = $(filter-out AppKit/LBUpdater-GNUstep.m,$(wildcard AppKit/*.m)) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard Shared/*.m) $(MODEL)/Constraints/LogbookValidation.m
 XIBS = $(wildcard AppKit/*.xib)
@@ -168,12 +191,15 @@ $(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalenda
 	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(RDLKIT_DIRS) $(SPARKLE_DIR)) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) $(APP_LIBS) -o $@/Contents/MacOS/Logbook
 	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null \
 	  || { echo "$$x does not compile (ibtool --errors --compile)"; rm -rf $@; exit 1; }; done
-	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $@/Contents/Resources/
+	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $(MODEL)/Forms/*.ormform $@/Contents/Resources/
 
 check: all
+	$(ORMTOOL) flow Model/Logbook.orm Model/Records.flow
 	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	$(BUILD)/lb-stock-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
+	Tests/form-check.sh $(BUILD)/logbook-server $(BUILD)/lb-form-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
+	python3 Tests/process-check.py $(BUILD)/logbook-server
 	Tests/sync-check.sh $(BUILD)/logbook-server $(BUILD)/lb-sync-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	Tests/app-check.sh $(BUILD)/logbook-server $(APP)/Contents/MacOS/Logbook
 	@if xcrun simctl list devices available 2>/dev/null | grep -q 'iPhone'; then \

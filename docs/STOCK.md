@@ -314,6 +314,29 @@ per supplier, of a line each for the level less what is available and
 incoming. Nothing is ordered until a person confirms the drafts. ("Due" is
 a derived fact type: [Changes](#changes-to-the-model).)
 
+## Processes
+
+The orders' steps are also a process, run by WorkflowKit's engine in the
+server (`Server/LBWorkflow.h`), its tasks the people's who do them:
+**procure to receipt** (`Model/ProcureToReceipt.bpmn`). Every purchase order
+saved as a draft (Reorder's, or one entered) starts it once it is saved.
+A manager confirms it, or cancels it, with the model's form
+ConfirmPurchaseOrder (the order's `Confirm` or `Cancel`); a keeper receives
+its goods with ReceiveGoods (the order's `Receive`), as often as they come;
+once nothing is outstanding the process closes the order. The process
+follows the facts, whoever changes them: the server completes a task as
+its step is done, wherever it is done (the order confirmed or cancelled,
+a receipt made), so nobody completes one by hand. The forms are the
+model's (ORMKit's docs/FORMS.md), and the process imports the model: what a
+task is done with is checked as the processes are built (`wf-build`).
+**Window > Tasks** lists the open tasks, the oldest first, each with its
+order; Open shows the order in its own window, titled with the task, where
+its step is done. Its API is the server's
+`workflow/` (WorkflowKit's `WFODataService.h`); with no one signed in, a
+trial user may work every task. `Tests/process-check.py` runs it over
+HTTP. Stock counts, and picking and packing, are to follow: what a count
+found, and picks and packages, are not facts of the model yet.
+
 ## Overview and history
 
 **Overview** (KiWi's): the catalog's statistics (items, total quantity,

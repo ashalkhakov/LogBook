@@ -1,3 +1,4 @@
+#import "LBTasksWindowController.h"
 #import "LBAppController.h"
 #import "LBStore.h"
 #import "LBDisplay.h"
@@ -19,6 +20,7 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     LBPreferencesController *_preferences;
     LBListsController *_lists;
     LBStockWindowController *_stock;
+    LBTasksWindowController *_tasks;
     LBUpdater *_updater;
 }
 
@@ -38,7 +40,7 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
-    [self showPanelWithServer:LBSelfTestRoot.absoluteString];
+    [self showPanelWithServer:LBSelfTestRoot.absoluteString connecting:YES];
 }
 
 /* The last window closed by the user: the app done. Connecting
@@ -53,23 +55,24 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     return !_window || [_window shouldClose] ? NSTerminateNow : NSTerminateCancel;
 }
 
-- (void)showPanelWithServer:(NSString *)address {
+- (void)showPanelWithServer:(NSString *)address connecting:(BOOL)connecting {
     _panel = [[LBConnectPanel alloc] init];
     _panel.delegate = self;
-    [_panel showWithServer:address];
+    [_panel showWithServer:address connecting:connecting];
 }
 
 - (IBAction)connect:(id)sender {
     if (_window && ![_window shouldClose]) return;
     [self closeLogbook];
-    [self showPanelWithServer:nil];
+    [self showPanelWithServer:nil connecting:NO];
 }
 
 - (IBAction)signOut:(id)sender {
     if (_window && ![_window shouldClose]) return;
-    [_signIn signOut];
+    [LBConnectPanel signOut:_signIn];
+    _signIn = nil;
     [self closeLogbook];
-    [self showPanelWithServer:nil];
+    [self showPanelWithServer:nil connecting:NO];
 }
 
 - (IBAction)showPreferences:(id)sender {
@@ -96,6 +99,13 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     [self showLists:@"exchangeRates"];
 }
 
+/* The processes' open tasks (LBTasksWindowController.h). */
+- (IBAction)showTasks:(id)sender {
+    if (!_window) return;
+    if (!_tasks) _tasks = [[LBTasksWindowController alloc] initWithStore:_store];
+    [_tasks showWindow:sender];
+}
+
 - (IBAction)showStock:(id)sender {
     if (!_window) return;
     if (!_stock) _stock = [[LBStockWindowController alloc] initWithStore:_store];
@@ -108,7 +118,8 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     SEL action = item.action;
     if (action == @selector(checkForUpdates:)) return _updater.canCheckForUpdates;
     BOOL needsLogbook = action == @selector(showPreferences:) || action == @selector(showExpenseKinds:) || action == @selector(showChecklists:)
-                        || action == @selector(showExchangeRates:) || action == @selector(showStock:);
+                        || action == @selector(showExchangeRates:) || action == @selector(showStock:)
+                        || action == @selector(showTasks:);
     return !needsLogbook || _window != nil;
 }
 
@@ -119,6 +130,8 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     _lists = nil;
     [_stock close];
     _stock = nil;
+    [_tasks close];
+    _tasks = nil;
     LBMainWindowController *window = _window;
     _window = nil;
     _store = nil;
@@ -136,7 +149,7 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
             exit(1);
         }
         [[NSAlert alertWithError:error] runModal];
-        [self showPanelWithServer:nil];
+        [self showPanelWithServer:nil connecting:NO];
         return;
     }
     _store = store;

@@ -37,10 +37,14 @@
 #import "LBStockWindowController.h"
 #import "LBStockItemWindowController.h"
 #import "LBStockOrderWindowController.h"
+#import "LBTasksWindowController.h"
+#import "LBTasks.h"
 #import "LBStockCountWindowController.h"
 #import "LBCatalogSettingsWindowController.h"
 #import "LBPartsPanelController.h"
 #import "LBStockDisplay.h"
+#import "LBFormValues.h"
+#import <ORMRuntime/ORMFormSession.h>
 
 NSURL *LBSelfTestRoot;
 /* The user's saved settings as the self-test began. */
@@ -63,12 +67,14 @@ void LBSelfTestBegin(NSURL *root) {
 void LBSetDefault(NSString *key, id value) {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if (!LBSelfTestRoot) {
-        [defaults setObject:value forKey:key];
+        if (value) [defaults setObject:value forKey:key];
+        else [defaults removeObjectForKey:key];
         return;
     }
     NSMutableDictionary *run = [[defaults volatileDomainForName:NSArgumentDomain] mutableCopy] ?: [NSMutableDictionary dictionary];
-    if (value) run[key] = value;
-    else [run removeObjectForKey:key];
+    /* Removed, it is hidden: what the user's own defaults have must not
+       show through to the run. */
+    run[key] = value ?: @"";
     [defaults removeVolatileDomainForName:NSArgumentDomain];
     [defaults setVolatileDomain:run forName:NSArgumentDomain];
 }
@@ -225,6 +231,18 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBCheck(@"listed with its cost", [fillUp.lbCost hasPrefix:@"60"], fillUp.lbCost);
     /* LB_SCREENSHOT=file.png: the window as it is now, to look at (macOS). */
     if (getenv("LB_SCREENSHOT")) system([NSString stringWithFormat:@"screencapture -x -o -l %ld '%s'", (long)window.windowNumber, getenv("LB_SCREENSHOT")].UTF8String);
+    /* Saved with no driver: the form refuses it, said under the driver's
+       pop-up, nothing saved; the driver chosen again, it is gone. */
+    LBChoose(window, @"FillUpDriver", @"None");
+    LBCheck(@"no driver chosen: none is the fill-up's", fillUp.driver == nil, fillUp.driver.email);
+    LBClick(window, @"save");
+    LBCheck(@"saved with no driver: refused by the form, said under the driver, nothing saved",
+            [LBFormValues problemAt:@"driver" under:controller.recordForms].length > 0 && controller.store.context.hasChanges,
+            [LBFormValues problemAt:@"driver" under:controller.recordForms]);
+    LBChoose(window, @"FillUpDriver", user.lbTitle);
+    LBCheck(@"the driver chosen again: what was said under it gone",
+            fillUp.driver == user && [LBFormValues problemAt:@"driver" under:controller.recordForms].length == 0,
+            [LBFormValues problemAt:@"driver" under:controller.recordForms]);
     LBClick(window, @"save");
     LBCheck(@"the fill-up saved", !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
@@ -967,10 +985,43 @@ static void LBStockCardSteps(LBStockItemWindowController *card) {
             rule);
 }
 
+/* Window > Tasks, shown, as a user chooses it. */
+static LBTasksWindowController *LBTasksWindow(void) {
+    [NSApp sendAction:@selector(showTasks:) to:nil from:nil];
+    LBSpin();
+    for (NSWindow *window in NSApp.windows) {
+        if ([window.windowController isKindOfClass:[LBTasksWindowController class]] && window.isVisible) return window.windowController;
+    }
+    return nil;
+}
+
+/* The names of the open tasks about the order, once they are as expected
+   (the server's engine works after each save), or 5 s on: the list asked
+   again, as Refresh does. */
+static NSArray<NSString *> *LBTasksOf(LBTasksWindowController *tasks, NSManagedObject *order, NSArray<NSString *> *expected) {
+    NSString *key = [[order valueForKey:@"id"] UUIDString];
+    NSArray<NSString *> *names = nil;
+    for (int i = 0; i < 25; i++) {
+        LBClick(tasks.window, @"refresh");
+        NSMutableArray *found = [NSMutableArray array];
+        for (LBTask *task in tasks.openTasks) {
+            if ([task.businessKey isEqualToString:key]) [found addObject:task.name];
+        }
+        names = found;
+        if ([names isEqualToArray:expected]) break;
+        LBSpin();
+    }
+    return names;
+}
+
 /* Sales and purchases, each in its window, as a user writes them: a sale
    to Bob of three bolts, numbered, confirmed, shipped in two from Shelf A;
    a purchase from Parts Ltd of ten brackets at a cost of 1, confirmed,
-   received in two at Default, a damaged one sent back. Each the server's. */
+   received in two at Default, a damaged one sent back. Each the server's.
+   The purchase's process (Server/LBWorkflow.h) follows it in Window >
+   Tasks: Confirm the order, then Receive the goods, then nothing. Another
+   purchase's Confirm the order opened from there, in the order's window
+   titled with it, cancelled: its task gone. */
 static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, StockItem *bracket) {
     [stock.tabs selectTabViewItemWithIdentifier:@"saleOrders"];
     LBSpin();
@@ -1020,8 +1071,14 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBTypeInCell(window, @"linesTable", 1, @"10");
     LBTypeInCell(window, @"linesTable", 2, @"1");
     LBSavedIn(purchase, @"its line, 10 brackets at 1, saved");
+    LBTasksWindowController *tasks = LBTasksWindow();
+    NSArray *names = LBTasksOf(tasks, bought, @[ @"Confirm the order" ]);
+    LBCheck(@"Window > Tasks: its Confirm the order", [names isEqualToArray:@[ @"Confirm the order" ]], tasks.messageLabel.stringValue ?: names);
+    [window makeKeyAndOrderFront:nil];
     LBClick(window, @"confirmOrder");
     LBCheck(@"confirmed", [bought.orderState isEqualToString:@"Confirmed"] && !purchase.lastError, purchase.lastError ?: bought.orderState);
+    names = LBTasksOf(tasks, bought, @[ @"Receive the goods" ]);
+    LBCheck(@"its task completed by the server: Receive the goods", [names isEqualToArray:@[ @"Receive the goods" ]], names);
     LBChoose(window, @"moveAt", @"Main / Default");
     LBType(window, @"moveQuantity", @"4");
     [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];
@@ -1033,6 +1090,11 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
             [bought.lbFilled isEqualToString:@"Received"] && purchase.documents.count == 2
                 && [brackets compare:[bracketsBefore decimalNumberByAdding:LBN10()]] == NSOrderedSame,
             purchase.lastError ?: brackets);
+    names = LBTasksOf(tasks, bought, @[]);
+    LBCheck(@"its process done: no task of its left", names.count == 0, names);
+    PurchaseOrder *kept = LBServerOf(bought);
+    [kept.managedObjectContext refreshObject:kept mergeChanges:NO];
+    LBCheck(@"and the order closed by it", [kept.orderState isEqualToString:@"Closed"], kept.orderState);
     LBChoose(window, @"returnReason", @"Damaged");
     LBType(window, @"moveQuantity", @"1");
     [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];
@@ -1045,6 +1107,38 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
             purchase.lastError ?: left);
     LBSnapshot(window, @"stock-purchase");
     [purchase close];
+
+    LBClick(stock.window, @"newPurchase");
+    LBStockOrderWindowController *another = LBOpened(stock, [LBStockOrderWindowController class]);
+    another.quiet = YES;
+    PurchaseOrder *second = (PurchaseOrder *)another.order;
+    LBSavedIn(another, @"another purchase, PO-GAR-0002, saved a draft");
+    [another close];
+    names = LBTasksOf(tasks, second, @[ @"Confirm the order" ]);
+    NSUInteger row = NSNotFound;
+    for (NSUInteger i = 0; i < tasks.openTasks.count && row == NSNotFound; i++) {
+        if ([tasks.openTasks[i].businessKey isEqualToString:second.id.UUIDString]) row = i;
+    }
+    LBCheck(@"its Confirm the order listed", row != NSNotFound, names);
+    if (row != NSNotFound) {
+        [tasks.window makeKeyAndOrderFront:nil];
+        [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+        LBClick(tasks.window, @"open");
+        LBStockOrderWindowController *step = tasks.orderWindow;
+        step.quiet = YES;
+        LBCheck(@"opened in the order's window, titled with the task", step.window.isVisible
+                    && [step.window.title isEqualToString:@"PO-GAR-0002 — Confirm the order"],
+                step.window.title);
+        LBSnapshot(tasks.window, @"tasks");
+        LBClick(step.window, @"cancelOrder");
+        LBCheck(@"cancelled there: the title says the task no more", [[step.order valueForKey:@"orderState"] isEqualToString:@"Cancelled"]
+                    && [step.window.title isEqualToString:@"PO-GAR-0002"],
+                step.lastError ?: step.window.title);
+        names = LBTasksOf(tasks, second, @[]);
+        LBCheck(@"and its task gone from the list", names.count == 0, names);
+        [step close];
+    }
+    [tasks close];
     [stock.tabs selectTabViewItemWithIdentifier:@"saleOrders"];
     LBSpin();
     LBCheck(@"the stock window told: its sale shipped", [[stock.saleOrders.firstObject lbFilled] isEqualToString:@"Shipped"],
@@ -1125,8 +1219,9 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
             stock.overviewItems.integerValue == 3 && stock.overviewCategories.integerValue == 1 && stock.overviewLocations.integerValue == 3
                 && stock.overviewSuppliers.integerValue == 1 && stock.overviewCustomers.integerValue == 1,
             [NSString stringWithFormat:@"%@ %@ %@", stock.overviewItems, stock.overviewLocations, stock.overviewSuppliers]);
-    LBCheck(@"the bolts' rule due, the sale and the purchase open",
-            stock.rulesDue.count == 1 && [[stock.rulesDue.firstObject stockItem].itemName isEqualToString:@"Bolt"] && stock.ordersOpen.count == 2,
+    LBCheck(@"the bolts' rule due, the sale open: the purchase closed by its process, all received",
+            stock.rulesDue.count == 1 && [[stock.rulesDue.firstObject stockItem].itemName isEqualToString:@"Bolt"]
+                && [[stock.ordersOpen valueForKey:@"lb_number"] isEqualToArray:@[ @"SO-GAR-0001" ]],
             [stock.ordersOpen valueForKey:@"lb_number"]);
     NSDecimalNumber *bolts = [LBServerOf(bolt) totalQuantity];
     LBCheck(@"what it holds weighs and takes up: the bolts', 10 g and 5 cm3 each, in kg and cm",
@@ -1922,13 +2017,15 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
 
 /* A server that asks no one, and an app that does not know its user: the
    panel asks who they are, refuses what is not an email, and connects as
-   the one given, kept (for this run only, being a self-test). */
+   the one given, kept (for this run only, being a self-test). Signed out,
+   the user is forgotten, and the panel shown again waits to be told to
+   connect. */
 static void LBConnectSteps(void) {
     LBSetDefault(@"LBUser", @"");
     LBConnectPanel *panel = [[LBConnectPanel alloc] init];
     LBConnected *connected = [[LBConnected alloc] init];
     panel.delegate = connected;
-    [panel showWithServer:LBSelfTestRoot.absoluteString];
+    [panel showWithServer:LBSelfTestRoot.absoluteString connecting:YES];
     for (int i = 0; i < 50 && [panel.emailField isHidden]; i++) LBSpin();
     LBCheck(@"connecting to a server that asks no one, with no user known: asked for an email",
             ![panel.emailField isHidden] && !connected.signIn, panel.statusLabel.stringValue);
@@ -1942,6 +2039,23 @@ static void LBConnectSteps(void) {
                 && [[[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"] isEqualToString:@"driver@example.org"],
             [[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"]);
     [panel close];
+    [LBConnectPanel signOut:connected.signIn];
+    LBCheck(@"signed out of a server that asks no one: its user forgotten",
+            ![[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"].length,
+            [[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"]);
+    LBConnectPanel *again = [[LBConnectPanel alloc] init];
+    LBConnected *reconnected = [[LBConnected alloc] init];
+    again.delegate = reconnected;
+    [again showWithServer:nil connecting:NO];
+    for (int i = 0; i < 20; i++) LBSpin();
+    LBCheck(@"the panel after signing out: the server offered, waiting to be told to connect",
+            !reconnected.signIn && [again.emailField isHidden] && again.serverField.stringValue.length && [again.connectButton isEnabled],
+            again.statusLabel.stringValue);
+    LBClick(again.window, @"connect");
+    for (int i = 0; i < 50 && [again.emailField isHidden]; i++) LBSpin();
+    LBCheck(@"told to connect: asked who the user is again", ![again.emailField isHidden] && !reconnected.signIn,
+            again.statusLabel.stringValue);
+    [again close];
     LBSetDefault(@"LBUser", @"self-test@example.org");
 }
 

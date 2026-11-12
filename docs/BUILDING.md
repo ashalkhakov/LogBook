@@ -19,7 +19,11 @@ apps and the server, as CI packages them. iOS: [IOS.md](IOS.md#building-and-runn
 ## The checks
 
 `make check` checks the procedures over a store of
-their own (`Tests/LBProceduresCheck.m`), then `Tests/serve-and-check.py`
+their own (`Tests/LBProceduresCheck.m`), and the model's fill-up form
+(`Tests/form-check.sh`, `Tests/LBFormCheck.m`) against a store of its own
+and a server: opened for a vehicle, its drivers its choices, saved
+whole, a driver who does not drive it refused at the field, read back and
+changed at the server; then `Tests/serve-and-check.py`
 runs the server on a temporary store and checks it over HTTP: the
 reference data (the units, the kinds of cost), a change set saved with
 what it derives, one a rule refuses, an attachment's photo there and
@@ -28,7 +32,8 @@ in; `Tests/sync-check.sh` syncs two devices' offline stores through one,
 a receipt's photo among what they sync (`Tests/LBSyncCheck.m`); then
 `Tests/app-check.sh` drives the desktop app against one: every kind of
 record added from its Add menu, its form typed into, saved, corrected and
-saved again, each checked at the server.
+saved again, each checked at the server; a fill-up's saved through the
+model's form, refused under its driver's pop-up when it has none.
 
 ## The README's pictures
 
@@ -64,7 +69,28 @@ server use is generated from it by the build, into `build/Model`
   the code and tables that keep the model's rules and work out its stored
   derivations;
 - `Logbook.forml`, the listing: every statement of the model, a line each,
-  as the verbalizer says it, for reading and for copying lines from.
+  as the verbalizer says it, for reading and for copying lines from;
+- `Forms/`: each of the model's forms (a query of the kind Form, ORMKit's
+  docs/FORMS.md), by `ormtool xforms`: `<Form>.ormform`, its contract (what
+  it is given, what is entered and shown, the choices it offers, what a
+  save writes) and the plans its read, choices and save stand for; the
+  desktop app keeps them in its resources. (`<Form>.xhtml`, the XForms
+  document generated beside it, is not used.)
+
+  `RecordFillUp` is the one there is: a fill-up of a vehicle, the vehicle
+  and who enters it given, its driver chosen from those who drive the
+  vehicle, its price per unit worked out. Its outline is in the model
+  (`ormtool forml` lists it; the designer's Queries window edits it). Its
+  view is the fill-up's own tab: its fields are the form's elements by
+  name (`AppKit/LBFormValues.h`), its driver pop-up the form's choices,
+  and a fill-up is saved by the form (ORMKit's ORMFormSession), a refusal
+  said under the field it is about.
+
+  `Model/Records.flow` is a flow of the model's (ORMKit's docs/FORMS.md,
+  Flows): its Vehicles list leads, a vehicle chosen, to RecordFillUp for
+  it, and back once it is saved or cancelled; who enters it is left to the
+  app, the user signed in. `make check` checks it against the model
+  (`ormtool flow`).
 
 None of it is kept in git, nor edited: it is made again whenever the
 model, or ormtool, changes.
