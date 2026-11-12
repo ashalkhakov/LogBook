@@ -113,6 +113,10 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // context is about to save, shipped (-lb_shipParts:); refused as the first
 // refuses. The server's and the phone's, as automatic completion is.
 - (BOOL)lb_shipPartsOfChangedEvents:(NSError **)error;
+// Before a save: each move made has its item's holding where it comes from
+// and where it goes (one made by a form: a receipt's, of its line's item, to
+// where the receipt came in, as the model works them out).
+- (BOOL)lb_holdMovedItems:(NSError **)error;
 @end
 
 // A service's or a tyre change's parts: the lines of a sale of them to the

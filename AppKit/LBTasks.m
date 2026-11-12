@@ -1,4 +1,6 @@
 #import "LBTasks.h"
+#import <ORMRuntime/ORMForm.h>
+#import <ORMRuntime/ORMFormSession.h>
 #import <ODataSync/ODataSignIn.h>
 
 NSNotificationName const LBTasksDidChangeNotification = @"LBTasksDidChange";
@@ -89,6 +91,60 @@ static NSError *LBTasksError(NSString *message) {
         [tasks addObject:task];
     }
     return tasks;
+}
+
+/* The text of an element of the instance, escaped. */
+static NSString *LBInstanceElement(NSString *name, NSString *inner) {
+    return [NSString stringWithFormat:@"<%@>%@</%@>", name, inner, name];
+}
+
+static NSString *LBEscaped(NSString *text) {
+    NSMutableString *escaped = [text mutableCopy] ?: [NSMutableString string];
+    [escaped replaceOccurrencesOfString:@"&" withString:@"&amp;" options:0 range:NSMakeRange(0, escaped.length)];
+    [escaped replaceOccurrencesOfString:@"<" withString:@"&lt;" options:0 range:NSMakeRange(0, escaped.length)];
+    [escaped replaceOccurrencesOfString:@">" withString:@"&gt;" options:0 range:NSMakeRange(0, escaped.length)];
+    return escaped;
+}
+
++ (NSString *)instanceOf:(ORMFormSession *)session {
+    ORMForm *form = session.form;
+    NSMutableString *inner = [NSMutableString string];
+    for (ORMFormElement *element in form.elements) {
+        [inner appendString:LBInstanceElement(element.name, LBEscaped([[session valueForElement:element.name] description]))];
+    }
+    for (NSString *name in [form repeatNames]) {
+        ORMForm *repeat = [form repeatNamed:name];
+        for (NSDictionary *row in [session rowsOfRepeat:name]) {
+            NSMutableString *cells = [NSMutableString string];
+            for (ORMFormElement *element in repeat.elements) {
+                [cells appendString:LBInstanceElement(element.name, LBEscaped([row[element.name] description]))];
+            }
+            [inner appendString:LBInstanceElement(name, cells)];
+        }
+    }
+    return LBInstanceElement(form.entityName ?: @"instance", inner);
+}
+
+- (BOOL)submitForm:(ORMFormSession *)session toTask:(LBTask *)task error:(NSError **)error {
+    NSString *path = [NSString stringWithFormat:@"Tasks('%@')/WorkflowKit.SubmitForm", task.taskId];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path relativeToURL:_workflowRoot]];
+    request.HTTPMethod = @"POST";
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    request.HTTPBody = [NSJSONSerialization dataWithJSONObject:@{ @"Instance" : [LBTasks instanceOf:session] } options:0 error:error];
+    NSInteger status = 0;
+    if (!request.HTTPBody || ![self send:request status:&status error:error]) return NO;
+    [self noteChange];
+    return YES;
+}
+
+- (LBTask *)openTaskOfForm:(NSString *)formName about:(NSString *)businessKey error:(NSError **)error {
+    NSArray<LBTask *> *open = [self openTasks:error];
+    if (!open) return nil;
+    for (LBTask *task in open) {
+        if ([task.formName isEqualToString:formName] && [task.businessKey isEqualToString:businessKey]) return task;
+    }
+    if (error) *error = nil;
+    return nil;
 }
 
 - (void)noteChange {

@@ -1,6 +1,7 @@
 #import "LBStore.h"
 #import <ODataIncrementalStore/ODataIncrementalStore.h>
 #import "LogbookValidation.h"
+#import "LBStockProcedures.h"
 #import "User+CoreDataClass.h"
 
 /* What a generated class says of an object's deontic rules. */
@@ -109,7 +110,7 @@
             ((id<LBIdentified>)object).id = [NSUUID UUID];
         }
     }
-    return [context orm_prepareForSave:error] && [context save:error];
+    return [context lb_holdMovedItems:error] && [context orm_prepareForSave:error] && [context save:error];
 }
 
 - (NSArray<NSError *> *)warnings {

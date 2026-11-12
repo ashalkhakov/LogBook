@@ -323,12 +323,17 @@ saved as a draft (Reorder's, or one entered) starts it once it is saved.
 A manager confirms it, or cancels it, with the model's form
 ConfirmPurchaseOrder (the order's `Confirm` or `Cancel`); a keeper receives
 its goods with ReceiveGoods (the order's `Receive`), as often as they come;
-once nothing is outstanding the process closes the order. The process
-follows the facts, whoever changes them: the server completes a task as
-its step is done, wherever it is done (the order confirmed or cancelled,
-a receipt made), so nobody completes one by hand. The forms are the
-model's (ORMKit's docs/FORMS.md), and the process imports the model: what a
-task is done with is checked as the processes are built (`wf-build`).
+once nothing is outstanding the process closes the order. Each step is
+done with its form: what the form enters is saved as the logbook's facts
+(the order's state; a receipt, numbered the order's next, recorded by who
+received it and when, and its moves, each move's item, place, moment and
+maker worked out by the model as it is saved), then the form's instance is
+submitted to the task (WorkflowKit's `SubmitForm`), which completes it, its
+elements the process's variables (`orderState`). The facts alone complete
+no task. The forms are the model's (ORMKit's docs/FORMS.md), deployed with
+the process (their XForms documents beside it), and the process imports
+the model: what a task is done with is checked as the processes are built
+(`wf-build`).
 **Window > Tasks** lists the open tasks, the oldest first, each with its
 order; Open shows the order in its own window, titled with the task, where
 its step is done. Its API is the server's

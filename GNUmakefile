@@ -181,12 +181,14 @@ after-install::
 # The app, under X: xvfb-run where there is no display.
 XVFB = $(if $(DISPLAY),,$(shell command -v xvfb-run >/dev/null 2>&1 && echo xvfb-run -a))
 
-# The model's processes (Model/*.bpmn), with the model they import, built
-# and checked as the server deploys them: Logbook.wfdeployment beside it.
+# The model's processes (Model/*.bpmn), with the model they import and the
+# forms their tasks are done with (their XForms documents, WorkflowKit's
+# WFModelFormHandler), built and checked as the server deploys them:
+# Logbook.wfdeployment beside it.
 after-all:: obj/Logbook.wfdeployment
 obj/Logbook.wfdeployment: Model/Logbook.orm $(wildcard Model/*.bpmn)
 	rm -rf obj/processes $@ && mkdir -p obj/processes
-	cp Model/Logbook.orm Model/*.bpmn obj/processes/
+	cp Model/Logbook.orm Model/*.bpmn $(LB_MODEL)/Forms/ConfirmPurchaseOrder.xhtml $(LB_MODEL)/Forms/ReceiveGoods.xhtml obj/processes/
 	$(WFBUILD) -name Logbook -o $@ obj/processes
 
 check:: all

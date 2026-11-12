@@ -920,4 +920,22 @@ static NSDecimalNumber *LBShippedOf(SaleLine *line) {
     return YES;
 }
 
+- (BOOL)lb_holdMovedItems:(NSError **)error {
+    (void)error;
+    NSMutableArray<Move *> *made = [NSMutableArray array];
+    for (NSManagedObject *object in self.insertedObjects) {
+        if ([object isKindOfClass:[Move class]]) [made addObject:(Move *)object];
+    }
+    for (Move *move in [made sortedArrayUsingFunction:LBByID context:NULL]) {
+        /* As the model works them out as it saves: a receipt's move is of
+           its line's item, to where the receipt came in. */
+        StockItem *item = move.stockItem ?: move.purchaseLine.stockItem;
+        Location *to = move.destination ?: move.receipt.receivedAt;
+        if (!item) continue;
+        if (move.source) [move.source lb_holdingOf:item];
+        if (to) [to lb_holdingOf:item];
+    }
+    return YES;
+}
+
 @end

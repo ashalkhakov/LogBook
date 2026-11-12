@@ -11,19 +11,21 @@ from Logbook.wfdeployment beside it.
 - a purchase order refused (it lacks its number) starts nothing;
 - one saved as a draft starts procure to receipt: its first task, Confirm
   the order, is the managers', done with the model's ConfirmPurchaseOrder;
-- the order confirmed (its Confirm): the server completes the task, the
-  order's state given; Receive the goods, the keepers', done with
-  ReceiveGoods;
-- 3 of its 4 received (its Receive): the task completed, the process finds
-  it not all received and asks to receive again;
-- the last one received: it finds it all received, closes the order (its
-  Close), and ends, no task left;
-- another draft cancelled (its Cancel): its Confirm the order completed,
-  and its process ends.
+- the order confirmed as the form saves it (its state Confirmed): the task
+  still open, the facts alone completing nothing; the form's instance
+  submitted (WorkflowKit.SubmitForm): the task completed, its orderState
+  the process's; Receive the goods, the keepers', done with ReceiveGoods;
+- 3 of its 4 received as ReceiveGoods saves them (a receipt and its moves,
+  each move's item, place, moment and maker worked out by the model) and
+  the instance submitted: the process finds it not all received and asks
+  to receive again;
+- the last one received the same way: it finds it all received, closes
+  the order (its Close), and ends, no task left;
+- another draft cancelled through its form: its process ends.
 
-No task is completed through the workflow API: the processes follow the
-facts, whoever changes them. The server's engine works after each save,
-so each check waits a little for it.
+As the app does them: what a form saves is the logbook's, and its instance
+submitted completes the task. The server's engine works after each save
+and submission, so each check waits a little for it.
 """
 import json
 import os
@@ -138,33 +140,61 @@ def walk(odata, workflow):
                                                             "PurchaseOrder@odata.bind": "PurchaseOrders(%s)" % order,
                                                             "StockItem@odata.bind": "StockItems(%s)" % item})
     check("its line, of 4", status == 201, (status, body))
-    status, body = request("POST", odata + "PurchaseOrders(%s)/Default.Confirm" % order, {})
-    check("confirmed", status == 200, (status, body))
+    def submit(task, root, values, rows=()):
+        """The form's instance, as the app sends it, to the task."""
+        def element(name, text):
+            return "<%s>%s</%s>" % (name, text, name)
+        xml = "".join(element(k, v) for k, v in values.items())
+        for name, row in rows:
+            xml += element(name, "".join(element(k, v) for k, v in row.items()))
+        return request("POST", workflow + "Tasks('%s')/WorkflowKit.SubmitForm" % task, {"Instance": element(root, xml)})
+
+    status, body = request("PATCH", odata + "PurchaseOrders(%s)" % order, {"OrderState": "Confirmed"})
+    check("confirmed as its form saves it", status == 204, (status, body))
+    time.sleep(0.3)
+    confirm = tasks()
+    check("the facts alone complete nothing: Confirm the order still open", [n for n, _ in confirm] == ["Confirm the order"], confirm)
+    status, body = submit(confirm[0][1], "PurchaseOrder", {"id": order, "orderState": "Confirmed"})
+    check("its form submitted to the task", status == 204, (status, body))
     check("Confirm the order completed: then Receive the goods", settled(["Receive the goods"]) == ["Receive the goods"], tasks())
 
+    def receive(number, quantity, task):
+        receipt, move = str(uuid.uuid4()), str(uuid.uuid4())
+        status, body = request("POST", odata + "Receipts", {
+            "Id": receipt, "RunningNumber": number, "Received": "2026-11-12", "Recorded": "2026-11-12T09:00:00Z",
+            "PurchaseOrder@odata.bind": "PurchaseOrders(%s)" % order, "ReceivedAt@odata.bind": "Locations(%s)" % shelf,
+            "RecordedBy@odata.bind": "Users('anna@example.org')",
+            "Moves": [{"Id": move, "Moved": quantity, "PurchaseLine@odata.bind": "PurchaseLines(%s)" % line}]})
+        check("%s received as ReceiveGoods saves it" % quantity, status == 201, (status, body))
+        status, body = request("GET", odata + "Moves(%s)?$expand=StockItem($select=Id),Destination($select=Id),User($select=Email)" % move)
+        check("its move's item, place and maker worked out", status == 200 and body.get("StockItem", {}).get("Id", "").lower() == item
+              and body.get("Destination", {}).get("Id", "").lower() == shelf and body.get("User", {}).get("Email") == "anna@example.org"
+              and body.get("Moment") == "2026-11-12T09:00:00Z", (status, body))
+        status, body = submit(task, "Receipt", {"id": receipt, "purchaseOrder": order, "received": "2026-11-12", "receivedAt": shelf},
+                              [("moves", {"id": move, "purchaseLine": line, "moved": str(quantity)})])
+        check("its form submitted to the task", status == 204, (status, body))
+
     first = tasks()[0][1]
-    at = {"@odata.id": "Locations(%s)" % shelf}
-    status, body = request("POST", odata + "PurchaseOrders(%s)/Default.Receive" % order, {"Lines": {line: 3}, "At": at})
-    check("3 of 4 received", status == 200, (status, body))
+    receive(1, 3, first)
     for _ in range(100):
         if [t for _, t in tasks()] != [first]:
             break
         time.sleep(0.05)
     again = tasks()
     check("not all received: Receive the goods again", [n for n, _ in again] == ["Receive the goods"] and again[0][1] != first, again)
-    status, body = request("POST", odata + "PurchaseOrders(%s)/Default.Receive" % order, {"Lines": {line: 1}, "At": at})
-    check("the last one received", status == 200, (status, body))
+    receive(2, 1, again[0][1])
     check("all received: no task left", settled([]) == [], tasks())
     status, body = request("GET", odata + "PurchaseOrders(%s)?$select=OrderState,IsFullyReceived" % order)
     check("the order closed by the process", status == 200 and body.get("OrderState") == "Closed" and body.get("IsFullyReceived"),
           (status, body))
 
-
     other = str(uuid.uuid4())
     status, body = request("POST", odata + "PurchaseOrders", dict(draft, Id=other, RunningNumber=2))
     check("another draft saved", status == 201 and settled(["Confirm the order"]) == ["Confirm the order"], (status, body, tasks()))
-    status, body = request("POST", odata + "PurchaseOrders(%s)/Default.Cancel" % other, {})
-    check("cancelled", status == 200, (status, body))
+    status, body = request("PATCH", odata + "PurchaseOrders(%s)" % other, {"OrderState": "Cancelled"})
+    check("cancelled as its form saves it", status == 204, (status, body))
+    status, body = submit(tasks()[0][1], "PurchaseOrder", {"id": other, "orderState": "Cancelled"})
+    check("its form submitted to the task", status == 204, (status, body))
     check("its Confirm the order completed: it ends, no task left", settled([]) == [], tasks())
 
 

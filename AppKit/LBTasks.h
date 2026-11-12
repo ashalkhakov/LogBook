@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class ODataSignIn;
+@class ODataSignIn, ORMFormSession;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -40,6 +40,17 @@ FOUNDATION_EXPORT NSNotificationName const LBTasksDidChangeNotification;
 // facts it is about change (Server/LBWorkflow.h), so the tasks are asked
 // again (LBTasksDidChangeNotification).
 - (void)noteChange;
+
+// A task done with the form its key names: the form's instance, as the
+// session has it (its anchor's element, each element's text, each repeat's
+// rows), submitted to it (WorkflowKit.SubmitForm). The server's process
+// takes its elements as its variables and goes on; the tasks are asked
+// again. NO, and why, where the server refuses it.
+- (BOOL)submitForm:(ORMFormSession *)session toTask:(LBTask *)task error:(NSError **)error;
++ (NSString *)instanceOf:(ORMFormSession *)session;
+// The open task done with the form, about the object (a purchase order's
+// id); nil where there is none (and nil error), or why it was not read.
+- (nullable LBTask *)openTaskOfForm:(NSString *)formName about:(NSString *)businessKey error:(NSError **)error;
 
 @end
 

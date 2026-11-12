@@ -38,10 +38,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *returnReason;
 
 // The process's task it was opened for (LBTasksWindowController.h), named
-// in its title. Its step done here -- Confirm or Cancel for
-// ConfirmPurchaseOrder, Receive for ReceiveGoods -- the server completes
-// the task (Server/LBWorkflow.h), as it would for the step done anywhere;
-// the title says it no more, and the tasks are asked again. nil: no task.
+// in its title. A purchase's steps are done here with the model's forms --
+// Confirm or Cancel with ConfirmPurchaseOrder, Receive with ReceiveGoods:
+// the form saved, then its instance submitted to the order's open task of
+// it (this one, or found), which the server's process goes on with
+// (Server/LBWorkflow.h); the title says it no more, and the tasks are asked
+// again. nil: no task.
 @property (nonatomic, strong, nullable) LBTask *task;
 @property (nonatomic, strong, nullable) LBTasks *tasks;
 

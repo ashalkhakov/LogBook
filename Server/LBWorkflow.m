@@ -108,36 +108,23 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-/* A save of the logbook's, done: the processes follow what it saved,
-   whoever saved it -- a purchase order made a draft starts procure to
-   receipt; one confirmed or cancelled completes its Confirm the order, its
-   state given; a receipt of one completes its Receive the goods. In the
-   saving context's queue, as the notification is, what changed is read;
-   the engine's work is done on its own queue, after the save, since a task
-   completed runs on to service tasks that save the logbook again. */
+/* A save of the logbook's, done: a purchase order made a draft starts
+   procure to receipt, whoever saved it. Its people's tasks are done with
+   their forms (ConfirmPurchaseOrder, ReceiveGoods): their submissions
+   complete them (WorkflowKit's SubmitForm), not the facts they save. In
+   the saving context's queue, as the notification is, what changed is
+   read; the engine's work is done on its own queue, after the save. */
 - (void)logbookDidSave:(NSNotification *)notification {
     NSManagedObjectContext *context = notification.object;
     if (context.persistentStoreCoordinator != _coordinator) return;
     NSMutableArray<NSString *> *drafted = [NSMutableArray array];
-    NSMutableDictionary<NSString *, NSString *> *decided = [NSMutableDictionary dictionary];
-    NSMutableArray<NSString *> *received = [NSMutableArray array];
     for (NSManagedObject *object in notification.userInfo[NSInsertedObjectsKey]) {
         if ([object isKindOfClass:[PurchaseOrder class]]) {
             PurchaseOrder *order = (PurchaseOrder *)object;
             if (order.id && (!order.orderState.length || [order.orderState isEqualToString:@"Draft"])) [drafted addObject:order.id.UUIDString];
-        } else if ([object isKindOfClass:[Receipt class]]) {
-            NSUUID *orderId = ((Receipt *)object).purchaseOrder.id;
-            if (orderId) [received addObject:orderId.UUIDString];
         }
     }
-    for (NSManagedObject *object in notification.userInfo[NSUpdatedObjectsKey]) {
-        if (![object isKindOfClass:[PurchaseOrder class]]) continue;
-        PurchaseOrder *order = (PurchaseOrder *)object;
-        if (order.id && ([order.orderState isEqualToString:@"Confirmed"] || [order.orderState isEqualToString:@"Cancelled"])) {
-            decided[order.id.UUIDString] = order.orderState;
-        }
-    }
-    if (!drafted.count && !decided.count && !received.count) return;
+    if (!drafted.count) return;
     dispatch_async(_queue, ^{
         for (NSString *orderId in drafted) {
             NSError *error = nil;
@@ -146,27 +133,10 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
                 NSLog(@"Logbook: procure to receipt not started for %@: %@", orderId, error.localizedDescription);
             }
         }
-        for (NSString *orderId in decided) {
-            [self completeStep:@"confirm" of:orderId variables:@{ @"orderState" : decided[orderId] }];
-        }
-        for (NSString *orderId in received) {
-            [self completeStep:@"receive" of:orderId variables:@{}];
-        }
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:LBWorkflowDidSettleNotification object:self];
         });
     });
-}
-
-/* The order's process's open task of the step, completed; none, nothing. */
-- (void)completeStep:(NSString *)step of:(NSString *)orderId variables:(NSDictionary *)variables {
-    WFTaskQuery *query = [[[[WFTaskQuery query] processDefinitionKey:@"procureToReceipt"] businessKey:orderId] taskDefinitionKey:step];
-    NSError *error = nil;
-    for (WFWorkItem *task in [_engine.taskService tasksMatching:query first:0 max:0 error:&error]) {
-        if (![_engine.taskService completeTask:task.taskId variables:variables error:&error]) {
-            NSLog(@"Logbook: %@ of %@ not completed: %@", step, orderId, error.localizedDescription);
-        }
-    }
 }
 
 - (void)registerTasks {

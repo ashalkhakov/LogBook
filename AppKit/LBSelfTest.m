@@ -1025,8 +1025,10 @@ static NSArray<NSString *> *LBTasksOf(LBTasksWindowController *tasks, NSManagedO
    to Bob of three bolts, numbered, confirmed, shipped in two from Shelf A;
    a purchase from Parts Ltd of ten brackets at a cost of 1, confirmed,
    received in two at Default, a damaged one sent back. Each the server's.
-   The purchase's process (Server/LBWorkflow.h) follows it in Window >
-   Tasks: Confirm the order, then Receive the goods, then nothing. Another
+   The purchase's process (Server/LBWorkflow.h) in Window > Tasks:
+   Confirm the order, then Receive the goods, then nothing, each step done
+   in the order's window with its form (ConfirmPurchaseOrder,
+   ReceiveGoods), saved and submitted to its task. Another
    purchase's Confirm the order opened from there, in the order's window
    titled with it, cancelled: its task gone. */
 static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, StockItem *bracket) {
@@ -1085,7 +1087,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBClick(window, @"confirmOrder");
     LBCheck(@"confirmed", [bought.orderState isEqualToString:@"Confirmed"] && !purchase.lastError, purchase.lastError ?: bought.orderState);
     names = LBTasksOf(tasks, bought, @[ @"Receive the goods" ]);
-    LBCheck(@"its task completed by the server: Receive the goods", [names isEqualToArray:@[ @"Receive the goods" ]], names);
+    LBCheck(@"its task done with its form, submitted: Receive the goods", [names isEqualToArray:@[ @"Receive the goods" ]], names);
     LBChoose(window, @"moveAt", @"Main / Default");
     LBType(window, @"moveQuantity", @"4");
     [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];

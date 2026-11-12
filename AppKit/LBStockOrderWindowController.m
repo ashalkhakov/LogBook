@@ -2,6 +2,8 @@
 #import "LBTasks.h"
 #import "LBStore.h"
 #import "LBStockDisplay.h"
+#import <ORMRuntime/ORMForm.h>
+#import <ORMRuntime/ORMFormSession.h>
 
 @interface LBStockOrderWindowController ()
 @property (nonatomic, readwrite, copy) NSArray *lines;
@@ -67,13 +69,73 @@
 #pragma mark Its state
 
 - (void)act:(NSString *)name {
-    if ([self performAction:name on:_order parameters:nil] && [@[ @"Confirm", @"Cancel" ] containsObject:name]) {
-        [self stepDone:@"ConfirmPurchaseOrder"];
+    /* A purchase confirmed or cancelled: its Confirm the order's step,
+       done with its form. */
+    if (!_sale && [@[ @"Confirm", @"Cancel" ] containsObject:name]) {
+        [self decide:[name isEqualToString:@"Confirm"] ? @"Confirmed" : @"Cancelled"];
+        return;
     }
+    [self performAction:name on:_order parameters:nil];
 }
 
-/* The step of the form's done here, and so its task, by the server: the
-   title says it no more, and the tasks are asked again. */
+/* The model's form of a step, given what it comes with, opened on the
+   object of the key (nil: one made), saved as the store saves; nil, and
+   why said, where it is not. */
+- (ORMFormSession *)formNamed:(NSString *)name given:(NSDictionary *)given key:(NSString *)key {
+    if (![self saveChanges]) return nil;
+    NSError *error = nil;
+    ORMForm *form = [ORMForm formNamed:name error:&error];
+    ORMFormSession *session = form ? [[ORMFormSession alloc] initWithForm:form given:given] : nil;
+    LBStore *store = self.store;
+    [session useContext:self.context saving:^BOOL(NSManagedObjectContext *context, NSError **failure) {
+        return [store saveContext:context error:failure];
+    }];
+    session.key = key;
+    if (!session || ![session open:&error]) {
+        [self reportError:error];
+        return nil;
+    }
+    return session;
+}
+
+/* The form's values saved, then its instance submitted to the order's
+   task of it, where one is open: the process goes on with them. A refusal
+   said in the form's words, nothing submitted. */
+- (BOOL)saveForm:(ORMFormSession *)session {
+    NSError *error = nil;
+    if (![session save:&error]) {
+        NSString *said = error.localizedDescription ?: [[session.errors allValues] componentsJoinedByString:@" "];
+        [self refuse:said.length ? said : @"Not saved."];
+        return NO;
+    }
+    [self saveChanges];
+    /* The server's tasks, where it has some: opened from Window > Tasks,
+       those; from the stock's window, asked here. */
+    if (!_tasks && self.store.serviceRoot) _tasks = [[LBTasks alloc] initWithServiceRoot:self.store.serviceRoot signIn:self.store.signIn];
+    NSString *formName = session.form.name;
+    LBTask *task = [_task.formName isEqualToString:formName] ? _task
+        : [_tasks openTaskOfForm:formName about:[[_order valueForKey:@"id"] UUIDString] error:&error];
+    if (error) [self reportError:error];
+    if (task && ![_tasks submitForm:session toTask:task error:&error]) {
+        [self reportError:error];
+        return NO;
+    }
+    [self stepDone:formName];
+    [self readAgain];
+    return YES;
+}
+
+/* Confirm the order's form (ConfirmPurchaseOrder): the order, its state
+   chosen. */
+- (void)decide:(NSString *)state {
+    ORMFormSession *form = [self formNamed:@"ConfirmPurchaseOrder" given:@{} key:[[_order valueForKey:@"id"] UUIDString]];
+    if (!form) return;
+    [form setValue:state forElement:@"orderState"];
+    [self saveForm:form];
+}
+
+/* The step of the form's done here: the title says it no more, and the
+   tasks are asked again. */
 - (void)stepDone:(NSString *)form {
     if (![_task.formName isEqualToString:form]) return;
     self.task = nil;
@@ -153,10 +215,39 @@ static NSDictionary *LBLinesParameter(NSArray *lines, NSArray<NSDecimalNumber *>
 
 - (void)move:(NSArray *)lines quantities:(NSArray<NSDecimalNumber *> *)quantities {
     if (!_moveAt) return [self refuse:_sale ? @"Choose where from." : @"Choose where."];
-    if ([self performAction:_sale ? @"Ship" : @"Receive" on:_order
-                 parameters:@{ @"Lines": LBLinesParameter(lines, quantities), (_sale ? @"From" : @"At"): _moveAt }] && !_sale) {
-        [self stepDone:@"ReceiveGoods"];
+    if (_sale) {
+        [self performAction:@"Ship" on:_order parameters:@{ @"Lines": LBLinesParameter(lines, quantities), @"From": _moveAt }];
+        return;
     }
+    [self receive:lines quantities:quantities];
+}
+
+/* Receive the goods' form (ReceiveGoods): a receipt of the order, its next,
+   recorded by the user now, on the day, at moveAt, a move of each line so
+   many; each move's item, place, moment and maker the model's. */
+- (void)receive:(NSArray *)lines quantities:(NSArray<NSDecimalNumber *> *)quantities {
+    int32_t number = 0;
+    for (NSManagedObject *receipt in [_order valueForKey:@"receipts"]) number = MAX(number, [[receipt valueForKey:@"runningNumber"] intValue]);
+    NSISO8601DateFormatter *moments = [[NSISO8601DateFormatter alloc] init];
+    NSDateFormatter *days = [[NSDateFormatter alloc] init];
+    days.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    days.dateFormat = @"yyyy-MM-dd";
+    ORMFormSession *form = [self formNamed:@"ReceiveGoods"
+                                     given:@{ @"purchaseOrder" : [[_order valueForKey:@"id"] UUIDString],
+                                              @"runningNumber" : [NSString stringWithFormat:@"%d", number + 1],
+                                              @"recordedBy" : self.user.email ?: @"",
+                                              @"recorded" : [moments stringFromDate:[NSDate date]] }
+                                       key:nil];
+    if (!form) return;
+    [form setValue:[days stringFromDate:[NSDate date]] forElement:@"received"];
+    [form setValue:[[_moveAt valueForKey:@"id"] UUIDString] forElement:@"receivedAt"];
+    NSMutableArray *rows = [NSMutableArray array];
+    for (NSUInteger i = 0; i < lines.count; i++) {
+        [rows addObject:@{ @"purchaseLine" : [[lines[i] valueForKey:@"id"] UUIDString],
+                           @"moved" : [quantities[i] descriptionWithLocale:[NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"]] }];
+    }
+    [form setRows:rows forRepeat:@"moves"];
+    [self saveForm:form];
 }
 
 - (IBAction)moveLine:(id)sender {

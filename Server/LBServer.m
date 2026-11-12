@@ -229,7 +229,8 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
        whichever device sent them; then the model's rules. */
     _service.willSave = ^BOOL(NSManagedObjectContext *context, NSError **refused) {
         NSError *why = nil;
-        if (![context lb_completeRemindersOfChangedEvents:&why] || ![context lb_shipPartsOfChangedEvents:&why]) {
+        if (![context lb_completeRemindersOfChangedEvents:&why] || ![context lb_shipPartsOfChangedEvents:&why]
+            || ![context lb_holdMovedItems:&why]) {
             if (refused) *refused = why;
             return NO;
         }
