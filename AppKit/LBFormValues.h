@@ -7,7 +7,9 @@
 // table has it, and into the object the form edits where there is one (a
 // record's tab: the record kept as it is typed, as the list shows it);
 // read again (-reload), every binding hears of it. A reference's choices
-// are choices.<name> ("choices.driver"), objects of the context.
+// are choices.<name> ("choices.driver"), objects of the context. A
+// repeat's rows (a service's items) are the object's, as an array
+// controller's content binds them, read by the form as it saves.
 //
 //   <binding destination="-2" name="value" keyPath="values.timestamp"/>
 //   <binding destination="-2" name="selectedObject" keyPath="values.driver"/>

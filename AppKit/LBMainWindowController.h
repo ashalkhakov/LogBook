@@ -56,9 +56,6 @@ NS_ASSUME_NONNULL_BEGIN
 // Who drives the chosen vehicle (its owner, and those it is shared with),
 // and its tyre sets: what a record's form chooses from.
 @property (nonatomic, readonly, copy) NSArray<User *> *drivers;
-// Who may have driven the chosen fill-up: the RecordFillUp form's choices
-// (those who drive its vehicle), as its tab's pop-up offers them.
-@property (nonatomic, readonly, copy) NSArray<User *> *fillUpDrivers;
 @property (nonatomic, readonly, copy) NSArray<TyreSet *> *tyreSets;
 // Its trips, the latest first: what an income is picked for.
 @property (nonatomic, readonly, copy) NSArray<Trip *> *trips;

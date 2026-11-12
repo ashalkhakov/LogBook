@@ -94,6 +94,14 @@
     return [self saveContext:_context error:error];
 }
 
+- (void)identifyInserted {
+    for (NSManagedObject *object in _context.insertedObjects) {
+        if ([object respondsToSelector:@selector(setId:)] && !((id<LBIdentified>)object).id) {
+            ((id<LBIdentified>)object).id = [NSUUID UUID];
+        }
+    }
+}
+
 - (BOOL)saveContext:(NSManagedObjectContext *)context error:(NSError **)error {
     if (!context.hasChanges) return YES;
     for (NSManagedObject *object in context.insertedObjects) {

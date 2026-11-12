@@ -45,6 +45,9 @@ NS_ASSUME_NONNULL_BEGIN
 // NO, and why (each violation in its NSDetailedErrorsKey), when a rule is
 // broken or the server refuses; the changes are kept to put right.
 - (BOOL)save:(NSError **)error;
+// Each object made and not yet saved given its key (an answer made as its
+// question is answered), as saving would: what a form edits it by.
+- (void)identifyInserted;
 // The same of a context -newContext made.
 - (BOOL)saveContext:(NSManagedObjectContext *)context error:(NSError **)error;
 

@@ -45,6 +45,7 @@
 #import "LBStockDisplay.h"
 #import "LBFormValues.h"
 #import <ORMRuntime/ORMFormSession.h>
+#import <ORMRuntime/ORMForm.h>
 
 NSURL *LBSelfTestRoot;
 /* The user's saved settings as the self-test began. */
@@ -758,6 +759,12 @@ static Record *LBAddRecord(LBMainWindowController *controller, Class kind) {
     Record *record = controller.records.selectedObjects.firstObject;
     LBCheck([NSString stringWithFormat:@"a new %@, its form shown", [Record lbKindOfEntityNamed:NSStringFromClass(kind)]],
             [record isKindOfClass:kind] && [controller.recordForms.selectedTabViewItem.identifier isEqual:NSStringFromClass(kind)], record);
+    /* The tab is the model's form of it (Record<Kind>), not the record. */
+    LBFormValues *form = controller.chosenRecords[NSStringFromClass(kind)];
+    NSString *named = [@"Record" stringByAppendingString:NSStringFromClass(kind)];
+    LBCheck([NSString stringWithFormat:@"its tab the model's %@", named],
+            [form isKindOfClass:[LBFormValues class]] && [form.session.form.name isEqualToString:named] && form.object == record,
+            form);
     return record;
 }
 
@@ -1480,8 +1487,11 @@ static void LBKindSteps(LBMainWindowController *controller) {
                 && [keptIncome.trip.id isEqual:trip.id],
             keptIncome);
     LBChooseRecord(controller, trip);
-    NSTextField *earned = (NSTextField *)LBControl(window.contentView, @"TripIncome");
-    LBCheck(@"the trip shows what it earned", [earned.stringValue isEqualToString:@"80.00 EUR"], earned.stringValue);
+    NSTextField *earned = (NSTextField *)LBControl(window.contentView, @"TripIncomeValue");
+    NSComboBox *earnedIn = (NSComboBox *)LBControl(window.contentView, @"TripIncomeUnit");
+    LBCheck(@"the trip shows what it earned, from its form", [[NSDecimalNumber decimalNumberWithString:earned.stringValue] isEqual:[NSDecimalNumber decimalNumberWithString:@"80"]]
+                && [earnedIn.stringValue isEqualToString:@"EUR"],
+            ([NSString stringWithFormat:@"%@ %@", earned.stringValue, earnedIn.stringValue]));
     LBChooseRecord(controller, income);
     LBType(window, @"IncomeEarnedValue", @"90");
     keptIncome = LBSaved(controller, income, @"the income corrected");

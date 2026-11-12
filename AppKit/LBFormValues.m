@@ -12,7 +12,11 @@ static NSLocale *LBFormPOSIX(void) {
     return [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
 }
 
-@implementation LBFormValues
+static void *LBRowsChanged = &LBRowsChanged;
+
+@implementation LBFormValues {
+    NSDictionary<NSString *, NSArray<NSManagedObject *> *> *_choices;
+}
 
 - (instancetype)initWithSession:(ORMFormSession *)session context:(NSManagedObjectContext *)context {
     if ((self = [super init])) {
@@ -25,13 +29,45 @@ static NSLocale *LBFormPOSIX(void) {
 - (instancetype)initWithSession:(ORMFormSession *)session object:(NSManagedObject *)object {
     if ((self = [self initWithSession:session context:object.managedObjectContext])) {
         _object = object;
+        /* A repeat's rows are the object's (a service's items), as its
+           array controller changes them: each change told as the repeat's. */
+        for (NSString *name in [session.form repeatNames]) {
+            if (object.entity.relationshipsByName[name]) {
+                [object addObserver:self forKeyPath:name options:NSKeyValueObservingOptionPrior context:LBRowsChanged];
+            }
+        }
     }
     return self;
+}
+
+- (void)dealloc {
+    for (NSString *name in [_session.form repeatNames]) {
+        if (_object.entity.relationshipsByName[name]) [_object removeObserver:self forKeyPath:name context:LBRowsChanged];
+    }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    if (context != LBRowsChanged) {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+        return;
+    }
+    if ([change[NSKeyValueChangeNotificationIsPriorKey] boolValue]) [self willChangeValueForKey:keyPath];
+    else [self didChangeValueForKey:keyPath];
+}
+
+/* A repeat of the form the object has: its rows, the object's. */
+- (BOOL)rowsAre:(NSString *)name {
+    return _object && [_session.form repeatNamed:name] && _object.entity.relationshipsByName[name];
+}
+
+- (NSMutableSet *)mutableSetValueForKey:(NSString *)name {
+    return [self rowsAre:name] ? [_object mutableSetValueForKey:name] : [super mutableSetValueForKey:name];
 }
 
 - (void)reload {
     for (ORMFormElement *element in _session.form.elements) [self willChangeValueForKey:element.name];
     for (ORMFormElement *element in [_session.form.elements reverseObjectEnumerator]) [self didChangeValueForKey:element.name];
+    [self choicesChanged];
 }
 
 /* The object of the entity whose key is the text: a UUID's by its UUID. */
@@ -55,6 +91,7 @@ static NSLocale *LBFormPOSIX(void) {
 }
 
 - (id)valueForKey:(NSString *)name {
+    if ([self rowsAre:name]) return [_object valueForKey:name];
     ORMFormElement *element = [_session.form elementNamed:name];
     if (!element) return [super valueForKey:name];
     NSString *text = [_session valueForElement:name];
@@ -70,6 +107,10 @@ static NSLocale *LBFormPOSIX(void) {
 }
 
 - (void)setValue:(id)value forKey:(NSString *)name {
+    if ([self rowsAre:name]) {
+        [_object setValue:value forKey:name];
+        return;
+    }
     ORMFormElement *element = [_session.form elementNamed:name];
     if (!element) {
         [super setValue:value forKey:name];
@@ -91,6 +132,12 @@ static NSLocale *LBFormPOSIX(void) {
     [_session setValue:text forElement:name];
     if (_object && _object.entity.propertiesByName[name]) [_object setValue:value forKey:name];
     [self didChangeValueForKey:name];
+    for (NSString *choice in [_session.form choiceNames]) {
+        if ([[_session.form elementsChoicesDependOn:choice] containsObject:name]) {
+            [self choicesChanged];
+            break;
+        }
+    }
     if (_changedHandler) _changedHandler(name);
 }
 
@@ -155,10 +202,23 @@ static void LBProblemLabels(NSView *view, NSMutableDictionary<NSArray<NSString *
     }
 }
 
+/* Kept, so that what observes a choice's objects (a pop-up's content,
+   choices.driver) sees the same dictionary until they are read again: as
+   the values change (one choice's objects depend on another's value), and
+   as they are read again. */
 - (NSDictionary<NSString *, NSArray<NSManagedObject *> *> *)choices {
-    NSMutableDictionary *choices = [NSMutableDictionary dictionary];
-    for (NSString *name in [_session.form choiceNames]) choices[name] = [self choicesNamed:name error:NULL] ?: @[];
-    return choices;
+    if (!_choices) {
+        NSMutableDictionary *choices = [NSMutableDictionary dictionary];
+        for (NSString *name in [_session.form choiceNames]) choices[name] = [self choicesNamed:name error:NULL] ?: @[];
+        _choices = choices;
+    }
+    return _choices;
+}
+
+- (void)choicesChanged {
+    [self willChangeValueForKey:@"choices"];
+    _choices = nil;
+    [self didChangeValueForKey:@"choices"];
 }
 
 @end

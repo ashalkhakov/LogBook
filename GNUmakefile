@@ -191,6 +191,7 @@ obj/Logbook.wfdeployment: Model/Logbook.orm $(wildcard Model/*.bpmn)
 
 check:: all
 	$(ORMTOOL) flow Model/Logbook.orm Model/Records.flow
+	python3 Tests/contract-check.py AppKit/MainWindow.xib $(LB_MODEL)/Forms
 	obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
 	obj/lb-stock-check obj/Logbook.momd obj/Logbook.ormplans
 	Tests/form-check.sh obj/logbook-server obj/lb-form-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms
