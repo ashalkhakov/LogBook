@@ -166,7 +166,7 @@ after-all::
 
 # Installed, the server finds them beside itself too (logbook-server.exe
 # on Windows).
-LB_SERVER_FILES = Logbook.momd Logbook.ormplans Logbook.permissions.plist
+LB_SERVER_FILES = Logbook.momd Logbook.ormplans Logbook.permissions.plist Logbook.wfdeployment
 after-install::
 	@server=$$(find "$(GNUSTEP_TOOLS)" -type f \( -name logbook-server -o -name logbook-server.exe \) -perm -u+x | head -n 1); \
 	  [ -n "$$server" ] || { echo "install: no logbook-server under $(GNUSTEP_TOOLS)"; exit 1; }; \
