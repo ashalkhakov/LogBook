@@ -147,6 +147,12 @@
         return NO;
     }
     [self saveChanges];
+    /* What the form saved, at the server before its task is told: the
+       process goes on with the facts. */
+    if (![self.store syncAndWait:&error]) {
+        [self reportError:error];
+        return NO;
+    }
     /* The server's tasks, where it has some: opened from Window > Tasks,
        those; from the stock's window, asked here. */
     if (!_tasks && self.store.serviceRoot) _tasks = [[LBTasks alloc] initWithServiceRoot:self.store.serviceRoot signIn:self.store.signIn];

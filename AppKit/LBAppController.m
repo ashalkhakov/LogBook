@@ -140,7 +140,14 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
 
 - (void)connectPanel:(LBConnectPanel *)panel didConnect:(ODataSignIn *)signIn {
     _signIn = signIn;
-    LBStore *store = [[LBStore alloc] initWithServiceRoot:signIn.serviceRoot signIn:signIn.kind == ODataSignInOpenID ? signIn : nil];
+    /* Offline first: kept on this Mac, one store for each server (a
+       self-test's, a new one of its own), synced with it. */
+    NSURL *directory = LBSelfTestRoot
+        ? [[NSURL fileURLWithPath:NSTemporaryDirectory()] URLByAppendingPathComponent:[[NSUUID UUID] UUIDString] isDirectory:YES]
+        : [LBStore directoryForServiceRoot:signIn.serviceRoot];
+    LBStore *store = [[LBStore alloc] initOfflineFirstWithServiceRoot:signIn.serviceRoot
+                                                               signIn:signIn.kind == ODataSignInOpenID ? signIn : nil
+                                                            directory:directory];
     NSError *error = nil;
     if (![store open:&error]) {
         /* A self-test has no one to answer the alert: it fails, and says why. */

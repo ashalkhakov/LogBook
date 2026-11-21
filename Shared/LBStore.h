@@ -1,7 +1,10 @@
 // The logbook as an app sees it: Logbook's model over a server's OData
-// service, online (ODataIncrementalStore), signed in as the server asks
-// (LBSignIn.h). The desktop app's; the iOS app keeps one of its own,
-// synced (LBLocalStore.h).
+// service, signed in as the server asks (LBSignIn.h). Offline first, the
+// desktop app's (-initOfflineFirstWithServiceRoot:signIn:directory:): kept
+// on the Mac (LBLocalStore.h, the iOS app's), every change saved there and
+// synced with the server when it answers, its actions done there
+// (LBLocalActions.h). Online (-initWithServiceRoot:signIn:): the server's
+// own, as it has it (ODataIncrementalStore), what a check reads it by.
 //
 // Saving does what the server does before it saves (the generated
 // orm_prepareForSave:): what is derived worked out, every rule checked for
@@ -13,7 +16,7 @@
 #import <CoreData/CoreData.h>
 #import <ODataSync/ODataSignIn.h>
 
-@class User;
+@class User, LBLocalStore;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,11 +26,20 @@ NS_ASSUME_NONNULL_BEGIN
 + (nullable NSManagedObjectModel *)model;
 
 - (instancetype)initWithServiceRoot:(NSURL *)serviceRoot signIn:(nullable ODataSignIn *)signIn NS_DESIGNATED_INITIALIZER;
+// Offline first: kept in the directory (one of its own for each server).
+- (instancetype)initOfflineFirstWithServiceRoot:(NSURL *)serviceRoot signIn:(nullable ODataSignIn *)signIn directory:(NSURL *)directory;
+// The directory a server's logbook is kept in on this Mac, under
+// Application Support/Logbook.
++ (NSURL *)directoryForServiceRoot:(NSURL *)serviceRoot;
+// Offline first: the device's store (nil online).
+@property (nonatomic, readonly, strong, nullable) LBLocalStore *local;
 - (instancetype)init NS_UNAVAILABLE;
 @property (nonatomic, readonly, copy) NSURL *serviceRoot;
 @property (nonatomic, readonly, strong, nullable) ODataSignIn *signIn;
 
-// The store opened: NO, and why, when the server cannot be reached as one.
+// The store opened: NO, and why, when the server cannot be reached as one
+// (online), or the Mac's store cannot be opened (offline first: synced once
+// where the server answers, else what it kept is shown).
 - (BOOL)open:(NSError **)error;
 // The main queue's: what the windows bind to.
 @property (nonatomic, readonly, strong, nullable) NSManagedObjectContext *context;
@@ -50,6 +62,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)identifyInserted;
 // The same of a context -newContext made.
 - (BOOL)saveContext:(NSManagedObjectContext *)context error:(NSError **)error;
+
+// Offline first: synced now, waited for; NO, and why, where the server
+// does not answer (online: YES, there is nothing to sync).
+- (BOOL)syncAndWait:(NSError **)error;
+// The server's actions on the object (LBLocalActions.h): offline first,
+// done here, by the user; online, called at the server. Not saved here.
+- (nullable id)performAction:(NSString *)name
+                          on:(NSManagedObject *)object
+                  parameters:(nullable NSDictionary<NSString *, id> *)parameters
+                       error:(NSError **)error;
 
 // What ought not to be, but may (deontic rules: the meter goes down, an
 // event after the car was sold): the objects changed asked, each warning

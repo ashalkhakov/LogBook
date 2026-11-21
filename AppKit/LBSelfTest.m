@@ -2,6 +2,8 @@
 #import "LBConnectPanel.h"
 #import "LBMainWindowController.h"
 #import "LBStore.h"
+#import "LBLocalStore.h"
+#import <ODataSync/ODataSyncEngine.h>
 #import "Vehicle+CoreDataClass.h"
 #import "User+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
@@ -127,9 +129,16 @@ static void LBClick(NSWindow *window, NSString *identifier) {
 /* What the server has: read through a store of its own, kept while its
    objects are looked at. */
 static LBStore *LBServerSide;
+/* The app's store, offline first: synced before the server is read, so
+   that what the server has is what the app saved. */
+static LBStore *LBAppStore;
 
-/* That store, opened the first time it is asked for. */
+/* That store, opened the first time it is asked for; the app's synced
+   first. */
 static NSManagedObjectContext *LBServerContext(void) {
+    NSError *error = nil;
+    if (LBAppStore.local && ![LBAppStore syncAndWait:&error]) NSLog(@"self-test: not synced: %@", error.localizedDescription);
+    for (ODataSyncIssue *issue in LBAppStore.local.issues) NSLog(@"self-test: set aside: %@ %@ %ld %@", issue.entityName, issue.key, (long)issue.status, issue.message);
     if (!LBServerSide) {
         LBServerSide = [[LBStore alloc] initWithServiceRoot:LBSelfTestRoot signIn:nil];
         if (![LBServerSide open:NULL]) LBServerSide = nil;
@@ -137,8 +146,18 @@ static NSManagedObjectContext *LBServerContext(void) {
     return LBServerSide.context;
 }
 
+/* Saved at the server, as another device would; the app synced after, as
+   its timer would. */
+static BOOL LBServerSaved(NSError **error) {
+    if (![LBServerSide save:error]) return NO;
+    NSError *syncError = nil;
+    if (LBAppStore.local && ![LBAppStore syncAndWait:&syncError]) NSLog(@"self-test: not synced: %@", syncError.localizedDescription);
+    return YES;
+}
+
 static Vehicle *LBVehicleNamed(NSString *name) {
     if (!LBServerContext()) return nil;
+    LBServerContext();
     LBStore *other = LBServerSide;
     NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Vehicle class])];
     fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(vehicleName)), name];
@@ -147,7 +166,7 @@ static Vehicle *LBVehicleNamed(NSString *name) {
 
 /* Who the server says drives a vehicle besides its owner. */
 static NSArray<NSString *> *LBSharedWith(Vehicle *kept) {
-    [LBServerSide.context refreshObject:kept mergeChanges:NO];
+    [LBServerContext() refreshObject:kept mergeChanges:NO];
     NSMutableArray *emails = [NSMutableArray array];
     for (VehicleDriver *sharing in kept.vehicleDrivers) {
         if (sharing.user.email) [emails addObject:sharing.user.email];
@@ -247,7 +266,7 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBClick(window, @"save");
     LBCheck(@"the fill-up saved", !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
-    [LBServerSide.context refreshObject:kept mergeChanges:NO];
+    [LBServerContext() refreshObject:kept mergeChanges:NO];
     FillUp *sent = nil;
     for (Record *record in kept.records) {
         if ([record isKindOfClass:[FillUp class]]) sent = (FillUp *)record;
@@ -262,19 +281,19 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
    the server): listed with the record, opened as a file of its name. */
 static void LBAttachmentSteps(LBMainWindowController *controller, Vehicle *kept) {
     NSWindow *window = controller.window;
-    [LBServerSide.context refreshObject:kept mergeChanges:NO];
+    [LBServerContext() refreshObject:kept mergeChanges:NO];
     FillUp *there = nil;
     for (Record *record in kept.records) {
         if ([record isKindOfClass:[FillUp class]]) there = (FillUp *)record;
     }
     Attachment *receipt = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Attachment class])
-                                                        inManagedObjectContext:LBServerSide.context];
+                                                        inManagedObjectContext:LBServerContext()];
     receipt.id = [NSUUID UUID];
     receipt.fileName = @"receipt-0914.jpg";
     receipt.content = [@"the receipt's photo" dataUsingEncoding:NSUTF8StringEncoding];
     receipt.record = there;
     NSError *error = nil;
-    LBCheck(@"a receipt attached to the fill-up elsewhere", there && [LBServerSide save:&error], error);
+    LBCheck(@"a receipt attached to the fill-up elsewhere", there && LBServerSaved(&error), error);
     [controller readAgain];
     LBSpin();
     FillUp *fillUp = nil;
@@ -360,8 +379,9 @@ static void LBPreferenceSteps(LBMainWindowController *controller) {
 static NSArray *LBServerObjects(Class cls, NSPredicate *predicate) {
     NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(cls)];
     fetch.predicate = predicate;
-    NSArray *objects = [LBServerContext() executeFetchRequest:fetch error:NULL] ?: @[];
-    for (NSManagedObject *object in objects) [LBServerSide.context refreshObject:object mergeChanges:NO];
+    NSManagedObjectContext *there = LBServerContext();
+    NSArray *objects = [there executeFetchRequest:fetch error:NULL] ?: @[];
+    for (NSManagedObject *object in objects) [there refreshObject:object mergeChanges:NO];
     return objects;
 }
 
@@ -560,8 +580,8 @@ static Reminder *LBListed(LBMainWindowController *controller, NSUUID *uuid) {
 static Reminder *LBServerReminder(NSUUID *uuid) {
     NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Reminder class])];
     fetch.predicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)), uuid];
-    Reminder *reminder = [[LBServerSide.context executeFetchRequest:fetch error:NULL] firstObject];
-    if (reminder) [LBServerSide.context refreshObject:reminder mergeChanges:NO];
+    Reminder *reminder = [[LBServerContext() executeFetchRequest:fetch error:NULL] firstObject];
+    if (reminder) [LBServerContext() refreshObject:reminder mergeChanges:NO];
     return reminder;
 }
 
@@ -1998,7 +2018,7 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
 
     /* Another vehicle of the user's, read today elsewhere: All Vehicles
        shows both, each entry with its vehicle. */
-    NSManagedObjectContext *there = LBServerSide.context;
+    NSManagedObjectContext *there = LBServerContext();
     /* What it read before, read again: the model's rules check it all. */
     for (NSManagedObject *object in there.registeredObjects.allObjects) [there refreshObject:object mergeChanges:NO];
     User *user = [LBServerObjects([User class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(email)),
@@ -2022,7 +2042,7 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
     read.mileageDistanceUnit = [LBServerObjects([DistanceUnit class], [NSPredicate predicateWithFormat:@"%K == %@",
                                                                                  NSStringFromSelector(@selector(code)), @"km"]) firstObject];
     NSError *error = nil;
-    LBCheck(@"another vehicle of the user's, read today, elsewhere", [LBServerSide save:&error], error);
+    LBCheck(@"another vehicle of the user's, read today, elsewhere", LBServerSaved(&error), error);
     [controller.vehicles fetch:nil];
     LBSpin();
     [controller readAgain];
@@ -2228,6 +2248,7 @@ static void LBSteps(LBMainWindowController *controller) {
 @end
 
 void LBRunSelfTest(LBMainWindowController *window) {
+    LBAppStore = window.store;
     static LBSelfTestRun *run;
     run = [[LBSelfTestRun alloc] init];
     run.window = window;

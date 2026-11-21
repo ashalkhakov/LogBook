@@ -440,8 +440,8 @@ generated model, which the server and the phone both load:
 
 | Which way | What |
 |---|---|
-| down: the server's, read | units, kinds of cost, exchange rates |
-| both: changed on either side | users, vehicles and their sharing and valuations, records (every kind, schedules and reminders among them) and their items, answers and attachments, reschedulings, checklists and their questions and options |
+| down: the server's, read | units |
+| both: changed on either side | users, vehicles and their sharing and valuations, records (every kind, schedules and reminders among them) and their items, answers and attachments, reschedulings, checklists and their questions and options, kinds of cost and exchange rates (the Mac's Lists window adds them, offline first) |
 
 Each object a phone changes carries ODataSync's bookkeeping, added by the
 mapping and not part of the conceptual model: its version vector

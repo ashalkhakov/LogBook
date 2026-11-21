@@ -1,11 +1,11 @@
 #import "LBMainWindowController.h"
 #import "LBStore.h"
+#import "LBLocalStore.h"
 #import "LBDisplay.h"
 #import "LBReportsController.h"
 #import "LBRemindersController.h"
 #import "LBAnswersController.h"
 #import "LBCalendarController.h"
-#import <ODataIncrementalStore/ODataOperationCall.h>
 #import <ODataKit/ODataError.h>
 #import "Schedule+CoreDataClass.h"
 #import "Reminder+CoreDataClass.h"
@@ -61,6 +61,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     if (!self.isWindowLoaded) return;
     NSString *selection = NSStringFromSelector(@selector(selectionIndexes));
     [_vehicles removeObserver:self forKeyPath:selection context:LBVehicleChosen];
@@ -72,8 +73,15 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     return _store.context;
 }
 
+/* Offline first: what a sync brought down (another device's), shown. */
+- (void)storeDidSync:(NSNotification *)note {
+    [self readAgain];
+}
+
 - (void)windowDidLoad {
     [super windowDidLoad];
+    if (_store.local) [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(storeDidSync:)
+                                                                   name:LBLocalStoreDidSyncNotification object:_store.local];
     self.window.title = [NSString stringWithFormat:@"Logbook — %@", _store.serviceRoot.host ?: @""];
     _vehicles.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(vehicleName)) ascending:YES
                                                                   selector:@selector(localizedCaseInsensitiveCompare:)] ];
@@ -425,9 +433,13 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         if (error) *error = _lastError;
         return nil;
     }
-    ODataOperationCall *call = [ODataOperationCall callOfOperation:name onObject:object];
-    call.parameters = parameters;
-    id result = [call invoke:error];
+    /* Offline first, done here and saved here (then synced); online, the
+       server's. */
+    id result = [_store performAction:name on:object parameters:parameters error:error];
+    if (result && _store.local && ![_store save:error]) {
+        [self.context rollback];
+        result = nil;
+    }
     [self readAgain];
     if (result) _lastError = nil;
     return result;
@@ -450,8 +462,12 @@ static void *LBRecordsChanged = &LBRecordsChanged;
                                                            NSStringFromSelector(@selector(vehicle)), vehicle];
         if (![context executeFetchRequest:moves error:&error]) NSLog(@"Logbook: the moves not read again: %@", error.localizedDescription);
     }
-    for (NSManagedObject *object in context.registeredObjects.allObjects) {
-        if (!object.hasChanges) [context refreshObject:object mergeChanges:NO];
+    /* The server's objects read again; offline first, the context's are
+       the store's, and a sync has refreshed what it brought. */
+    if (!_store.local) {
+        for (NSManagedObject *object in context.registeredObjects.allObjects) {
+            if (!object.hasChanges) [context refreshObject:object mergeChanges:NO];
+        }
     }
     /* What shows the chosen vehicle's records asks for them again (the
        vehicle itself is not changed). */

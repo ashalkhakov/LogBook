@@ -1,7 +1,7 @@
 #import "LBStockEditor.h"
 #import "LBStore.h"
+#import "LBLocalStore.h"
 #import "LBStockProcedures.h"
-#import <ODataIncrementalStore/ODataOperationCall.h>
 
 NSNotificationName const LBStockDidChangeNotification = @"LBStockDidChangeNotification";
 NSString *const LBStockCatalogKey = @"LBStockCatalog";
@@ -14,6 +14,9 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
         _context = [store newContext];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stockDidChange:) name:LBStockDidChangeNotification
                                                    object:nil];
+        /* Offline first: what a sync brought down, read again. */
+        if (store.local) [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(storeDidSync:)
+                                                                      name:LBLocalStoreDidSyncNotification object:store.local];
     }
     return self;
 }
@@ -68,6 +71,10 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     if (!self.isWindowLoaded) return;
     NSManagedObjectID *changed = note.userInfo[LBStockCatalogKey];
     if (!changed || !_catalog || [changed isEqual:_catalog.objectID]) [self readAgain];
+}
+
+- (void)storeDidSync:(NSNotification *)note {
+    if (self.isWindowLoaded) [self readAgain];
 }
 
 - (void)announce {
@@ -142,9 +149,13 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 - (id)performAction:(NSString *)name on:(NSManagedObject *)object parameters:(NSDictionary *)parameters {
     if (![self commitEdits] || ![self saveHere]) return nil;
     NSError *error = nil;
-    ODataOperationCall *call = [ODataOperationCall callOfOperation:name onObject:object];
-    call.parameters = parameters;
-    id result = [call invoke:&error];
+    /* Offline first, done here and saved here (then synced); online, the
+       server's. */
+    id result = [_store performAction:name on:object parameters:parameters error:&error];
+    if (result && _store.local && ![_store saveContext:_context error:&error]) {
+        [_context rollback];
+        result = nil;
+    }
     if (result) _lastError = nil;
     else [self reportError:error];
     [self announce];

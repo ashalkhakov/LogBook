@@ -10,6 +10,7 @@
 #import "Vehicle+CoreDataClass.h"
 
 NSNotificationName const LBLocalStoreDidChangeNotification = @"LBLocalStoreDidChangeNotification";
+NSNotificationName const LBLocalStoreDidSyncNotification = @"LBLocalStoreDidSyncNotification";
 
 NSDate *LBNow(void) {
     return [NSDate dateWithTimeIntervalSinceReferenceDate:floor([NSDate timeIntervalSinceReferenceDate])];
@@ -212,6 +213,7 @@ static NSString *LBCount(NSUInteger n) {
     } else {
         _lastSync = [NSDate date];
         [self say:[self syncedStatus]];
+        [[NSNotificationCenter defaultCenter] postNotificationName:LBLocalStoreDidSyncNotification object:self];
         /* A user who prefers no currency takes this phone's, once the
            server's say has come down: what their costs by month are
            reported in. It waits for the next sync, as a sync of its own
