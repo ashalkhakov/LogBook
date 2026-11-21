@@ -53,6 +53,9 @@ extern NSString *const LBStockCatalogKey;
 // Its changes saved (an amount typed with no currency given the
 // catalog's); stock said to have changed. NO, said, when refused.
 - (BOOL)saveChanges;
+// Each line, item and kit's money given the catalog's currency where it has
+// none, as saving does.
+- (void)completeMoney;
 // One of the server's actions called on the object, its changes saved
 // first; stock said to have changed. Its result; nil when refused, said.
 - (nullable id)performAction:(NSString *)name on:(NSManagedObject *)object parameters:(nullable NSDictionary<NSString *, id> *)parameters;

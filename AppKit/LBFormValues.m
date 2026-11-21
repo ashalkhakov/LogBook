@@ -8,6 +8,18 @@ static NSISO8601DateFormatter *LBFormDates(void) {
     return dates;
 }
 
+/* A day (xsd:date): the same day everywhere. */
+static NSDateFormatter *LBFormDays(void) {
+    static NSDateFormatter *days;
+    if (!days) {
+        days = [[NSDateFormatter alloc] init];
+        days.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+        days.timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
+        days.dateFormat = @"yyyy-MM-dd";
+    }
+    return days;
+}
+
 static NSLocale *LBFormPOSIX(void) {
     return [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
 }
@@ -15,7 +27,8 @@ static NSLocale *LBFormPOSIX(void) {
 static void *LBRowsChanged = &LBRowsChanged;
 
 @implementation LBFormValues {
-    NSDictionary<NSString *, NSArray<NSManagedObject *> *> *_choices;
+    NSDictionary<NSString *, id> *_choices;
+    NSDictionary<NSString *, NSArray<NSString *> *> *_items;
 }
 
 - (instancetype)initWithSession:(ORMFormSession *)session context:(NSManagedObjectContext *)context {
@@ -33,7 +46,7 @@ static void *LBRowsChanged = &LBRowsChanged;
            array controller changes them: each change told as the repeat's. */
         for (NSString *name in [session.form repeatNames]) {
             if (object.entity.relationshipsByName[name]) {
-                [object addObserver:self forKeyPath:name options:NSKeyValueObservingOptionPrior context:LBRowsChanged];
+                [object addObserver:self forKeyPath:name options:0 context:LBRowsChanged];
             }
         }
     }
@@ -51,8 +64,10 @@ static void *LBRowsChanged = &LBRowsChanged;
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
         return;
     }
-    if ([change[NSKeyValueChangeNotificationIsPriorKey] boolValue]) [self willChangeValueForKey:keyPath];
-    else [self didChangeValueForKey:keyPath];
+    /* Told once the rows have changed, not before: what reads them then
+       finds the object whole (one being refreshed is not, until it is). */
+    [self willChangeValueForKey:keyPath];
+    [self didChangeValueForKey:keyPath];
 }
 
 /* A repeat of the form the object has: its rows, the object's. */
@@ -98,6 +113,7 @@ static void *LBRowsChanged = &LBRowsChanged;
     if ([element.kind isEqualToString:@"reference"]) return [self objectOf:element key:text];
     if (![text length]) return nil;
     if ([element.schemaType hasSuffix:@"dateTime"]) return [LBFormDates() dateFromString:text];
+    if ([element.schemaType hasSuffix:@":date"]) return [LBFormDays() dateFromString:text];
     if ([element.schemaType hasSuffix:@"decimal"]) {
         NSDecimalNumber *number = [NSDecimalNumber decimalNumberWithString:text locale:LBFormPOSIX()];
         return [number isEqual:[NSDecimalNumber notANumber]] ? nil : number;
@@ -119,6 +135,8 @@ static void *LBRowsChanged = &LBRowsChanged;
     NSString *text = @"";
     if ([element.kind isEqualToString:@"reference"]) {
         text = value ? [self keyOf:value element:element] : @"";
+    } else if ([value isKindOfClass:[NSDate class]] && [element.schemaType hasSuffix:@":date"]) {
+        text = [LBFormDays() stringFromDate:value];
     } else if ([value isKindOfClass:[NSDate class]]) {
         text = [LBFormDates() stringFromDate:value];
     } else if ([value isKindOfClass:[NSDecimalNumber class]]) {
@@ -206,13 +224,40 @@ static void LBProblemLabels(NSView *view, NSMutableDictionary<NSArray<NSString *
    choices.driver) sees the same dictionary until they are read again: as
    the values change (one choice's objects depend on another's value), and
    as they are read again. */
-- (NSDictionary<NSString *, NSArray<NSManagedObject *> *> *)choices {
+- (NSDictionary<NSString *, id> *)choices {
     if (!_choices) {
         NSMutableDictionary *choices = [NSMutableDictionary dictionary];
         for (NSString *name in [_session.form choiceNames]) choices[name] = [self choicesNamed:name error:NULL] ?: @[];
+        /* A repeat's, by its name: its rows' choices, of the form's values
+           (an order's lines' items, of its catalog). */
+        for (NSString *repeat in [_session.form repeatNames]) {
+            ORMForm *rows = [_session.form repeatNamed:repeat];
+            NSMutableDictionary *theirs = [NSMutableDictionary dictionary];
+            for (NSString *name in [rows choiceNames]) {
+                NSMutableArray *objects = [NSMutableArray array];
+                for (NSString *key in [_session choicesNamed:name inRepeat:repeat row:NSNotFound error:NULL] ?: @[]) {
+                    NSManagedObject *object = [self objectOf:[rows elementNamed:name] key:key];
+                    if (object) [objects addObject:object];
+                }
+                theirs[name] = objects;
+            }
+            if (theirs.count) choices[repeat] = theirs;
+        }
         _choices = choices;
     }
     return _choices;
+}
+
+/* The form's, kept: the same dictionary to whatever observes a list. */
+- (NSDictionary<NSString *, NSArray<NSString *> *> *)items {
+    if (!_items) {
+        NSMutableDictionary *items = [NSMutableDictionary dictionary];
+        for (ORMFormElement *element in _session.form.elements) {
+            if (element.items && ![element.kind isEqualToString:@"reference"]) items[element.name] = element.items;
+        }
+        _items = items;
+    }
+    return _items;
 }
 
 - (void)choicesChanged {

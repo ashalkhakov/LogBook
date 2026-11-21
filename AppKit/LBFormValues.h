@@ -39,8 +39,12 @@ NS_ASSUME_NONNULL_BEGIN
 // A reference's choices, as the session has them, as objects of the
 // context, in order.
 - (nullable NSArray<NSManagedObject *> *)choicesNamed:(NSString *)name error:(NSError **)error;
-// Each reference's choices, by its name, as a pop-up's content binds them.
-@property (nonatomic, readonly, copy) NSDictionary<NSString *, NSArray<NSManagedObject *> *> *choices;
+// Each reference's choices, by its name, as a pop-up's content binds them;
+// a repeat's rows', under its name (choices.purchaseLines.stockItem).
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, id> *choices;
+// Each element's values the model lists (an order's states), by its name,
+// as a pop-up of them binds its content (items.orderState).
+@property (nonatomic, readonly, copy) NSDictionary<NSString *, NSArray<NSString *> *> *items;
 
 // What a refused save said, under the controls of the view: in each label
 // a XIB names "problem-" and the elements it is for ("problem-driver",

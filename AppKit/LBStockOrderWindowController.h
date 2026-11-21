@@ -1,11 +1,17 @@
 // An order's window (StockSale.xib, StockPurchase.xib; docs/STOCK.md,
 // Orders): a sale or a purchase, its lines, its shipments or receipts and
-// its returns; confirmed, closed, cancelled or reopened, and its lines
-// shipped or received, and returned, by the server's actions. It reads the order and what is of it.
+// its returns. A purchase's window is a view of the model's form
+// EditPurchaseOrder (its supplier, day, reference, note and lines, their
+// items of its catalog, as the form offers them), saved by the form; its
+// steps are sheets, each a view of its form: Confirm or Cancel,
+// ConfirmPurchaseOrder; Receive, ReceiveGoods (a receipt made of what is
+// outstanding, each line's quantity changed or taken away), submitted to
+// the order's process. A sale's is the order's own, its steps the server's
+// actions; Close and Reopen, and returns, are.
 
 #import "LBStockEditor.h"
 
-@class Location, StockItem, LBTask, LBTasks;
+@class Location, StockItem, LBTask, LBTasks, LBFormValues;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,6 +30,14 @@ NS_ASSUME_NONNULL_BEGIN
 // Its returns, the latest first.
 @property (nonatomic, readonly, copy) NSArray *returns;
 @property (nonatomic, strong) IBOutlet NSArrayController *lineList;
+// A purchase's forms, as its window and its sheets bind them
+// (LBFormValues.h): EditPurchaseOrder, always; ConfirmPurchaseOrder and
+// ReceiveGoods while their sheet is shown.
+@property (nonatomic, readonly, strong, nullable) LBFormValues *orderForm;
+@property (nonatomic, readonly, strong, nullable) LBFormValues *confirmForm;
+@property (nonatomic, readonly, strong, nullable) LBFormValues *receiveForm;
+@property (nonatomic, strong) IBOutlet NSWindow *confirmPanel;
+@property (nonatomic, strong) IBOutlet NSWindow *receivePanel;
 @property (nonatomic, strong) IBOutlet NSTableView *linesTable;
 // What its form chooses from: the catalog's customers (suppliers), items,
 // locations.
@@ -47,7 +61,15 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) LBTask *task;
 @property (nonatomic, strong, nullable) LBTasks *tasks;
 
-// The server's Confirm, Close, Cancel and Reopen.
+// A purchase's step sheet's Submit: its form saved, then submitted to
+// the order's task of it; its Cancel (and Escape): nothing of it kept.
+- (IBAction)submitConfirm:(nullable id)sender;
+- (IBAction)submitReceive:(nullable id)sender;
+- (IBAction)dismissForm:(nullable id)sender;
+// A purchase's Receive: its sheet, a move of each line outstanding.
+- (IBAction)receiveGoods:(nullable id)sender;
+// Confirm and Cancel: a purchase's sheet, its state chosen; a sale's, the
+// server's. Close and Reopen, the server's.
 - (IBAction)confirmOrder:(nullable id)sender;
 - (IBAction)closeOrder:(nullable id)sender;
 - (IBAction)cancelOrder:(nullable id)sender;

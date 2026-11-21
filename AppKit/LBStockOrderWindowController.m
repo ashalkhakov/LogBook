@@ -4,6 +4,7 @@
 #import "LBStockDisplay.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
+#import "LBFormValues.h"
 
 @interface LBStockOrderWindowController ()
 @property (nonatomic, readwrite, copy) NSArray *lines;
@@ -12,6 +13,9 @@
 @property (nonatomic, readwrite, copy) NSArray *parties;
 @property (nonatomic, readwrite, copy) NSArray<StockItem *> *catalogItems;
 @property (nonatomic, readwrite, copy) NSArray<Location *> *locations;
+@property (nonatomic, readwrite, strong) LBFormValues *orderForm;
+@property (nonatomic, readwrite, strong) LBFormValues *confirmForm;
+@property (nonatomic, readwrite, strong) LBFormValues *receiveForm;
 @end
 
 @implementation LBStockOrderWindowController
@@ -36,6 +40,12 @@
 
 - (void)windowDidLoad {
     [super windowDidLoad];
+    /* A purchase's lines, its form's rows: in the order the window lists
+       them. */
+    if (!_sale) {
+        _lineList.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"lbLineOrder" ascending:YES
+                                                                      selector:@selector(localizedCaseInsensitiveCompare:)] ];
+    }
     [self.window bind:NSTitleBinding toObject:self withKeyPath:@"windowTitle" options:nil];
 }
 
@@ -61,7 +71,11 @@
     self.locations = [self fetch:[Location class] where:[NSPredicate predicateWithFormat:@"warehouse.catalog == %@", self.catalog]
                         sortedBy:self.byTitle];
     if (![_locations containsObject:_moveAt]) self.moveAt = _locations.firstObject;
-    /* Its fields, bound through the order, read it again. */
+    /* A purchase's window, its form opened on it as it is (its catalog
+       given); a sale's fields, bound through the order, read it again. */
+    if (!_sale && !self.window.attachedSheet) {
+        self.orderForm = [self valuesOfForm:@"EditPurchaseOrder" given:@{ @"catalog" : self.catalog.id.UUIDString ?: @"" } object:_order];
+    }
     [self willChangeValueForKey:@"order"];
     [self didChangeValueForKey:@"order"];
 }
@@ -69,20 +83,21 @@
 #pragma mark Its state
 
 - (void)act:(NSString *)name {
-    /* A purchase confirmed or cancelled: its Confirm the order's step,
-       done with its form. */
+    /* A purchase confirmed or cancelled: its Confirm the order's step, in
+       its form's sheet. */
     if (!_sale && [@[ @"Confirm", @"Cancel" ] containsObject:name]) {
-        [self decide:[name isEqualToString:@"Confirm"] ? @"Confirmed" : @"Cancelled"];
+        [self openConfirm:[name isEqualToString:@"Confirm"] ? @"Confirmed" : @"Cancelled"];
         return;
     }
     [self performAction:name on:_order parameters:nil];
 }
 
-/* The model's form of a step, given what it comes with, opened on the
-   object of the key (nil: one made), saved as the store saves; nil, and
-   why said, where it is not. */
-- (ORMFormSession *)formNamed:(NSString *)name given:(NSDictionary *)given key:(NSString *)key {
-    if (![self saveChanges]) return nil;
+#pragma mark Its forms
+
+/* The model's form opened on the object as the context has it now, given
+   what it comes with, saved as the store saves; its values as a view binds
+   them (LBFormValues.h). nil, and why said, where it does not open. */
+- (LBFormValues *)valuesOfForm:(NSString *)name given:(NSDictionary *)given object:(NSManagedObject *)object {
     NSError *error = nil;
     ORMForm *form = [ORMForm formNamed:name error:&error];
     ORMFormSession *session = form ? [[ORMFormSession alloc] initWithForm:form given:given] : nil;
@@ -90,48 +105,94 @@
     [session useContext:self.context saving:^BOOL(NSManagedObjectContext *context, NSError **failure) {
         return [store saveContext:context error:failure];
     }];
-    session.key = key;
+    session.key = [[object valueForKey:@"id"] UUIDString];
     if (!session || ![session open:&error]) {
         [self reportError:error];
         return nil;
     }
-    return session;
+    return [[LBFormValues alloc] initWithSession:session object:object];
 }
 
-/* The form's values saved, then its instance submitted to the order's
-   task of it, where one is open: the process goes on with them. A refusal
-   said in the form's words, nothing submitted. */
-- (BOOL)saveForm:(ORMFormSession *)session {
+/* A purchase's changes saved by its form (EditPurchaseOrder), opened on it
+   as it is now; what else changed, with it. */
+- (BOOL)saveChanges {
+    if (_sale || !_orderForm || !self.context.hasChanges) return [super saveChanges];
+    if (![self commitEdits]) return NO;
+    [self completeMoney];
+    LBFormValues *now = [self valuesOfForm:@"EditPurchaseOrder" given:_orderForm.session.given object:_order];
     NSError *error = nil;
-    if (![session save:&error]) {
-        NSString *said = error.localizedDescription ?: [[session.errors allValues] componentsJoinedByString:@" "];
-        [self refuse:said.length ? said : @"Not saved."];
+    if (!now || ![now.session save:&error]) {
+        if (now) [self refuseForm:now error:error under:self.window.contentView];
+        return NO;
+    }
+    return [super saveChanges];
+}
+
+/* What a save refused, said: under its controls where the view has them,
+   the rest in the form's words. */
+- (void)refuseForm:(LBFormValues *)values error:(NSError *)error under:(NSView *)view {
+    NSArray<NSString *> *rest = error ? @[ error.localizedDescription ?: @"" ] : [values showErrors:values.session.errors under:view];
+    [self refuse:rest.count ? [rest componentsJoinedByString:@"\n"] : @"Not saved: see under its fields."];
+}
+
+/* A step's form saved, opened again on its object as it is now (what its
+   sheet changed of it), then its instance submitted to the order's task
+   of it where one is open: the process goes on with it. */
+- (BOOL)submitForm:(LBFormValues *)values sheet:(NSWindow *)sheet {
+    [sheet makeFirstResponder:nil];
+    LBFormValues *now = [self valuesOfForm:values.session.form.name given:values.session.given object:values.object];
+    NSError *error = nil;
+    if (!now || ![now.session save:&error]) {
+        if (now) [self refuseForm:now error:error under:sheet.contentView];
         return NO;
     }
     [self saveChanges];
     /* The server's tasks, where it has some: opened from Window > Tasks,
        those; from the stock's window, asked here. */
     if (!_tasks && self.store.serviceRoot) _tasks = [[LBTasks alloc] initWithServiceRoot:self.store.serviceRoot signIn:self.store.signIn];
-    NSString *formName = session.form.name;
+    NSString *formName = now.session.form.name;
     LBTask *task = [_task.formName isEqualToString:formName] ? _task
         : [_tasks openTaskOfForm:formName about:[[_order valueForKey:@"id"] UUIDString] error:&error];
     if (error) [self reportError:error];
-    if (task && ![_tasks submitForm:session toTask:task error:&error]) {
+    if (task && ![_tasks submitForm:now.session toTask:task error:&error]) {
         [self reportError:error];
         return NO;
     }
     [self stepDone:formName];
-    [self readAgain];
     return YES;
 }
 
-/* Confirm the order's form (ConfirmPurchaseOrder): the order, its state
-   chosen. */
-- (void)decide:(NSString *)state {
-    ORMFormSession *form = [self formNamed:@"ConfirmPurchaseOrder" given:@{} key:[[_order valueForKey:@"id"] UUIDString]];
-    if (!form) return;
-    [form setValue:state forElement:@"orderState"];
-    [self saveForm:form];
+/* The sheet shown gone, and its form; read again. */
+- (void)endForm {
+    NSWindow *sheet = self.window.attachedSheet;
+    if (sheet) [self.window endSheet:sheet];
+    [sheet orderOut:nil];
+    self.confirmForm = nil;
+    self.receiveForm = nil;
+    [self readAgain];
+}
+
+- (IBAction)dismissForm:(id)sender {
+    [self.context rollback];
+    [self endForm];
+}
+
+- (void)cancelOperation:(id)sender {
+    if (self.window.attachedSheet) [self dismissForm:sender];
+}
+
+/* Confirm the order's sheet (ConfirmPurchaseOrder): the order as it is,
+   its state chosen. */
+- (void)openConfirm:(NSString *)state {
+    if (![self saveChanges]) return;
+    self.confirmForm = [self valuesOfForm:@"ConfirmPurchaseOrder" given:@{} object:_order];
+    if (!_confirmForm) return;
+    [_confirmForm setValue:state forKey:@"orderState"];
+    [self.window beginSheet:_confirmPanel completionHandler:nil];
+}
+
+- (IBAction)submitConfirm:(id)sender {
+    if ([self submitForm:_confirmForm sheet:_confirmPanel]) [self endForm];
 }
 
 /* The step of the form's done here: the title says it no more, and the
@@ -222,32 +283,58 @@ static NSDictionary *LBLinesParameter(NSArray *lines, NSArray<NSDecimalNumber *>
     [self receive:lines quantities:quantities];
 }
 
-/* Receive the goods' form (ReceiveGoods): a receipt of the order, its next,
-   recorded by the user now, on the day, at moveAt, a move of each line so
-   many; each move's item, place, moment and maker the model's. */
+/* Receive the goods' sheet (ReceiveGoods): a receipt of the order, its
+   next, recorded by the user now, received today at moveAt (else its
+   catalog's first place), a move of each line so many; changed there, and
+   submitted. Each move's item, place, moment and maker are the model's. */
 - (void)receive:(NSArray *)lines quantities:(NSArray<NSDecimalNumber *> *)quantities {
+    if (![self saveChanges]) return;
+    if (!lines.count) return [self refuse:@"Nothing of it is outstanding."];
     int32_t number = 0;
-    for (NSManagedObject *receipt in [_order valueForKey:@"receipts"]) number = MAX(number, [[receipt valueForKey:@"runningNumber"] intValue]);
-    NSISO8601DateFormatter *moments = [[NSISO8601DateFormatter alloc] init];
-    NSDateFormatter *days = [[NSDateFormatter alloc] init];
-    days.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
-    days.dateFormat = @"yyyy-MM-dd";
-    ORMFormSession *form = [self formNamed:@"ReceiveGoods"
-                                     given:@{ @"purchaseOrder" : [[_order valueForKey:@"id"] UUIDString],
-                                              @"runningNumber" : [NSString stringWithFormat:@"%d", number + 1],
-                                              @"recordedBy" : self.user.email ?: @"",
-                                              @"recorded" : [moments stringFromDate:[NSDate date]] }
-                                       key:nil];
-    if (!form) return;
-    [form setValue:[days stringFromDate:[NSDate date]] forElement:@"received"];
-    [form setValue:[[_moveAt valueForKey:@"id"] UUIDString] forElement:@"receivedAt"];
-    NSMutableArray *rows = [NSMutableArray array];
+    for (NSManagedObject *each in [_order valueForKey:@"receipts"]) number = MAX(number, [[each valueForKey:@"runningNumber"] intValue]);
+    NSDate *now = [NSDate date];
+    Receipt *receipt = [NSEntityDescription insertNewObjectForEntityForName:@"Receipt" inManagedObjectContext:self.context];
+    receipt.id = [NSUUID UUID];
+    receipt.purchaseOrder = (PurchaseOrder *)_order;
+    receipt.runningNumber = number + 1;
+    receipt.recordedBy = self.user;
+    receipt.recorded = now;
+    receipt.receivedAt = _moveAt ?: _locations.firstObject;
     for (NSUInteger i = 0; i < lines.count; i++) {
-        [rows addObject:@{ @"purchaseLine" : [[lines[i] valueForKey:@"id"] UUIDString],
-                           @"moved" : [quantities[i] descriptionWithLocale:[NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"]] }];
+        Move *move = [NSEntityDescription insertNewObjectForEntityForName:@"Move" inManagedObjectContext:self.context];
+        move.id = [NSUUID UUID];
+        move.receipt = receipt;
+        move.purchaseLine = lines[i];
+        move.moved = quantities[i];
     }
-    [form setRows:rows forRepeat:@"moves"];
-    [self saveForm:form];
+    NSISO8601DateFormatter *moments = [[NSISO8601DateFormatter alloc] init];
+    self.receiveForm = [self valuesOfForm:@"ReceiveGoods"
+                                    given:@{ @"purchaseOrder" : [[_order valueForKey:@"id"] UUIDString],
+                                             @"runningNumber" : [NSString stringWithFormat:@"%d", number + 1],
+                                             @"recordedBy" : self.user.email ?: @"",
+                                             @"recorded" : [moments stringFromDate:now] }
+                                   object:receipt];
+    if (!_receiveForm) {
+        [self.context rollback];
+        return;
+    }
+    [_receiveForm setValue:now forKey:@"received"];
+    [self.window beginSheet:_receivePanel completionHandler:nil];
+}
+
+- (IBAction)receiveGoods:(id)sender {
+    NSMutableArray *chosen = [NSMutableArray array], *quantities = [NSMutableArray array];
+    for (PurchaseLine *line in _lines) {
+        NSDecimalNumber *left = line.outstandingQuantity;
+        if (!left || [left compare:[NSDecimalNumber zero]] != NSOrderedDescending) continue;
+        [chosen addObject:line];
+        [quantities addObject:left];
+    }
+    [self receive:chosen quantities:quantities];
+}
+
+- (IBAction)submitReceive:(id)sender {
+    if ([self submitForm:_receiveForm sheet:_receivePanel]) [self endForm];
 }
 
 - (IBAction)moveLine:(id)sender {

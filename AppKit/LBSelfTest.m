@@ -1084,16 +1084,35 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     NSArray *names = LBTasksOf(tasks, bought, @[ @"Confirm the order" ]);
     LBCheck(@"Window > Tasks: its Confirm the order", [names isEqualToArray:@[ @"Confirm the order" ]], tasks.messageLabel.stringValue ?: names);
     [window makeKeyAndOrderFront:nil];
+    LBCheck(@"its window the model's EditPurchaseOrder", [purchase.orderForm.session.form.name isEqualToString:@"EditPurchaseOrder"],
+            purchase.orderForm);
     LBClick(window, @"confirmOrder");
-    LBCheck(@"confirmed", [bought.orderState isEqualToString:@"Confirmed"] && !purchase.lastError, purchase.lastError ?: bought.orderState);
+    LBCheck(@"Confirm: its sheet, ConfirmPurchaseOrder, Confirmed chosen, its line listed",
+            window.attachedSheet == purchase.confirmPanel && [[purchase.confirmForm valueForKey:@"orderState"] isEqualToString:@"Confirmed"]
+                && [[purchase.confirmForm valueForKey:@"purchaseLines"] count] == 1,
+            purchase.lastError ?: [purchase.confirmForm valueForKey:@"orderState"]);
+    LBClick(purchase.confirmPanel, @"submitConfirm");
+    LBCheck(@"confirmed", [bought.orderState isEqualToString:@"Confirmed"] && !purchase.lastError && !window.attachedSheet,
+            purchase.lastError ?: bought.orderState);
     names = LBTasksOf(tasks, bought, @[ @"Receive the goods" ]);
     LBCheck(@"its task done with its form, submitted: Receive the goods", [names isEqualToArray:@[ @"Receive the goods" ]], names);
-    LBChoose(window, @"moveAt", @"Main / Default");
-    LBType(window, @"moveQuantity", @"4");
-    [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];
-    LBClick(window, @"moveLine");
-    LBCheck(@"4 received: partly", [bought.lbFilled isEqualToString:@"Partly"], purchase.lastError ?: bought.lbFilled);
-    LBClick(window, @"moveOutstanding");
+    LBClick(window, @"receiveGoods");
+    NSSet *received = [purchase.receiveForm valueForKey:@"moves"];
+    LBCheck(@"Receive: its sheet, ReceiveGoods, a move of the 10 outstanding", window.attachedSheet == purchase.receivePanel && received.count == 1
+                && LBIs([received.anyObject valueForKey:@"moved"], @"10"),
+            purchase.lastError ?: received);
+    LBChoose(purchase.receivePanel, @"receiveAt", @"Main / Default");
+    NSTableView *moves = (NSTableView *)LBControl(purchase.receivePanel.contentView, @"receiveMovesTable");
+    [moves selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+    LBTypeInCell(purchase.receivePanel, @"receiveMovesTable", 2, @"4");
+    LBClick(purchase.receivePanel, @"submitReceive");
+    LBCheck(@"4 received: partly", [bought.lbFilled isEqualToString:@"Partly"] && !window.attachedSheet, purchase.lastError ?: bought.lbFilled);
+    names = LBTasksOf(tasks, bought, @[ @"Receive the goods" ]);
+    LBClick(window, @"receiveGoods");
+    LBCheck(@"Receive again: the 6 outstanding", LBIs([[[purchase.receiveForm valueForKey:@"moves"] anyObject] valueForKey:@"moved"], @"6"),
+            purchase.lastError ?: [purchase.receiveForm valueForKey:@"moves"]);
+    LBChoose(purchase.receivePanel, @"receiveAt", @"Main / Default");
+    LBClick(purchase.receivePanel, @"submitReceive");
     NSDecimalNumber *brackets = [LBServerOf(bracket) totalQuantity];
     LBCheck(@"the rest received: fully, in two receipts; 10 brackets more on hand",
             [bought.lbFilled isEqualToString:@"Received"] && purchase.documents.count == 2
@@ -1105,6 +1124,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     [kept.managedObjectContext refreshObject:kept mergeChanges:NO];
     LBCheck(@"and the order closed by it", [kept.orderState isEqualToString:@"Closed"], kept.orderState);
     LBChoose(window, @"returnReason", @"Damaged");
+    LBChoose(window, @"moveAt", @"Main / Default");
     LBType(window, @"moveQuantity", @"1");
     [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];
     LBClick(window, @"returnLine");
@@ -1140,6 +1160,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
                 step.window.title);
         LBSnapshot(tasks.window, @"tasks");
         LBClick(step.window, @"cancelOrder");
+        LBClick(step.confirmPanel, @"submitConfirm");
         LBCheck(@"cancelled there: the title says the task no more", [[step.order valueForKey:@"orderState"] isEqualToString:@"Cancelled"]
                     && [step.window.title isEqualToString:@"PO-GAR-0002"],
                 step.lastError ?: step.window.title);
