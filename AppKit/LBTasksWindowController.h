@@ -6,10 +6,16 @@
 // or Cancel for ConfirmPurchaseOrder, Receive for ReceiveGoods; the server
 // completes the task as the order changes, wherever it is changed. Asked
 // again as a step is done, as the window becomes key, and on Refresh.
+//
+// Offline first, after them the steps done here and saved that wait to be
+// submitted (the server not reached: LBAppState's), each in the place of
+// its task: Submit sends it now (after a sync); Start Again forgets it and
+// opens its order, where its step is done again. They are submitted after
+// each sync too (LBAppController), and kept across launches.
 
 #import <AppKit/AppKit.h>
 
-@class LBStore, LBTasks, LBTask, LBStockOrderWindowController;
+@class LBStore, LBTasks, LBTask, LBStockOrderWindowController, LBPendingSubmission;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -17,7 +23,12 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithStore:(LBStore *)store;
 @property (nonatomic, readonly, strong) LBTasks *tasks;
+// The open tasks listed, the table's first rows: those of no step waiting.
 @property (nonatomic, readonly, copy) NSArray<LBTask *> *openTasks;
+// The steps waiting, the rows after them.
+@property (nonatomic, readonly, copy) NSArray<LBPendingSubmission *> *waiting;
+// Whether the row chosen is a step waiting (Submit, Start Again).
+@property (nonatomic, readonly) BOOL waitingChosen;
 @property (nonatomic, strong) IBOutlet NSTableView *table;
 @property (nonatomic, strong) IBOutlet NSTextField *messageLabel;
 // The window the last task opened was shown in.
@@ -25,6 +36,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (IBAction)refresh:(nullable id)sender;
 - (IBAction)openTask:(nullable id)sender;
+- (IBAction)submitWaiting:(nullable id)sender;
+- (IBAction)startAgain:(nullable id)sender;
 
 @end
 

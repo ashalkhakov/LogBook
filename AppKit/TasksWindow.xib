@@ -18,7 +18,7 @@
 <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
 <rect key="contentRect" x="200" y="200" width="640" height="360"/>
 <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
-<value key="minSize" type="size" width="420" height="220"/>
+<value key="minSize" type="size" width="640" height="220"/>
 <view key="contentView" id="tasksContent">
 <rect key="frame" x="0" y="0" width="640" height="360"/>
 <autoresizingMask key="autoresizingMask"/>
@@ -83,13 +83,35 @@
 </tableHeaderView>
 </scrollView>
 <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="messageLabel" id="messageLabel">
-<rect key="frame" x="12" y="16" width="410" height="17"/>
+<rect key="frame" x="12" y="16" width="190" height="17"/>
 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
 <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="" id="messageLabelCell">
 <font key="font" metaFont="system"/><color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
 </textFieldCell>
 </textField>
+<button verticalHuggingPriority="750" identifier="submitWaiting" id="submitWaiting">
+<rect key="frame" x="202" y="6" width="100" height="32"/>
+<autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+<buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="submitWaitingCell">
+<behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/><font key="font" metaFont="system"/>
+</buttonCell>
+<connections>
+<action selector="submitWaiting:" target="-2" id="submitWaitingAction"/>
+<binding destination="-2" name="enabled" keyPath="waitingChosen" id="submitWaitingEnabled"/>
+</connections>
+</button>
+<button verticalHuggingPriority="750" identifier="startAgain" id="startAgain">
+<rect key="frame" x="302" y="6" width="120" height="32"/>
+<autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+<buttonCell key="cell" type="push" title="Start Again" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="startAgainCell">
+<behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/><font key="font" metaFont="system"/>
+</buttonCell>
+<connections>
+<action selector="startAgain:" target="-2" id="startAgainAction"/>
+<binding destination="-2" name="enabled" keyPath="waitingChosen" id="startAgainEnabled"/>
+</connections>
+</button>
 <button verticalHuggingPriority="750" identifier="refresh" id="refresh">
 <rect key="frame" x="428" y="6" width="100" height="32"/>
 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>

@@ -3,6 +3,8 @@
 #import "LBMainWindowController.h"
 #import "LBStore.h"
 #import "LBLocalStore.h"
+#import <ODataKit/ODataTransport.h>
+#import "LBConflicts.h"
 #import <ODataSync/ODataSyncEngine.h>
 #import "Vehicle+CoreDataClass.h"
 #import "User+CoreDataClass.h"
@@ -1041,6 +1043,119 @@ static NSArray<NSString *> *LBTasksOf(LBTasksWindowController *tasks, NSManagedO
     return names;
 }
 
+/* The network gone, as far as the app's sync goes: each request it sends
+   not answered, as when the Mac is offline. */
+@interface LBUnreachable : NSObject <ODataTransport>
+@end
+
+@implementation LBUnreachable
+- (void)startExchange:(ODataExchange *)exchange {
+    exchange.error = [NSError errorWithDomain:NSURLErrorDomain code:NSURLErrorCannotConnectToHost
+                                     userInfo:@{ NSLocalizedDescriptionKey: @"Could not connect to the server." }];
+    [exchange finish];
+}
+@end
+
+/* Offline: a step's form saved here while the server cannot be reached
+   waits, kept as after a relaunch, in Window > Tasks in its task's place;
+   Start Again forgets it and opens its order for its task, Submit sends it
+   once the server is reached again. */
+static LBPendingSubmission *LBWaitingRow(LBTasksWindowController *tasks, NSString *expected) {
+    [tasks.window makeKeyAndOrderFront:nil];
+    LBClick(tasks.window, @"refresh");
+    NSInteger row = (NSInteger)tasks.openTasks.count;
+    NSTableColumn *taskColumn = [tasks.table tableColumnWithIdentifier:@"task"];
+    NSString *listed = tasks.waiting.count == 1 ? [tasks tableView:tasks.table objectValueForTableColumn:taskColumn row:row] : nil;
+    LBPendingSubmission *waiting = tasks.waiting.firstObject;
+    BOOL taskListed = NO;
+    for (LBTask *task in tasks.openTasks) taskListed = taskListed || [task.businessKey isEqualToString:waiting.businessKey];
+    LBCheck([NSString stringWithFormat:@"Window > Tasks: %@ waits, saved here, in its task's place", expected],
+            [listed isEqualToString:[expected stringByAppendingString:@" — saved here, not submitted"]] && !taskListed,
+            listed ?: tasks.messageLabel.stringValue);
+    [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
+    LBSpin();
+    return waiting;
+}
+
+static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowController *tasks) {
+    ODataSyncRemote *remote = stock.store.local.engine.remotes.firstObject;
+    id<ODataTransport> network = remote.transport;
+    LBClick(stock.window, @"newPurchase");
+    LBStockOrderWindowController *purchase = LBOpened(stock, [LBStockOrderWindowController class]);
+    purchase.quiet = YES;
+    NSWindow *window = purchase.window;
+    PurchaseOrder *order = (PurchaseOrder *)purchase.order;
+    LBClick(window, @"addLine");
+    LBChoose(window, @"lineItem", @"Bracket");
+    LBTypeInCell(window, @"linesTable", 1, @"5");
+    LBTypeInCell(window, @"linesTable", 2, @"1");
+    LBSavedIn(purchase, @"a third purchase, PO-GAR-0003, its line saved");
+    NSArray *names = LBTasksOf(tasks, order, @[ @"Confirm the order" ]);
+    LBCheck(@"its Confirm the order listed", [names isEqualToArray:@[ @"Confirm the order" ]], names);
+
+    /* Confirmed offline, then started again. */
+    remote.transport = [[LBUnreachable alloc] init];
+    [window makeKeyAndOrderFront:nil];
+    LBClick(window, @"confirmOrder");
+    LBClick(purchase.confirmPanel, @"submitConfirm");
+    LBCheck(@"offline: confirmed here, the sheet gone, its step saved and waiting", [order.orderState isEqualToString:@"Confirmed"]
+                && !window.attachedSheet && !purchase.lastError && [purchase.waiting.formName isEqualToString:@"ConfirmPurchaseOrder"],
+            purchase.lastError ?: order.orderState);
+    [purchase close];
+    LBWaitingRow(tasks, @"Confirm the order");
+    NSButton *submit = (NSButton *)LBControl(tasks.window.contentView, @"submitWaiting");
+    LBCheck(@"Submit and Start Again for it", submit.isEnabled && ((NSButton *)LBControl(tasks.window.contentView, @"startAgain")).isEnabled, nil);
+    LBClick(tasks.window, @"startAgain");
+    remote.transport = network;
+    LBStockOrderWindowController *again = tasks.orderWindow;
+    again.quiet = YES;
+    LBCheck(@"Start Again: forgotten, its order opened for its task", tasks.waiting.count == 0
+                && stock.store.local.appState.pendingSubmissions.count == 0 && again.window.isVisible
+                && [again.window.title isEqualToString:@"PO-GAR-0003 — Confirm the order"],
+            again.window.title ?: tasks.messageLabel.stringValue);
+    window = again.window;
+    LBClick(window, @"confirmOrder");
+    LBClick(again.confirmPanel, @"submitConfirm");
+    names = LBTasksOf(tasks, order, @[ @"Receive the goods" ]);
+    LBCheck(@"confirmed again, online: submitted, Receive the goods", [names isEqualToArray:@[ @"Receive the goods" ]] && !again.waiting,
+            again.lastError ?: names);
+
+    /* Received offline: waiting, kept, and submitted once the server is
+       reached. */
+    remote.transport = [[LBUnreachable alloc] init];
+    [window makeKeyAndOrderFront:nil];
+    LBClick(window, @"receiveGoods");
+    LBChoose(again.receivePanel, @"receiveAt", @"Main / Default");
+    LBClick(again.receivePanel, @"submitReceive");
+    LBCheck(@"offline: received here, the sheet gone, its step waiting", [order.lbFilled isEqualToString:@"Received"] && !window.attachedSheet
+                && [again.waiting.formName isEqualToString:@"ReceiveGoods"],
+            again.lastError ?: order.lbFilled);
+    [again close];
+    NSURL *file = stock.store.local.appState.context.persistentStoreCoordinator.persistentStores.firstObject.URL;
+    LBAppState *relaunched = file ? [[LBAppState alloc] initWithStoreURL:file error:NULL] : nil;
+    LBPendingSubmission *kept = relaunched.pendingSubmissions.firstObject;
+    LBCheck(@"kept as after a relaunch: its form, its order, what it received", relaunched.pendingSubmissions.count == 1
+                && [kept.formName isEqualToString:@"ReceiveGoods"] && [kept.businessKey isEqualToString:order.id.UUIDString]
+                && [kept.instance containsString:@"<moved>5</moved>"],
+            kept.instance ?: file);
+    LBWaitingRow(tasks, @"Receive the goods");
+    LBClick(tasks.window, @"submitWaiting");
+    LBCheck(@"Submit, still offline: not submitted, and said; it still waits", tasks.waiting.count == 1
+                && [tasks.messageLabel.stringValue containsString:@"cannot be reached"],
+            tasks.messageLabel.stringValue);
+    remote.transport = network;
+    LBWaitingRow(tasks, @"Receive the goods");
+    LBClick(tasks.window, @"submitWaiting");
+    LBCheck(@"online again, Submit: submitted, waiting no more", tasks.waiting.count == 0 && [tasks.messageLabel.stringValue hasSuffix:@"submitted."],
+            tasks.messageLabel.stringValue);
+    names = LBTasksOf(tasks, order, @[]);
+    PurchaseOrder *there = LBServerOf(order);
+    [there.managedObjectContext refreshObject:there mergeChanges:NO];
+    LBCheck(@"its process done with what was saved: no task left, the server's order received and closed",
+            names.count == 0 && [there.orderState isEqualToString:@"Closed"], names.count ? names : there.orderState);
+}
+
+
 /* Sales and purchases, each in its window, as a user writes them: a sale
    to Bob of three bolts, numbered, confirmed, shipped in two from Shelf A;
    a purchase from Parts Ltd of ten brackets at a cost of 1, confirmed,
@@ -1188,6 +1303,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
         LBCheck(@"and its task gone from the list", names.count == 0, names);
         [step close];
     }
+    LBWaitingSteps(stock, tasks);
     [tasks close];
     [stock.tabs selectTabViewItemWithIdentifier:@"saleOrders"];
     LBSpin();

@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class ODataSignIn, ORMFormSession;
+@class ODataSignIn, ORMFormSession, LBAppState, LBPendingSubmission;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -47,7 +47,22 @@ FOUNDATION_EXPORT NSNotificationName const LBTasksDidChangeNotification;
 // takes its elements as its variables and goes on; the tasks are asked
 // again. NO, and why, where the server refuses it.
 - (BOOL)submitForm:(ORMFormSession *)session toTask:(LBTask *)task error:(NSError **)error;
+- (BOOL)submitInstance:(NSString *)instance toTask:(LBTask *)task error:(NSError **)error;
 + (NSString *)instanceOf:(ORMFormSession *)session;
+// Whether the server could not be reached (no answer, or a 5xx): a step
+// waits, rather than being refused.
++ (BOOL)isUnreachable:(nullable NSError *)error;
+
+// A step saved here and waiting (LBAppState's), submitted to its open
+// task and forgotten; else why not, said in it. Each waiting, the oldest
+// first, till the server cannot be reached: how many went.
+- (BOOL)submitWaiting:(LBPendingSubmission *)waiting in:(LBAppState *)state error:(NSError **)error;
+// Each not held by another (-hold:).
+- (NSUInteger)submitWaitingIn:(LBAppState *)state;
+// Held while one submits it (a sync first, Window > Tasks's Submit): no
+// other does meanwhile. NO where another holds it.
++ (BOOL)hold:(LBPendingSubmission *)waiting;
++ (void)letGo:(LBPendingSubmission *)waiting;
 // The open task done with the form, about the object (a purchase order's
 // id); nil where there is none (and nil error), or why it was not read.
 - (nullable LBTask *)openTaskOfForm:(NSString *)formName about:(NSString *)businessKey error:(NSError **)error;

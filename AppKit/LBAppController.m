@@ -1,6 +1,9 @@
 #import "LBTasksWindowController.h"
 #import "LBAppController.h"
 #import "LBStore.h"
+#import "LBLocalStore.h"
+#import "LBConflicts.h"
+#import "LBTasks.h"
 #import "LBDisplay.h"
 #import "LBMainWindowController.h"
 #import "LBSelfTest.h"
@@ -22,6 +25,9 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     LBStockWindowController *_stock;
     LBTasksWindowController *_tasks;
     LBUpdater *_updater;
+    /* The steps saved here that wait, submitted after each sync. */
+    LBTasks *_waitingTasks;
+    BOOL _submittingWaiting;
 }
 
 /* Updates, set up before the app finishes launching (as Sparkle asks), not
@@ -132,10 +138,28 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     _stock = nil;
     [_tasks close];
     _tasks = nil;
+    if (_store.local) [[NSNotificationCenter defaultCenter] removeObserver:self name:LBLocalStoreDidSyncNotification object:_store.local];
+    _waitingTasks = nil;
     LBMainWindowController *window = _window;
     _window = nil;
     _store = nil;
     [window close];
+}
+
+/* Offline first: a sync done, the steps saved here that wait (Window >
+   Tasks) are submitted, once the sync has said it is done. */
+- (void)storeDidSync:(NSNotification *)note {
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(submitWaiting) object:nil];
+    [self performSelector:@selector(submitWaiting) withObject:nil afterDelay:0];
+}
+
+- (void)submitWaiting {
+    LBAppState *state = _store.local.appState;
+    if (_submittingWaiting || !state.pendingSubmissions.count) return;
+    if (!_waitingTasks) _waitingTasks = [[LBTasks alloc] initWithServiceRoot:_store.serviceRoot signIn:_store.signIn];
+    _submittingWaiting = YES;
+    if ([_waitingTasks submitWaitingIn:state]) [_waitingTasks noteChange];
+    _submittingWaiting = NO;
 }
 
 - (void)connectPanel:(LBConnectPanel *)panel didConnect:(ODataSignIn *)signIn {
@@ -160,6 +184,8 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
         return;
     }
     _store = store;
+    if (store.local) [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(storeDidSync:)
+                                                                  name:LBLocalStoreDidSyncNotification object:store.local];
     /* What a user has not said (a currency, a time zone) taken from this
        Mac. */
     if ([store.user lbTakeDeviceSettings] && ![store save:&error]) NSLog(@"Logbook: the user's settings not kept: %@", error.localizedDescription);

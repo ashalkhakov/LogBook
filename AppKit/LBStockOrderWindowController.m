@@ -1,5 +1,7 @@
 #import "LBStockOrderWindowController.h"
 #import "LBTasks.h"
+#import "LBLocalStore.h"
+#import "LBConflicts.h"
 #import "LBStore.h"
 #import "LBStockDisplay.h"
 #import <ORMRuntime/ORMForm.h>
@@ -147,24 +149,51 @@
         return NO;
     }
     [self saveChanges];
-    /* What the form saved, at the server before its task is told: the
-       process goes on with the facts. */
-    if (![self.store syncAndWait:&error]) {
-        [self reportError:error];
-        return NO;
-    }
     /* The server's tasks, where it has some: opened from Window > Tasks,
        those; from the stock's window, asked here. */
     if (!_tasks && self.store.serviceRoot) _tasks = [[LBTasks alloc] initWithServiceRoot:self.store.serviceRoot signIn:self.store.signIn];
     NSString *formName = now.session.form.name;
-    LBTask *task = [_task.formName isEqualToString:formName] ? _task
-        : [_tasks openTaskOfForm:formName about:[[_order valueForKey:@"id"] UUIDString] error:&error];
-    if (error) [self reportError:error];
-    if (task && ![_tasks submitForm:now.session toTask:task error:&error]) {
+    NSString *about = [[_order valueForKey:@"id"] UUIDString];
+    NSString *instance = [LBTasks instanceOf:now.session];
+    /* What the form saved, at the server before its task is told: the
+       process goes on with the facts. Offline first, where the server
+       cannot be reached, the step waits, saved (Window > Tasks), and is
+       submitted after a sync. */
+    if (![self.store syncAndWait:&error]) {
+        if (self.store.local) return [self wait:formName about:about instance:instance task:_task.name];
         [self reportError:error];
         return NO;
     }
+    error = nil;
+    LBTask *task = [_task.formName isEqualToString:formName] ? _task : [_tasks openTaskOfForm:formName about:about error:&error];
+    if (!task && self.store.local && [LBTasks isUnreachable:error]) return [self wait:formName about:about instance:instance task:_task.name];
+    if (error) [self reportError:error];
+    if (task && ![_tasks submitInstance:instance toTask:task error:&error]) {
+        if (self.store.local && [LBTasks isUnreachable:error]) return [self wait:formName about:about instance:instance task:task.name];
+        [self reportError:error];
+        return NO;
+    }
+    /* Submitted: one of it that waited is done with. */
+    for (LBPendingSubmission *waiting in [self.store.local.appState pendingSubmissions]) {
+        if (task && [waiting.formName isEqualToString:formName] && [waiting.businessKey isEqualToString:about]) [self.store.local.appState removeSubmission:waiting];
+    }
+    _waiting = nil;
     [self stepDone:formName];
+    return YES;
+}
+
+/* The step saved here, waiting to be submitted (LBAppState): said, unless
+   quiet. */
+- (BOOL)wait:(NSString *)formName about:(NSString *)about instance:(NSString *)instance task:(NSString *)taskName {
+    _waiting = [self.store.local.appState keepSubmissionOfForm:formName about:about taskName:taskName instance:instance];
+    if (!self.quiet) {
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.alertStyle = NSAlertStyleInformational;
+        alert.messageText = @"Saved here, not submitted yet";
+        alert.informativeText = [NSString stringWithFormat:@"The server cannot be reached. %@ waits in Window > Tasks, and is submitted "
+                                                           @"after the next sync.", taskName.length ? taskName : @"The step"];
+        [alert beginSheetModalForWindow:self.window completionHandler:nil];
+    }
     return YES;
 }
 

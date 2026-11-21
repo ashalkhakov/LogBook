@@ -2,13 +2,17 @@
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 #import <ODataSync/ODataSignIn.h>
+#import "LBConflicts.h"
 
 NSNotificationName const LBTasksDidChangeNotification = @"LBTasksDidChange";
 
 static NSString * const LBModelFormPrefix = @"ormkit:form:";
 
-static NSError *LBTasksError(NSString *message) {
-    return [NSError errorWithDomain:@"LBTasks" code:1 userInfo:@{ NSLocalizedDescriptionKey : message }];
+static NSString * const LBTasksErrorDomain = @"LBTasks";
+
+/* Its code the server's status (0: none, the request not answered). */
+static NSError *LBTasksError(NSString *message, NSInteger status) {
+    return [NSError errorWithDomain:LBTasksErrorDomain code:status userInfo:@{ NSLocalizedDescriptionKey : message }];
 }
 
 @interface LBTask ()
@@ -62,7 +66,8 @@ static NSError *LBTasksError(NSString *message) {
     if (failure || response.statusCode >= 400) {
         NSDictionary *body = data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:NULL] : nil;
         NSString *said = [body isKindOfClass:[NSDictionary class]] ? body[@"error"][@"message"] : nil;
-        if (error) *error = failure ?: LBTasksError(said ?: [NSString stringWithFormat:@"The server answered %ld.", (long)response.statusCode]);
+        if (error) *error = failure ?: LBTasksError(said ?: [NSString stringWithFormat:@"The server answered %ld.", (long)response.statusCode],
+                                                    response.statusCode);
         return nil;
     }
     return data ?: [NSData data];
@@ -126,11 +131,63 @@ static NSString *LBEscaped(NSString *text) {
 }
 
 - (BOOL)submitForm:(ORMFormSession *)session toTask:(LBTask *)task error:(NSError **)error {
+    return [self submitInstance:[LBTasks instanceOf:session] toTask:task error:error];
+}
+
++ (BOOL)isUnreachable:(NSError *)error {
+    if ([error.domain isEqualToString:NSURLErrorDomain]) return YES;
+    return [error.domain isEqualToString:LBTasksErrorDomain] && (error.code == 0 || error.code >= 500);
+}
+
+- (BOOL)submitWaiting:(LBPendingSubmission *)waiting in:(LBAppState *)state error:(NSError **)error {
+    NSError *failure = nil;
+    LBTask *task = [self openTaskOfForm:waiting.formName about:waiting.businessKey error:&failure];
+    if (!task && !failure) {
+        failure = LBTasksError(@"Its task is not open at the server: done another way, or not reached yet. Start it again, or wait.", 404);
+    }
+    if (task && [self submitInstance:waiting.instance toTask:task error:&failure]) {
+        [state removeSubmission:waiting];
+        return YES;
+    }
+    [state noteSubmission:waiting failed:failure.localizedDescription ?: @"Not submitted."];
+    if (error) *error = failure;
+    return NO;
+}
+
+/* The steps being submitted, by whoever holds them. */
+static NSMutableSet<NSManagedObjectID *> *LBHeld;
+
++ (BOOL)hold:(LBPendingSubmission *)waiting {
+    if (!LBHeld) LBHeld = [NSMutableSet set];
+    if (!waiting.managedObjectContext || [LBHeld containsObject:waiting.objectID]) return NO;
+    [LBHeld addObject:waiting.objectID];
+    return YES;
+}
+
++ (void)letGo:(LBPendingSubmission *)waiting {
+    [LBHeld removeObject:waiting.objectID];
+}
+
+- (NSUInteger)submitWaitingIn:(LBAppState *)state {
+    NSUInteger submitted = 0;
+    for (LBPendingSubmission *waiting in [state pendingSubmissions]) {
+        if (![LBTasks hold:waiting]) continue;
+        NSManagedObjectID *held = waiting.objectID;
+        NSError *error = nil;
+        BOOL went = [self submitWaiting:waiting in:state error:&error];
+        [LBHeld removeObject:held];
+        if (went) submitted++;
+        else if ([LBTasks isUnreachable:error]) break;
+    }
+    return submitted;
+}
+
+- (BOOL)submitInstance:(NSString *)instance toTask:(LBTask *)task error:(NSError **)error {
     NSString *path = [NSString stringWithFormat:@"Tasks('%@')/WorkflowKit.SubmitForm", task.taskId];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:path relativeToURL:_workflowRoot]];
     request.HTTPMethod = @"POST";
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    request.HTTPBody = [NSJSONSerialization dataWithJSONObject:@{ @"Instance" : [LBTasks instanceOf:session] } options:0 error:error];
+    request.HTTPBody = [NSJSONSerialization dataWithJSONObject:@{ @"Instance" : instance ?: @"" } options:0 error:error];
     NSInteger status = 0;
     if (!request.HTTPBody || ![self send:request status:&status error:error]) return NO;
     [self noteChange];

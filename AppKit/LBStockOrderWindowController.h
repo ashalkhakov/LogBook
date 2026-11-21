@@ -11,7 +11,7 @@
 
 #import "LBStockEditor.h"
 
-@class Location, StockItem, LBTask, LBTasks, LBFormValues;
+@class Location, StockItem, LBTask, LBTasks, LBFormValues, LBPendingSubmission;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -60,6 +60,9 @@ NS_ASSUME_NONNULL_BEGIN
 // again. nil: no task.
 @property (nonatomic, strong, nullable) LBTask *task;
 @property (nonatomic, strong, nullable) LBTasks *tasks;
+// The step its form saved last that waits to be submitted (offline first,
+// the server not reached: Window > Tasks); nil where it went.
+@property (nonatomic, readonly, strong, nullable) LBPendingSubmission *waiting;
 
 // A purchase's step sheet's Submit: its form saved, then submitted to
 // the order's task of it; its Cancel (and Escape): nothing of it kept.
