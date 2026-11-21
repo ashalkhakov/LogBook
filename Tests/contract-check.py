@@ -11,6 +11,8 @@
 #   selection.choices.<element>...      a reference's choices
 #   selection.choices.<repeat>.<element>  a repeat's rows' choices
 #   selection.items.<element>           the values the model lists for it
+#   (in a repeat whose rows each choose of their own, as an answer's
+#   options of its question's, a row's choices.<element> and items.<element>)
 #   selection.<repeat>                  a repeat's rows (an array
 #                                       controller's content), whose columns
 #                                       bind arrangedObjects.<element of the
@@ -41,6 +43,9 @@ def choices_of(form):
     return set((form.get('choices') or {}).keys())
 
 
+OFFERING = ('content', 'contentArray', 'contentSet')
+
+
 def check_rows(problems, rid, label, repeat, bindings, offered):
     rows = elements(repeat)
     row_bound = set()
@@ -48,6 +53,12 @@ def check_rows(problems, rid, label, repeat, bindings, offered):
         if dest != rid or not (path.startswith('arrangedObjects.') or path.startswith('selection.')):
             continue
         keys = path.split('.', 1)[1].split('.')
+        if keys[0] == 'choices' and len(keys) > 1 and keys[1] in choices_of(repeat):
+            if binding in OFFERING:
+                offered.add(keys[1])
+            continue
+        if keys[0] == 'items' and len(keys) > 1 and keys[1] in rows and rows[keys[1]].get('items'):
+            continue
         if keys[0] in rows:
             row_bound.add(keys[0])
         else:
@@ -90,10 +101,10 @@ def check_xib(xib, forms, problems):
             first = keys[0]
             if first == 'choices':
                 if len(keys) > 2 and keys[1] in repeats and keys[2] in choices_of(repeats[keys[1]]):
-                    if binding == 'content':
+                    if binding in OFFERING:
                         row_offered[keys[1]].add(keys[2])
                 elif len(keys) > 1 and keys[1] in choices_of(form):
-                    if binding == 'content':
+                    if binding in OFFERING:
                         offered.add(keys[1])
                 else:
                     problems.append('%s: %s binds %s: %s offers no such choices' % (cid, owner.get('id'), path, name))

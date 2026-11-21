@@ -26,9 +26,140 @@ static NSLocale *LBFormPOSIX(void) {
 
 static void *LBRowsChanged = &LBRowsChanged;
 
+@interface LBFormValues (LBRows)
+- (NSManagedObject *)objectOf:(ORMFormElement *)element key:(NSString *)text;
+- (NSString *)keyOf:(id)object element:(ORMFormElement *)element;
+@end
+
+/* A row of a repeat whose rows each choose of their own (an answer's
+   options, of its question's): its object's values, and its own choices
+   and lists, as a table's row binds them. */
+@interface LBFormRow : NSObject
+@end
+
+@implementation LBFormRow {
+    __weak LBFormValues *_values;
+    ORMForm *_form;
+    NSManagedObject *_object;
+    NSDictionary *_choices;
+}
+
+static void *LBRowChanged = &LBRowChanged;
+
+- (instancetype)initWithValues:(LBFormValues *)values form:(ORMForm *)form object:(NSManagedObject *)object {
+    if ((self = [super init])) {
+        _values = values;
+        _form = form;
+        _object = object;
+        /* Its object's values changed (read again, or by another view):
+           said as its own, and its choices read again. */
+        for (ORMFormElement *element in form.elements) {
+            if (object.entity.propertiesByName[element.name]) {
+                [object addObserver:self forKeyPath:element.name options:NSKeyValueObservingOptionPrior context:LBRowChanged];
+            }
+        }
+    }
+    return self;
+}
+
+- (void)dealloc {
+    for (ORMFormElement *element in _form.elements) {
+        if (_object.entity.propertiesByName[element.name]) [_object removeObserver:self forKeyPath:element.name context:LBRowChanged];
+    }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    if (context != LBRowChanged) {
+        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+        return;
+    }
+    /* Before, as KVO wants of a path through it (question.questionText);
+       then after. Its choices read again only where they are of it (an
+       answer's options, of its question). */
+    BOOL chosenOf = NO;
+    for (NSString *choice in [_form choiceNames]) {
+        chosenOf = chosenOf || [[_form elementsChoicesDependOn:choice] containsObject:keyPath];
+    }
+    if ([change[NSKeyValueChangeNotificationIsPriorKey] boolValue]) {
+        [self willChangeValueForKey:keyPath];
+        if (chosenOf) [self willChangeValueForKey:@"choices"];
+        return;
+    }
+    if (chosenOf) {
+        _choices = nil;
+        [self didChangeValueForKey:@"choices"];
+    }
+    [self didChangeValueForKey:keyPath];
+}
+
+/* Its values as its form's elements hold them: a reference's key, a set
+   of choices' keys. */
+- (NSDictionary<NSString *, NSString *> *)texts {
+    NSMutableDictionary *texts = [NSMutableDictionary dictionary];
+    for (ORMFormElement *element in _form.elements) {
+        if (!_object.entity.propertiesByName[element.name]) continue;
+        id value = [_object valueForKey:element.name];
+        if (element.many) {
+            NSMutableArray *keys = [NSMutableArray array];
+            for (id each in value) [keys addObject:[_values keyOf:each element:element]];
+            texts[element.name] = [[keys sortedArrayUsingSelector:@selector(compare:)] componentsJoinedByString:@" "];
+        } else if ([element.kind isEqualToString:@"reference"]) {
+            texts[element.name] = value ? [_values keyOf:value element:element] : @"";
+        } else {
+            texts[element.name] = [value description] ?: @"";
+        }
+    }
+    return texts;
+}
+
+- (NSDictionary *)choices {
+    if (!_choices) {
+        NSMutableDictionary *given = [_values.session.values mutableCopy] ?: [NSMutableDictionary dictionary];
+        [given addEntriesFromDictionary:[self texts]];
+        NSMutableDictionary *choices = [NSMutableDictionary dictionary];
+        for (NSString *name in [_form choiceNames]) {
+            NSMutableArray *objects = [NSMutableArray array];
+            NSArray *keys = [_form choicesNamed:name values:given inContext:_values.context error:NULL] ?: @[];
+            for (NSString *key in keys) {
+                NSManagedObject *object = [_values objectOf:[_form elementNamed:name] key:key];
+                if (object) [objects addObject:object];
+            }
+            choices[name] = objects;
+        }
+        _choices = choices;
+    }
+    return _choices;
+}
+
+- (NSDictionary *)items {
+    NSMutableDictionary *items = [NSMutableDictionary dictionary];
+    for (ORMFormElement *element in _form.elements) {
+        if (element.items && ![element.kind isEqualToString:@"reference"]) items[element.name] = element.items;
+    }
+    return items;
+}
+
+- (id)valueForKey:(NSString *)key {
+    if ([key isEqualToString:@"choices"]) return [self choices];
+    if ([key isEqualToString:@"items"]) return [self items];
+    ORMFormElement *element = [_form elementNamed:key];
+    id value = [_object valueForKey:key];
+    if (element.many) return [value allObjects] ?: @[];
+    return value;
+}
+
+- (void)setValue:(id)value forKey:(NSString *)key {
+    ORMFormElement *element = [_form elementNamed:key];
+    /* Said through its object's change (above). */
+    [_object setValue:element.many ? [NSSet setWithArray:value ?: @[]] : value forKey:key];
+}
+
+@end
+
 @implementation LBFormValues {
     NSDictionary<NSString *, id> *_choices;
     NSDictionary<NSString *, NSArray<NSString *> *> *_items;
+    NSMutableDictionary<NSString *, NSArray<LBFormRow *> *> *_rows;
 }
 
 - (instancetype)initWithSession:(ORMFormSession *)session context:(NSManagedObjectContext *)context {
@@ -46,7 +177,7 @@ static void *LBRowsChanged = &LBRowsChanged;
            array controller changes them: each change told as the repeat's. */
         for (NSString *name in [session.form repeatNames]) {
             if (object.entity.relationshipsByName[name]) {
-                [object addObserver:self forKeyPath:name options:0 context:LBRowsChanged];
+                [object addObserver:self forKeyPath:name options:NSKeyValueObservingOptionPrior context:LBRowsChanged];
             }
         }
     }
@@ -64,9 +195,13 @@ static void *LBRowsChanged = &LBRowsChanged;
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
         return;
     }
-    /* Told once the rows have changed, not before: what reads them then
-       finds the object whole (one being refreshed is not, until it is). */
-    [self willChangeValueForKey:keyPath];
+    /* Before, while the rows are as they were (what observes paths through
+       them lets go of them), then after. */
+    if ([change[NSKeyValueChangeNotificationIsPriorKey] boolValue]) {
+        [self willChangeValueForKey:keyPath];
+        return;
+    }
+    [_rows removeObjectForKey:keyPath];
     [self didChangeValueForKey:keyPath];
 }
 
@@ -105,7 +240,35 @@ static void *LBRowsChanged = &LBRowsChanged;
     return [key description] ?: @"";
 }
 
+/* Whether a repeat's rows each choose of their own (a set of choices, or
+   a choice of the row's values): rows of their own, not the objects. */
+- (BOOL)rowsChooseOfTheirOwn:(NSString *)name {
+    ORMForm *rows = [_session.form repeatNamed:name];
+    for (ORMFormElement *element in rows.elements) {
+        if (element.many) return YES;
+    }
+    for (NSString *choice in [rows choiceNames]) {
+        for (NSString *on in [rows elementsChoicesDependOn:choice]) {
+            if ([rows elementNamed:on]) return YES;
+        }
+    }
+    return NO;
+}
+
 - (id)valueForKey:(NSString *)name {
+    if ([self rowsAre:name] && [self rowsChooseOfTheirOwn:name]) {
+        if (!_rows) _rows = [NSMutableDictionary dictionary];
+        if (!_rows[name]) {
+            NSMutableArray *rows = [NSMutableArray array];
+            NSArray *objects = [[[_object valueForKey:name] allObjects]
+                sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"id.UUIDString" ascending:YES] ]];
+            for (NSManagedObject *each in objects) {
+                [rows addObject:[[LBFormRow alloc] initWithValues:self form:[_session.form repeatNamed:name] object:each]];
+            }
+            _rows[name] = rows;
+        }
+        return _rows[name];
+    }
     if ([self rowsAre:name]) return [_object valueForKey:name];
     ORMFormElement *element = [_session.form elementNamed:name];
     if (!element) return [super valueForKey:name];

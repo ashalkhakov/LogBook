@@ -1605,21 +1605,29 @@ static void LBKindSteps(LBMainWindowController *controller) {
     Inspection *inspection = (Inspection *)LBAddRecord(controller, [Inspection class]);
     LBType(window, @"InspectionMileageValue", @"14700");
     LBChoose(window, @"InspectionChecklist", @"Monthly check");
-    NSArray<LBAnswerRow *> *rows = controller.answersController.rows;
-    LBCheck(@"its checklist's questions, in order, to answer", rows.count == 2 && [rows[0].questionText isEqualToString:@"Which lights are out?"],
-            [rows valueForKey:NSStringFromSelector(@selector(questionText))]);
+    LBSpin();
+    NSArray *rows = controller.answersController.answers.arrangedObjects;
+    LBCheck(@"its checklist's questions, in order, to answer: the form's rows", rows.count == 2
+                && [[rows[0] valueForKeyPath:@"question.questionText"] isEqualToString:@"Which lights are out?"],
+            [rows valueForKeyPath:@"question.questionText"]);
     NSTableView *answers = (NSTableView *)LBControl(window.contentView, @"answersTable");
     [answers selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
     LBSpin();
     NSTableView *options = (NSTableView *)LBControl(window.contentView, @"answerOptionsTable");
-    LBCheck(@"an any-of question offers its options", options.numberOfRows == 2, @(options.numberOfRows));
-    rows[0].choices[0].chosen = YES;
+    LBCheck(@"an any-of question offers its options, the form's choices of its question's", options.numberOfRows == 2, @(options.numberOfRows));
+    NSUInteger low = [[controller.answersController.answerOptions.arrangedObjects valueForKey:@"optionText"] indexOfObject:@"Low beams"];
+    LBCheck(@"its options listed: Low beams among them", low != NSNotFound,
+            [controller.answersController.answerOptions.arrangedObjects valueForKey:@"optionText"]);
+    if (low != NSNotFound) [options selectRowIndexes:[NSIndexSet indexSetWithIndex:low] byExtendingSelection:NO];
+    LBSpin();
+    LBCheck(@"an option chosen: the answer's", [[rows[0] valueForKey:@"options"] count] == 1, [rows[0] valueForKey:@"options"]);
     [answers selectRowIndexes:[NSIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
     LBSpin();
     LBChoose(window, @"answerYesNo", @"Yes");
-    rows[1].note = @"front left worn";
-    LBCheck(@"answered: an option, and yes", [rows[0].answerText isEqualToString:@"Low beams"] && [rows[1].answerText isEqualToString:@"Yes"],
-            [rows valueForKey:NSStringFromSelector(@selector(answerText))]);
+    [rows[1] setValue:@"front left worn" forKey:@"note"];
+    LBCheck(@"answered: an option chosen, and yes", [[[rows[0] valueForKey:@"options"] valueForKey:@"optionText"] isEqualToArray:@[ @"Low beams" ]]
+                && [[rows[1] valueForKey:@"yesNo"] isEqualToString:@"Yes"],
+            ([NSString stringWithFormat:@"%@ %@", [[rows[0] valueForKey:@"options"] valueForKey:@"optionText"], [rows[1] valueForKey:@"yesNo"]]));
     Inspection *keptInspection = LBSaved(controller, inspection, @"the inspection saved");
     NSMutableDictionary *said = [NSMutableDictionary dictionary];
     for (Answer *answer in keptInspection.answers) {

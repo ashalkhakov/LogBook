@@ -1,212 +1,127 @@
 #import "LBAnswersController.h"
 #import "LBMainWindowController.h"
-#import "LBDisplay.h"
 #import "Inspection+CoreDataClass.h"
 #import "Answer+CoreDataClass.h"
-#import "Option+CoreDataClass.h"
+#import "Question+CoreDataClass.h"
+#import "Checklist+CoreDataClass.h"
 
 static void *LBChecklistChanged = &LBChecklistChanged;
+static void *LBOptionsChosen = &LBOptionsChosen;
+static void *LBAnswerChosen = &LBAnswerChosen;
 
-static NSArray *LBByPosition(NSSet *objects) {
-    return [objects.allObjects sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(position))
-                                                                                             ascending:YES] ]];
-}
-
-@interface LBAnswerRow ()
-- (instancetype)initWithInspection:(Inspection *)inspection question:(Question *)question;
-- (Answer *)answer;
-- (Answer *)answerMade;
-- (void)answerChanged;
+/* An answer's options as its row says them: their texts, joined. */
+@interface LBOptionTexts : NSValueTransformer
 @end
 
-@interface LBOptionChoice ()
-- (instancetype)initWithOption:(Option *)option row:(LBAnswerRow *)row;
-@end
-
-@implementation LBOptionChoice {
-    __weak LBAnswerRow *_row;
+@implementation LBOptionTexts
++ (Class)transformedValueClass {
+    return [NSString class];
 }
 
-- (instancetype)initWithOption:(Option *)option row:(LBAnswerRow *)row {
-    if ((self = [super init])) {
-        _option = option;
-        _row = row;
-    }
-    return self;
++ (BOOL)allowsReverseTransformation {
+    return NO;
 }
 
-- (NSString *)optionText {
-    return _option.optionText ?: @"";
+- (id)transformedValue:(id)value {
+    NSArray *texts = [[value valueForKey:@"optionText"] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
+    return [texts componentsJoinedByString:@", "] ?: @"";
 }
-
-- (BOOL)isEqual:(id)other {
-    return [other isKindOfClass:[LBOptionChoice class]] && ((LBOptionChoice *)other)->_option == _option;
-}
-
-- (NSUInteger)hash {
-    return _option.hash;
-}
-
-- (BOOL)chosen {
-    return [[_row answer].options containsObject:_option];
-}
-
-- (void)setChosen:(BOOL)chosen {
-    if (chosen == self.chosen) return;
-    Answer *answer = [_row answerMade];
-    if (chosen) [answer addOptionsObject:_option];
-    else [answer removeOptionsObject:_option];
-    [_row answerChanged];
-}
-
-@end
-
-@implementation LBAnswerRow {
-    Inspection *_inspection;
-}
-
-- (instancetype)initWithInspection:(Inspection *)inspection question:(Question *)question {
-    if ((self = [super init])) {
-        _inspection = inspection;
-        _question = question;
-        NSMutableArray *choices = [NSMutableArray array];
-        for (Option *option in LBByPosition(question.options)) [choices addObject:[[LBOptionChoice alloc] initWithOption:option row:self]];
-        _choices = choices;
-    }
-    return self;
-}
-
-/* A row is its question's, made again as the answers are read again:
-   equal so that the one chosen stays chosen. */
-- (BOOL)isEqual:(id)other {
-    return [other isKindOfClass:[LBAnswerRow class]] && ((LBAnswerRow *)other)->_question == _question
-        && ((LBAnswerRow *)other)->_inspection == _inspection;
-}
-
-- (NSUInteger)hash {
-    return _question.hash;
-}
-
-- (Answer *)answer {
-    for (Answer *answer in _inspection.answers) {
-        if (answer.question == _question && !answer.isDeleted) return answer;
-    }
-    return nil;
-}
-
-/* Its answer, made when the question is first answered. */
-- (Answer *)answerMade {
-    Answer *answer = [self answer];
-    if (answer) return answer;
-    answer = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Answer class])
-                                           inManagedObjectContext:_inspection.managedObjectContext];
-    answer.inspection = _inspection;
-    answer.question = _question;
-    return answer;
-}
-
-- (void)answerChanged {
-    [self willChangeValueForKey:NSStringFromSelector(@selector(answerText))];
-    [self didChangeValueForKey:NSStringFromSelector(@selector(answerText))];
-}
-
-- (NSString *)questionText {
-    return _question.questionText ?: @"";
-}
-
-- (BOOL)takesOptions {
-    return _question.lbTakesOptions;
-}
-
-- (BOOL)isYesOrNo {
-    return !_question.lbTakesOptions;
-}
-
-- (NSString *)answerText {
-    Answer *answer = [self answer];
-    if (!self.takesOptions) return answer.yesNo ?: @"";
-    NSMutableArray *chosen = [NSMutableArray array];
-    for (LBOptionChoice *choice in _choices) {
-        if (choice.chosen) [chosen addObject:choice.optionText];
-    }
-    return [chosen componentsJoinedByString:@", "];
-}
-
-- (NSString *)yesNo {
-    return [self answer].yesNo ?: @"";
-}
-
-- (void)setYesNo:(NSString *)yesNo {
-    NSString *said = yesNo.length ? yesNo : nil;
-    if ([said isEqualToString:[self answer].yesNo] || (!said && ![self answer].yesNo)) return;
-    [self answerMade].yesNo = said;
-    [self answerChanged];
-}
-
-- (NSString *)note {
-    return [self answer].note;
-}
-
-- (void)setNote:(NSString *)note {
-    NSString *said = note.length ? note : nil;
-    if (!said && ![self answer]) return;
-    [self answerMade].note = said;
-}
-
-@end
-
-@interface LBAnswersController ()
-@property (nonatomic, readwrite, copy) NSArray<LBAnswerRow *> *rows;
 @end
 
 @implementation LBAnswersController {
     Inspection *_inspection;
+    BOOL _showing;
 }
 
-- (instancetype)init {
-    if ((self = [super init])) _rows = @[];
-    return self;
++ (void)initialize {
+    if (self == [LBAnswersController class]) [NSValueTransformer setValueTransformer:[[LBOptionTexts alloc] init] forName:@"LBOptionTexts"];
+}
+
+- (void)awakeFromNib {
+    [super awakeFromNib];
+    [_answerOptions addObserver:self forKeyPath:@"selectionIndexes" options:0 context:LBOptionsChosen];
+    [_answerOptions addObserver:self forKeyPath:@"arrangedObjects" options:0 context:LBAnswerChosen];
 }
 
 - (void)dealloc {
     [_inspection removeObserver:self forKeyPath:NSStringFromSelector(@selector(checklist)) context:LBChecklistChanged];
+    [_answerOptions removeObserver:self forKeyPath:@"selectionIndexes" context:LBOptionsChosen];
+    [_answerOptions removeObserver:self forKeyPath:@"arrangedObjects" context:LBAnswerChosen];
+}
+
+/* Another answer's options listed: those it chose, selected. */
+- (void)answerChosen {
+    id answer = _answers.selectedObjects.count == 1 ? _answers.selectedObjects.firstObject : nil;
+    _showing = YES;
+    _answerOptions.selectedObjects = [answer valueForKey:@"options"] ?: @[];
+    _showing = NO;
+}
+
+/* The options selected, the chosen answer's (AppKit says its options as
+   selected, and pushes no selection back). */
+- (void)optionsChosen {
+    if (_showing) return;
+    id answer = _answers.selectedObjects.count == 1 ? _answers.selectedObjects.firstObject : nil;
+    NSArray *chosen = _answerOptions.selectedObjects ?: @[];
+    if (!answer || [[NSSet setWithArray:[answer valueForKey:@"options"] ?: @[]] isEqualToSet:[NSSet setWithArray:chosen]]) return;
+    /* Only while the list is its question's options: while it is being
+       changed for another answer, its selection is not this one's. */
+    NSArray *theirs = [answer valueForKeyPath:@"choices.options"] ?: @[];
+    if (![[NSSet setWithArray:_answerOptions.arrangedObjects ?: @[]] isEqualToSet:[NSSet setWithArray:theirs]] || !theirs.count) return;
+    [answer setValue:chosen forKey:@"options"];
 }
 
 - (void)showInspection:(Inspection *)inspection {
+    /* The answers in their questions' order. */
+    if (!_answers.sortDescriptors.count) {
+        _answers.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"question.position" ascending:YES] ];
+        _answers.automaticallyRearrangesObjects = YES;
+    }
     if (inspection != _inspection) {
         NSString *checklist = NSStringFromSelector(@selector(checklist));
         [_inspection removeObserver:self forKeyPath:checklist context:LBChecklistChanged];
         _inspection = inspection;
         [_inspection addObserver:self forKeyPath:checklist options:0 context:LBChecklistChanged];
     }
-    [self arrange];
+    if (_inspection.isInserted) [self answerEachQuestion];
+    [_answers rearrangeObjects];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if (context == LBChecklistChanged) [self checklistChanged];
+    else if (context == LBOptionsChosen) [self optionsChosen];
+    else if (context == LBAnswerChosen) [self answerChosen];
     else [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
-/* Another checklist chosen: the answers to the one before's questions go.
-   The inspection read again (refreshed) says so too, of the checklist it
-   has: only a change not saved yet is one. */
+/* Another checklist chosen: the answers to the one before's questions go,
+   and each of its questions has one. The inspection read again
+   (refreshed) says so too, of the checklist it has: only a change not
+   saved yet is one. */
 - (void)checklistChanged {
-    if (!_inspection.changedValues[NSStringFromSelector(@selector(checklist))]) {
-        [self arrange];
-        return;
-    }
+    if (!_inspection.changedValues[NSStringFromSelector(@selector(checklist))] && !_inspection.isInserted) return;
     for (Answer *answer in [_inspection.answers copy]) {
         if (answer.question.checklist != _inspection.checklist) [answer.managedObjectContext deleteObject:answer];
     }
-    [self arrange];
+    [self answerEachQuestion];
 }
 
-- (void)arrange {
-    NSMutableArray *rows = [NSMutableArray array];
-    for (Question *question in LBByPosition(_inspection.checklist.questions)) {
-        [rows addObject:[[LBAnswerRow alloc] initWithInspection:_inspection question:question]];
+/* An answer, not yet said, for each question of its checklist that has
+   none: the form's rows. */
+- (void)answerEachQuestion {
+    NSMutableSet *answered = [NSMutableSet set];
+    for (Answer *answer in _inspection.answers) {
+        if (answer.question && !answer.isDeleted) [answered addObject:answer.question];
     }
-    self.rows = rows;
+    for (Question *question in _inspection.checklist.questions) {
+        if ([answered containsObject:question]) continue;
+        Answer *answer = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Answer class])
+                                                       inManagedObjectContext:_inspection.managedObjectContext];
+        answer.id = [NSUUID UUID];
+        answer.inspection = _inspection;
+        answer.question = question;
+    }
+    [_answers rearrangeObjects];
 }
 
 @end

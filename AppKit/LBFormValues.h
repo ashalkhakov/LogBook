@@ -9,7 +9,10 @@
 // read again (-reload), every binding hears of it. A reference's choices
 // are choices.<name> ("choices.driver"), objects of the context. A
 // repeat's rows (a service's items) are the object's, as an array
-// controller's content binds them, read by the form as it saves.
+// controller's content binds them, read by the form as it saves; where its
+// rows each choose of their own (an answer's options, of its question's),
+// rows of their own, each its object's values, its own choices.<name> and
+// items.<name>, a set of choices an array of objects.
 //
 //   <binding destination="-2" name="value" keyPath="values.timestamp"/>
 //   <binding destination="-2" name="selectedObject" keyPath="values.driver"/>

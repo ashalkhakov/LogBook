@@ -106,16 +106,18 @@
         <customObject customClass="LBAnswersController" userLabel="Answers Controller" id="answersController">
             <connections>
                 <outlet property="windowController" destination="-2" id="answersWindowController"/>
+                <outlet property="answers" destination="answers" id="answersControllerAnswers"/>
+                <outlet property="answerOptions" destination="answerOptions" id="answersControllerOptions"/>
             </connections>
         </customObject>
-        <arrayController objectClassName="LBAnswerRow" editable="YES" userLabel="Answers" id="answers">
+        <arrayController editable="YES" userLabel="Answers" id="answers">
             <connections>
-                <binding destination="answersController" name="contentArray" keyPath="rows" id="answersContent"/>
+                <binding destination="InspectionForm" name="contentArray" keyPath="selection.answers" id="answersContent"/>
             </connections>
         </arrayController>
-        <arrayController objectClassName="LBOptionChoice" editable="YES" userLabel="Answer Options" id="answerOptions">
+        <arrayController editable="NO" userLabel="Answer Options" id="answerOptions">
             <connections>
-                <binding destination="answers" name="contentArray" keyPath="selection.choices" id="answerOptionsContent"/>
+                <binding destination="answers" name="contentArray" keyPath="selection.choices.options" id="answerOptionsContent"/>
             </connections>
         </arrayController>
         <customObject customClass="LBCalendarController" userLabel="Calendar Controller" id="calendarController">
@@ -3496,7 +3498,7 @@
                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="answers" name="value" keyPath="arrangedObjects.questionText" id="answersTableQuestionTextValue"/>
+                                                                    <binding destination="answers" name="value" keyPath="arrangedObjects.question.questionText" id="answersTableQuestionTextValue"/>
                                                                 </connections>
                                                             </tableColumn>
                                                             <tableColumn identifier="answerText" width="110" minWidth="40" maxWidth="1000" id="answersTableAnswerTextColumn">
@@ -3510,7 +3512,25 @@
                                                                     <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="answers" name="value" keyPath="arrangedObjects.answerText" id="answersTableAnswerTextValue"/>
+                                                                    <binding destination="answers" name="value" keyPath="arrangedObjects.yesNo" id="answersTableAnswerTextValue"/>
+                                                                </connections>
+                                                            </tableColumn>
+                                                            <tableColumn identifier="options" width="110" minWidth="40" maxWidth="1000" id="answersTableOptionsColumn">
+                                                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Options">
+                                                                    <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                                </tableHeaderCell>
+                                                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="answersTableOptionsCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="answers" name="value" keyPath="arrangedObjects.options" id="answersTableOptionsValue">
+                                                                        <dictionary key="options">
+                                                                            <string key="NSValueTransformerName">LBOptionTexts</string>
+                                                                        </dictionary>
+                                                                    </binding>
                                                                 </connections>
                                                             </tableColumn>
                                                             <tableColumn identifier="note" width="80" minWidth="40" maxWidth="1000" id="answersTableNoteColumn">
@@ -3569,7 +3589,11 @@
                                                                 </popUpButtonCell>
                                                                 <connections>
                                                                     <binding destination="answers" name="selectedValue" keyPath="selection.yesNo" id="answerYesNoValue"/>
-                                                                    <binding destination="answers" name="enabled" keyPath="selection.isYesOrNo" id="answerYesNoEnabled"/>
+                                                                    <binding destination="answers" name="enabled" keyPath="selection.question.lbTakesOptions" id="answerYesNoEnabled">
+                                                                        <dictionary key="options">
+                                                                            <string key="NSValueTransformerName">NSNegateBoolean</string>
+                                                                        </dictionary>
+                                                                    </binding>
                                                                 </connections>
                                                             </popUpButton>
                                                             <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="answerOptionsTableScroll">
@@ -3579,26 +3603,13 @@
                                                                     <rect key="frame" x="1" y="1" width="240" height="148"/>
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                     <subviews>
-                                                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="answerOptionsTableHeader" identifier="answerOptionsTable" id="answerOptionsTable">
+                                                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="YES" autosaveColumns="NO" headerView="answerOptionsTableHeader" identifier="answerOptionsTable" id="answerOptionsTable">
                                                                             <rect key="frame" x="0" y="0" width="240" height="125"/>
                                                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                                             <size key="intercellSpacing" width="3" height="2"/>
                                                                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                             <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
                                                                             <tableColumns>
-                                                            <tableColumn identifier="chosen" width="24" minWidth="20" maxWidth="40" id="answerOptionsTableChosenColumn">
-                                                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="">
-                                                                    <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
-                                                                    <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
-                                                                </tableHeaderCell>
-                                                                <buttonCell key="dataCell" type="check" bezelStyle="regularSquare" imagePosition="only" alignment="center" inset="2" id="answerOptionsTableChosenCell">
-                                                                    <behavior key="behavior" changeContents="YES" lightByContents="YES"/>
-                                                                    <font key="font" metaFont="system"/>
-                                                                </buttonCell>
-                                                                <connections>
-                                                                    <binding destination="answerOptions" name="value" keyPath="arrangedObjects.chosen" id="answerOptionsTableChosenValue"/>
-                                                                </connections>
-                                                            </tableColumn>
                                                             <tableColumn identifier="optionText" width="200" minWidth="40" maxWidth="1000" id="answerOptionsTableOptionTextColumn">
                                                                 <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Option">
                                                                     <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
