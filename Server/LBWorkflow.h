@@ -6,7 +6,9 @@
 //
 // Procure to receipt (Model/ProcureToReceipt.bpmn): each purchase order
 // saved as a draft, from Reorder or entered, starts it once it is saved, its variable
-// purchaseOrder the order's id. Its people's tasks are done with the
+// purchaseOrder the order's id, catalog its catalog's. Confirm the order
+// is offered to the catalog's managers, Receive the goods to its keepers,
+// as the logbook's permissions say who they are (-rolesAuthenticatorOver:). Its people's tasks are done with the
 // model's forms (ConfirmPurchaseOrder, ReceiveGoods), which the app shows
 // in its own screens: what a form saves is the logbook's, and its instance
 // submitted to the task (WorkflowKit.SubmitForm) completes it, its
@@ -42,6 +44,12 @@ NS_ASSUME_NONNULL_BEGIN
 // Its API, under the server's root. With no sign-in set (the logbook tried
 // out), everyone is a trial user who may work every task.
 - (ODataService *)serviceAtRoot:(NSURL *)root signedIn:(BOOL)signedIn;
+// Signed in, its API's authenticator: the server's, the user's roles
+// added as the logbook's permissions make them -- the claims manager and
+// keeper, the catalogs (ids) they manage and keep -- and the task list
+// theirs to work (Tasks.Work). The processes offer each task to its
+// catalog's (candidate groups manager:<catalog>, keeper:<catalog>).
+- (id<HSAuthenticator>)rolesAuthenticatorOver:(id<HSAuthenticator>)authenticator;
 
 // A purchase order saved as a draft, whoever saved it, starts procure to
 // receipt once the save is done (a save refused does nothing): its id the

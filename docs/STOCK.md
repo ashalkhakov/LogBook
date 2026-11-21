@@ -95,6 +95,14 @@ and orders, counts and the warehouse's locations; a keeper receives, ships,
 moves, counts and assembles at their warehouses. Nobody else sees the
 catalog. ([Who may](#who-may) has the table.)
 
+The processes' tasks go to the same people: a purchase's Confirm the order
+to the catalog's managers (its owner, a manager of one of its warehouses),
+Receive the goods to its keepers (and its managers). The server works out
+each signed-in user's roles from the staff, as the permissions do, and
+the process names its catalog's (`manager:<catalog>`, `keeper:<catalog>`,
+Model/ProcureToReceipt.bpmn); no group of the identity provider's is
+needed. With no sign-in, anyone works every task.
+
 ## Items
 
 **The item list** (KiWi's Items): each item's name, its category path, how

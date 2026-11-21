@@ -58,6 +58,9 @@
 #include <stdlib.h>
 
 @interface LBServerConfiguration : HSConfiguration
+/* Signed in, who is asking with their roles (LBWorkflow's): the server
+   sets it before the authenticator is made. */
+@property (nonatomic, strong, nullable) LBWorkflow *workflow;
 @end
 
 @implementation LBServerConfiguration
@@ -65,6 +68,11 @@
 + (NSArray<NSString *> *)knownSettings {
     return [[super knownSettings] arrayByAddingObjectsFromArray:@[ @"Model", @"Plans", @"StoreType", @"StoreURL", @"ServiceRoot",
                                                                    @"AllowAnonymous", @"Permissions", @"Workflow", @"Processes" ]];
+}
+
+- (id<HSAuthenticator>)authenticatorWithError:(NSError **)error {
+    id<HSAuthenticator> authenticator = [super authenticatorWithError:error];
+    return authenticator && _workflow ? [_workflow rolesAuthenticatorOver:authenticator] : authenticator;
 }
 @end
 
@@ -272,6 +280,9 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
 
 - (BOOL)prepare:(NSError **)error {
     if (!_service && ![self makeService:error]) return NO;
+    /* Signed in: who is asking, with their roles as the logbook's
+       permissions make them, for the processes' tasks (LBWorkflow.h). */
+    ((LBServerConfiguration *)self.configuration).workflow = _workflow;
     return [super prepare:error];
 }
 

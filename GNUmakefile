@@ -199,6 +199,7 @@ check:: all
 	Tests/form-check.sh obj/logbook-server obj/lb-form-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms
 	python3 Tests/serve-and-check.py obj/logbook-server
 	python3 Tests/process-check.py obj/logbook-server
+	python3 Tests/roles-check.py obj/logbook-server
 	Tests/sync-check.sh obj/logbook-server obj/lb-sync-check obj/Logbook.momd obj/Logbook.ormplans
 ifneq ($(LB_SERVER_ONLY),yes)
 	$(XVFB) Tests/app-check.sh obj/logbook-server Logbook.app/Logbook

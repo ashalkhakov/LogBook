@@ -4,10 +4,10 @@
   <bpmn:process id="procureToReceipt" name="Procure to receipt" isExecutable="true">
     <bpmn:documentation>A draft purchase order, from Reorder, to its goods received (docs/STOCK.md, Orders and Receiving). Its variable purchaseOrder is the order's id. A manager confirms it or cancels it, with the model's ConfirmPurchaseOrder form (the order's Confirm or Cancel); a keeper receives its goods with ReceiveGoods (the order's Receive), as often as they come; once nothing is outstanding the order is closed.</bpmn:documentation>
     <bpmn:startEvent id="drafted" name="Draft made"/>
-    <bpmn:userTask id="confirm" name="Confirm the order" camunda:candidateGroups="managers" camunda:formKey="ormkit:form:ConfirmPurchaseOrder"/>
+    <bpmn:userTask id="confirm" name="Confirm the order" camunda:candidateGroups="=[&quot;manager:&quot; + catalog]" camunda:formKey="ormkit:form:ConfirmPurchaseOrder"/>
     <bpmn:exclusiveGateway id="confirmed" name="Confirmed?" default="toCancelled"/>
     <bpmn:endEvent id="cancelled" name="Cancelled"/>
-    <bpmn:userTask id="receive" name="Receive the goods" camunda:candidateGroups="keepers" camunda:formKey="ormkit:form:ReceiveGoods"/>
+    <bpmn:userTask id="receive" name="Receive the goods" camunda:candidateGroups="=[&quot;keeper:&quot; + catalog]" camunda:formKey="ormkit:form:ReceiveGoods"/>
     <bpmn:serviceTask id="check" name="All received?" camunda:delegateExpression="${orderReceived}"/>
     <bpmn:exclusiveGateway id="received" name="All received?" default="toReceiveAgain"/>
     <bpmn:serviceTask id="close" name="Close the order" camunda:delegateExpression="${closeOrder}"/>

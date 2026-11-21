@@ -2,6 +2,9 @@
 #import <WorkflowKitOData/WFODataService.h>
 #import "LogbookValidation.h"
 #import "LBStockProcedures.h"
+#import "Catalog+CoreDataClass.h"
+#import "Warehouse+CoreDataClass.h"
+#import "WarehouseStaff+CoreDataClass.h"
 
 static NSError *LBWorkflowError(NSString *message) {
     return [NSError errorWithDomain:@"LBWorkflow" code:1 userInfo:@{ NSLocalizedDescriptionKey : message }];
@@ -55,6 +58,89 @@ static NSError *LBWorkflowError(NSString *message) {
                            WFODataScopeReadAllDefinitions, WFODataScopeStartAny ] componentsJoinedByString:@" "];
     [reply finishWithPrincipal:[[HSPrincipal alloc] initWithSubject:@"trial" claims:@{ @"scope" : scopes }]];
 }
+@end
+
+/* Signed in: who is asking, as the server's authenticator says, with what
+   the logbook's permissions make them (Logbook.permissions.plist): the
+   catalogs they manage (its owner, or a Manager of one of its warehouses)
+   and those they keep (a manager, or a Keeper of one of its warehouses),
+   their claims manager and keeper, which the processes' candidate groups
+   name (manager:<catalog>). The task list is the logbook's to give:
+   whoever is signed in may work theirs (Tasks.Work); which tasks are
+   theirs, the claims say. */
+@interface LBRolesAuthenticator : NSObject <HSAuthenticator>
+- (instancetype)initWithAuthenticator:(id<HSAuthenticator>)inner coordinator:(NSPersistentStoreCoordinator *)coordinator;
+@end
+
+@implementation LBRolesAuthenticator {
+    id<HSAuthenticator> _inner;
+    NSPersistentStoreCoordinator *_coordinator;
+}
+
+- (instancetype)initWithAuthenticator:(id<HSAuthenticator>)inner coordinator:(NSPersistentStoreCoordinator *)coordinator {
+    if ((self = [super init])) {
+        _inner = inner;
+        _coordinator = coordinator;
+    }
+    return self;
+}
+
+- (void)authenticateRequest:(HSRequest *)request reply:(HSAuthenticationReply *)reply {
+    HSAuthenticationReply *asked = [[HSAuthenticationReply alloc] initWithTarget:self action:@selector(answered:)];
+    asked.context = reply;
+    [_inner authenticateRequest:request reply:asked];
+}
+
+- (NSString *)challengeForRequest:(HSRequest *)request {
+    return [_inner respondsToSelector:@selector(challengeForRequest:)] ? [_inner challengeForRequest:request] : @"Bearer";
+}
+
+- (NSDictionary<NSString *, id> *)authorizationDescription {
+    return [_inner respondsToSelector:@selector(authorizationDescription)] ? [_inner authorizationDescription] : nil;
+}
+
+- (void)answered:(HSAuthenticationReply *)asked {
+    HSAuthenticationReply *reply = asked.context;
+    if (asked.error) {
+        [reply failWithError:asked.error];
+        return;
+    }
+    HSPrincipal *principal = asked.principal;
+    if (!principal) {
+        [reply finishWithPrincipal:nil];
+        return;
+    }
+    id email = principal.claims[@"email"];
+    NSString *who = [email isKindOfClass:[NSString class]] && [email length] ? email : principal.subject;
+    NSMutableOrderedSet *managed = [NSMutableOrderedSet orderedSet], *kept = [NSMutableOrderedSet orderedSet];
+    NSManagedObjectContext *context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    context.persistentStoreCoordinator = _coordinator;
+    [context performBlockAndWait:^{
+        NSFetchRequest *owned = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Catalog class])];
+        owned.predicate = [NSPredicate predicateWithFormat:@"catalogOwner.email == %@", who];
+        for (Catalog *catalog in [context executeFetchRequest:owned error:NULL]) {
+            if (catalog.id) [managed addObject:catalog.id.UUIDString];
+        }
+        NSFetchRequest *staff = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([WarehouseStaff class])];
+        staff.predicate = [NSPredicate predicateWithFormat:@"user.email == %@", who];
+        for (WarehouseStaff *member in [context executeFetchRequest:staff error:NULL]) {
+            NSUUID *catalog = member.warehouse.catalog.id;
+            if (!catalog) continue;
+            if ([member.staffRole isEqualToString:@"Manager"]) [managed addObject:catalog.UUIDString];
+            else if ([member.staffRole isEqualToString:@"Keeper"]) [kept addObject:catalog.UUIDString];
+        }
+    }];
+    [kept unionOrderedSet:managed];
+    NSMutableDictionary *claims = [principal.claims mutableCopy] ?: [NSMutableDictionary dictionary];
+    claims[@"manager"] = managed.array;
+    claims[@"keeper"] = kept.array;
+    NSMutableSet *scopes = [principal.scopes mutableCopy];
+    [scopes addObject:WFODataScopeWork];
+    [claims removeObjectForKey:@"scp"];
+    claims[@"scope"] = [scopes.allObjects componentsJoinedByString:@" "];
+    [reply finishWithPrincipal:[[HSPrincipal alloc] initWithSubject:principal.subject claims:claims]];
+}
+
 @end
 
 NSNotificationName const LBWorkflowDidSettleNotification = @"LBWorkflowDidSettle";
@@ -117,19 +203,23 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
 - (void)logbookDidSave:(NSNotification *)notification {
     NSManagedObjectContext *context = notification.object;
     if (context.persistentStoreCoordinator != _coordinator) return;
-    NSMutableArray<NSString *> *drafted = [NSMutableArray array];
+    NSMutableArray<NSArray<NSString *> *> *drafted = [NSMutableArray array];
     for (NSManagedObject *object in notification.userInfo[NSInsertedObjectsKey]) {
         if ([object isKindOfClass:[PurchaseOrder class]]) {
             PurchaseOrder *order = (PurchaseOrder *)object;
-            if (order.id && (!order.orderState.length || [order.orderState isEqualToString:@"Draft"])) [drafted addObject:order.id.UUIDString];
+            if (order.id && (!order.orderState.length || [order.orderState isEqualToString:@"Draft"])) {
+                [drafted addObject:@[ order.id.UUIDString, order.catalog.id.UUIDString ?: @"" ]];
+            }
         }
     }
     if (!drafted.count) return;
     dispatch_async(_queue, ^{
-        for (NSString *orderId in drafted) {
+        for (NSArray<NSString *> *each in drafted) {
+            NSString *orderId = each[0];
             NSError *error = nil;
+            /* Its catalog, whose managers and keepers its tasks are offered to. */
             if (![self->_engine.runtimeService startProcessInstanceByKey:@"procureToReceipt" businessKey:orderId
-                                                               variables:@{ @"purchaseOrder" : orderId } error:&error]) {
+                                                               variables:@{ @"purchaseOrder" : orderId, @"catalog" : each[1] } error:&error]) {
                 NSLog(@"Logbook: procure to receipt not started for %@: %@", orderId, error.localizedDescription);
             }
         }
@@ -158,6 +248,10 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
     ODataService *service = [WFODataService serviceForEngine:_engine serviceRoot:root];
     if (!signedIn) service.authenticator = [[LBTrialAuthenticator alloc] init];
     return service;
+}
+
+- (id<HSAuthenticator>)rolesAuthenticatorOver:(id<HSAuthenticator>)authenticator {
+    return [[LBRolesAuthenticator alloc] initWithAuthenticator:authenticator coordinator:_coordinator];
 }
 
 

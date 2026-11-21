@@ -202,6 +202,7 @@ check: all
 	Tests/form-check.sh $(BUILD)/logbook-server $(BUILD)/lb-form-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
 	python3 Tests/process-check.py $(BUILD)/logbook-server
+	python3 Tests/roles-check.py $(BUILD)/logbook-server
 	Tests/sync-check.sh $(BUILD)/logbook-server $(BUILD)/lb-sync-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	Tests/app-check.sh $(BUILD)/logbook-server $(APP)/Contents/MacOS/Logbook
 	@if xcrun simctl list devices available 2>/dev/null | grep -q 'iPhone'; then \
