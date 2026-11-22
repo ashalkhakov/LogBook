@@ -6,6 +6,7 @@
 #import <ODataKit/ODataTransport.h>
 #import "LBConflicts.h"
 #import <ODataSync/ODataSyncEngine.h>
+#import <ORMRuntime/ORMFlowSession.h>
 #import "Vehicle+CoreDataClass.h"
 #import "User+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
@@ -1114,7 +1115,8 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
                 && [again.window.title isEqualToString:@"PO-GAR-0003 — Confirm the order"],
             again.window.title ?: tasks.messageLabel.stringValue);
     window = again.window;
-    LBClick(window, @"confirmOrder");
+    LBCheck(@"its Confirm the order's sheet at once", window.attachedSheet == again.confirmPanel, again.lastError ?: again.flow.step.formName);
+    LBChoose(again.confirmPanel, @"confirmState", @"Confirmed");
     LBClick(again.confirmPanel, @"submitConfirm");
     names = LBTasksOf(tasks, order, @[ @"Receive the goods" ]);
     LBCheck(@"confirmed again, online: submitted, Receive the goods", [names isEqualToArray:@[ @"Receive the goods" ]] && !again.waiting,
@@ -1221,14 +1223,24 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     [window makeKeyAndOrderFront:nil];
     LBCheck(@"its window the model's EditPurchaseOrder", [purchase.orderForm.session.form.name isEqualToString:@"EditPurchaseOrder"],
             purchase.orderForm);
+    LBCheck(@"Model/Purchasing.flow: at the order, EditPurchaseOrder", [purchase.flow.step.formName isEqualToString:@"EditPurchaseOrder"]
+                && purchase.flow.steps.count == 1,
+            purchase.flow.step.formName ?: @"no flow");
     LBClick(window, @"confirmOrder");
     LBCheck(@"Confirm: its sheet, ConfirmPurchaseOrder, Confirmed chosen, its line listed",
             window.attachedSheet == purchase.confirmPanel && [[purchase.confirmForm valueForKey:@"orderState"] isEqualToString:@"Confirmed"]
                 && [[purchase.confirmForm valueForKey:@"purchaseLines"] count] == 1,
             purchase.lastError ?: [purchase.confirmForm valueForKey:@"orderState"]);
+    LBCheck(@"the flow's Confirm trigger: ConfirmPurchaseOrder over the order, on it",
+            [purchase.flow.step.formName isEqualToString:@"ConfirmPurchaseOrder"] && purchase.flow.step.overlay
+                && [purchase.flow.step.key isEqualToString:bought.id.UUIDString] && purchase.flow.steps.count == 2,
+            purchase.flow.step.formName);
     LBClick(purchase.confirmPanel, @"submitConfirm");
     LBCheck(@"confirmed", [bought.orderState isEqualToString:@"Confirmed"] && !purchase.lastError && !window.attachedSheet,
             purchase.lastError ?: bought.orderState);
+    LBCheck(@"its SubmitDone: closed back to the order", [purchase.flow.step.formName isEqualToString:@"EditPurchaseOrder"]
+                && purchase.flow.steps.count == 1,
+            purchase.flow.step.formName);
     names = LBTasksOf(tasks, bought, @[ @"Receive the goods" ]);
     LBCheck(@"its task done with its form, submitted: Receive the goods", [names isEqualToArray:@[ @"Receive the goods" ]], names);
     LBClick(window, @"receiveGoods");
@@ -1236,6 +1248,10 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBCheck(@"Receive: its sheet, ReceiveGoods, a move of the 10 outstanding", window.attachedSheet == purchase.receivePanel && received.count == 1
                 && LBIs([received.anyObject valueForKey:@"moved"], @"10"),
             purchase.lastError ?: received);
+    LBCheck(@"the flow's Receive trigger: ReceiveGoods over the order, given it",
+            [purchase.flow.step.formName isEqualToString:@"ReceiveGoods"] && purchase.flow.step.overlay
+                && [purchase.flow.step.given[@"purchaseOrder"] isEqualToString:bought.id.UUIDString],
+            purchase.flow.step.given);
     LBChoose(purchase.receivePanel, @"receiveAt", @"Main / Default");
     NSTableView *moves = (NSTableView *)LBControl(purchase.receivePanel.contentView, @"receiveMovesTable");
     [moves selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
@@ -1294,10 +1310,15 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
                     && [step.window.title isEqualToString:@"PO-GAR-0002 — Confirm the order"],
                 step.window.title);
         LBSnapshot(tasks.window, @"tasks");
-        LBClick(step.window, @"cancelOrder");
+        LBCheck(@"its step's sheet at once: the flow's Confirm entry, on the order", step.window.attachedSheet == step.confirmPanel
+                    && [step.flow.step.formName isEqualToString:@"ConfirmPurchaseOrder"] && step.flow.steps.count == 1
+                    && [step.flow.step.key isEqualToString:second.id.UUIDString],
+                step.lastError ?: step.flow.step.formName);
+        LBChoose(step.confirmPanel, @"confirmState", @"Cancelled");
         LBClick(step.confirmPanel, @"submitConfirm");
-        LBCheck(@"cancelled there: the title says the task no more", [[step.order valueForKey:@"orderState"] isEqualToString:@"Cancelled"]
-                    && [step.window.title isEqualToString:@"PO-GAR-0002"],
+        LBCheck(@"cancelled there: the title says the task no more; the flow at the order again",
+                [[step.order valueForKey:@"orderState"] isEqualToString:@"Cancelled"] && [step.window.title isEqualToString:@"PO-GAR-0002"]
+                    && [step.flow.step.formName isEqualToString:@"EditPurchaseOrder"] && !step.window.attachedSheet,
                 step.lastError ?: step.window.title);
         names = LBTasksOf(tasks, second, @[]);
         LBCheck(@"and its task gone from the list", names.count == 0, names);

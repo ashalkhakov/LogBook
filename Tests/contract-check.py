@@ -21,7 +21,11 @@
 # Each binding names something the contract has, each element the
 # contract enters is bound by some control, and each reference it enters
 # offers the form's choices (a pop-up's content): the view implements the
-# form, no more and no less. Fails (exit 1) saying each that does not.
+# form, no more and no less. And the app's flows (<Flow>.ormflow, ormtool
+# xforms --flow, in the forms' directory): each screen's form has a view,
+# and each trigger from it is a control of that view's XIB (its
+# identifier), so the views implement the flow too. Fails (exit 1) saying
+# each that does not.
 #
 #   Tests/contract-check.py build/Model/Forms AppKit/MainWindow.xib AppKit/StockPurchase.xib
 import os
@@ -130,12 +134,46 @@ def check_xib(xib, forms, problems):
     return checked
 
 
+def views_of(xibs):
+    """Each form a XIB has a view of: the XIB, and its controls' identifiers."""
+    views = {}
+    for xib in xibs:
+        root = ET.parse(xib).getroot()
+        identifiers = {e.get('identifier') for e in root.iter() if e.get('identifier')}
+        for controller in root.iter('objectController'):
+            cid = controller.get('id') or ''
+            if cid.endswith('Form'):
+                views[cid[:-len('Form')]] = (xib, identifiers)
+    return views
+
+
+def check_flows(forms, xibs, problems):
+    views = views_of(xibs)
+    flows = sorted(f for f in os.listdir(forms) if f.endswith('.ormflow'))
+    for name in flows:
+        flow = contract(os.path.join(forms, name))
+        screens = flow.get('screens', {})
+        for sid, screen in sorted(screens.items()):
+            form = screen.get('form')
+            if form and form not in views:
+                problems.append('%s: %s shows %s, which no view is of' % (name, sid, form))
+        for way in flow.get('transitions', []):
+            if way.get('on') != 'Trigger':
+                continue
+            form = screens.get(way.get('from'), {}).get('form')
+            view = views.get(form)
+            if view and way.get('control') not in view[1]:
+                problems.append('%s: %s\'s trigger %s is no control of %s' % (name, form, way.get('control'), os.path.basename(view[0])))
+    return len(flows)
+
+
 def main(forms, xibs):
     problems = []
     checked = sum(check_xib(xib, forms, problems) for xib in xibs)
+    flows = check_flows(forms, xibs, problems)
     for problem in problems:
         print('contract-check: ' + problem)
-    print('contract-check: %d views, %d not as their forms say' % (checked, len(problems)))
+    print('contract-check: %d views, %d flows, %d not as their forms say' % (checked, flows, len(problems)))
     return 1 if problems or not checked else 0
 
 

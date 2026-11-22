@@ -82,12 +82,12 @@ $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(ORMTOOL):
 	@echo "no ORMKit (or no ODataKit) in .deps: gnustep-release-actions' scripts/deps.sh apple fetches what .github/pins.env names"; exit 1
 
 # The model's outputs, from the model.
-$(MODEL)/.made: Model/Logbook.orm $(ORMTOOL)
+$(MODEL)/.made: Model/Logbook.orm Model/Purchasing.flow $(ORMTOOL)
 	rm -rf $(MODEL) && mkdir -p $(MODEL)
 	$(ORMTOOL) coredata Model/Logbook.orm $(MODEL)/Logbook.xcdatamodeld Logbook \
 	  --validation $(MODEL)/Constraints >$(MODEL)/mapping.txt
 	$(ORMTOOL) forml Model/Logbook.orm $(MODEL)/Logbook.forml
-	$(ORMTOOL) xforms Model/Logbook.orm $(MODEL)/Forms/ >$(MODEL)/forms.txt
+	$(ORMTOOL) xforms Model/Logbook.orm $(MODEL)/Forms/ --flow Model/Purchasing.flow >$(MODEL)/forms.txt
 	touch $@
 
 $(MODEL)/Constraints/LogbookValidation.m: $(MODEL)/.made ;
@@ -134,12 +134,12 @@ $(BUILD)/logbook-server: $(MODEL)/.made $(SERVER) Server/LBPermissions.h Server/
 	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(WORKFLOWKIT_DIRS)) $(SERVER) $(GENERATED)/*.m $(LIBS) \
 	  $(addprefix -F,$(WORKFLOWKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(WORKFLOWKIT_DIRS)) -framework WorkflowKitOData -framework WorkflowKit -o $@
 
-# The model's processes (Model/*.bpmn), with the model they import and the
-# forms their tasks are done with (their XForms documents), built and
+# The model's processes (Model/*.bpmn), with the model and the flow they
+# import, whose entries their tasks are done with (ormkit:flow:), built and
 # checked by wf-build as the server deploys them.
-$(BUILD)/Logbook.wfdeployment: Model/Logbook.orm $(wildcard Model/*.bpmn) $(MODEL)/.made
+$(BUILD)/Logbook.wfdeployment: Model/Logbook.orm Model/Purchasing.flow $(wildcard Model/*.bpmn) $(MODEL)/.made
 	rm -rf $(BUILD)/processes $@ && mkdir -p $(BUILD)/processes
-	cp Model/Logbook.orm Model/*.bpmn $(MODEL)/Forms/ConfirmPurchaseOrder.xhtml $(MODEL)/Forms/ReceiveGoods.xhtml $(BUILD)/processes/
+	cp Model/Logbook.orm Model/*.bpmn Model/Purchasing.flow $(BUILD)/processes/
 	$(WFBUILD) -name Logbook -o $@ $(BUILD)/processes
 
 # The procedures checked over a store of the model's own.
@@ -192,10 +192,11 @@ $(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalenda
 	$(CC) $(FLAGS) $(INC) $(addprefix -F,$(RDLKIT_DIRS) $(SPARKLE_DIR)) $(APP_SOURCES) $(GENERATED)/*.m $(LIBS) $(APP_LIBS) -o $@/Contents/MacOS/Logbook
 	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null \
 	  || { echo "$$x does not compile (ibtool --errors --compile)"; rm -rf $@; exit 1; }; done
-	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $(MODEL)/Forms/*.ormform $@/Contents/Resources/
+	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $(MODEL)/Forms/*.ormform $(MODEL)/Forms/*.ormflow $@/Contents/Resources/
 
 check: all
 	$(ORMTOOL) flow Model/Logbook.orm Model/Records.flow
+	$(ORMTOOL) flow Model/Logbook.orm Model/Purchasing.flow
 	python3 Tests/contract-check.py $(MODEL)/Forms AppKit/MainWindow.xib AppKit/StockPurchase.xib
 	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	$(BUILD)/lb-stock-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans

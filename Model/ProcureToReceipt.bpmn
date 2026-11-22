@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="procure-to-receipt-definitions" targetNamespace="https://github.com/ashalkhakov/LogBook">
   <bpmn:import importType="http://schemas.neumont.edu/ORM/2006-04/ORMRoot" location="Logbook.orm" namespace="Logbook"/>
+  <bpmn:import importType="http://schemas.ormkit.org/2026-10/Flows" location="Purchasing.flow" namespace="Purchasing"/>
   <bpmn:process id="procureToReceipt" name="Procure to receipt" isExecutable="true">
-    <bpmn:documentation>A draft purchase order, from Reorder, to its goods received (docs/STOCK.md, Orders and Receiving). Its variable purchaseOrder is the order's id. A manager confirms it or cancels it, with the model's ConfirmPurchaseOrder form (the order's Confirm or Cancel); a keeper receives its goods with ReceiveGoods (the order's Receive), as often as they come; once nothing is outstanding the order is closed.</bpmn:documentation>
+    <bpmn:documentation>A draft purchase order, from Reorder, to its goods received (docs/STOCK.md, Orders and Receiving). Its variable purchaseOrder is the order's id. A manager confirms it or cancels it, with the Purchasing flow's Confirm (its ConfirmPurchaseOrder form: the order's Confirm or Cancel); a keeper receives its goods with its Receive (ReceiveGoods: the order's Receive), as often as they come; once nothing is outstanding the order is closed.</bpmn:documentation>
     <bpmn:startEvent id="drafted" name="Draft made"/>
-    <bpmn:userTask id="confirm" name="Confirm the order" camunda:candidateGroups="=[&quot;manager:&quot; + catalog]" camunda:formKey="ormkit:form:ConfirmPurchaseOrder"/>
+    <bpmn:userTask id="confirm" name="Confirm the order" camunda:candidateGroups="=[&quot;manager:&quot; + catalog]" camunda:formKey="ormkit:flow:Purchasing.flow#Confirm"/>
     <bpmn:exclusiveGateway id="confirmed" name="Confirmed?" default="toCancelled"/>
     <bpmn:endEvent id="cancelled" name="Cancelled"/>
-    <bpmn:userTask id="receive" name="Receive the goods" camunda:candidateGroups="=[&quot;keeper:&quot; + catalog]" camunda:formKey="ormkit:form:ReceiveGoods"/>
+    <bpmn:userTask id="receive" name="Receive the goods" camunda:candidateGroups="=[&quot;keeper:&quot; + catalog]" camunda:formKey="ormkit:flow:Purchasing.flow#Receive"/>
     <bpmn:serviceTask id="check" name="All received?" camunda:delegateExpression="${orderReceived}"/>
     <bpmn:exclusiveGateway id="received" name="All received?" default="toReceiveAgain"/>
     <bpmn:serviceTask id="close" name="Close the order" camunda:delegateExpression="${closeOrder}"/>

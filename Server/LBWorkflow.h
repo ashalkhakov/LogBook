@@ -9,8 +9,9 @@
 // purchaseOrder the order's id, catalog its catalog's. Confirm the order
 // is offered to the catalog's managers, Receive the goods to its keepers,
 // as the logbook's permissions say who they are (-rolesAuthenticatorOver:). Its people's tasks are done with the
-// model's forms (ConfirmPurchaseOrder, ReceiveGoods), which the app shows
-// in its own screens: what a form saves is the logbook's, and its instance
+// entries of the model's flow Purchasing (Model/Purchasing.flow: Confirm,
+// its ConfirmPurchaseOrder; Receive, its ReceiveGoods), whose screens the
+// app shows in its own views: what a form saves is the logbook's, and its instance
 // submitted to the task (WorkflowKit.SubmitForm) completes it, its
 // elements the process's variables (orderState); its service tasks are
 // here:

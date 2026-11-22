@@ -11,7 +11,7 @@
 
 #import "LBStockEditor.h"
 
-@class Location, StockItem, LBTask, LBTasks, LBFormValues, LBPendingSubmission;
+@class Location, StockItem, LBTask, LBTasks, LBFormValues, LBPendingSubmission, ORMFlowSession;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -57,8 +57,15 @@ NS_ASSUME_NONNULL_BEGIN
 // the form saved, then its instance submitted to the order's open task of
 // it (this one, or found), which the server's process goes on with
 // (Server/LBWorkflow.h); the title says it no more, and the tasks are asked
-// again. nil: no task.
+// again. nil: no task. A task done with a flow's entry
+// (ormkit:flow:Purchasing.flow#Confirm) opens its step's sheet as the
+// window is shown.
 @property (nonatomic, strong, nullable) LBTask *task;
+// A purchase's way through its forms (Model/Purchasing.flow, ORMRuntime's
+// ORMFlowSession): the order's window its EditPurchaseOrder; its Confirm,
+// Cancel and Receive buttons the flow's triggers, each sheet the screen
+// they lead to, its Submit and Cancel the ways back. nil for a sale.
+@property (nonatomic, readonly, strong, nullable) ORMFlowSession *flow;
 @property (nonatomic, strong, nullable) LBTasks *tasks;
 // The step its form saved last that waits to be submitted (offline first,
 // the server not reached: Window > Tasks); nil where it went.

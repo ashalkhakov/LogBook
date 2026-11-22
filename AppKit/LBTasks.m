@@ -1,12 +1,14 @@
 #import "LBTasks.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
+#import <ORMRuntime/ORMFlowSession.h>
 #import <ODataSync/ODataSignIn.h>
 #import "LBConflicts.h"
 
 NSNotificationName const LBTasksDidChangeNotification = @"LBTasksDidChange";
 
 static NSString * const LBModelFormPrefix = @"ormkit:form:";
+static NSString * const LBModelFlowPrefix = @"ormkit:flow:";
 
 static NSString * const LBTasksErrorDomain = @"LBTasks";
 
@@ -25,8 +27,27 @@ static NSError *LBTasksError(NSString *message, NSInteger status) {
 
 @implementation LBTask
 
+/* "Purchasing.flow#Confirm": the file and the entry. */
+- (NSArray<NSString *> *)flowParts {
+    if (![_formKey hasPrefix:LBModelFlowPrefix]) return nil;
+    NSArray *parts = [[_formKey substringFromIndex:LBModelFlowPrefix.length] componentsSeparatedByString:@"#"];
+    return parts.count == 2 && [parts[0] hasSuffix:@".flow"] && [parts[1] length] ? parts : nil;
+}
+
+- (NSString *)flowName {
+    return [[self flowParts].firstObject stringByDeletingPathExtension];
+}
+
+- (NSString *)entryName {
+    return [self flowParts].lastObject;
+}
+
 - (NSString *)formName {
-    return [_formKey hasPrefix:LBModelFormPrefix] ? [_formKey substringFromIndex:LBModelFormPrefix.length] : nil;
+    if ([_formKey hasPrefix:LBModelFormPrefix]) return [_formKey substringFromIndex:LBModelFormPrefix.length];
+    NSString *flowName = self.flowName;
+    if (!flowName) return nil;
+    ORMFlowSession *flow = [ORMFlowSession flowNamed:flowName error:NULL];
+    return [flow beginAt:self.entryName key:nil error:NULL].formName;
 }
 
 @end

@@ -90,7 +90,11 @@ server use is generated from it by the build, into `build/Model`
   Flows): its Vehicles list leads, a vehicle chosen, to RecordFillUp for
   it, and back once it is saved or cancelled; who enters it is left to the
   app, the user signed in. `make check` checks it against the model
-  (`ormtool flow`).
+  (`ormtool flow`). `Model/Purchasing.flow` is the purchase window's (its
+  order, Confirm the order and Receive the goods over it; docs/STOCK.md,
+  Processes): `ormtool xforms --flow` writes `Forms/Purchasing.ormflow`
+  beside the forms, which the app runs it with (ORMRuntime's
+  ORMFlowSession).
 
 None of it is kept in git, nor edited: it is made again whenever the
 model, or ormtool, changes.

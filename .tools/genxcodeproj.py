@@ -198,7 +198,7 @@ mkdir -p "$dest"
 rsync -a --delete "$SRCROOT/build/Logbook.momd/" "$dest/Logbook.momd/"
 cp "$SRCROOT/build/Logbook.ormplans" "$dest/"
 # The model's forms' tables, by ormtool xforms (the desktop app's).
-if [ -d "$SRCROOT/build/Model/Forms" ] && [ "$PLATFORM_NAME" = macosx ]; then cp "$SRCROOT/build/Model/Forms/"*.ormform "$dest/"; fi
+if [ -d "$SRCROOT/build/Model/Forms" ] && [ "$PLATFORM_NAME" = macosx ]; then cp "$SRCROOT/build/Model/Forms/"*.ormform "$SRCROOT/build/Model/Forms/"*.ormflow "$dest/"; fi
 """
 
 

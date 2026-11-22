@@ -331,17 +331,25 @@ saved as a draft (Reorder's, or one entered) starts it once it is saved.
 A manager confirms it, or cancels it, with the model's form
 ConfirmPurchaseOrder (the order's `Confirm` or `Cancel`); a keeper receives
 its goods with ReceiveGoods (the order's `Receive`), as often as they come;
-once nothing is outstanding the process closes the order. Each step is
+once nothing is outstanding the process closes the order. The way through
+them is the model's flow **Purchasing** (`Model/Purchasing.flow`, ORMKit's
+docs/FORMS.md, Flows): the order's window is its EditPurchaseOrder screen;
+`Confirm`, `Cancel` and `Receive` are its triggers, each opening its form's
+sheet over the order (on the order, or given it), and the sheet's Submit
+and Cancel close it back to the order. Its entries Confirm and Receive are
+what the tasks are done with (`ormkit:flow:Purchasing.flow#Confirm`): a
+task opened from Window > Tasks opens its order's window with its step's
+sheet at once. `make check` checks that the window's views have each
+screen's form and each trigger (`Tests/contract-check.py`). Each step is
 done with its form: what the form enters is saved as the logbook's facts
 (the order's state; a receipt, numbered the order's next, recorded by who
 received it and when, and its moves, each move's item, place, moment and
 maker worked out by the model as it is saved), then the form's instance is
 submitted to the task (WorkflowKit's `SubmitForm`), which completes it, its
 elements the process's variables (`orderState`). The facts alone complete
-no task. The forms are the model's (ORMKit's docs/FORMS.md), deployed with
-the process (their XForms documents beside it), and the process imports
-the model: what a task is done with is checked as the processes are built
-(`wf-build`).
+no task. The forms and the flow are the model's (ORMKit's docs/FORMS.md):
+the process imports the model and the flow, deployed beside it, and what a
+task is done with is checked as the processes are built (`wf-build`).
 **Window > Tasks** lists the open tasks, the oldest first, each with its
 order; Open shows the order in its own window, titled with the task, where
 its step is done. Its API is the server's

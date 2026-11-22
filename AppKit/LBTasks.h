@@ -2,9 +2,10 @@
 // beside the logbook's service (http://<host>/workflow/ for
 // http://<host>/odata/), asked as the store asks the logbook, signed in
 // where it is. A task is a person's step of a process -- Confirm the order,
-// Receive the goods -- done with one of the model's forms (its form key,
-// "ormkit:form:ReceiveGoods"), about the object its process is of (its
-// business key: a purchase order's id).
+// Receive the goods -- done with one of the model's forms or a flow's entry
+// (its form key, "ormkit:form:ReceiveGoods", "ormkit:flow:Purchasing.flow#Receive"),
+// about the object its process is of (its business key: a purchase order's
+// id).
 
 #import <Foundation/Foundation.h>
 
@@ -15,9 +16,15 @@ NS_ASSUME_NONNULL_BEGIN
 @interface LBTask : NSObject
 @property (nonatomic, readonly, copy) NSString *taskId;
 @property (nonatomic, readonly, copy) NSString *name;
-// "ormkit:form:ConfirmPurchaseOrder"; nil where it has none.
+// "ormkit:flow:Purchasing.flow#Confirm", "ormkit:form:ConfirmPurchaseOrder";
+// nil where it has none.
 @property (nonatomic, readonly, copy, nullable) NSString *formKey;
-// The form's name, of its key ("ConfirmPurchaseOrder"); nil for another key.
+// A flow's entry's: the flow's name ("Purchasing", its Purchasing.ormflow)
+// and the entry's ("Confirm"); nil for another key.
+@property (nonatomic, readonly, copy, nullable) NSString *flowName;
+@property (nonatomic, readonly, copy, nullable) NSString *entryName;
+// The form it is done with ("ConfirmPurchaseOrder"): its key's, or the
+// flow's entry's screen's; nil for another key, or a flow the app has not.
 @property (nonatomic, readonly, copy, nullable) NSString *formName;
 // What its process is of: a purchase order's id.
 @property (nonatomic, readonly, copy, nullable) NSString *businessKey;
