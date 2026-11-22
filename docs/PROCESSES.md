@@ -38,7 +38,12 @@ The same code runs wherever the logbook is kept:
   reminders they do the work of (automatic completion, 4), in the same
   save, before the model's rules are checked.
 - **The desktop app** is online: its Reminders tab calls these actions
-  (ODataKit's `ODataOperationCall`) and reads back what they changed; an
+  (ODataKit's `ODataOperationCall`) and reads back what they changed. Each
+  of its forms is the view of the model's: `SetUpSchedule` and
+  `SetReminder` save what they make (a schedule then started); the rest
+  stand for the actions, their values submitted to them: `ChangeSchedule`
+  (Continue), `RescheduleReminder`, `CancelReminder`, `MarkReminderDone`
+  (Complete). An
   event it saves in the Records tab closes reminders on the server as it
   is saved.
 - **The iOS app** is local-first: it keeps its own store, runs the same
@@ -277,7 +282,9 @@ recorded with the move:
   changed (at least one of the two);
 - maybe Rescheduling has Note (why);
 - and the reminder's Reminder is due on Date / is due at Distance,
-  changed.
+  changed;
+- Rescheduling moved to Date / moved to Distance: what it is due at after
+  the move, the two where it has them.
 
 Only an open reminder is moved, and only to somewhere it is not due
 already. Where it gains a date (or a distance) it was not due at, what it

@@ -42,6 +42,10 @@ NS_ASSUME_NONNULL_BEGIN
 // A reference's choices, as the session has them, as objects of the
 // context, in order.
 - (nullable NSArray<NSManagedObject *> *)choicesNamed:(NSString *)name error:(NSError **)error;
+// A reference's choices as the view offers them, of the form's (those a
+// procedure may take, in the order it says): given its name and the form's,
+// those offered. nil: the form's, as they are.
+@property (nonatomic, copy, nullable) NSArray<NSManagedObject *> *(^arrangesChoices)(NSString *name, NSArray<NSManagedObject *> *choices);
 // Each reference's choices, by its name, as a pop-up's content binds them;
 // a repeat's rows', under its name (choices.purchaseLines.stockItem).
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> *choices;

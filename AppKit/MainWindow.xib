@@ -141,29 +141,34 @@
                 <outlet property="forms" destination="reminderForms" id="remindersForms"/>
             </connections>
         </customObject>
-        <objectController objectClassName="LBReminderForm" userLabel="Schedule Form" id="ScheduleFormController">
+        <objectController objectClassName="Schedule" userLabel="Set Up Schedule Form" id="SetUpScheduleForm">
             <connections>
-                <binding destination="remindersController" name="contentObject" keyPath="form" id="ScheduleFormControllerContent"/>
+                <binding destination="remindersController" name="contentObject" keyPath="scheduleForm" id="SetUpScheduleFormContent"/>
             </connections>
         </objectController>
-        <objectController objectClassName="LBReminderForm" userLabel="Reminder Form" id="ReminderFormController">
+        <objectController objectClassName="Schedule" userLabel="Change Schedule Form" id="ChangeScheduleForm">
             <connections>
-                <binding destination="remindersController" name="contentObject" keyPath="form" id="ReminderFormControllerContent"/>
+                <binding destination="remindersController" name="contentObject" keyPath="changeForm" id="ChangeScheduleFormContent"/>
             </connections>
         </objectController>
-        <objectController objectClassName="LBReminderForm" userLabel="Reschedule Form" id="RescheduleFormController">
+        <objectController objectClassName="Reminder" userLabel="Set Reminder Form" id="SetReminderForm">
             <connections>
-                <binding destination="remindersController" name="contentObject" keyPath="form" id="RescheduleFormControllerContent"/>
+                <binding destination="remindersController" name="contentObject" keyPath="reminderForm" id="SetReminderFormContent"/>
             </connections>
         </objectController>
-        <objectController objectClassName="LBReminderForm" userLabel="Cancel Form" id="CancelFormController">
+        <objectController objectClassName="Rescheduling" userLabel="Reschedule Reminder Form" id="RescheduleReminderForm">
             <connections>
-                <binding destination="remindersController" name="contentObject" keyPath="form" id="CancelFormControllerContent"/>
+                <binding destination="remindersController" name="contentObject" keyPath="rescheduleForm" id="RescheduleReminderFormContent"/>
             </connections>
         </objectController>
-        <objectController objectClassName="LBReminderForm" userLabel="Done Form" id="DoneFormController">
+        <objectController objectClassName="Reminder" userLabel="Cancel Reminder Form" id="CancelReminderForm">
             <connections>
-                <binding destination="remindersController" name="contentObject" keyPath="form" id="DoneFormControllerContent"/>
+                <binding destination="remindersController" name="contentObject" keyPath="cancelForm" id="CancelReminderFormContent"/>
+            </connections>
+        </objectController>
+        <objectController objectClassName="Reminder" userLabel="Mark Reminder Done Form" id="MarkReminderDoneForm">
+            <connections>
+                <binding destination="remindersController" name="contentObject" keyPath="doneForm" id="MarkReminderDoneFormContent"/>
             </connections>
         </objectController>
         <objectController objectClassName="FillUp" userLabel="FillUp Form" id="FillUpForm">
@@ -4024,7 +4029,7 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.task" id="scheduleTaskValue">
+                                                                    <binding destination="SetUpScheduleForm" name="value" keyPath="selection.task" id="scheduleTaskValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -4049,14 +4054,14 @@
                                                                     <menu key="menu" id="scheduleExpenseKindMenu"/>
                                                                 </popUpButtonCell>
                                                                 <connections>
-                                                                    <binding destination="expenseKinds" name="content" keyPath="arrangedObjects" id="scheduleExpenseKindContent"/>
-                                                                    <binding destination="expenseKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleExpenseKindContent" id="scheduleExpenseKindValues">
+                                                                    <binding destination="SetUpScheduleForm" name="content" keyPath="selection.choices.expenseKind" id="scheduleExpenseKindContent"/>
+                                                                    <binding destination="SetUpScheduleForm" name="contentValues" keyPath="selection.choices.expenseKind.lbTitle" previousBinding="scheduleExpenseKindContent" id="scheduleExpenseKindValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
-                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.expenseKind" previousBinding="scheduleExpenseKindValues" id="scheduleExpenseKindChosen"/>
+                                                                    <binding destination="SetUpScheduleForm" name="selectedObject" keyPath="selection.expenseKind" previousBinding="scheduleExpenseKindValues" id="scheduleExpenseKindChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="scheduleExpenseKindEdit" id="scheduleExpenseKindEdit">
@@ -4088,14 +4093,14 @@
                                                                     <menu key="menu" id="scheduleChecklistMenu"/>
                                                                 </popUpButtonCell>
                                                                 <connections>
-                                                                    <binding destination="checklists" name="content" keyPath="arrangedObjects" id="scheduleChecklistContent"/>
-                                                                    <binding destination="checklists" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="scheduleChecklistContent" id="scheduleChecklistValues">
+                                                                    <binding destination="SetUpScheduleForm" name="content" keyPath="selection.choices.checklist" id="scheduleChecklistContent"/>
+                                                                    <binding destination="SetUpScheduleForm" name="contentValues" keyPath="selection.choices.checklist.lbTitle" previousBinding="scheduleChecklistContent" id="scheduleChecklistValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
-                                                                    <binding destination="ScheduleFormController" name="selectedObject" keyPath="selection.checklist" previousBinding="scheduleChecklistValues" id="scheduleChecklistChosen"/>
+                                                                    <binding destination="SetUpScheduleForm" name="selectedObject" keyPath="selection.checklist" previousBinding="scheduleChecklistValues" id="scheduleChecklistChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="scheduleChecklistEdit" id="scheduleChecklistEdit">
@@ -4131,12 +4136,12 @@
                                                                 </userDefinedRuntimeAttributes>
                                                                 <connections>
                                                                     <outlet property="units" destination="distanceUnitsSource" id="scheduleEveryUnits"/>
-                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.every" id="scheduleEveryValue">
+                                                                    <binding destination="SetUpScheduleForm" name="value" keyPath="selection.intervalQuantity" id="scheduleEveryValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                    <binding destination="ScheduleFormController" name="unit" keyPath="selection.everyUnit" id="scheduleEveryUnitChosen"/>
+                                                                    <binding destination="SetUpScheduleForm" name="unit" keyPath="selection.intervalDistanceUnit" id="scheduleEveryUnitChosen"/>
                                                                 </connections>
                                                             </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleMonthsLabel">
@@ -4152,13 +4157,12 @@
                                                                 <rect key="frame" x="96" y="302" width="176" height="22"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="scheduleMonthsCell">
-                                                                    <numberFormatter key="formatter" formatterBehavior="custom10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" id="scheduleMonthsFormatter"/>
                                                                     <font key="font" metaFont="system"/>
                                                                     <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.months" id="scheduleMonthsValue">
+                                                                    <binding destination="SetUpScheduleForm" name="value" keyPath="selection.duration" id="scheduleMonthsValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -4174,7 +4178,6 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="ScheduleFormController" name="hidden" keyPath="selection.editing" id="scheduleDateLabelHidden"/>
                                                                 </connections>
                                                             </textField>
                                                             <textField verticalHuggingPriority="750" identifier="scheduleDate" id="scheduleDate">
@@ -4187,12 +4190,11 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.date" id="scheduleDateValue">
+                                                                    <binding destination="SetUpScheduleForm" name="value" keyPath="selection.lastDoneOn" id="scheduleDateValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                    <binding destination="ScheduleFormController" name="hidden" keyPath="selection.editing" id="scheduleDateHidden"/>
                                                                 </connections>
                                                             </textField>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleMileageLabel">
@@ -4204,7 +4206,6 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="ScheduleFormController" name="hidden" keyPath="selection.editing" id="scheduleMileageLabelHidden"/>
                                                                 </connections>
                                                             </textField>
                                                             <customView identifier="scheduleMileage" id="scheduleMileage" customClass="UDQuantityField">
@@ -4220,13 +4221,12 @@
                                                                 </userDefinedRuntimeAttributes>
                                                                 <connections>
                                                                     <outlet property="units" destination="distanceUnitsSource" id="scheduleMileageUnits"/>
-                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.mileage" id="scheduleMileageValue">
+                                                                    <binding destination="SetUpScheduleForm" name="value" keyPath="selection.lastDoneMileageQuantity" id="scheduleMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                    <binding destination="ScheduleFormController" name="unit" keyPath="selection.unit" id="scheduleMileageUnitChosen"/>
-                                                                    <binding destination="ScheduleFormController" name="hidden" keyPath="selection.editing" id="scheduleMileageHidden"/>
+                                                                    <binding destination="SetUpScheduleForm" name="unit" keyPath="selection.lastDoneMileageDistanceUnit" id="scheduleMileageUnitChosen"/>
                                                                 </connections>
                                                             </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="scheduleNoteLabel">
@@ -4248,7 +4248,7 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="ScheduleFormController" name="value" keyPath="selection.note" id="scheduleNoteValue">
+                                                                    <binding destination="SetUpScheduleForm" name="value" keyPath="selection.note" id="scheduleNoteValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -4282,6 +4282,223 @@
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
+                                                <tabViewItem label="change" identifier="change" id="reminderFormChangeItem">
+                                                    <view key="view" id="reminderFormChangeItemView">
+                                                        <rect key="frame" x="0" y="0" width="276" height="456"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <subviews>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="changeTaskLabel">
+                                                                <rect key="frame" x="0" y="425" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Task:" id="changeTaskLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="changeTask" id="changeTask">
+                                                                <rect key="frame" x="96" y="422" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="changeTaskCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ChangeScheduleForm" name="value" keyPath="selection.task" id="changeTaskValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="changeExpenseKindLabel">
+                                                                <rect key="frame" x="0" y="395" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Expense:" id="changeExpenseKindLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="changeExpenseKind" id="changeExpenseKind">
+                                                                <rect key="frame" x="94" y="390" width="120" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="changeExpenseKindCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="changeExpenseKindMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="ChangeScheduleForm" name="content" keyPath="selection.choices.expenseKind" id="changeExpenseKindContent"/>
+                                                                    <binding destination="ChangeScheduleForm" name="contentValues" keyPath="selection.choices.expenseKind.lbTitle" previousBinding="changeExpenseKindContent" id="changeExpenseKindValues">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                    <binding destination="ChangeScheduleForm" name="selectedObject" keyPath="selection.expenseKind" previousBinding="changeExpenseKindValues" id="changeExpenseKindChosen"/>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <button verticalHuggingPriority="750" identifier="changeExpenseKindEdit" id="changeExpenseKindEdit">
+                                                                <rect key="frame" x="216" y="387" width="60" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Edit…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="changeExpenseKindEditCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="showExpenseKinds:" target="-1" id="changeExpenseKindEditAction"/>
+                                                                </connections>
+                                                            </button>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="changeChecklistLabel">
+                                                                <rect key="frame" x="0" y="365" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Checklist:" id="changeChecklistLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="changeChecklist" id="changeChecklist">
+                                                                <rect key="frame" x="94" y="360" width="120" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="changeChecklistCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="changeChecklistMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="ChangeScheduleForm" name="content" keyPath="selection.choices.checklist" id="changeChecklistContent"/>
+                                                                    <binding destination="ChangeScheduleForm" name="contentValues" keyPath="selection.choices.checklist.lbTitle" previousBinding="changeChecklistContent" id="changeChecklistValues">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                    <binding destination="ChangeScheduleForm" name="selectedObject" keyPath="selection.checklist" previousBinding="changeChecklistValues" id="changeChecklistChosen"/>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <button verticalHuggingPriority="750" identifier="changeChecklistEdit" id="changeChecklistEdit">
+                                                                <rect key="frame" x="216" y="357" width="60" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Edit…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="changeChecklistEditCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="showChecklists:" target="-1" id="changeChecklistEditAction"/>
+                                                                </connections>
+                                                            </button>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="changeEveryLabel">
+                                                                <rect key="frame" x="0" y="335" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Every:" id="changeEveryLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <customView identifier="changeEvery" id="changeEvery" customClass="UDQuantityField">
+                                                                <rect key="frame" x="96" y="330" width="178" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
+                                                                <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="changeEveryUnits"/>
+                                                                    <binding destination="ChangeScheduleForm" name="value" keyPath="selection.intervalQuantity" id="changeEveryValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                    <binding destination="ChangeScheduleForm" name="unit" keyPath="selection.intervalDistanceUnit" id="changeEveryUnitChosen"/>
+                                                                </connections>
+                                                            </customView>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="changeMonthsLabel">
+                                                                <rect key="frame" x="0" y="305" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Or months:" id="changeMonthsLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="changeMonths" id="changeMonths">
+                                                                <rect key="frame" x="96" y="302" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="right" drawsBackground="YES" id="changeMonthsCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ChangeScheduleForm" name="value" keyPath="selection.duration" id="changeMonthsValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="changeNoteLabel">
+                                                                <rect key="frame" x="0" y="275" width="90" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="changeNoteLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="changeNote" id="changeNote">
+                                                                <rect key="frame" x="96" y="272" width="176" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="changeNoteCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ChangeScheduleForm" name="value" keyPath="selection.note" id="changeNoteValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <button verticalHuggingPriority="750" identifier="changeSave" id="changeSave">
+                                                                <rect key="frame" x="184" y="234" width="88" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="changeSaveCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="saveForm:" target="remindersController" id="changeSaveAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                            <button verticalHuggingPriority="750" identifier="changeClose" id="changeClose">
+                                                                <rect key="frame" x="100" y="234" width="84" height="32"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="changeCloseCell">
+                                                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                </buttonCell>
+                                                                <connections>
+                                                                    <action selector="closeForm:" target="remindersController" id="changeCloseAction"/>
+                                                                    
+                                                                </connections>
+                                                            </button>
+                                                        </subviews>
+                                                    </view>
+                                                </tabViewItem>
                                                 <tabViewItem label="reminder" identifier="reminder" id="reminderFormReminderItem">
                                                     <view key="view" id="reminderFormReminderItemView">
                                                         <rect key="frame" x="0" y="0" width="276" height="456"/>
@@ -4306,7 +4523,7 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="ReminderFormController" name="value" keyPath="selection.task" id="reminderTaskValue">
+                                                                    <binding destination="SetReminderForm" name="value" keyPath="selection.task" id="reminderTaskValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -4331,14 +4548,14 @@
                                                                     <menu key="menu" id="reminderExpenseKindMenu"/>
                                                                 </popUpButtonCell>
                                                                 <connections>
-                                                                    <binding destination="expenseKinds" name="content" keyPath="arrangedObjects" id="reminderExpenseKindContent"/>
-                                                                    <binding destination="expenseKinds" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="reminderExpenseKindContent" id="reminderExpenseKindValues">
+                                                                    <binding destination="SetReminderForm" name="content" keyPath="selection.choices.expenseKind" id="reminderExpenseKindContent"/>
+                                                                    <binding destination="SetReminderForm" name="contentValues" keyPath="selection.choices.expenseKind.lbTitle" previousBinding="reminderExpenseKindContent" id="reminderExpenseKindValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
-                                                                    <binding destination="ReminderFormController" name="selectedObject" keyPath="selection.expenseKind" previousBinding="reminderExpenseKindValues" id="reminderExpenseKindChosen"/>
+                                                                    <binding destination="SetReminderForm" name="selectedObject" keyPath="selection.expenseKind" previousBinding="reminderExpenseKindValues" id="reminderExpenseKindChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="reminderExpenseKindEdit" id="reminderExpenseKindEdit">
@@ -4370,14 +4587,14 @@
                                                                     <menu key="menu" id="reminderChecklistMenu"/>
                                                                 </popUpButtonCell>
                                                                 <connections>
-                                                                    <binding destination="checklists" name="content" keyPath="arrangedObjects" id="reminderChecklistContent"/>
-                                                                    <binding destination="checklists" name="contentValues" keyPath="arrangedObjects.lbTitle" previousBinding="reminderChecklistContent" id="reminderChecklistValues">
+                                                                    <binding destination="SetReminderForm" name="content" keyPath="selection.choices.checklist" id="reminderChecklistContent"/>
+                                                                    <binding destination="SetReminderForm" name="contentValues" keyPath="selection.choices.checklist.lbTitle" previousBinding="reminderChecklistContent" id="reminderChecklistValues">
                                                                         <dictionary key="options">
                                                                             <bool key="NSInsertsNullPlaceholder" value="YES"/>
                                                                             <string key="NSNullPlaceholder">None</string>
                                                                         </dictionary>
                                                                     </binding>
-                                                                    <binding destination="ReminderFormController" name="selectedObject" keyPath="selection.checklist" previousBinding="reminderChecklistValues" id="reminderChecklistChosen"/>
+                                                                    <binding destination="SetReminderForm" name="selectedObject" keyPath="selection.checklist" previousBinding="reminderChecklistValues" id="reminderChecklistChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="reminderChecklistEdit" id="reminderChecklistEdit">
@@ -4410,7 +4627,7 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="ReminderFormController" name="value" keyPath="selection.date" id="reminderDateValue">
+                                                                    <binding destination="SetReminderForm" name="value" keyPath="selection.dueDate" id="reminderDateValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -4439,12 +4656,12 @@
                                                                 </userDefinedRuntimeAttributes>
                                                                 <connections>
                                                                     <outlet property="units" destination="distanceUnitsSource" id="reminderMileageUnits"/>
-                                                                    <binding destination="ReminderFormController" name="value" keyPath="selection.mileage" id="reminderMileageValue">
+                                                                    <binding destination="SetReminderForm" name="value" keyPath="selection.dueMileageQuantity" id="reminderMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                    <binding destination="ReminderFormController" name="unit" keyPath="selection.unit" id="reminderMileageUnitChosen"/>
+                                                                    <binding destination="SetReminderForm" name="unit" keyPath="selection.dueMileageDistanceUnit" id="reminderMileageUnitChosen"/>
                                                                 </connections>
                                                             </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reminderNoteLabel">
@@ -4466,7 +4683,7 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="ReminderFormController" name="value" keyPath="selection.note" id="reminderNoteValue">
+                                                                    <binding destination="SetReminderForm" name="value" keyPath="selection.note" id="reminderNoteValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -4524,7 +4741,7 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="RescheduleFormController" name="value" keyPath="selection.date" id="rescheduleDateValue">
+                                                                    <binding destination="RescheduleReminderForm" name="value" keyPath="selection.toDate" id="rescheduleDateValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -4553,12 +4770,12 @@
                                                                 </userDefinedRuntimeAttributes>
                                                                 <connections>
                                                                     <outlet property="units" destination="distanceUnitsSource" id="rescheduleMileageUnits"/>
-                                                                    <binding destination="RescheduleFormController" name="value" keyPath="selection.mileage" id="rescheduleMileageValue">
+                                                                    <binding destination="RescheduleReminderForm" name="value" keyPath="selection.toMileageQuantity" id="rescheduleMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                    <binding destination="RescheduleFormController" name="unit" keyPath="selection.unit" id="rescheduleMileageUnitChosen"/>
+                                                                    <binding destination="RescheduleReminderForm" name="unit" keyPath="selection.toMileageDistanceUnit" id="rescheduleMileageUnitChosen"/>
                                                                 </connections>
                                                             </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="rescheduleNoteLabel">
@@ -4580,7 +4797,7 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="RescheduleFormController" name="value" keyPath="selection.note" id="rescheduleNoteValue">
+                                                                    <binding destination="RescheduleReminderForm" name="value" keyPath="selection.note" id="rescheduleNoteValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -4638,7 +4855,7 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="CancelFormController" name="value" keyPath="selection.date" id="cancelDateValue">
+                                                                    <binding destination="CancelReminderForm" name="value" keyPath="selection.cancelDate" id="cancelDateValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -4653,7 +4870,7 @@
                                                                     <font key="font" metaFont="system"/>
                                                                 </buttonCell>
                                                                 <connections>
-                                                                    <binding destination="CancelFormController" name="value" keyPath="selection.replace" id="cancelReplaceValue"/>
+                                                                    <binding destination="remindersController" name="value" keyPath="replaces" id="cancelReplaceValue"/>
                                                                 </connections>
                                                             </button>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="cancelReplacementDateLabel">
@@ -4675,7 +4892,7 @@
                                                                     <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                                 </textFieldCell>
                                                                 <connections>
-                                                                    <binding destination="CancelFormController" name="value" keyPath="selection.replacementDate" id="cancelReplacementDateValue">
+                                                                    <binding destination="CancelReminderForm" name="value" keyPath="selection.replacement/dueDate" id="cancelReplacementDateValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
@@ -4704,12 +4921,12 @@
                                                                 </userDefinedRuntimeAttributes>
                                                                 <connections>
                                                                     <outlet property="units" destination="distanceUnitsSource" id="cancelReplacementMileageUnits"/>
-                                                                    <binding destination="CancelFormController" name="value" keyPath="selection.replacementMileage" id="cancelReplacementMileageValue">
+                                                                    <binding destination="CancelReminderForm" name="value" keyPath="selection.replacement/dueMileageQuantity" id="cancelReplacementMileageValue">
                                                                         <dictionary key="options">
                                                                             <bool key="NSValidatesImmediately" value="YES"/>
                                                                         </dictionary>
                                                                     </binding>
-                                                                    <binding destination="CancelFormController" name="unit" keyPath="selection.replacementUnit" id="cancelReplacementMileageUnitChosen"/>
+                                                                    <binding destination="CancelReminderForm" name="unit" keyPath="selection.replacement/dueMileageDistanceUnit" id="cancelReplacementMileageUnitChosen"/>
                                                                 </connections>
                                                             </customView>
                                                             <button verticalHuggingPriority="750" identifier="cancelSave" id="cancelSave">
@@ -4762,9 +4979,9 @@
                                                                     <menu key="menu" id="doneEventMenu"/>
                                                                 </popUpButtonCell>
                                                                 <connections>
-                                                                    <binding destination="remindersController" name="content" keyPath="doneEvents" id="doneEventContent"/>
-                                                                    <binding destination="remindersController" name="contentValues" keyPath="doneEvents.lbTitle" previousBinding="doneEventContent" id="doneEventValues"/>
-                                                                    <binding destination="DoneFormController" name="selectedObject" keyPath="selection.event" previousBinding="doneEventValues" id="doneEventChosen"/>
+                                                                    <binding destination="MarkReminderDoneForm" name="content" keyPath="selection.choices.event" id="doneEventContent"/>
+                                                                    <binding destination="MarkReminderDoneForm" name="contentValues" keyPath="selection.choices.event.lbTitle" previousBinding="doneEventContent" id="doneEventValues"/>
+                                                                    <binding destination="MarkReminderDoneForm" name="selectedObject" keyPath="selection.event" previousBinding="doneEventValues" id="doneEventChosen"/>
                                                                 </connections>
                                                             </popUpButton>
                                                             <button verticalHuggingPriority="750" identifier="doneSave" id="doneSave">

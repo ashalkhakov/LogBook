@@ -606,7 +606,9 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     [tabs selectTabViewItemWithIdentifier:@"reminders"];
     LBSpin();
     LBClick(window, @"newSchedule");
-    LBCheck(@"New Schedule shows its form", [tab.forms.selectedTabViewItem.identifier isEqual:@"schedule"], nil);
+    LBCheck(@"New Schedule shows its form, the model's SetUpSchedule", [tab.forms.selectedTabViewItem.identifier isEqual:@"schedule"]
+                && [tab.scheduleForm.session.form.name isEqualToString:@"SetUpSchedule"],
+            tab.scheduleForm.session.form.name);
     LBType(window, @"scheduleTask", @"Oil change");
     LBType(window, @"scheduleEveryValue", @"15000");
     LBType(window, @"scheduleEveryUnit", @"km");
@@ -677,14 +679,19 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     /* Moved a month on. */
     LBChooseReminder(controller, next);
     LBClick(window, @"reschedule");
+    LBCheck(@"Reschedule shows the model's RescheduleReminder, from where it is due",
+            [tab.rescheduleForm.session.form.name isEqualToString:@"RescheduleReminder"]
+                && [[tab.rescheduleForm valueForKey:@"toDate"] isEqualToDate:next.dueDate],
+            [tab.rescheduleForm valueForKey:@"toDate"]);
     NSDate *was = next.dueDate;
     NSDate *moved = LBAddMonths(was, 1);
     LBTypeDay(window, @"rescheduleDate", moved);
     LBType(window, @"rescheduleNote", @"away");
     LBClick(window, @"rescheduleSave");
     Rescheduling *move = [tab.reschedulings.arrangedObjects firstObject];
-    LBCheck(@"rescheduled: due a month on, the move listed with what it was due on", [next.dueDate isEqualToDate:moved]
-                && [tab.reschedulings.arrangedObjects count] == 1 && [move.fromDate isEqualToDate:was] && [move.note isEqualToString:@"away"]
+    LBCheck(@"rescheduled: due a month on, the move listed with what it was due on and is due on now", [next.dueDate isEqualToDate:moved]
+                && [tab.reschedulings.arrangedObjects count] == 1 && [move.fromDate isEqualToDate:was] && [move.toDate isEqualToDate:moved]
+                && [move.note isEqualToString:@"away"]
                 && !controller.lastError,
             controller.lastError ?: next.lbDue);
     LBCheck(@"the server has the move", LBServerReminder(nextID).reschedulings.count == 1, nil);
@@ -718,7 +725,8 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBChooseReminder(controller, oneOff);
     LBClick(window, @"markDone");
     NSPopUpButton *events = (NSPopUpButton *)LBControl(window.contentView, @"doneEvent");
-    LBCheck(@"Mark Done offers the service, and no by hand", events.numberOfItems == 1 && [tab.form.event.id isEqual:service.id],
+    LBCheck(@"Mark Done offers the service, and no by hand", events.numberOfItems == 1 && [[[tab.doneForm valueForKey:@"event"] id] isEqual:service.id]
+                && [tab.doneForm.session.form.name isEqualToString:@"MarkReminderDone"],
             events.itemTitles);
     LBClick(window, @"doneSave");
     LBCheck(@"marked done by the service", [oneOff.lbStatus hasPrefix:@"Done"] && [oneOff.event.id isEqual:service.id] && !controller.lastError,
@@ -732,21 +740,21 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     [tab.schedules setSelectedObjects:@[ schedule ]];
     LBSpin();
     LBClick(window, @"editSchedule");
-    NSTextField *task = (NSTextField *)LBControl(window.contentView, @"scheduleTask");
-    LBCheck(@"Edit Schedule shows it in its form, and asks no last done",
-            [tab.forms.selectedTabViewItem.identifier isEqual:@"schedule"] && [task.stringValue isEqualToString:@"Oil change"]
-                && LBControl(window.contentView, @"scheduleDate").isHidden,
+    NSTextField *task = (NSTextField *)LBControl(window.contentView, @"changeTask");
+    LBCheck(@"Edit Schedule shows it in its form, the model's ChangeSchedule, and asks no last done",
+            [tab.forms.selectedTabViewItem.identifier isEqual:@"change"] && [task.stringValue isEqualToString:@"Oil change"]
+                && [tab.changeForm.session.form.name isEqualToString:@"ChangeSchedule"] && !LBControl(window.contentView, @"changeDate"),
             task.stringValue);
-    LBClick(window, @"scheduleChecklistEdit");
+    LBClick(window, @"changeChecklistEdit");
     NSWindow *lists = LBListsWindow();
     LBCheck(@"Edit… beside the checklists shows them", lists
                 && [((LBListsController *)lists.windowController).tabs.selectedTabViewItem.identifier isEqual:@"checklists"],
             nil);
     [lists close];
     [window makeKeyAndOrderFront:nil];
-    LBType(window, @"scheduleTask", @"Oil and filter");
-    LBType(window, @"scheduleMonths", @"6");
-    LBClick(window, @"scheduleSave");
+    LBType(window, @"changeTask", @"Oil and filter");
+    LBType(window, @"changeMonths", @"6");
+    LBClick(window, @"changeSave");
     Schedule *changed = [tab.schedules.arrangedObjects firstObject];
     LBCheck(@"changed: a new schedule going on from it, listed instead, the old one as it was",
             [tab.schedules.arrangedObjects count] == 1 && changed != schedule && changed.continued == schedule

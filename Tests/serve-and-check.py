@@ -490,8 +490,9 @@ def procedures(anna):
     status, body = action("Records(%s)" % first_id, "Complete")
     check("Complete of one done is refused", status == 400 and "done already" in json.dumps(body), (status, body))
     status, moved = action("Records(%s)" % next_id, "Reschedule", {"DueDate": "2028-01-15T00:00:00Z", "Note": "away"})
-    check("Reschedule: moved, what it was due on recorded, named by it",
+    check("Reschedule: moved, what it was due on and is due on now recorded, named by it",
           status == 200 and moved.get("Id", "").lower() == named(next_id + " rescheduled 1") and moved.get("FromDate", "")[:10] == due
+          and (moved.get("ToDate") or "")[:10] == "2028-01-15"
           and moved.get("Note") == "away" and reminder_of(next_id).get("DueDate", "")[:10] == "2028-01-15", (status, moved))
     status, replacement = action("Records(%s)" % next_id, "Cancel", {"ReplacementDueDate": "2028-03-01T00:00:00Z"})
     check("Cancel: cancelled today, a replacement named by it", status == 200

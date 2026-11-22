@@ -390,7 +390,10 @@ static void LBProblemLabels(NSView *view, NSMutableDictionary<NSArray<NSString *
 - (NSDictionary<NSString *, id> *)choices {
     if (!_choices) {
         NSMutableDictionary *choices = [NSMutableDictionary dictionary];
-        for (NSString *name in [_session.form choiceNames]) choices[name] = [self choicesNamed:name error:NULL] ?: @[];
+        for (NSString *name in [_session.form choiceNames]) {
+            NSArray *theirs = [self choicesNamed:name error:NULL] ?: @[];
+            choices[name] = _arrangesChoices ? _arrangesChoices(name, theirs) : theirs;
+        }
         /* A repeat's, by its name: its rows' choices, of the form's values
            (an order's lines' items, of its catalog). */
         for (NSString *repeat in [_session.form repeatNames]) {
