@@ -104,18 +104,22 @@
     if (waiting.lastError.length) self.messageLabel.stringValue = [@"Not submitted: " stringByAppendingString:waiting.lastError];
 }
 
-/* The purchase order a task is about (its business key), in the store's
-   context. */
-- (PurchaseOrder *)orderOf:(LBTask *)task {
+/* The order a task is about (its business key: a purchase's, a sale's),
+   in the store's context. */
+- (NSManagedObject *)orderOf:(LBTask *)task {
     return [self orderAbout:task.businessKey];
 }
 
-- (PurchaseOrder *)orderAbout:(NSString *)businessKey {
+- (NSManagedObject *)orderAbout:(NSString *)businessKey {
     NSUUID *orderId = businessKey ? [[NSUUID alloc] initWithUUIDString:businessKey] : nil;
     if (!orderId) return nil;
-    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([PurchaseOrder class])];
-    fetch.predicate = [NSPredicate predicateWithFormat:@"id == %@", orderId];
-    return [[_store.context executeFetchRequest:fetch error:NULL] firstObject];
+    for (Class kind in @[ [PurchaseOrder class], [SaleOrder class] ]) {
+        NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(kind)];
+        fetch.predicate = [NSPredicate predicateWithFormat:@"id == %@", orderId];
+        NSManagedObject *order = [[_store.context executeFetchRequest:fetch error:NULL] firstObject];
+        if (order) return order;
+    }
+    return nil;
 }
 
 #pragma mark The table
@@ -134,10 +138,11 @@
     NSDate *since = task ? task.createdAt : waiting.savedAt;
     if ([which isEqualToString:@"since"]) return since ? [_since stringFromDate:since] : @"";
     NSString *about = task ? task.businessKey : waiting.businessKey;
-    PurchaseOrder *order = [self orderAbout:about];
+    NSManagedObject *order = [self orderAbout:about];
     if (!order) return about ?: @"";
-    NSString *supplier = [order.supplier valueForKey:@"lbTitle"];
-    return supplier.length ? [NSString stringWithFormat:@"%@, %@", order.lb_number, supplier] : order.lb_number;
+    NSString *party = [[order valueForKey:[order isKindOfClass:[SaleOrder class]] ? @"customer" : @"supplier"] valueForKey:@"lbTitle"];
+    NSString *number = [order valueForKey:@"lb_number"];
+    return party.length ? [NSString stringWithFormat:@"%@, %@", number, party] : number;
 }
 
 #pragma mark Opening
@@ -162,7 +167,7 @@
 }
 
 - (void)openOrderAbout:(NSString *)businessKey task:(LBTask *)task named:(NSString *)name sender:(id)sender {
-    PurchaseOrder *order = [self orderAbout:businessKey];
+    NSManagedObject *order = [self orderAbout:businessKey];
     if (!order) {
         self.messageLabel.stringValue = [NSString stringWithFormat:@"%@: its order is not in the logbook.", name];
         return;

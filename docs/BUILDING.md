@@ -92,9 +92,10 @@ server use is generated from it by the build, into `build/Model`
   app, the user signed in. `make check` checks it against the model
   (`ormtool flow`). `Model/Purchasing.flow` is the purchase window's (its
   order, Confirm the order and Receive the goods over it; docs/STOCK.md,
-  Processes): `ormtool xforms --flow` writes `Forms/Purchasing.ormflow`
-  beside the forms, which the app runs it with (ORMRuntime's
-  ORMFlowSession).
+  Processes), `Model/Selling.flow` the sale window's likewise:
+  `ormtool xforms --flow` writes `Forms/Purchasing.ormflow` and
+  `Forms/Selling.ormflow` beside the forms, which the app runs them with
+  (ORMRuntime's ORMFlowSession).
 
 None of it is kept in git, nor edited: it is made again whenever the
 model, or ormtool, changes.

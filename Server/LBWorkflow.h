@@ -20,6 +20,18 @@
 //                   outstanding
 //   closeOrder      the order closed (its Close)
 //
+// Order to cash (Model/OrderToCash.bpmn) is a sale's, as that is a
+// purchase's: each sale order saved as a draft starts it (not a service's
+// or a tyre change's sale of its parts, shipped as it is saved), its
+// variable saleOrder the order's id, catalog its catalog's; Confirm the
+// order the managers', Ship the goods the keepers', done with the flow
+// Selling (Model/Selling.flow: Confirm, its ConfirmSaleOrder; Ship, its
+// ShipGoods). Its service tasks:
+//
+//   orderShipped    fullyShipped, whether nothing of the order is
+//                   outstanding
+//   closeSaleOrder  the order closed (its Close)
+//
 // Settings: Workflow, the engine's store (a SQLite file; default
 // Workflow.sqlite beside the logbook's; Temporary with a temporary
 // logbook); Processes, the built deployment (default

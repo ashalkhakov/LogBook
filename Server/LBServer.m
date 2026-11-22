@@ -47,6 +47,7 @@
 // (automatic completion, LBProcedures.h), in the same save.
 
 #import <ODataService/ODataServer.h>
+#import <ODataKit/ODataError.h>
 #import <ODataSync/ODataSyncService.h>
 #import "LogbookValidation.h"
 #import "LBPermissions.h"
@@ -238,8 +239,13 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
     _service.willSave = ^BOOL(NSManagedObjectContext *context, NSError **refused) {
         NSError *why = nil;
         if (![context lb_completeRemindersOfChangedEvents:&why] || ![context lb_shipPartsOfChangedEvents:&why]
-            || ![context lb_holdMovedItems:&why]) {
-            if (refused) *refused = why;
+            || ![context lb_confirmChangedOrders:&why] || ![context lb_completeShippedMoves:&why] || ![context lb_holdMovedItems:&why]) {
+            /* A procedure's refusal, as its action answers it: the
+               client's to change (400), in its words. */
+            if (refused) {
+                *refused = [why.domain isEqualToString:LBProceduresErrorDomain] ? ODataServiceError(400, why.localizedDescription ?: @"Refused")
+                                                                                : why;
+            }
             return NO;
         }
         if ([context orm_prepareForSave:&why]) return YES;

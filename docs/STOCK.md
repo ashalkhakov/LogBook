@@ -324,9 +324,10 @@ a derived fact type: [Changes](#changes-to-the-model).)
 
 ## Processes
 
-The orders' steps are also a process, run by WorkflowKit's engine in the
-server (`Server/LBWorkflow.h`), its tasks the people's who do them:
-**procure to receipt** (`Model/ProcureToReceipt.bpmn`). Every purchase order
+The orders' steps are also processes, run by WorkflowKit's engine in the
+server (`Server/LBWorkflow.h`), their tasks the people's who do them:
+**procure to receipt** (`Model/ProcureToReceipt.bpmn`) and **order to
+cash** (`Model/OrderToCash.bpmn`), a sale's as the other is a purchase's. Every purchase order
 saved as a draft (Reorder's, or one entered) starts it once it is saved.
 A manager confirms it, or cancels it, with the model's form
 ConfirmPurchaseOrder (the order's `Confirm` or `Cancel`); a keeper receives
@@ -350,6 +351,17 @@ elements the process's variables (`orderState`). The facts alone complete
 no task. The forms and the flow are the model's (ORMKit's docs/FORMS.md):
 the process imports the model and the flow, deployed beside it, and what a
 task is done with is checked as the processes are built (`wf-build`).
+
+A sale goes the same way, with the flow **Selling** (`Model/Selling.flow`):
+every sale order saved as a draft starts order to cash (not a service's
+sale of its parts, shipped as it is saved); a manager confirms it or
+cancels it with ConfirmSaleOrder; a keeper ships its goods with ShipGoods
+(the order's `Ship` and `Ship Outstanding`, from the place chosen), as
+often as they go; once nothing is outstanding the process closes it. An
+order a form confirms is confirmed as `Confirm` does it, wherever it is
+saved: refused with no lines, a sale's phantom kits expanded. A shipment's
+moves are worked out as it is saved: each of its line's item, from where it
+went, made by who recorded it, when.
 **Window > Tasks** lists the open tasks, the oldest first, each with its
 order; Open shows the order in its own window, titled with the task, where
 its step is done. Its API is the server's

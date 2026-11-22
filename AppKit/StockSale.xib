@@ -8,15 +8,42 @@
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockOrderWindowController">
       <connections>
         <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="confirmPanel" destination="confirmPanel" id="confirmPanelOutlet"/>
+        <outlet property="shipPanel" destination="shipPanel" id="shipPanelOutlet"/>
         <outlet property="lineList" destination="lineList" id="lineListOutlet"/>
         <outlet property="linesTable" destination="linesTable" id="linesTableOutlet"/>
       </connections>
     </customObject>
     <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
     <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+    <objectController objectClassName="SaleOrder" userLabel="Order Form" id="EditSaleOrderForm">
+      <connections>
+        <binding destination="-2" name="contentObject" keyPath="orderForm" id="EditSaleOrderFormContent"/>
+      </connections>
+    </objectController>
+    <objectController objectClassName="SaleOrder" userLabel="Confirm Form" id="ConfirmSaleOrderForm">
+      <connections>
+        <binding destination="-2" name="contentObject" keyPath="confirmForm" id="ConfirmSaleOrderFormContent"/>
+      </connections>
+    </objectController>
+    <arrayController editable="NO" userLabel="Confirm Lines" id="confirmLines">
+      <connections>
+        <binding destination="ConfirmSaleOrderForm" name="contentSet" keyPath="selection.saleLines" id="confirmLinesContent"/>
+      </connections>
+    </arrayController>
+    <objectController objectClassName="Shipment" userLabel="Ship Form" id="ShipGoodsForm">
+      <connections>
+        <binding destination="-2" name="contentObject" keyPath="shipForm" id="ShipGoodsFormContent"/>
+      </connections>
+    </objectController>
+    <arrayController editable="YES" userLabel="Ship Moves" id="shipMoves">
+      <connections>
+        <binding destination="ShipGoodsForm" name="contentSet" keyPath="selection.moves" id="shipMovesContent"/>
+      </connections>
+    </arrayController>
     <arrayController editable="YES" userLabel="Lines" id="lineList">
       <connections>
-        <binding destination="-2" name="contentArray" keyPath="lines" id="lineListContent"/>
+        <binding destination="EditSaleOrderForm" name="contentSet" keyPath="selection.saleLines" id="lineListContent"/>
       </connections>
     </arrayController>
     <arrayController editable="YES" userLabel="Shipments" id="documentList">
@@ -29,6 +56,358 @@
         <binding destination="-2" name="contentArray" keyPath="returns" id="returnListContent"/>
       </connections>
     </arrayController>
+    <window title="Confirm the order" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="confirmPanel" customClass="NSPanel">
+      <windowStyleMask key="styleMask" titled="YES"/>
+      <rect key="contentRect" x="200" y="200" width="420" height="340"/>
+      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
+      <view key="contentView" id="confirmPanelContent">
+        <rect key="frame" x="0" y="0" width="420" height="340"/>
+        <autoresizingMask key="autoresizingMask"/>
+        <subviews>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="confirmSupplierLabel">
+            <rect key="frame" x="14" y="303" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Customer" id="confirmSupplierLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="confirmSupplier" id="confirmSupplier">
+            <rect key="frame" x="110" y="300" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="confirmSupplierCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="ConfirmSaleOrderForm" name="value" keyPath="selection.customer.lbTitle" id="confirmSupplierValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="confirmOrderedLabel">
+            <rect key="frame" x="14" y="273" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Placed on" id="confirmOrderedLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="confirmOrdered" id="confirmOrdered">
+            <rect key="frame" x="110" y="270" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="confirmOrderedCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="ConfirmSaleOrderForm" name="value" keyPath="selection.saleOrdered" id="confirmOrderedValue"/>
+            </connections>
+          </textField>
+          <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="confirmLinesTableScroll">
+            <rect key="frame" x="14" y="90" width="392" height="170"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <clipView key="contentView" id="confirmLinesTableClip">
+              <rect key="frame" x="1" y="1" width="390" height="168"/>
+              <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+              <subviews>
+                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" headerView="confirmLinesTableHeader" identifier="confirmLinesTable" id="confirmLinesTable">
+                  <rect key="frame" x="0" y="0" width="390" height="143"/>
+                  <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                  <size key="intercellSpacing" width="3" height="2"/>
+                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                  <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                  <tableColumns>
+                    <tableColumn identifier="item" width="260" minWidth="30" maxWidth="1000" id="confirmLinesItemColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Item">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="confirmLinesItemColumnCell">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                      </textFieldCell>
+                      <connections>
+                        <binding destination="confirmLines" name="value" keyPath="arrangedObjects.stockItem.lbTitle" id="confirmLinesItemColumnValue"/>
+                      </connections>
+                    </tableColumn>
+                    <tableColumn identifier="quantity" width="100" minWidth="30" maxWidth="1000" id="confirmLinesQuantityColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Quantity">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="confirmLinesQuantityColumnCell">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                      </textFieldCell>
+                      <connections>
+                        <binding destination="confirmLines" name="value" keyPath="arrangedObjects.quantity" id="confirmLinesQuantityColumnValue"/>
+                      </connections>
+                    </tableColumn>
+                  </tableColumns>
+                  <connections>
+                    <binding destination="confirmLines" name="content" keyPath="arrangedObjects" id="confirmLinesTableContent"/>
+                    <binding destination="confirmLines" name="selectionIndexes" keyPath="selectionIndexes" previousBinding="confirmLinesTableContent" id="confirmLinesTableSelection"/>
+                  </connections>
+                </tableView>
+              </subviews>
+            </clipView>
+            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="confirmLinesTableHScroller">
+              <rect key="frame" x="1" y="154" width="390" height="15"/>
+              <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+            </scroller>
+            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="confirmLinesTableVScroller">
+              <rect key="frame" x="376" y="1" width="15" height="168"/>
+              <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+            </scroller>
+            <tableHeaderView key="headerView" id="confirmLinesTableHeader">
+              <rect key="frame" x="0" y="0" width="390" height="23"/>
+              <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+            </tableHeaderView>
+          </scrollView>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="confirmStateLabel">
+            <rect key="frame" x="14" y="59" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State" id="confirmStateLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="confirmState" id="confirmState">
+            <rect key="frame" x="108" y="53" width="200" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="confirmStateCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="confirmStateMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="ConfirmSaleOrderForm" name="content" keyPath="selection.items.orderState" id="confirmStateContent"/>
+              <binding destination="ConfirmSaleOrderForm" name="selectedObject" keyPath="selection.orderState" id="confirmStateSelectedObject"/>
+            </connections>
+          </popUpButton>
+          <button verticalHuggingPriority="750" identifier="dismissConfirm" id="dismissConfirm">
+            <rect key="frame" x="220" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissConfirmCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="dismissForm:" target="-2" id="dismissConfirmAction"/>
+            </connections>
+          </button>
+          <button verticalHuggingPriority="750" identifier="submitConfirm" id="submitConfirm">
+            <rect key="frame" x="315" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="
+" id="submitConfirmCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="submitConfirm:" target="-2" id="submitConfirmAction"/>
+            </connections>
+          </button>
+        </subviews>
+      </view>
+    </window>
+    <window title="Ship the goods" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="shipPanel" customClass="NSPanel">
+      <windowStyleMask key="styleMask" titled="YES"/>
+      <rect key="contentRect" x="200" y="200" width="520" height="400"/>
+      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
+      <view key="contentView" id="shipPanelContent">
+        <rect key="frame" x="0" y="0" width="520" height="400"/>
+        <autoresizingMask key="autoresizingMask"/>
+        <subviews>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="shipDayLabel">
+            <rect key="frame" x="14" y="363" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Shipped on" id="shipDayLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <datePicker verticalHuggingPriority="750" identifier="shipDay" id="shipDay">
+            <rect key="frame" x="110" y="359" width="140" height="28"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <datePickerCell key="cell" borderStyle="bezel" alignment="left" id="shipDayCell">
+              <font key="font" metaFont="system"/>
+              <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <datePickerElements key="datePickerElements" year="YES" month="YES" day="YES"/>
+            </datePickerCell>
+            <connections>
+              <binding destination="ShipGoodsForm" name="value" keyPath="selection.shipped" id="shipDayValue"/>
+            </connections>
+          </datePicker>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="shipFromLabel">
+            <rect key="frame" x="14" y="331" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From" id="shipFromLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="shipFrom" id="shipFrom">
+            <rect key="frame" x="108" y="325" width="250" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="shipFromCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="shipFromMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="ShipGoodsForm" name="content" keyPath="selection.choices.shippedFrom" id="shipFromContent"/>
+              <binding destination="ShipGoodsForm" name="contentValues" keyPath="selection.choices.shippedFrom.lbTitle" previousBinding="shipFromContent" id="shipFromContentValues"/>
+              <binding destination="ShipGoodsForm" name="selectedObject" keyPath="selection.shippedFrom" id="shipFromSelectedObject"/>
+            </connections>
+          </popUpButton>
+          <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="shipMovesTableScroll">
+            <rect key="frame" x="14" y="110" width="492" height="200"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <clipView key="contentView" id="shipMovesTableClip">
+              <rect key="frame" x="1" y="1" width="490" height="198"/>
+              <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+              <subviews>
+                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" headerView="shipMovesTableHeader" identifier="shipMovesTable" id="shipMovesTable">
+                  <rect key="frame" x="0" y="0" width="490" height="173"/>
+                  <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                  <size key="intercellSpacing" width="3" height="2"/>
+                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                  <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                  <tableColumns>
+                    <tableColumn identifier="item" width="250" minWidth="30" maxWidth="1000" id="shipMovesItemColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Item">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="shipMovesItemColumnCell">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                      </textFieldCell>
+                      <connections>
+                        <binding destination="shipMoves" name="value" keyPath="arrangedObjects.saleLine.stockItem.lbTitle" id="shipMovesItemColumnValue"/>
+                      </connections>
+                    </tableColumn>
+                    <tableColumn identifier="outstanding" width="100" minWidth="30" maxWidth="1000" id="shipMovesOutstandingColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Outstanding">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="shipMovesOutstandingColumnCell">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                      </textFieldCell>
+                      <connections>
+                        <binding destination="shipMoves" name="value" keyPath="arrangedObjects.saleLine.backorderedQuantity" id="shipMovesOutstandingColumnValue"/>
+                      </connections>
+                    </tableColumn>
+                    <tableColumn identifier="quantity" width="100" minWidth="30" maxWidth="1000" id="shipMovesQuantityColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Quantity">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="shipMovesQuantityColumnCell">
+                        <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="shipMovesQuantityColumnFormatter"/>
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                      </textFieldCell>
+                      <connections>
+                        <binding destination="shipMoves" name="value" keyPath="arrangedObjects.moved" id="shipMovesQuantityColumnValue"/>
+                      </connections>
+                    </tableColumn>
+                  </tableColumns>
+                  <connections>
+                    <binding destination="shipMoves" name="content" keyPath="arrangedObjects" id="shipMovesTableContent"/>
+                    <binding destination="shipMoves" name="selectionIndexes" keyPath="selectionIndexes" previousBinding="shipMovesTableContent" id="shipMovesTableSelection"/>
+                  </connections>
+                </tableView>
+              </subviews>
+            </clipView>
+            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="shipMovesTableHScroller">
+              <rect key="frame" x="1" y="184" width="490" height="15"/>
+              <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+            </scroller>
+            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="shipMovesTableVScroller">
+              <rect key="frame" x="476" y="1" width="15" height="198"/>
+              <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+            </scroller>
+            <tableHeaderView key="headerView" id="shipMovesTableHeader">
+              <rect key="frame" x="0" y="0" width="490" height="23"/>
+              <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+            </tableHeaderView>
+          </scrollView>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="shipLineLabel">
+            <rect key="frame" x="14" y="79" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Line" id="shipLineLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="shipLine" id="shipLine">
+            <rect key="frame" x="108" y="73" width="250" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="shipLineCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="shipLineMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="ShipGoodsForm" name="content" keyPath="selection.choices.moves.saleLine" id="shipLineContent"/>
+              <binding destination="ShipGoodsForm" name="contentValues" keyPath="selection.choices.moves.saleLine.stockItem.lbTitle" previousBinding="shipLineContent" id="shipLineContentValues"/>
+              <binding destination="shipMoves" name="selectedObject" keyPath="selection.saleLine" id="shipLineSelectedObject"/>
+            </connections>
+          </popUpButton>
+          <button verticalHuggingPriority="750" identifier="removeShipped" id="removeShipped">
+            <rect key="frame" x="365" y="70" width="140" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Remove Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeShippedCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="remove:" target="shipMoves" id="removeShippedAction"/>
+            </connections>
+          </button>
+          <button verticalHuggingPriority="750" identifier="dismissShip" id="dismissShip">
+            <rect key="frame" x="320" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissShipCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="dismissForm:" target="-2" id="dismissShipAction"/>
+            </connections>
+          </button>
+          <button verticalHuggingPriority="750" identifier="submitShip" id="submitShip">
+            <rect key="frame" x="415" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="
+" id="submitShipCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="submitShip:" target="-2" id="submitShipAction"/>
+            </connections>
+          </button>
+        </subviews>
+      </view>
+    </window>
     <window title="Sale" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookStockSale" animationBehavior="default" id="window">
       <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
       <rect key="contentRect" x="180" y="140" width="680" height="620"/>
@@ -56,14 +435,14 @@
               <menu key="menu" id="orderPartyMenu"/>
             </popUpButtonCell>
             <connections>
-              <binding destination="-2" name="content" keyPath="parties" id="orderPartyContent"/>
-              <binding destination="-2" name="contentValues" keyPath="parties.lbTitle" previousBinding="orderPartyContent" id="orderPartyValues">
+              <binding destination="EditSaleOrderForm" name="content" keyPath="selection.choices.customer" id="orderPartyContent"/>
+              <binding destination="EditSaleOrderForm" name="contentValues" keyPath="selection.choices.customer.lbTitle" previousBinding="orderPartyContent" id="orderPartyValues">
                 <dictionary key="options">
                   <bool key="NSInsertsNullPlaceholder" value="YES"/>
                   <string key="NSNullPlaceholder">None</string>
                 </dictionary>
               </binding>
-              <binding destination="-2" name="selectedObject" keyPath="order.customer" previousBinding="orderPartyValues" id="orderPartyChosen"/>
+              <binding destination="EditSaleOrderForm" name="selectedObject" keyPath="selection.customer" previousBinding="orderPartyValues" id="orderPartyChosen"/>
             </connections>
           </popUpButton>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderPlacedLabel">
@@ -85,7 +464,7 @@
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
             <connections>
-              <binding destination="-2" name="value" keyPath="order.saleOrdered" id="orderPlacedValue"/>
+              <binding destination="EditSaleOrderForm" name="value" keyPath="selection.saleOrdered" id="orderPlacedValue"/>
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderReferenceLabel">
@@ -106,7 +485,7 @@
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
             <connections>
-              <binding destination="-2" name="value" keyPath="order.customerReference" id="orderReferenceValue"/>
+              <binding destination="EditSaleOrderForm" name="value" keyPath="selection.customerReference" id="orderReferenceValue"/>
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderStateLabel">
@@ -127,7 +506,7 @@
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
             <connections>
-              <binding destination="-2" name="value" keyPath="order.orderState" id="orderStateValue"/>
+              <binding destination="EditSaleOrderForm" name="value" keyPath="selection.orderState" id="orderStateValue"/>
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderNoteLabel">
@@ -148,7 +527,7 @@
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
             <connections>
-              <binding destination="-2" name="value" keyPath="order.note" id="orderNoteValue"/>
+              <binding destination="EditSaleOrderForm" name="value" keyPath="selection.note" id="orderNoteValue"/>
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderShipToLabel">
@@ -274,6 +653,20 @@
                         <binding destination="lineList" name="value" keyPath="arrangedObjects.linePriceAmount" id="linesTablePriceValue"/>
                       </connections>
                     </tableColumn>
+                    <tableColumn identifier="priceCurrency" width="50" minWidth="30" maxWidth="1000" id="linesTableCurrencyColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="">
+                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                      </tableHeaderCell>
+                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="linesTableCurrencyCell">
+                        <font key="font" metaFont="system"/>
+                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                      </textFieldCell>
+                      <connections>
+                        <binding destination="lineList" name="value" keyPath="arrangedObjects.linePriceCurrency" id="linesTableCurrencyValue"/>
+                      </connections>
+                    </tableColumn>
                     <tableColumn identifier="done" width="70" minWidth="30" maxWidth="1000" id="linesTableDoneColumn">
                       <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Shipped">
                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
@@ -368,8 +761,8 @@
               <menu key="menu" id="lineItemMenu"/>
             </popUpButtonCell>
             <connections>
-              <binding destination="-2" name="content" keyPath="catalogItems" id="lineItemContent"/>
-              <binding destination="-2" name="contentValues" keyPath="catalogItems.lbTitle" previousBinding="lineItemContent" id="lineItemValues"/>
+              <binding destination="EditSaleOrderForm" name="content" keyPath="selection.choices.saleLines.stockItem" id="lineItemContent"/>
+              <binding destination="EditSaleOrderForm" name="contentValues" keyPath="selection.choices.saleLines.stockItem.lbTitle" previousBinding="lineItemContent" id="lineItemValues"/>
               <binding destination="lineList" name="selectedObject" keyPath="selection.stockItem" previousBinding="lineItemValues" id="lineItemChosen"/>
             </connections>
           </popUpButton>

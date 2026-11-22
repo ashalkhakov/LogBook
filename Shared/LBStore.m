@@ -149,7 +149,9 @@
        another window finds them by them. */
     if (_local && context.insertedObjects.count && ![context obtainPermanentIDsForObjects:context.insertedObjects.allObjects error:error])
         return NO;
-    if (![context lb_holdMovedItems:error] || ![context orm_prepareForSave:error] || ![context save:error]) return NO;
+    if (![context lb_confirmChangedOrders:error] || ![context lb_completeShippedMoves:error] || ![context lb_holdMovedItems:error]
+        || ![context orm_prepareForSave:error] || ![context save:error])
+        return NO;
     /* Offline first, a window's: into the main one, then saved as it is. */
     return _local ? [_local save:error] : YES;
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """The server's processes (Server/LBWorkflow.h), run over HTTP as the app
-runs them: procure to receipt (Model/ProcureToReceipt.bpmn).
+runs them: procure to receipt (Model/ProcureToReceipt.bpmn), order to cash
+(Model/OrderToCash.bpmn).
 
     Tests/process-check.py build/logbook-server
 
@@ -21,7 +22,13 @@ from Logbook.wfdeployment beside it.
   to receive again;
 - the last one received the same way: it finds it all received, closes
   the order (its Close), and ends, no task left;
-- another draft cancelled through its form: its process ends.
+- another draft cancelled through its form: its process ends;
+- a draft sale order starts order to cash: Confirm the order; confirming
+  it with no lines refused (as Confirm refuses it); with a line, confirmed
+  as ConfirmSaleOrder saves it and submitted: Ship the goods; 2 of its 3
+  shipped as ShipGoods saves them (each move's item, place, maker and
+  moment worked out as it saves): Ship the goods again; the last one: the
+  order closed, no task left.
 
 As the app does them: what a form saves is the logbook's, and its instance
 submitted completes the task. The server's engine works after each save
@@ -196,6 +203,65 @@ def walk(odata, workflow):
     status, body = submit(tasks()[0][1], "PurchaseOrder", {"id": other, "orderState": "Cancelled"})
     check("its form submitted to the task", status == 204, (status, body))
     check("its Confirm the order completed: it ends, no task left", settled([]) == [], tasks())
+
+    # Order to cash: what the shelf holds to begin with, a customer.
+    contact, customer, sale, sold = (str(uuid.uuid4()) for _ in range(4))
+    for what, path, body in (
+            ("10 of the oil on the shelf to begin with", "Moves", {
+                "Id": str(uuid.uuid4()), "Moved": 10, "AdjustmentReason": "Opening", "Moment": "2026-11-12T08:00:00Z",
+                "StockItem@odata.bind": "StockItems(%s)" % item, "Destination@odata.bind": "Locations(%s)" % shelf,
+                "User@odata.bind": "Users('anna@example.org')"}),
+            ("a customer's contact", "Contacts", {"Id": contact, "ContactName": "Bob", "Catalog@odata.bind": "Catalogs(%s)" % catalog}),
+            ("the customer", "Customers", {"Id": customer, "Catalog@odata.bind": "Catalogs(%s)" % catalog,
+                                           "Contact@odata.bind": "Contacts(%s)" % contact})):
+        status, body = request("POST", odata + path, body)
+        check(what, status == 201, (status, body))
+    status, body = request("POST", odata + "SaleOrders", {
+        "Id": sale, "SaleOrdered": "2026-11-12", "OrderState": "Draft", "RunningNumber": 1,
+        "Catalog@odata.bind": "Catalogs(%s)" % catalog, "Customer@odata.bind": "Customers(%s)" % customer})
+    check("a draft sale saved", status == 201, (status, body))
+    check("starts order to cash: Confirm the order", settled(["Confirm the order"]) == ["Confirm the order"], tasks())
+    status, body = request("PATCH", odata + "SaleOrders(%s)" % sale, {"OrderState": "Confirmed"})
+    check("confirmed with no line: refused, as Confirm refuses it", status == 400 and "nothing" in json.dumps(body), (status, body))
+    status, body = request("POST", odata + "SaleLines", {"Id": sold, "Quantity": 3, "LinePriceAmount": 2, "LinePriceCurrency": "USD",
+                                                        "SaleOrder@odata.bind": "SaleOrders(%s)" % sale,
+                                                        "StockItem@odata.bind": "StockItems(%s)" % item})
+    check("its line, of 3", status == 201, (status, body))
+    status, body = request("PATCH", odata + "SaleOrders(%s)" % sale, {"OrderState": "Confirmed"})
+    check("confirmed as ConfirmSaleOrder saves it", status == 204, (status, body))
+    status, body = submit(tasks()[0][1], "SaleOrder", {"id": sale, "orderState": "Confirmed"})
+    check("its form submitted to the task", status == 204, (status, body))
+    check("then Ship the goods", settled(["Ship the goods"]) == ["Ship the goods"], tasks())
+
+    def ship(number, quantity, task):
+        shipment, move = str(uuid.uuid4()), str(uuid.uuid4())
+        status, body = request("POST", odata + "Shipments", {
+            "Id": shipment, "RunningNumber": number, "Shipped": "2026-11-13", "ShipmentRecorded": "2026-11-13T09:00:00Z",
+            "SaleOrder@odata.bind": "SaleOrders(%s)" % sale, "ShippedFrom@odata.bind": "Locations(%s)" % shelf,
+            "ShippedBy@odata.bind": "Users('anna@example.org')",
+            "Moves": [{"Id": move, "Moved": quantity, "SaleLine@odata.bind": "SaleLines(%s)" % sold}]})
+        check("%s shipped as ShipGoods saves it" % quantity, status == 201, (status, body))
+        status, body = request("GET", odata + "Moves(%s)?$expand=StockItem($select=Id),Source($select=Id),User($select=Email)" % move)
+        check("its move's item, place, maker and moment worked out", status == 200 and body.get("StockItem", {}).get("Id", "").lower() == item
+              and body.get("Source", {}).get("Id", "").lower() == shelf and body.get("User", {}).get("Email") == "anna@example.org"
+              and body.get("Moment") == "2026-11-13T09:00:00Z", (status, body))
+        status, body = submit(task, "Shipment", {"id": shipment, "saleOrder": sale, "shipped": "2026-11-13", "shippedFrom": shelf},
+                              [("moves", {"id": move, "saleLine": sold, "moved": str(quantity)})])
+        check("its form submitted to the task", status == 204, (status, body))
+
+    first = tasks()[0][1]
+    ship(1, 2, first)
+    for _ in range(100):
+        if [t for _, t in tasks()] != [first]:
+            break
+        time.sleep(0.05)
+    again = tasks()
+    check("not all shipped: Ship the goods again", [n for n, _ in again] == ["Ship the goods"] and again[0][1] != first, again)
+    ship(2, 1, again[0][1])
+    check("all shipped: no task left", settled([]) == [], tasks())
+    status, body = request("GET", odata + "SaleOrders(%s)?$select=OrderState,IsFullyShipped" % sale)
+    check("the sale closed by the process", status == 200 and body.get("OrderState") == "Closed" and body.get("IsFullyShipped"),
+          (status, body))
 
 
 if __name__ == "__main__":

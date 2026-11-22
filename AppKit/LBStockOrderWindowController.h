@@ -30,14 +30,17 @@ NS_ASSUME_NONNULL_BEGIN
 // Its returns, the latest first.
 @property (nonatomic, readonly, copy) NSArray *returns;
 @property (nonatomic, strong) IBOutlet NSArrayController *lineList;
-// A purchase's forms, as its window and its sheets bind them
-// (LBFormValues.h): EditPurchaseOrder, always; ConfirmPurchaseOrder and
-// ReceiveGoods while their sheet is shown.
+// An order's forms, as its window and its sheets bind them
+// (LBFormValues.h): EditPurchaseOrder (EditSaleOrder), always;
+// ConfirmPurchaseOrder (ConfirmSaleOrder), ReceiveGoods and ShipGoods while
+// their sheet is shown.
 @property (nonatomic, readonly, strong, nullable) LBFormValues *orderForm;
 @property (nonatomic, readonly, strong, nullable) LBFormValues *confirmForm;
 @property (nonatomic, readonly, strong, nullable) LBFormValues *receiveForm;
+@property (nonatomic, readonly, strong, nullable) LBFormValues *shipForm;
 @property (nonatomic, strong) IBOutlet NSWindow *confirmPanel;
 @property (nonatomic, strong) IBOutlet NSWindow *receivePanel;
+@property (nonatomic, strong) IBOutlet NSWindow *shipPanel;
 @property (nonatomic, strong) IBOutlet NSTableView *linesTable;
 // What its form chooses from: the catalog's customers (suppliers), items,
 // locations.
@@ -61,10 +64,11 @@ NS_ASSUME_NONNULL_BEGIN
 // (ormkit:flow:Purchasing.flow#Confirm) opens its step's sheet as the
 // window is shown.
 @property (nonatomic, strong, nullable) LBTask *task;
-// A purchase's way through its forms (Model/Purchasing.flow, ORMRuntime's
-// ORMFlowSession): the order's window its EditPurchaseOrder; its Confirm,
-// Cancel and Receive buttons the flow's triggers, each sheet the screen
-// they lead to, its Submit and Cancel the ways back. nil for a sale.
+// An order's way through its forms (Model/Purchasing.flow, Selling.flow,
+// ORMRuntime's ORMFlowSession): the order's window its EditPurchaseOrder
+// (EditSaleOrder); its Confirm, Cancel and Receive (Ship) buttons the
+// flow's triggers, each sheet the screen they lead to, its Submit and
+// Cancel the ways back.
 @property (nonatomic, readonly, strong, nullable) ORMFlowSession *flow;
 @property (nonatomic, strong, nullable) LBTasks *tasks;
 // The step its form saved last that waits to be submitted (offline first,
@@ -75,6 +79,7 @@ NS_ASSUME_NONNULL_BEGIN
 // the order's task of it; its Cancel (and Escape): nothing of it kept.
 - (IBAction)submitConfirm:(nullable id)sender;
 - (IBAction)submitReceive:(nullable id)sender;
+- (IBAction)submitShip:(nullable id)sender;
 - (IBAction)dismissForm:(nullable id)sender;
 // A purchase's Receive: its sheet, a move of each line outstanding.
 - (IBAction)receiveGoods:(nullable id)sender;

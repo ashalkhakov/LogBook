@@ -117,6 +117,14 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // and where it goes (one made by a form: a receipt's, of its line's item, to
 // where the receipt came in, as the model works them out).
 - (BOOL)lb_holdMovedItems:(NSError **)error;
+// Before a save: each order a form confirmed (its state from Draft to
+// Confirmed, ConfirmPurchaseOrder's, ConfirmSaleOrder's) as Confirm does
+// it: refused for an order of nothing, a sale's phantom kits expanded.
+- (BOOL)lb_confirmChangedOrders:(NSError **)error;
+// Before a save: each move a form made of a shipment (ShipGoods) as Ship
+// makes it: of its line's item, from where the shipment went, made by who
+// recorded it and when; the shipment to where its order ships.
+- (BOOL)lb_completeShippedMoves:(NSError **)error;
 @end
 
 // A service's or a tyre change's parts: the lines of a sale of them to the

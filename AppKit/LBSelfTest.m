@@ -1159,7 +1159,9 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
 
 
 /* Sales and purchases, each in its window, as a user writes them: a sale
-   to Bob of three bolts, numbered, confirmed, shipped in two from Shelf A;
+   to Bob of three bolts, numbered, confirmed with ConfirmSaleOrder,
+   shipped in two from Shelf A with ShipGoods, its process (order to cash)
+   asking each step in Window > Tasks and closing it;
    a purchase from Parts Ltd of ten brackets at a cost of 1, confirmed,
    received in two at Default, a damaged one sent back. Each the server's.
    The purchase's process (Server/LBWorkflow.h) in Window > Tasks:
@@ -1188,17 +1190,49 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
                                                    && LBIs(line.linePriceAmount, @"0.5"),
             line.quantity);
     LBSavedIn(sale, @"the sale saved");
+    LBCheck(@"its window the model's EditSaleOrder, Model/Selling.flow at the order",
+            [sale.orderForm.session.form.name isEqualToString:@"EditSaleOrder"] && [sale.flow.step.formName isEqualToString:@"EditSaleOrder"],
+            sale.orderForm.session.form.name ?: sale.flow.step.formName);
+    LBTasksWindowController *tasks = LBTasksWindow();
+    NSArray *names = LBTasksOf(tasks, order, @[ @"Confirm the order" ]);
+    LBCheck(@"order to cash started: its Confirm the order", [names isEqualToArray:@[ @"Confirm the order" ]], tasks.messageLabel.stringValue ?: names);
+    [window makeKeyAndOrderFront:nil];
     LBClick(window, @"confirmOrder");
-    LBCheck(@"confirmed", [order.orderState isEqualToString:@"Confirmed"] && !sale.lastError, sale.lastError ?: order.orderState);
+    LBCheck(@"Confirm: its sheet, ConfirmSaleOrder over the order, Confirmed chosen", window.attachedSheet == sale.confirmPanel
+                && [sale.flow.step.formName isEqualToString:@"ConfirmSaleOrder"] && [[sale.confirmForm valueForKey:@"orderState"] isEqualToString:@"Confirmed"],
+            sale.lastError ?: sale.flow.step.formName);
+    LBClick(sale.confirmPanel, @"submitConfirm");
+    LBCheck(@"confirmed", [order.orderState isEqualToString:@"Confirmed"] && !sale.lastError && !window.attachedSheet, sale.lastError ?: order.orderState);
+    names = LBTasksOf(tasks, order, @[ @"Ship the goods" ]);
+    LBCheck(@"its task done with its form, submitted: Ship the goods", [names isEqualToArray:@[ @"Ship the goods" ]], names);
+    [window makeKeyAndOrderFront:nil];
     LBChoose(window, @"moveAt", @"Garage / Shelf A");
     LBType(window, @"moveQuantity", @"2");
     [sale.lineList setSelectedObjects:@[ line ]];
     LBClick(window, @"moveLine");
-    LBCheck(@"2 shipped from Shelf A: partly shipped", LBIs(line.shippedQuantity, @"2") && [order.lbFilled isEqualToString:@"Partly"],
+    NSSet *shipping = [sale.shipForm valueForKey:@"moves"];
+    LBCheck(@"Ship: its sheet, ShipGoods, a move of 2 of the line from Shelf A", window.attachedSheet == sale.shipPanel && shipping.count == 1
+                && LBIs([shipping.anyObject valueForKey:@"moved"], @"2") && [[[sale.shipForm valueForKey:@"shippedFrom"] lbTitle] isEqualToString:@"Garage / Shelf A"],
+            sale.lastError ?: shipping);
+    LBClick(sale.shipPanel, @"submitShip");
+    LBCheck(@"2 shipped from Shelf A: partly shipped", LBIs(line.shippedQuantity, @"2") && [order.lbFilled isEqualToString:@"Partly"] && !window.attachedSheet,
             sale.lastError ?: [NSString stringWithFormat:@"shipped %@, %@", line.shippedQuantity, order.lbFilled]);
+    Move *shipped = [[line.moves allObjects] firstObject];
+    LBCheck(@"its move worked out as it saved: the line's bolt, from Shelf A, by who shipped it", [shipped.stockItem.objectID isEqual:bolt.objectID]
+                && [shipped.source.lbTitle isEqualToString:@"Garage / Shelf A"] && shipped.user && shipped.moment,
+            shipped.source.lbTitle ?: shipped);
+    names = LBTasksOf(tasks, order, @[ @"Ship the goods" ]);
+    LBCheck(@"partly shipped: Ship the goods again", [names isEqualToArray:@[ @"Ship the goods" ]], names);
+    [window makeKeyAndOrderFront:nil];
     LBClick(window, @"moveOutstanding");
+    LBClick(sale.shipPanel, @"submitShip");
     LBCheck(@"the rest shipped: fully, in two shipments", [order.lbFilled isEqualToString:@"Shipped"] && sale.documents.count == 2,
             sale.lastError ?: order.lbFilled);
+    names = LBTasksOf(tasks, order, @[]);
+    SaleOrder *sold = LBServerOf(order);
+    [sold.managedObjectContext refreshObject:sold mergeChanges:NO];
+    LBCheck(@"its process done: no task left, the server's order closed", names.count == 0 && [sold.orderState isEqualToString:@"Closed"],
+            names.count ? names : sold.orderState);
     [sale close];
 
     NSDecimalNumber *bracketsBefore = [LBServerOf(bracket) totalQuantity];
@@ -1217,8 +1251,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBTypeInCell(window, @"linesTable", 1, @"10");
     LBTypeInCell(window, @"linesTable", 2, @"1");
     LBSavedIn(purchase, @"its line, 10 brackets at 1, saved");
-    LBTasksWindowController *tasks = LBTasksWindow();
-    NSArray *names = LBTasksOf(tasks, bought, @[ @"Confirm the order" ]);
+    names = LBTasksOf(tasks, bought, @[ @"Confirm the order" ]);
     LBCheck(@"Window > Tasks: its Confirm the order", [names isEqualToArray:@[ @"Confirm the order" ]], tasks.messageLabel.stringValue ?: names);
     [window makeKeyAndOrderFront:nil];
     LBCheck(@"its window the model's EditPurchaseOrder", [purchase.orderForm.session.form.name isEqualToString:@"EditPurchaseOrder"],
@@ -1406,9 +1439,9 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
             stock.overviewItems.integerValue == 3 && stock.overviewCategories.integerValue == 1 && stock.overviewLocations.integerValue == 3
                 && stock.overviewSuppliers.integerValue == 1 && stock.overviewCustomers.integerValue == 1,
             [NSString stringWithFormat:@"%@ %@ %@", stock.overviewItems, stock.overviewLocations, stock.overviewSuppliers]);
-    LBCheck(@"the bolts' rule due, the sale open: the purchase closed by its process, all received",
+    LBCheck(@"the bolts' rule due, no order open: the sale and the purchase closed by their processes, all shipped and received",
             stock.rulesDue.count == 1 && [[stock.rulesDue.firstObject stockItem].itemName isEqualToString:@"Bolt"]
-                && [[stock.ordersOpen valueForKey:@"lb_number"] isEqualToArray:@[ @"SO-GAR-0001" ]],
+                && [stock.ordersOpen count] == 0,
             [stock.ordersOpen valueForKey:@"lb_number"]);
     NSDecimalNumber *bolts = [LBServerOf(bolt) totalQuantity];
     LBCheck(@"what it holds weighs and takes up: the bolts', 10 g and 5 cm3 each, in kg and cm",

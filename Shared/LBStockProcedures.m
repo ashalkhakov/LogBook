@@ -920,6 +920,38 @@ static NSDecimalNumber *LBShippedOf(SaleLine *line) {
     return YES;
 }
 
+- (BOOL)lb_confirmChangedOrders:(NSError **)error {
+    NSMutableArray *confirmed = [NSMutableArray array];
+    for (NSManagedObject *object in self.updatedObjects) {
+        if (![object isKindOfClass:[SaleOrder class]] && ![object isKindOfClass:[PurchaseOrder class]]) continue;
+        NSString *was = [object committedValuesForKeys:@[ @"orderState" ]][@"orderState"];
+        if ([was isEqual:LBOrderDraft] && [[object valueForKey:@"orderState"] isEqual:LBOrderConfirmed]) [confirmed addObject:object];
+    }
+    for (NSManagedObject *order in [confirmed sortedArrayUsingFunction:LBByID context:NULL]) {
+        /* Its Confirm, from the draft it was. */
+        [order setValue:LBOrderDraft forKey:@"orderState"];
+        BOOL done = [order isKindOfClass:[SaleOrder class]] ? [(SaleOrder *)order lb_confirm:error] : [(PurchaseOrder *)order lb_confirm:error];
+        if (!done) return NO;
+    }
+    return YES;
+}
+
+- (BOOL)lb_completeShippedMoves:(NSError **)error {
+    (void)error;
+    for (NSManagedObject *object in self.insertedObjects) {
+        if (![object isKindOfClass:[Move class]]) continue;
+        Move *move = (Move *)object;
+        Shipment *shipment = move.shipment;
+        if (!shipment) continue;
+        if (!move.stockItem) move.stockItem = move.saleLine.stockItem;
+        if (!move.source) move.source = shipment.shippedFrom;
+        if (!move.user) move.user = shipment.shippedBy;
+        if (!move.moment) move.moment = shipment.shipmentRecorded;
+        if (!shipment.shippedTo) shipment.shippedTo = shipment.saleOrder.shipTo;
+    }
+    return YES;
+}
+
 - (BOOL)lb_holdMovedItems:(NSError **)error {
     (void)error;
     NSMutableArray<Move *> *made = [NSMutableArray array];

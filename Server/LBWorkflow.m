@@ -10,20 +10,22 @@ static NSError *LBWorkflowError(NSString *message) {
     return [NSError errorWithDomain:@"LBWorkflow" code:1 userInfo:@{ NSLocalizedDescriptionKey : message }];
 }
 
-/* A service task over the logbook's store: the order the process is of, in
-   a context of its own, done with by the block, and saved as the server
-   saves (its rules first). */
+/* A service task over the logbook's store: the order the process is of
+   (its variable purchaseOrder, saleOrder), in a context of its own, done
+   with by the block, and saved as the server saves (its rules first). */
 @interface LBOrderTask : NSObject <WFActivityDelegate>
 @property (nonatomic, strong) NSPersistentStoreCoordinator *coordinator;
-@property (nonatomic, copy) BOOL (^work)(PurchaseOrder *order, WFDelegateExecution *execution, NSError **error);
+@property (nonatomic) Class orderClass;
+@property (nonatomic, copy) BOOL (^work)(id order, WFDelegateExecution *execution, NSError **error);
 @end
 
 @implementation LBOrderTask
 
 - (BOOL)executeWithExecution:(WFDelegateExecution *)execution error:(NSError **)error {
-    NSUUID *orderId = [[NSUUID alloc] initWithUUIDString:[[execution variableNamed:@"purchaseOrder"] description] ?: @""];
+    BOOL sale = _orderClass == [SaleOrder class];
+    NSUUID *orderId = [[NSUUID alloc] initWithUUIDString:[[execution variableNamed:sale ? @"saleOrder" : @"purchaseOrder"] description] ?: @""];
     if (!orderId) {
-        if (error) *error = LBWorkflowError(@"The process names no purchase order.");
+        if (error) *error = LBWorkflowError(sale ? @"The process names no sale order." : @"The process names no purchase order.");
         return NO;
     }
     NSManagedObjectContext *context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
@@ -31,11 +33,11 @@ static NSError *LBWorkflowError(NSString *message) {
     __block BOOL done = NO;
     __block NSError *failure = nil;
     [context performBlockAndWait:^{
-        NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([PurchaseOrder class])];
+        NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(self.orderClass)];
         fetch.predicate = [NSPredicate predicateWithFormat:@"id == %@", orderId];
-        PurchaseOrder *order = [[context executeFetchRequest:fetch error:&failure] firstObject];
+        NSManagedObject *order = [[context executeFetchRequest:fetch error:&failure] firstObject];
         if (!order) {
-            failure = failure ?: LBWorkflowError([NSString stringWithFormat:@"There is no purchase order %@.", orderId.UUIDString]);
+            failure = failure ?: LBWorkflowError([NSString stringWithFormat:@"There is no %@ order %@.", sale ? @"sale" : @"purchase", orderId.UUIDString]);
             return;
         }
         done = self.work(order, execution, &failure)
@@ -195,32 +197,38 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
 }
 
 /* A save of the logbook's, done: a purchase order made a draft starts
-   procure to receipt, whoever saved it. Its people's tasks are done with
-   their forms (ConfirmPurchaseOrder, ReceiveGoods): their submissions
-   complete them (WorkflowKit's SubmitForm), not the facts they save. In
-   the saving context's queue, as the notification is, what changed is
-   read; the engine's work is done on its own queue, after the save. */
+   procure to receipt, a sale order made a draft order to cash (not a
+   service's sale of its parts, shipped as it is saved), whoever saved it.
+   Their people's tasks are done with their flows' forms (Purchasing,
+   Selling): their submissions complete them (WorkflowKit's SubmitForm),
+   not the facts they save. In the saving context's queue, as the
+   notification is, what changed is read; the engine's work is done on its
+   own queue, after the save. */
 - (void)logbookDidSave:(NSNotification *)notification {
     NSManagedObjectContext *context = notification.object;
     if (context.persistentStoreCoordinator != _coordinator) return;
     NSMutableArray<NSArray<NSString *> *> *drafted = [NSMutableArray array];
     for (NSManagedObject *object in notification.userInfo[NSInsertedObjectsKey]) {
-        if ([object isKindOfClass:[PurchaseOrder class]]) {
-            PurchaseOrder *order = (PurchaseOrder *)object;
-            if (order.id && (!order.orderState.length || [order.orderState isEqualToString:@"Draft"])) {
-                [drafted addObject:@[ order.id.UUIDString, order.catalog.id.UUIDString ?: @"" ]];
-            }
+        BOOL sale = [object isKindOfClass:[SaleOrder class]];
+        if (!sale && ![object isKindOfClass:[PurchaseOrder class]]) continue;
+        if (sale && (((SaleOrder *)object).serviceAsPartsSale || ((SaleOrder *)object).tyreChangeAsPartsSale)) continue;
+        NSUUID *orderId = [object valueForKey:@"id"];
+        NSString *state = [object valueForKey:@"orderState"];
+        NSUUID *catalog = [[object valueForKey:@"catalog"] valueForKey:@"id"];
+        if (orderId && (!state.length || [state isEqualToString:@"Draft"])) {
+            [drafted addObject:@[ sale ? @"orderToCash" : @"procureToReceipt", sale ? @"saleOrder" : @"purchaseOrder", orderId.UUIDString,
+                                  catalog.UUIDString ?: @"" ]];
         }
     }
     if (!drafted.count) return;
     dispatch_async(_queue, ^{
         for (NSArray<NSString *> *each in drafted) {
-            NSString *orderId = each[0];
+            NSString *orderId = each[2];
             NSError *error = nil;
             /* Its catalog, whose managers and keepers its tasks are offered to. */
-            if (![self->_engine.runtimeService startProcessInstanceByKey:@"procureToReceipt" businessKey:orderId
-                                                               variables:@{ @"purchaseOrder" : orderId, @"catalog" : each[1] } error:&error]) {
-                NSLog(@"Logbook: procure to receipt not started for %@: %@", orderId, error.localizedDescription);
+            if (![self->_engine.runtimeService startProcessInstanceByKey:each[0] businessKey:orderId
+                                                               variables:@{ each[1] : orderId, @"catalog" : each[3] } error:&error]) {
+                NSLog(@"Logbook: %@ not started for %@: %@", each[0], orderId, error.localizedDescription);
             }
         }
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -232,16 +240,32 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
 - (void)registerTasks {
     LBOrderTask *received = [[LBOrderTask alloc] init];
     received.coordinator = _coordinator;
+    received.orderClass = [PurchaseOrder class];
     received.work = ^BOOL(PurchaseOrder *order, WFDelegateExecution *execution, NSError **error) {
         return [execution setVariable:@"fullyReceived" value:@(order.isFullyReceived) error:error];
     };
     [_engine registerDelegate:received forName:@"orderReceived"];
     LBOrderTask *close = [[LBOrderTask alloc] init];
     close.coordinator = _coordinator;
+    close.orderClass = [PurchaseOrder class];
     close.work = ^BOOL(PurchaseOrder *order, WFDelegateExecution *execution, NSError **error) {
         return [order lb_close:error];
     };
     [_engine registerDelegate:close forName:@"closeOrder"];
+    LBOrderTask *shipped = [[LBOrderTask alloc] init];
+    shipped.coordinator = _coordinator;
+    shipped.orderClass = [SaleOrder class];
+    shipped.work = ^BOOL(SaleOrder *order, WFDelegateExecution *execution, NSError **error) {
+        return [execution setVariable:@"fullyShipped" value:@(order.isFullyShipped) error:error];
+    };
+    [_engine registerDelegate:shipped forName:@"orderShipped"];
+    LBOrderTask *closeSale = [[LBOrderTask alloc] init];
+    closeSale.coordinator = _coordinator;
+    closeSale.orderClass = [SaleOrder class];
+    closeSale.work = ^BOOL(SaleOrder *order, WFDelegateExecution *execution, NSError **error) {
+        return [order lb_close:error];
+    };
+    [_engine registerDelegate:closeSale forName:@"closeSaleOrder"];
 }
 
 - (ODataService *)serviceAtRoot:(NSURL *)root signedIn:(BOOL)signedIn {

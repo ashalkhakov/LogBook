@@ -19,18 +19,19 @@
 @property (nonatomic, readwrite, strong) LBFormValues *orderForm;
 @property (nonatomic, readwrite, strong) LBFormValues *confirmForm;
 @property (nonatomic, readwrite, strong) LBFormValues *receiveForm;
+@property (nonatomic, readwrite, strong) LBFormValues *shipForm;
 @end
 
 @implementation LBStockOrderWindowController {
-    /* A purchase's way through its forms (Model/Purchasing.flow): the order,
-       its Confirm the order and Receive the goods over it. */
+    /* An order's way through its forms (Model/Purchasing.flow, Selling.flow):
+       the order, its Confirm the order and Receive (Ship) the goods over it. */
     ORMFlowSession *_flow;
     NSError *_flowError;
     /* The state the Confirm sheet opens with: Confirm's, Cancel's. */
     NSString *_confirmState;
-    /* The lines a Receive is of, so many of each: those chosen. */
-    NSArray *_receiving;
-    NSArray<NSDecimalNumber *> *_receivingQuantities;
+    /* The lines a Receive or a Ship is of, so many of each: those chosen. */
+    NSArray *_moving;
+    NSArray<NSDecimalNumber *> *_movingQuantities;
 }
 
 - (instancetype)initWithStore:(LBStore *)store order:(NSManagedObject *)order {
@@ -47,11 +48,9 @@
         _parties = @[];
         _catalogItems = @[];
         _locations = @[];
-        if (!sale) {
-            NSError *error = nil;
-            _flow = [ORMFlowSession flowNamed:@"Purchasing" error:&error];
-            if (![_flow beginAt:@"Order" key:[[_order valueForKey:@"id"] UUIDString] error:&error]) _flowError = error;
-        }
+        NSError *error = nil;
+        _flow = [ORMFlowSession flowNamed:self.flowName error:&error];
+        if (![_flow beginAt:@"Order" key:[[_order valueForKey:@"id"] UUIDString] error:&error]) _flowError = error;
     }
     return self;
 }
@@ -60,11 +59,20 @@
     return _flow;
 }
 
+/* Its flow's, and its order's form's (the window's own). */
+- (NSString *)flowName {
+    return _sale ? @"Selling" : @"Purchasing";
+}
+
+- (NSString *)orderFormName {
+    return _sale ? @"EditSaleOrder" : @"EditPurchaseOrder";
+}
+
 /* Opened for a task done with a flow's entry: the window, and its step's
    screen over it at once (Confirm the order's sheet). */
 - (void)showWindow:(id)sender {
     [super showWindow:sender];
-    if (_sale || !_task.entryName || ![_task.flowName isEqualToString:@"Purchasing"] || self.window.attachedSheet) return;
+    if (!_task.entryName || ![_task.flowName isEqualToString:self.flowName] || self.window.attachedSheet) return;
     NSError *error = nil;
     ORMFlowStep *step = [_flow beginAt:_task.entryName key:[[_order valueForKey:@"id"] UUIDString] error:&error];
     if (!step) return [self reportError:error ?: _flowError];
@@ -74,12 +82,9 @@
 
 - (void)windowDidLoad {
     [super windowDidLoad];
-    /* A purchase's lines, its form's rows: in the order the window lists
-       them. */
-    if (!_sale) {
-        _lineList.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"lbLineOrder" ascending:YES
-                                                                      selector:@selector(localizedCaseInsensitiveCompare:)] ];
-    }
+    /* Its lines, its form's rows: in the order the window lists them. */
+    _lineList.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"lbLineOrder" ascending:YES
+                                                                  selector:@selector(localizedCaseInsensitiveCompare:)] ];
     [self.window bind:NSTitleBinding toObject:self withKeyPath:@"windowTitle" options:nil];
 }
 
@@ -105,10 +110,10 @@
     self.locations = [self fetch:[Location class] where:[NSPredicate predicateWithFormat:@"warehouse.catalog == %@", self.catalog]
                         sortedBy:self.byTitle];
     if (![_locations containsObject:_moveAt]) self.moveAt = _locations.firstObject;
-    /* A purchase's window, its form opened on it as it is (its catalog
-       given); a sale's fields, bound through the order, read it again. */
-    if (!_sale && !self.window.attachedSheet) {
-        self.orderForm = [self valuesOfForm:@"EditPurchaseOrder" given:@{ @"catalog" : self.catalog.id.UUIDString ?: @"" } object:_order];
+    /* The window, its form opened on the order as it is (its catalog
+       given). */
+    if (!self.window.attachedSheet) {
+        self.orderForm = [self valuesOfForm:self.orderFormName given:@{ @"catalog" : self.catalog.id.UUIDString ?: @"" } object:_order];
     }
     [self willChangeValueForKey:@"order"];
     [self didChangeValueForKey:@"order"];
@@ -117,9 +122,9 @@
 #pragma mark Its state
 
 - (void)act:(NSString *)name {
-    /* A purchase confirmed or cancelled: its Confirm the order's step, in
-       its form's sheet. */
-    if (!_sale && [@[ @"Confirm", @"Cancel" ] containsObject:name]) {
+    /* An order confirmed or cancelled: its Confirm the order's step, in its
+       form's sheet. */
+    if ([@[ @"Confirm", @"Cancel" ] containsObject:name]) {
         _confirmState = [name isEqualToString:@"Confirm"] ? @"Confirmed" : @"Cancelled";
         [self trigger:[name isEqualToString:@"Confirm"] ? @"confirmOrder" : @"cancelOrder"];
         return;
@@ -148,13 +153,13 @@
     return [[LBFormValues alloc] initWithSession:session object:object];
 }
 
-/* A purchase's changes saved by its form (EditPurchaseOrder), opened on it
-   as it is now; what else changed, with it. */
+/* An order's changes saved by its form (EditPurchaseOrder, EditSaleOrder),
+   opened on it as it is now; what else changed, with it. */
 - (BOOL)saveChanges {
-    if (_sale || !_orderForm || !self.context.hasChanges) return [super saveChanges];
+    if (!_orderForm || !self.context.hasChanges) return [super saveChanges];
     if (![self commitEdits]) return NO;
     [self completeMoney];
-    LBFormValues *now = [self valuesOfForm:@"EditPurchaseOrder" given:_orderForm.session.given object:_order];
+    LBFormValues *now = [self valuesOfForm:self.orderFormName given:_orderForm.session.given object:_order];
     NSError *error = nil;
     if (!now || ![now.session save:&error]) {
         if (now) [self refuseForm:now error:error under:self.window.contentView];
@@ -237,14 +242,15 @@
     NSWindow *sheet = self.window.attachedSheet;
     if (sheet) [self.window endSheet:sheet];
     [sheet orderOut:nil];
-    LBFormValues *shown = _confirmForm ?: _receiveForm;
+    LBFormValues *shown = _confirmForm ?: _receiveForm ?: _shipForm;
     ORMFlowWay *way = [_flow wayOn:on control:nil];
     if (way) [_flow take:way row:nil result:shown.session.savedKey values:shown.session.values];
-    if (_flow.ended || ![_flow.step.formName isEqualToString:@"EditPurchaseOrder"]) {
+    if (_flow.ended || ![_flow.step.formName isEqualToString:self.orderFormName]) {
         [_flow beginAt:@"Order" key:[[_order valueForKey:@"id"] UUIDString] error:NULL];
     }
     self.confirmForm = nil;
     self.receiveForm = nil;
+    self.shipForm = nil;
     [self readAgain];
 }
 
@@ -270,9 +276,10 @@
 
 /* A step of the flow shown: its form's sheet over the order. */
 - (void)show:(ORMFlowStep *)step {
-    if ([step.formName isEqualToString:@"ConfirmPurchaseOrder"]) return [self openConfirm:step];
+    if ([@[ @"ConfirmPurchaseOrder", @"ConfirmSaleOrder" ] containsObject:step.formName ?: @""]) return [self openConfirm:step];
     if ([step.formName isEqualToString:@"ReceiveGoods"]) return [self openReceive:step];
-    if (step.formName && ![step.formName isEqualToString:@"EditPurchaseOrder"]) {
+    if ([step.formName isEqualToString:@"ShipGoods"]) return [self openShip:step];
+    if (step.formName && ![step.formName isEqualToString:self.orderFormName]) {
         [self refuse:[NSString stringWithFormat:@"%@ has no view in the order's window.", step.formName]];
         [_flow beginAt:@"Order" key:[[_order valueForKey:@"id"] UUIDString] error:NULL];
     }
@@ -377,13 +384,63 @@ static NSDictionary *LBLinesParameter(NSArray *lines, NSArray<NSDecimalNumber *>
     return parameter;
 }
 
-- (void)move:(NSArray *)lines quantities:(NSArray<NSDecimalNumber *> *)quantities {
+/* So many of each line shipped (a sale's Ship the goods, from moveAt) or
+   received: the flow's way on the control taken, its sheet of them. */
+- (void)move:(NSArray *)lines quantities:(NSArray<NSDecimalNumber *> *)quantities control:(NSString *)control {
     if (!_moveAt) return [self refuse:_sale ? @"Choose where from." : @"Choose where."];
-    if (_sale) {
-        [self performAction:@"Ship" on:_order parameters:@{ @"Lines": LBLinesParameter(lines, quantities), @"From": _moveAt }];
+    if (!_sale) return [self receive:lines quantities:quantities];
+    _moving = lines;
+    _movingQuantities = quantities;
+    [self trigger:control];
+}
+
+/* Ship the goods' sheet (ShipGoods): a shipment of the order, its next,
+   recorded by the user now, shipped today from moveAt, a move of each line
+   chosen so many; changed there, and submitted. Each move's item, place,
+   moment and maker are worked out as it saves (lb_completeShippedMoves). */
+- (void)openShip:(ORMFlowStep *)step {
+    NSArray *lines = _moving, *quantities = _movingQuantities;
+    _moving = nil;
+    _movingQuantities = nil;
+    if (!lines.count) {
+        [_flow beginAt:@"Order" key:[[_order valueForKey:@"id"] UUIDString] error:NULL];
+        return [self refuse:@"Nothing of it is to be shipped."];
+    }
+    int32_t number = 0;
+    for (NSManagedObject *each in [_order valueForKey:@"shipments"]) number = MAX(number, [[each valueForKey:@"runningNumber"] intValue]);
+    NSDate *now = [NSDate date];
+    Shipment *shipment = [NSEntityDescription insertNewObjectForEntityForName:@"Shipment" inManagedObjectContext:self.context];
+    shipment.id = [NSUUID UUID];
+    shipment.saleOrder = (SaleOrder *)_order;
+    shipment.runningNumber = number + 1;
+    shipment.shippedBy = self.user;
+    shipment.shipmentRecorded = now;
+    shipment.shippedFrom = _moveAt;
+    for (NSUInteger i = 0; i < lines.count; i++) {
+        Move *move = [NSEntityDescription insertNewObjectForEntityForName:@"Move" inManagedObjectContext:self.context];
+        move.id = [NSUUID UUID];
+        move.shipment = shipment;
+        move.saleLine = lines[i];
+        move.moved = quantities[i];
+    }
+    NSISO8601DateFormatter *moments = [[NSISO8601DateFormatter alloc] init];
+    NSMutableDictionary *given = [@{ @"saleOrder" : [[_order valueForKey:@"id"] UUIDString],
+                                     @"runningNumber" : [NSString stringWithFormat:@"%d", number + 1],
+                                     @"shippedBy" : self.user.email ?: @"",
+                                     @"shipmentRecorded" : [moments stringFromDate:now] } mutableCopy];
+    [given addEntriesFromDictionary:step.given];
+    self.shipForm = [self valuesOfForm:step.formName given:given object:shipment];
+    if (!_shipForm) {
+        [self.context rollback];
+        [_flow beginAt:@"Order" key:[[_order valueForKey:@"id"] UUIDString] error:NULL];
         return;
     }
-    [self receive:lines quantities:quantities];
+    [_shipForm setValue:now forKey:@"shipped"];
+    [self.window beginSheet:_shipPanel completionHandler:nil];
+}
+
+- (IBAction)submitShip:(id)sender {
+    if ([self submitForm:_shipForm sheet:_shipPanel]) [self endForm:@"SubmitDone"];
 }
 
 /* Receive the goods' sheet (ReceiveGoods): a receipt of the order, its
@@ -392,17 +449,17 @@ static NSDictionary *LBLinesParameter(NSArray *lines, NSArray<NSDecimalNumber *>
    submitted. Each move's item, place, moment and maker are the model's. */
 - (void)receive:(NSArray *)lines quantities:(NSArray<NSDecimalNumber *> *)quantities {
     if (!lines.count) return [self refuse:@"Nothing of it is outstanding."];
-    _receiving = lines;
-    _receivingQuantities = quantities;
+    _moving = lines;
+    _movingQuantities = quantities;
     [self trigger:@"receiveGoods"];
 }
 
 /* The flow's Receive the goods: the lines chosen (else each outstanding),
    so many of each, a receipt of them. */
 - (void)openReceive:(ORMFlowStep *)step {
-    NSArray *lines = _receiving, *quantities = _receivingQuantities;
-    _receiving = nil;
-    _receivingQuantities = nil;
+    NSArray *lines = _moving, *quantities = _movingQuantities;
+    _moving = nil;
+    _movingQuantities = nil;
     if (!lines) {
         NSMutableArray *chosen = [NSMutableArray array], *left = [NSMutableArray array];
         for (PurchaseLine *line in _lines) {
@@ -465,7 +522,7 @@ static NSDictionary *LBLinesParameter(NSArray *lines, NSArray<NSDecimalNumber *>
     NSManagedObject *line = _lineList.selectedObjects.count == 1 ? _lineList.selectedObjects[0] : nil;
     if (!line) return [self refuse:@"Choose a line."];
     NSDecimalNumber *quantity = [self typed:_moveQuantity];
-    if (quantity) [self move:@[ line ] quantities:@[ quantity ]];
+    if (quantity) [self move:@[ line ] quantities:@[ quantity ] control:@"moveLine"];
 }
 
 /* What is held of the items at moveAt, by item, from the server's rows. */
@@ -495,7 +552,7 @@ static NSDictionary *LBLinesParameter(NSArray *lines, NSArray<NSDecimalNumber *>
         [quantities addObject:left];
     }
     if (!chosen.count) return [self refuse:_sale ? @"Nothing outstanding is held there." : @"Nothing is outstanding."];
-    [self move:chosen quantities:quantities];
+    [self move:chosen quantities:quantities control:@"moveOutstanding"];
 }
 
 - (IBAction)returnLine:(id)sender {
