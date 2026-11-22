@@ -92,6 +92,17 @@ static void *LBRowChanged = &LBRowChanged;
     [self didChangeValueForKey:keyPath];
 }
 
+/* The same row as another of its object: the form opened again (its
+   record read again, as a sync brings it) has rows of their own, and a
+   table's row chosen stays chosen. */
+- (BOOL)isEqual:(id)other {
+    return self == other || ([other isKindOfClass:[LBFormRow class]] && ((LBFormRow *)other)->_object == _object);
+}
+
+- (NSUInteger)hash {
+    return [_object hash];
+}
+
 /* Its values as its form's elements hold them: a reference's key, a set
    of choices' keys. */
 - (NSDictionary<NSString *, NSString *> *)texts {

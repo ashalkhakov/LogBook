@@ -1142,7 +1142,7 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
                 && [again.waiting.formName isEqualToString:@"ReceiveGoods"],
             again.lastError ?: order.lbFilled);
     [again close];
-    NSURL *file = stock.store.local.appState.context.persistentStoreCoordinator.persistentStores.firstObject.URL;
+    NSURL *file = ((NSPersistentStore *)stock.store.local.appState.context.persistentStoreCoordinator.persistentStores.firstObject).URL;
     LBAppState *relaunched = file ? [[LBAppState alloc] initWithStoreURL:file error:NULL] : nil;
     LBPendingSubmission *kept = relaunched.pendingSubmissions.firstObject;
     LBCheck(@"kept as after a relaunch: its form, its order, what it received", relaunched.pendingSubmissions.count == 1
@@ -1458,7 +1458,7 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
             [counting.countRows.arrangedObjects valueForKeyPath:@"stockItem.itemName"]);
     LBClick(sheet, @"countShowsExpected");
     LBCheck(@"what is held shown when asked: 2", LBIs(boltRow.held, @"2")
-                && ![counting.countRowsTable tableColumnWithIdentifier:@"expected"].hidden,
+                && ![[counting.countRowsTable tableColumnWithIdentifier:@"expected"] isHidden],
             boltRow.held);
     [counting.countRows setSelectedObjects:boltRow ? @[ boltRow ] : @[]];
     LBTypeInCell(sheet, @"countRowsTable", 3, @"1");
@@ -1929,6 +1929,11 @@ static void LBKindSteps(LBMainWindowController *controller) {
     LBCheck(@"an option chosen: the answer's", [[rows[0] valueForKey:@"options"] count] == 1, [rows[0] valueForKey:@"options"]);
     [answers selectRowIndexes:[NSIndexSet indexSetWithIndex:1] byExtendingSelection:NO];
     LBSpin();
+    /* Read again, as a sync's end does: the answer chosen stays chosen. */
+    [controller readAgain];
+    LBSpin();
+    LBCheck(@"the answer chosen stays chosen as the inspection is read again", controller.answersController.answers.selectionIndex == 1,
+            @(controller.answersController.answers.selectionIndex));
     LBChoose(window, @"answerYesNo", @"Yes");
     [rows[1] setValue:@"front left worn" forKey:@"note"];
     LBCheck(@"answered: an option chosen, and yes", [[[rows[0] valueForKey:@"options"] valueForKey:@"optionText"] isEqualToArray:@[ @"Low beams" ]]

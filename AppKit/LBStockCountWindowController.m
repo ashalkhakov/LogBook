@@ -59,7 +59,7 @@
     NSUInteger kept = _countPlace ? [places indexOfObject:_countPlace] : NSNotFound;
     self.countPlace = kept != NSNotFound ? places[kept] : places.firstObject;
     /* A count taken, shown as its form has it. */
-    if (_stockCount && !_stockCount.inserted && !self.window.attachedSheet) [self openCountForm];
+    if (_stockCount && !_stockCount.isInserted && !self.window.attachedSheet) [self openCountForm];
 }
 
 - (void)windowDidLoad {
@@ -115,7 +115,7 @@
 
 - (IBAction)startCount:(id)sender {
     if (!_countPlace || ![self commitEdits]) return;
-    if (_stockCount.inserted) [self.context rollback];
+    if (_stockCount.isInserted) [self.context rollback];
     Warehouse *warehouse = _countPlace.warehouse;
     int32_t number = 0;
     for (StockCount *each in warehouse.stockCounts) number = MAX(number, each.runningNumber);
@@ -138,7 +138,7 @@
 }
 
 - (IBAction)addCountRow:(id)sender {
-    if (!_stockCount.inserted) return [self refuse:@"Start a count first."];
+    if (!_stockCount.isInserted) return [self refuse:@"Start a count first."];
     if (![self commitEdits]) return;
     NSArray *items = [_countForm valueForKeyPath:@"choices.countLines.stockItem"];
     NSArray *places = [_countForm valueForKeyPath:@"choices.countLines.location"];
@@ -154,7 +154,7 @@
 }
 
 - (IBAction)submitCount:(id)sender {
-    if (!_stockCount.inserted || ![self commitEdits]) return;
+    if (!_stockCount.isInserted || ![self commitEdits]) return;
     for (CountLine *line in _stockCount.countLines) {
         if (!line.isDeleted && !line.found) return [self refuse:@"Type what was found of each (0 for none)."];
     }

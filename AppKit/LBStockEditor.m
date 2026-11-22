@@ -301,7 +301,6 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     _waiting = [self.store.local.appState keepSubmissionOfForm:formName about:about taskName:taskName instance:instance];
     if (!self.quiet) {
         NSAlert *alert = [[NSAlert alloc] init];
-        alert.alertStyle = NSAlertStyleInformational;
         alert.messageText = @"Saved here, not submitted yet";
         alert.informativeText = [NSString stringWithFormat:@"The server cannot be reached. %@ waits in Window > Tasks, and is submitted "
                                                            @"after the next sync.", taskName.length ? taskName : @"The step"];
