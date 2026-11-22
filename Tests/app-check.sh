@@ -21,8 +21,14 @@ done
 [ $up = yes ] || { echo "app-check: the server did not answer in 60 s; its log:"; cat "$log"; exit 1; }
 status=0
 out=$(mktemp)
-"$app" --self-test "http://127.0.0.1:$port/odata/" -NSQuitAlwaysKeepsWindows NO >"$out" 2>&1 || status=$?
-cat "$out"
+# Said as it goes (a run that hangs shows where), and stopped after 15
+# minutes where timeout(1) is there (GNU coreutils: Linux, MSYS2).
+limit=
+command -v timeout >/dev/null 2>&1 && limit="timeout 900"
+{ $limit "$app" --self-test "http://127.0.0.1:$port/odata/" -NSQuitAlwaysKeepsWindows NO 2>&1; echo $? >"$out.status"; } | tee "$out"
+status=$(cat "$out.status")
+[ "$status" = 124 ] && echo "FAIL the self-test did not finish in 15 minutes"
+rm -f "$out.status"
 # Quit before it was done is no pass. LB_STEPS=stock (or logbook) runs that
 # part of the self-test alone; LB_SNAPSHOTS=<dir> keeps pictures of windows.
 grep -q "^self-test done" "$out" || { echo "FAIL the self-test did not finish"; status=1; }
