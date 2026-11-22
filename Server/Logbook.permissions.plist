@@ -22,7 +22,9 @@
 // catalog's items, contacts, warehouses and staff; a manager of any of
 // its warehouses its orders, of a warehouse its locations and reorder
 // rules; a keeper of a warehouse what moves stock there, which a manager
-// there changes or removes.
+// there changes or removes. A transfer is asked for by a keeper of either
+// end, and moved by a keeper of where it goes from: its move theirs to
+// make, wherever it goes.
 //
 // A relation's terms are joined with or; all = ( ... ) is and (a move
 // kept at both its ends; a parts sale, by a keeper where it ships from).
@@ -321,7 +323,8 @@
       read   = ( { relation = read; from = stockItem; } );
       insert = ( { all = ( { relation = keeper; from = source; }, { relation = keeper; from = destination; } ); },
                  { all = ( { where = "source == nil"; }, { relation = keeper; from = destination; } ); },
-                 { all = ( { where = "destination == nil"; }, { relation = keeper; from = source; } ); } );
+                 { all = ( { where = "destination == nil"; }, { relation = keeper; from = source; } ); },
+                 { all = ( { where = "stockTransfer != nil"; }, { relation = keeper; from = source; } ); } );
       update = ( { all = ( { relation = manager; from = source; }, { relation = manager; from = destination; } ); },
                  { all = ( { where = "source == nil"; }, { relation = manager; from = destination; } ); },
                  { all = ( { where = "destination == nil"; }, { relation = manager; from = source; } ); } );
@@ -366,6 +369,12 @@
       insert = ( { relation = keeper; from = warehouse; } );
       update = ( { relation = manager; from = warehouse; } );
       delete = ( { relation = manager; from = warehouse; } );
+    };
+    StockTransfer = {
+      read   = ( { relation = read; from = stockItem; } );
+      insert = ( { relation = keeper; from = transferTo; }, { relation = keeper; from = transferFrom; } );
+      update = ( { relation = keeper; from = transferFrom; }, { relation = manager; from = transferTo; } );
+      delete = ( { relation = manager; from = transferFrom; } );
     };
     CountLine = {
       read   = ( { relation = read; from = stockCount; } );

@@ -16,7 +16,10 @@ Carl is no one of it.
   its keepers, Anna, Dave and Bob, not Carl;
 - each signed-in user works their task list without the identity
   provider's saying so (Tasks.Work): which tasks are theirs is the
-  logbook's.
+  logbook's;
+- a transfer asked for out of the garage to a second warehouse, which
+  Erin keeps: Move the stock is offered to the garage's keepers (Bob, and
+  Dave and Anna, who keep what they manage), not Erin, nor Carl.
 """
 import json
 import socket
@@ -31,7 +34,7 @@ import uuid
 SERVER = sys.argv[1] if len(sys.argv) > 1 else "build/logbook-server"
 failures = []
 
-ANNA, BOB, CARL, DAVE = "anna@example.org", "bob@example.org", "carl@example.org", "dave@example.org"
+ANNA, BOB, CARL, DAVE, ERIN = "anna@example.org", "bob@example.org", "carl@example.org", "dave@example.org", "erin@example.org"
 
 
 def check(what, ok, detail=""):
@@ -155,6 +158,26 @@ def walk(odata, workflow):
     check("Dave's and Anna's, who keep what they manage",
           names(DAVE) == ["Receive the goods"] and names(ANNA) == ["Receive the goods"], (tasks(DAVE), tasks(ANNA)))
     check("not Carl's", names(CARL) == [], tasks(CARL))
+
+    store, bin_ = str(uuid.uuid4()), str(uuid.uuid4())
+    for what, path, body in (
+            ("Erin", "Users", {"Email": ERIN}),
+            ("a second warehouse", "Warehouses", {"Id": store, "WarehouseName": "Store", "Catalog@odata.bind": "Catalogs(%s)" % catalog}),
+            ("its bin", "Locations", {"Id": bin_, "LocationName": "Bin", "Warehouse@odata.bind": "Warehouses(%s)" % store}),
+            ("Erin its keeper", "WarehouseStaffs", {"Id": str(uuid.uuid4()), "StaffRole": "Keeper", "User@odata.bind": "Users('%s')" % ERIN,
+                                                    "Warehouse@odata.bind": "Warehouses(%s)" % store}),
+            ("a transfer asked for, out of the garage's shelf to the store's bin", "StockTransfers", {
+                "Id": str(uuid.uuid4()), "TransferQuantity": 1, "TransferState": "Requested", "Asked": "2026-11-12T10:00:00Z",
+                "StockItem@odata.bind": "StockItems(%s)" % item, "TransferFrom@odata.bind": "Locations(%s)" % shelf,
+                "TransferTo@odata.bind": "Locations(%s)" % bin_, "AskedBy@odata.bind": "Users('%s')" % ANNA})):
+        status, body = request("POST", odata + path, body)
+        check(what, status == 201, (status, body))
+    check("Move the stock: Bob's, the garage's keeper", "Move the stock" in (settled(BOB, ["Receive the goods", "Move the stock"]) or []), tasks(BOB))
+    check("Dave's and Anna's, who keep what they manage", "Move the stock" in names(DAVE) and "Move the stock" in names(ANNA),
+          (tasks(DAVE), tasks(ANNA)))
+    check("not Erin's, who keeps where it goes (the catalog's Receive the goods hers, as a keeper of it)",
+          names(ERIN) == ["Receive the goods"], tasks(ERIN))
+    check("nor Carl's", names(CARL) == [], tasks(CARL))
 
 
 if __name__ == "__main__":

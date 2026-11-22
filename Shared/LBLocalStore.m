@@ -319,7 +319,7 @@ static NSString *LBCount(NSUInteger n) {
     /* What the server does before it saves: the same procedures, the same
        rules. */
     if (![_context lb_completeRemindersOfChangedEvents:error] || ![_context lb_shipPartsOfChangedEvents:error]
-        || ![_context lb_confirmChangedOrders:error] || ![_context lb_completeShippedMoves:error] || ![_context lb_postChangedCounts:error] || ![_context lb_holdMovedItems:error] || ![_context orm_prepareForSave:error] || ![_context save:error]) {
+        || ![_context lb_confirmChangedOrders:error] || ![_context lb_completeShippedMoves:error] || ![_context lb_postChangedCounts:error] || ![_context lb_moveChangedTransfers:error] || ![_context lb_holdMovedItems:error] || ![_context orm_prepareForSave:error] || ![_context save:error]) {
         return NO;
     }
     [[NSNotificationCenter defaultCenter] postNotificationName:LBLocalStoreDidChangeNotification object:self

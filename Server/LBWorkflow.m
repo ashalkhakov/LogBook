@@ -67,7 +67,8 @@ static NSError *LBWorkflowError(NSString *message) {
    catalogs they manage (its owner, or a Manager of one of its warehouses)
    and those they keep (a manager, or a Keeper of one of its warehouses),
    their claims manager and keeper, which the processes' candidate groups
-   name (manager:<catalog>). The task list is the logbook's to give:
+   name (manager:<catalog>); and the warehouses they keep (its Keeper or
+   Manager, or its catalog's owner), keeperAt (keeperAt:<warehouse>). The task list is the logbook's to give:
    whoever is signed in may work theirs (Tasks.Work); which tasks are
    theirs, the claims say. */
 @interface LBRolesAuthenticator : NSObject <HSAuthenticator>
@@ -115,6 +116,7 @@ static NSError *LBWorkflowError(NSString *message) {
     id email = principal.claims[@"email"];
     NSString *who = [email isKindOfClass:[NSString class]] && [email length] ? email : principal.subject;
     NSMutableOrderedSet *managed = [NSMutableOrderedSet orderedSet], *kept = [NSMutableOrderedSet orderedSet];
+    NSMutableOrderedSet *keptAt = [NSMutableOrderedSet orderedSet];
     NSManagedObjectContext *context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
     context.persistentStoreCoordinator = _coordinator;
     [context performBlockAndWait:^{
@@ -122,12 +124,16 @@ static NSError *LBWorkflowError(NSString *message) {
         owned.predicate = [NSPredicate predicateWithFormat:@"catalogOwner.email == %@", who];
         for (Catalog *catalog in [context executeFetchRequest:owned error:NULL]) {
             if (catalog.id) [managed addObject:catalog.id.UUIDString];
+            for (Warehouse *warehouse in catalog.warehouses) {
+                if (warehouse.id) [keptAt addObject:warehouse.id.UUIDString];
+            }
         }
         NSFetchRequest *staff = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([WarehouseStaff class])];
         staff.predicate = [NSPredicate predicateWithFormat:@"user.email == %@", who];
         for (WarehouseStaff *member in [context executeFetchRequest:staff error:NULL]) {
             NSUUID *catalog = member.warehouse.catalog.id;
             if (!catalog) continue;
+            if (member.warehouse.id && member.staffRole.length) [keptAt addObject:member.warehouse.id.UUIDString];
             if ([member.staffRole isEqualToString:@"Manager"]) [managed addObject:catalog.UUIDString];
             else if ([member.staffRole isEqualToString:@"Keeper"]) [kept addObject:catalog.UUIDString];
         }
@@ -136,6 +142,7 @@ static NSError *LBWorkflowError(NSString *message) {
     NSMutableDictionary *claims = [principal.claims mutableCopy] ?: [NSMutableDictionary dictionary];
     claims[@"manager"] = managed.array;
     claims[@"keeper"] = kept.array;
+    claims[@"keeperAt"] = keptAt.array;
     NSMutableSet *scopes = [principal.scopes mutableCopy];
     [scopes addObject:WFODataScopeWork];
     [claims removeObjectForKey:@"scp"];
@@ -209,6 +216,15 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
     if (context.persistentStoreCoordinator != _coordinator) return;
     NSMutableArray<NSArray<NSString *> *> *drafted = [NSMutableArray array];
     for (NSManagedObject *object in notification.userInfo[NSInsertedObjectsKey]) {
+        /* A transfer asked for: moved by a keeper of where it goes from. */
+        if ([object isKindOfClass:[StockTransfer class]]) {
+            StockTransfer *transfer = (StockTransfer *)object;
+            if (transfer.id && [transfer.transferState isEqualToString:@"Requested"]) {
+                [drafted addObject:@[ @"transferStock", @"stockTransfer", transfer.id.UUIDString,
+                                      transfer.transferFrom.warehouse.id.UUIDString ?: @"", @"fromWarehouse" ]];
+            }
+            continue;
+        }
         /* A count taken: its review, by its catalog's managers. */
         if ([object isKindOfClass:[StockCount class]]) {
             StockCount *count = (StockCount *)object;
@@ -235,7 +251,8 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
             NSError *error = nil;
             /* Its catalog, whose managers and keepers its tasks are offered to. */
             if (![self->_engine.runtimeService startProcessInstanceByKey:each[0] businessKey:orderId
-                                                               variables:@{ each[1] : orderId, @"catalog" : each[3] } error:&error]) {
+                                                               variables:@{ each[1] : orderId, (each.count > 4 ? each[4] : @"catalog") : each[3] }
+                                                                   error:&error]) {
                 NSLog(@"Logbook: %@ not started for %@: %@", each[0], orderId, error.localizedDescription);
             }
         }

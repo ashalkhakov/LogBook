@@ -87,8 +87,7 @@ def check_xib(xib, forms, problems):
         cid = controller.get('id') or ''
         if not cid.endswith('Form'):
             continue
-        prefix = cid[:-len('Form')]
-        name = prefix if os.path.exists('%s/%s.ormform' % (forms, prefix)) else 'Record' + (controller.get('objectClassName') or prefix)
+        name = form_of(forms, controller)
         try:
             form = contract('%s/%s.ormform' % (forms, name))
         except FileNotFoundError:
@@ -136,21 +135,27 @@ def check_xib(xib, forms, problems):
     return checked
 
 
-def views_of(xibs):
+def form_of(forms, controller):
+    """The form a <Name>Form controller is a view of: <Name>, else
+    Record<Name> (a record's tab)."""
+    prefix = (controller.get('id') or '')[:-len('Form')]
+    return prefix if os.path.exists('%s/%s.ormform' % (forms, prefix)) else 'Record' + (controller.get('objectClassName') or prefix)
+
+
+def views_of(forms, xibs):
     """Each form a XIB has a view of: the XIB, and its controls' identifiers."""
     views = {}
     for xib in xibs:
         root = ET.parse(xib).getroot()
         identifiers = {e.get('identifier') for e in root.iter() if e.get('identifier')}
         for controller in root.iter('objectController'):
-            cid = controller.get('id') or ''
-            if cid.endswith('Form'):
-                views[cid[:-len('Form')]] = (xib, identifiers)
+            if (controller.get('id') or '').endswith('Form'):
+                views[form_of(forms, controller)] = (xib, identifiers)
     return views
 
 
 def check_flows(forms, xibs, problems):
-    views = views_of(xibs)
+    views = views_of(forms, xibs)
     flows = sorted(f for f in os.listdir(forms) if f.endswith('.ormflow'))
     for name in flows:
         flow = contract(os.path.join(forms, name))

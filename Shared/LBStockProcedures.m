@@ -926,6 +926,14 @@ static NSDecimalNumber *LBShippedOf(SaleLine *line) {
 
 @end
 
+/* Whether any of them is not being deleted. */
+static BOOL LBLive(NSSet<NSManagedObject *> *objects) {
+    for (NSManagedObject *object in objects) {
+        if (!object.isDeleted) return YES;
+    }
+    return NO;
+}
+
 @implementation NSManagedObjectContext (LBParts)
 
 - (BOOL)lb_shipPartsOfChangedEvents:(NSError **)error {
@@ -977,7 +985,33 @@ static NSDecimalNumber *LBShippedOf(SaleLine *line) {
         if ([was isEqual:@"Counted"] && [now isEqual:@"Posted"]) [posted addObject:object];
     }
     for (StockCount *count in [posted sortedArrayUsingFunction:LBByID context:NULL]) {
+        /* Posted where it was posted (a device's, its adjustments come with
+           it). */
+        if (LBLive(count.moves)) continue;
         if (![count lb_post:error]) return NO;
+    }
+    return YES;
+}
+
+- (BOOL)lb_moveChangedTransfers:(NSError **)error {
+    NSMutableArray *moved = [NSMutableArray array];
+    for (NSManagedObject *object in self.updatedObjects) {
+        if (![object isKindOfClass:[StockTransfer class]]) continue;
+        NSString *was = [object committedValuesForKeys:@[ @"transferState" ]][@"transferState"];
+        NSString *now = ((StockTransfer *)object).transferState;
+        if (was == now || [was isEqual:now]) continue;
+        if (![was isEqual:@"Requested"]) return LBRefuse(error, @"A transfer moved or cancelled stays as it was: ask for another.");
+        if ([now isEqual:@"Moved"]) [moved addObject:object];
+    }
+    for (StockTransfer *transfer in [moved sortedArrayUsingFunction:LBByID context:NULL]) {
+        /* Moved where it was moved (a device's, its move come with it). */
+        if (LBLive(transfer.moves)) continue;
+        /* As Transfer moves it: refused where its place holds less. */
+        Move *move = [transfer.stockItem lb_transfer:transfer.transferQuantity from:transfer.transferFrom to:transfer.transferTo
+                                                  by:transfer.movedBy ?: transfer.askedBy at:transfer.movedAt ?: [NSDate date] error:error];
+        if (!move) return NO;
+        move.stockTransfer = transfer;
+        move.id = LBNamedUUID([NSString stringWithFormat:@"%@ moved", LBText(transfer.id)]);
     }
     return YES;
 }

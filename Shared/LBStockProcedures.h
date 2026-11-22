@@ -57,6 +57,7 @@
 #import "CustomerReturn+CoreDataClass.h"
 #import "SupplierReturn+CoreDataClass.h"
 #import "CountLine+CoreDataClass.h"
+#import "StockTransfer+CoreDataClass.h"
 #import "Event+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
 #import "TyreChange+CoreDataClass.h"
@@ -130,6 +131,10 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // Posted, ReviewStockCount's) posted (-[StockCount lb_post:]); refused for
 // one reviewed already, changed again.
 - (BOOL)lb_postChangedCounts:(NSError **)error;
+// Before a save: each transfer a keeper moved (its state from Requested to
+// Moved, MoveStock's) moved as Transfer moves it, its move part of it, made
+// by who moved it, then; refused for one moved or cancelled, changed again.
+- (BOOL)lb_moveChangedTransfers:(NSError **)error;
 @end
 
 @interface StockCount (LBStock)

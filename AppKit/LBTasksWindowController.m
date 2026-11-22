@@ -3,6 +3,7 @@
 #import "LBStore.h"
 #import "LBStockOrderWindowController.h"
 #import "LBStockCountWindowController.h"
+#import "LBStockItemWindowController.h"
 #import "LBStockDisplay.h"
 #import "LBStockProcedures.h"
 #import "LBLocalStore.h"
@@ -119,7 +120,7 @@
 - (NSManagedObject *)orderAbout:(NSString *)businessKey {
     NSUUID *orderId = businessKey ? [[NSUUID alloc] initWithUUIDString:businessKey] : nil;
     if (!orderId) return nil;
-    for (Class kind in @[ [PurchaseOrder class], [SaleOrder class], [StockCount class] ]) {
+    for (Class kind in @[ [PurchaseOrder class], [SaleOrder class], [StockCount class], [StockTransfer class] ]) {
         NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(kind)];
         fetch.predicate = [NSPredicate predicateWithFormat:@"id == %@", orderId];
         NSManagedObject *order = [[_store.context executeFetchRequest:fetch error:NULL] firstObject];
@@ -146,6 +147,11 @@
     NSString *about = task ? task.businessKey : waiting.businessKey;
     NSManagedObject *order = [self orderAbout:about];
     if (!order) return about ?: @"";
+    if ([order isKindOfClass:[StockTransfer class]]) {
+        StockTransfer *transfer = (StockTransfer *)order;
+        return [NSString stringWithFormat:@"%@: %@ from %@ to %@", transfer.stockItem.itemName ?: @"", transfer.transferQuantity.stringValue ?: @"",
+                                          transfer.transferFrom.lbTitle ?: @"", transfer.transferTo.lbTitle ?: @""];
+    }
     if ([order isKindOfClass:[StockCount class]]) {
         StockCount *count = (StockCount *)order;
         NSString *place = count.countedLocation ? count.countedLocation.lbTitle : count.warehouse.lbTitle;
@@ -186,6 +192,8 @@
     /* An order's window, or a count's. */
     LBStockEditor *window = [order isKindOfClass:[StockCount class]]
         ? [[LBStockCountWindowController alloc] initWithStore:_store count:(StockCount *)order]
+        : [order isKindOfClass:[StockTransfer class]]
+        ? [[LBStockItemWindowController alloc] initWithStore:_store transfer:(StockTransfer *)order]
         : [[LBStockOrderWindowController alloc] initWithStore:_store order:order];
     _stepWindow = window;
     window.task = task;

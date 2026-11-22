@@ -39,6 +39,13 @@
 // ReviewStockCount): posted, the count's differences adjusted as it saves
 // (lb_postChangedCounts), or rejected.
 //
+// Transfer stock (Model/TransferStock.bpmn): each transfer asked for (a
+// keeper's, RequestTransfer) starts it, its variable stockTransfer the
+// transfer's id, fromWarehouse the warehouse it goes from; Move the stock
+// that warehouse's keepers' (keeperAt:<warehouse>), done with the flow
+// Transferring (Model/Transferring.flow: Move, its MoveStock): moved, its
+// move made as it saves (lb_moveChangedTransfers), or cancelled.
+//
 // Settings: Workflow, the engine's store (a SQLite file; default
 // Workflow.sqlite beside the logbook's; Temporary with a temporary
 // logbook); Processes, the built deployment (default

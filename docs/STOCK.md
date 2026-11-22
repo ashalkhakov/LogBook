@@ -282,6 +282,16 @@ holdings; neither edits a quantity.
 
 **A transfer** moves so many of an item from one location to another (a
 shelf to another, a warehouse to another): `Transfer`, one move with both.
+In the app it is asked for first: the item's window's Transfer opens the
+model's form RequestTransfer, saved as a `StockTransfer` **requested**
+(the item, how many, from where, to where, who asked, when), nothing moved
+yet. Its process, **transfer stock** (`Model/TransferStock.bpmn`), gives
+the keepers of where it goes from (`keeperAt:<warehouse>`) Move the stock
+(the flow Transferring's Move, MoveStock, a sheet over the item's window,
+opened from Window > Tasks): **moved**, its move made as it saves, as
+`Transfer` makes it (refused where less is held), made by who moved it;
+or **cancelled**. A keeper of where it goes from makes its move, wherever
+it goes.
 
 **An adjustment** adds or takes away outside any order, with a reason:
 opening (the stock an item starts with), found, damaged, lost, expired,

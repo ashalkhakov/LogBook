@@ -1,6 +1,12 @@
 #import "LBStockItemWindowController.h"
 #import "LBStore.h"
 #import "LBStockDisplay.h"
+#import "LBStockProcedures.h"
+#import "LBTasks.h"
+#import "LBFormValues.h"
+#import <ORMRuntime/ORMForm.h>
+#import <ORMRuntime/ORMFormSession.h>
+#import <ORMRuntime/ORMFlowSession.h>
 
 @interface LBStockItemWindowController ()
 @property (nonatomic, readwrite, copy) NSArray<Holding *> *holdings;
@@ -16,9 +22,14 @@
 @property (nonatomic, readwrite, copy) NSArray<Warehouse *> *catalogWarehouses;
 @property (nonatomic, readwrite, copy) NSArray<WeightUnit *> *weightUnits;
 @property (nonatomic, readwrite, copy) NSArray<SizeUnit *> *sizeUnits;
+@property (nonatomic, readwrite, strong) LBFormValues *requestForm;
+@property (nonatomic, readwrite, strong) LBFormValues *moveForm;
 @end
 
-@implementation LBStockItemWindowController
+@implementation LBStockItemWindowController {
+    ORMFlowSession *_flow;
+    NSError *_flowError;
+}
 
 - (instancetype)initWithStore:(LBStore *)store item:(StockItem *)item catalog:(Catalog *)catalog {
     if ((self = [super initWithStore:store windowNibName:@"StockItem"])) {
@@ -49,8 +60,43 @@
         _reasons = @[ @"Opening", @"Found", @"Damaged", @"Lost", @"Expired", @"Other" ];
         _stockReason = @"Opening";
         _codeKinds = @[ @"GTIN", @"Code 128", @"QR", @"EPC", @"Other" ];
+        NSError *error = nil;
+        _flow = [ORMFlowSession flowNamed:@"Transferring" error:&error];
+        if (!_flow) _flowError = error;
     }
     return self;
+}
+
+- (instancetype)initWithStore:(LBStore *)store transfer:(StockTransfer *)transfer {
+    if ((self = [self initWithStore:store item:transfer.stockItem catalog:transfer.stockItem.catalog])) {
+        _transfer = [self own:transfer];
+    }
+    return self;
+}
+
+- (ORMFlowSession *)flow {
+    return _flow;
+}
+
+- (NSString *)businessKey {
+    return _transfer.id.UUIDString;
+}
+
+/* Opened for a transfer's Move the stock: its sheet at once. */
+- (void)showWindow:(id)sender {
+    [super showWindow:sender];
+    if (!_transfer || !self.task.entryName || ![self.task.flowName isEqualToString:@"Transferring"] || self.window.attachedSheet) return;
+    NSError *error = nil;
+    ORMFlowStep *step = [_flow beginAt:self.task.entryName key:_transfer.id.UUIDString error:&error];
+    if (!step) return [self reportError:error ?: _flowError];
+    if (![step.formName isEqualToString:@"MoveStock"]) {
+        return [self refuse:[NSString stringWithFormat:@"%@ has no view in the item's window.", step.formName]];
+    }
+    NSISO8601DateFormatter *moments = [[NSISO8601DateFormatter alloc] init];
+    NSMutableDictionary *given = [@{ @"movedBy" : self.user.email ?: @"", @"movedAt" : [moments stringFromDate:[NSDate date]] } mutableCopy];
+    [given addEntriesFromDictionary:step.given];
+    self.moveForm = [self valuesOfForm:step.formName given:given object:_transfer];
+    if (_moveForm) [self.window beginSheet:_movePanel completionHandler:nil];
 }
 
 - (void)windowDidLoad {
@@ -155,7 +201,64 @@ static NSPredicate *LBOf(NSString *key, id object) {
     NSDecimalNumber *quantity = [self typed:_stockQuantity];
     if (!quantity) return;
     if (!_stockAt || !_stockTo) return [self refuse:@"Choose where from, and where to."];
-    [self performAction:@"Transfer" on:_item parameters:@{ @"Quantity": quantity, @"From": _stockAt, @"To": _stockTo }];
+    if (![self saveChanges]) return;
+    NSError *error = nil;
+    ORMFlowStep *step = [_flow beginAt:@"Request" key:nil error:&error];
+    if (!step) return [self reportError:error ?: _flowError];
+    NSDate *now = [NSDate date];
+    StockTransfer *transfer = [NSEntityDescription insertNewObjectForEntityForName:@"StockTransfer" inManagedObjectContext:self.context];
+    transfer.id = [NSUUID UUID];
+    transfer.stockItem = _item;
+    transfer.transferQuantity = quantity;
+    transfer.transferFrom = _stockAt;
+    transfer.transferTo = _stockTo;
+    transfer.askedBy = self.user;
+    transfer.asked = now;
+    transfer.transferState = @"Requested";
+    NSISO8601DateFormatter *moments = [[NSISO8601DateFormatter alloc] init];
+    NSMutableDictionary *given = [@{ @"stockItem" : _item.id.UUIDString ?: @"", @"askedBy" : self.user.email ?: @"",
+                                     @"asked" : [moments stringFromDate:now], @"transferState" : @"Requested" } mutableCopy];
+    [given addEntriesFromDictionary:step.given];
+    self.requestForm = [self valuesOfForm:step.formName given:given object:transfer];
+    if (!_requestForm) {
+        [self.context rollback];
+        return;
+    }
+    [self.window beginSheet:_requestPanel completionHandler:nil];
+}
+
+/* Asked for: saved by its form, requested; nothing moved yet. */
+- (IBAction)submitRequest:(id)sender {
+    [_requestPanel makeFirstResponder:nil];
+    LBFormValues *now = [self valuesOfForm:_requestForm.session.form.name given:_requestForm.session.given object:_requestForm.object];
+    NSError *error = nil;
+    if (!now || ![now.session save:&error]) {
+        if (now) [self refuseForm:now error:error under:_requestPanel.contentView];
+        return;
+    }
+    [self endForm];
+}
+
+- (IBAction)submitMove:(id)sender {
+    if ([self submitForm:_moveForm sheet:_movePanel]) [self endForm];
+}
+
+- (void)endForm {
+    NSWindow *sheet = self.window.attachedSheet;
+    if (sheet) [self.window endSheet:sheet];
+    [sheet orderOut:nil];
+    self.requestForm = nil;
+    self.moveForm = nil;
+    [self readAgain];
+}
+
+- (IBAction)dismissForm:(id)sender {
+    [self.context rollback];
+    [self endForm];
+}
+
+- (void)cancelOperation:(id)sender {
+    if (self.window.attachedSheet) [self dismissForm:sender];
 }
 
 - (void)assembling:(BOOL)apart {

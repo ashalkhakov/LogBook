@@ -43,6 +43,7 @@
 #import "LBStockItemWindowController.h"
 #import "LBStockOrderWindowController.h"
 #import "LBTasksWindowController.h"
+#import "StockTransfer+CoreDataClass.h"
 #import "LBTasks.h"
 #import "LBStockCountWindowController.h"
 #import "LBCatalogSettingsWindowController.h"
@@ -1546,6 +1547,42 @@ static void LBStockSteps(LBMainWindowController *controller) {
     LBCheck(@"its window shows them: On hand 20", [onHand isEqualToString:@"20"], onHand);
     LBChoose(boltWindow, @"stockTo", @"Garage / Shelf A");
     LBMoveStock(card, @"transfer", @"5", nil);
+    LBCheck(@"Transfer: its sheet, RequestTransfer, 5 from Default to Shelf A", boltWindow.attachedSheet == card.requestPanel
+                && [card.requestForm.session.form.name isEqualToString:@"RequestTransfer"] && LBIs([card.requestForm valueForKey:@"transferQuantity"], @"5")
+                && [[[card.requestForm valueForKey:@"transferTo"] lbTitle] isEqualToString:@"Garage / Shelf A"],
+            card.lastError ?: card.requestForm);
+    LBClick(card.requestPanel, @"submitRequest");
+    NSArray *asked = LBServerObjects([StockTransfer class], [NSPredicate predicateWithFormat:@"stockItem.id == %@", bolt.id]);
+    StockTransfer *transfer = asked.firstObject;
+    LBCheck(@"asked for, nothing moved yet: requested, one holding", asked.count == 1 && [transfer.transferState isEqualToString:@"Requested"]
+                && card.holdings.count == 1 && !boltWindow.attachedSheet,
+            card.lastError ?: asked);
+    LBTasksWindowController *tasks = LBTasksWindow();
+    NSArray *names = transfer ? LBTasksOf(tasks, transfer, @[ @"Move the stock" ]) : @[];
+    LBCheck(@"transfer stock started: Move the stock, a keeper's of where it goes from", [names isEqualToArray:@[ @"Move the stock" ]],
+            tasks.messageLabel.stringValue ?: names);
+    NSUInteger row = NSNotFound;
+    for (NSUInteger i = 0; i < tasks.openTasks.count && row == NSNotFound; i++) {
+        if ([tasks.openTasks[i].businessKey isEqualToString:transfer.id.UUIDString]) row = i;
+    }
+    if (row != NSNotFound) {
+        [tasks.window makeKeyAndOrderFront:nil];
+        [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+        LBClick(tasks.window, @"open");
+        LBStockItemWindowController *mover = (LBStockItemWindowController *)tasks.stepWindow;
+        mover.quiet = YES;
+        LBCheck(@"opened in the item's window, MoveStock's sheet at once", [mover isKindOfClass:[LBStockItemWindowController class]]
+                    && mover.window.attachedSheet == mover.movePanel && [mover.moveForm.session.form.name isEqualToString:@"MoveStock"],
+                mover.lastError ?: mover.moveForm);
+        LBChoose(mover.movePanel, @"moveState", @"Moved");
+        LBClick(mover.movePanel, @"submitMove");
+        names = LBTasksOf(tasks, transfer, @[]);
+        LBCheck(@"moved: its task done", names.count == 0 && !mover.window.attachedSheet, mover.lastError ?: names);
+        [mover close];
+    }
+    [tasks close];
+    [boltWindow makeKeyAndOrderFront:nil];
+    [card readAgain];
     LBCheck(@"5 moved to Garage / Shelf A: two holdings, 20 on hand still", card.holdings.count == 2 && LBIs(bolt.totalQuantity, @"20"),
             card.lastError ?: [card.holdings valueForKey:@"lbLocationTitle"]);
     LBMoveStock(card, @"adjust", @"-25", @"Lost");
