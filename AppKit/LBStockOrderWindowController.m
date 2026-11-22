@@ -20,6 +20,8 @@
 @property (nonatomic, readwrite, strong) LBFormValues *confirmForm;
 @property (nonatomic, readwrite, strong) LBFormValues *receiveForm;
 @property (nonatomic, readwrite, strong) LBFormValues *shipForm;
+@property (nonatomic, readwrite, strong) LBFormValues *returnAskForm;
+@property (nonatomic, readwrite, strong) LBFormValues *returnDoForm;
 @end
 
 @implementation LBStockOrderWindowController {
@@ -32,6 +34,9 @@
     /* The lines a Receive or a Ship is of, so many of each: those chosen. */
     NSArray *_moving;
     NSArray<NSDecimalNumber *> *_movingQuantities;
+    /* The line a return is asked for, how many. */
+    NSManagedObject *_returnAskedLine;
+    NSDecimalNumber *_returnAskedQuantity;
 }
 
 - (instancetype)initWithStore:(LBStore *)store order:(NSManagedObject *)order {
@@ -55,6 +60,14 @@
     return self;
 }
 
+- (instancetype)initWithStore:(LBStore *)store returning:(NSManagedObject *)back {
+    NSManagedObject *order = [back valueForKey:[back isKindOfClass:[CustomerReturn class]] ? @"saleOrder" : @"purchaseOrder"];
+    if ((self = [self initWithStore:store order:order])) {
+        _returning = [self own:back];
+    }
+    return self;
+}
+
 - (ORMFlowSession *)flow {
     return _flow;
 }
@@ -65,7 +78,8 @@
 }
 
 - (NSString *)businessKey {
-    return [[_order valueForKey:@"id"] UUIDString];
+    /* Its return's task's, while it is done here; else its order's. */
+    return [[(_returning ?: _order) valueForKey:@"id"] UUIDString];
 }
 
 - (NSString *)orderFormName {
@@ -78,7 +92,7 @@
     [super showWindow:sender];
     if (!self.task.entryName || ![self.task.flowName isEqualToString:self.flowName] || self.window.attachedSheet) return;
     NSError *error = nil;
-    ORMFlowStep *step = [_flow beginAt:self.task.entryName key:[[_order valueForKey:@"id"] UUIDString] error:&error];
+    ORMFlowStep *step = [_flow beginAt:self.task.entryName key:[[(_returning ?: _order) valueForKey:@"id"] UUIDString] error:&error];
     if (!step) return [self reportError:error ?: _flowError];
     _confirmState = nil;
     [self show:step];
@@ -160,7 +174,7 @@
     NSWindow *sheet = self.window.attachedSheet;
     if (sheet) [self.window endSheet:sheet];
     [sheet orderOut:nil];
-    LBFormValues *shown = _confirmForm ?: _receiveForm ?: _shipForm;
+    LBFormValues *shown = _confirmForm ?: _receiveForm ?: _shipForm ?: _returnAskForm ?: _returnDoForm;
     ORMFlowWay *way = [_flow wayOn:on control:nil];
     if (way) [_flow take:way row:nil result:shown.session.savedKey values:shown.session.values];
     if (_flow.ended || ![_flow.step.formName isEqualToString:self.orderFormName]) {
@@ -169,6 +183,8 @@
     self.confirmForm = nil;
     self.receiveForm = nil;
     self.shipForm = nil;
+    self.returnAskForm = nil;
+    self.returnDoForm = nil;
     [self readAgain];
 }
 
@@ -197,6 +213,8 @@
     if ([@[ @"ConfirmPurchaseOrder", @"ConfirmSaleOrder" ] containsObject:step.formName ?: @""]) return [self openConfirm:step];
     if ([step.formName isEqualToString:@"ReceiveGoods"]) return [self openReceive:step];
     if ([step.formName isEqualToString:@"ShipGoods"]) return [self openShip:step];
+    if ([@[ @"RequestCustomerReturn", @"RequestSupplierReturn" ] containsObject:step.formName ?: @""]) return [self openReturnAsk:step];
+    if ([@[ @"ReceiveCustomerReturn", @"SendSupplierReturn" ] containsObject:step.formName ?: @""]) return [self openReturnDo:step];
     if (step.formName && ![step.formName isEqualToString:self.orderFormName]) {
         [self refuse:[NSString stringWithFormat:@"%@ has no view in the order's window.", step.formName]];
         [_flow beginAt:@"Order" key:[[_order valueForKey:@"id"] UUIDString] error:NULL];
@@ -287,12 +305,6 @@
     self.lines = left;
 }
 
-/* Lines as Ship and Receive take them: {"<line id>": quantity}. */
-static NSDictionary *LBLinesParameter(NSArray *lines, NSArray<NSDecimalNumber *> *quantities) {
-    NSMutableDictionary *parameter = [NSMutableDictionary dictionary];
-    for (NSUInteger i = 0; i < lines.count; i++) parameter[[[lines[i] valueForKey:@"id"] UUIDString]] = quantities[i];
-    return parameter;
-}
 
 /* So many of each line shipped (a sale's Ship the goods, from moveAt) or
    received: the flow's way on the control taken, its sheet of them. */
@@ -468,12 +480,83 @@ static NSDictionary *LBLinesParameter(NSArray *lines, NSArray<NSDecimalNumber *>
 - (IBAction)returnLine:(id)sender {
     NSManagedObject *line = _lineList.selectedObjects.count == 1 ? _lineList.selectedObjects[0] : nil;
     if (!line) return [self refuse:@"Choose a line."];
-    if (!_moveAt) return [self refuse:_sale ? @"Choose where to." : @"Choose where from."];
     NSDecimalNumber *quantity = [self typed:_moveQuantity];
     if (!quantity) return;
-    [self performAction:@"Return" on:_order
-             parameters:@{ @"Lines": LBLinesParameter(@[ line ], @[ quantity ]), (_sale ? @"At" : @"From"): _moveAt,
-                           @"Reason": _returnReason ?: @"Other" }];
+    _returnAskedLine = line;
+    _returnAskedQuantity = quantity;
+    [self trigger:@"returnLine"];
 }
 
+/* Return Line's sheet (RequestCustomerReturn, RequestSupplierReturn): a
+   return of the order asked for, its next, by the user, of the line
+   chosen so many, for the reason chosen; changed there, and saved. */
+- (void)openReturnAsk:(ORMFlowStep *)step {
+    NSManagedObject *line = _returnAskedLine;
+    NSDecimalNumber *quantity = _returnAskedQuantity;
+    _returnAskedLine = nil;
+    _returnAskedQuantity = nil;
+    NSString *kind = _sale ? @"CustomerReturn" : @"SupplierReturn";
+    int32_t number = 0;
+    for (NSManagedObject *each in [_order valueForKey:_sale ? @"customerReturns" : @"supplierReturns"]) {
+        number = MAX(number, [[each valueForKey:@"runningNumber"] intValue]);
+    }
+    NSManagedObject *back = [NSEntityDescription insertNewObjectForEntityForName:kind inManagedObjectContext:self.context];
+    [back setValue:[NSUUID UUID] forKey:@"id"];
+    [back setValue:_order forKey:_sale ? @"saleOrder" : @"purchaseOrder"];
+    [back setValue:@(number + 1) forKey:@"runningNumber"];
+    [back setValue:self.user forKey:@"returnAskedBy"];
+    [back setValue:@"Requested" forKey:@"returnState"];
+    [back setValue:_returnReason ?: @"Other" forKey:@"returnReason"];
+    NSManagedObject *asked = [NSEntityDescription insertNewObjectForEntityForName:[kind stringByAppendingString:@"Line"]
+                                                           inManagedObjectContext:self.context];
+    [asked setValue:[NSUUID UUID] forKey:@"id"];
+    [asked setValue:back forKey:_sale ? @"customerReturn" : @"supplierReturn"];
+    [asked setValue:line forKey:_sale ? @"saleLine" : @"purchaseLine"];
+    [asked setValue:quantity forKey:@"askedQuantity"];
+    NSMutableDictionary *given = [@{ _sale ? @"saleOrder" : @"purchaseOrder" : [[_order valueForKey:@"id"] UUIDString],
+                                     @"runningNumber" : [NSString stringWithFormat:@"%d", number + 1],
+                                     @"returnAskedBy" : self.user.email ?: @"", @"returnState" : @"Requested" } mutableCopy];
+    [given addEntriesFromDictionary:step.given];
+    self.returnAskForm = [self valuesOfForm:step.formName given:given object:back];
+    if (!_returnAskForm) {
+        [self.context rollback];
+        [_flow beginAt:@"Order" key:[[_order valueForKey:@"id"] UUIDString] error:NULL];
+        return;
+    }
+    [self.window beginSheet:_returnAskPanel completionHandler:nil];
+}
+
+/* Asked for: saved by its form, requested; nothing moved yet. */
+- (IBAction)submitReturnAsk:(id)sender {
+    [_returnAskPanel makeFirstResponder:nil];
+    LBFormValues *now = [self valuesOfForm:_returnAskForm.session.form.name given:_returnAskForm.session.given object:_returnAskForm.object];
+    NSError *error = nil;
+    if (!now || ![now.session save:&error]) {
+        if (now) [self refuseForm:now error:error under:_returnAskPanel.contentView];
+        return;
+    }
+    [self endForm:@"SubmitDone"];
+}
+
+/* The return's task's sheet (ReceiveCustomerReturn, SendSupplierReturn):
+   the return as asked for, received back (sent back) today at moveAt,
+   recorded by the user now, its state chosen. */
+- (void)openReturnDo:(ORMFlowStep *)step {
+    if (!_returning) return;
+    NSISO8601DateFormatter *moments = [[NSISO8601DateFormatter alloc] init];
+    NSMutableDictionary *given = [@{ @"returnRecordedBy" : self.user.email ?: @"",
+                                     @"returnRecorded" : [moments stringFromDate:[NSDate date]] } mutableCopy];
+    [given addEntriesFromDictionary:step.given];
+    self.returnDoForm = [self valuesOfForm:step.formName given:given object:_returning];
+    if (!_returnDoForm) return;
+    [_returnDoForm setValue:[NSDate date] forKey:_sale ? @"returnReceived" : @"returnShipped"];
+    if (_moveAt) [_returnDoForm setValue:_moveAt forKey:_sale ? @"returnedTo" : @"returnedFrom"];
+    [self.window beginSheet:_returnDoPanel completionHandler:nil];
+}
+
+- (IBAction)submitReturnDone:(id)sender {
+    if (![self submitForm:_returnDoForm sheet:_returnDoPanel]) return;
+    [self endForm:@"SubmitDone"];
+    _returning = nil;
+}
 @end

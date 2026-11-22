@@ -264,11 +264,22 @@ stock's.
   damaged, or waits to be checked, is kept there and is not for sale. On
   hand counts only what is not set aside; from there it is adjusted away
   as damaged, or moved back once checked.
-- **Where:** the order's window has Reason and Return Line (to or from the
-  location chosen for shipping or receiving), and lists its returns; the
-  server's `Return` action on a sale or a purchase order
-  (`Server/LBStockActions.h`). Who may: the staff of the warehouse the
-  goods come back to, or go from.
+- **Asked for, then returned.** The order's window has Reason and Return
+  Line: the model's form RequestCustomerReturn (RequestSupplierReturn), a
+  sheet over the order, asks for so many of the line chosen
+  (`CustomerReturnLine`, `SupplierReturnLine`), saved **requested**,
+  nothing moved yet. Its process, **customer return** (**supplier
+  return**: `Model/CustomerReturn.bpmn`, `SupplierReturn.bpmn`), gives the
+  catalog's keepers Receive the return (Send the return), the flow
+  Selling's ReceiveReturn (Purchasing's SendReturn: ReceiveCustomerReturn,
+  SendSupplierReturn), opened from Window > Tasks in the order's window:
+  the day, and where it comes back to (goes from), **returned**, its moves
+  made as it saves, as `Return` makes them; or **cancelled**. The order's
+  window lists its returns. The server's `Return` action on a sale or a
+  purchase order (`Server/LBStockActions.h`) still returns at once (a
+  return of before, with no state, was returned so). Who may: a keeper of
+  the order's catalog asks for one; the staff of the warehouse the goods
+  come back to, or go from, return it.
 
 ## Holdings
 

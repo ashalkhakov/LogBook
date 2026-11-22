@@ -19,6 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The window of a SaleOrder or a PurchaseOrder.
 - (instancetype)initWithStore:(LBStore *)store order:(NSManagedObject *)order;
+// A return asked for (a CustomerReturn, a SupplierReturn), in its order's
+// window: its Receive (Send) the return task's (LBStockEditor's task), its
+// sheet shown as the window is.
+- (instancetype)initWithStore:(LBStore *)store returning:(NSManagedObject *)back;
+@property (nonatomic, readonly, strong, nullable) NSManagedObject *returning;
 @property (nonatomic, readonly, strong) NSManagedObject *order;
 // A sale (else a purchase).
 @property (nonatomic, readonly) BOOL sale;
@@ -41,6 +46,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSWindow *confirmPanel;
 @property (nonatomic, strong) IBOutlet NSWindow *receivePanel;
 @property (nonatomic, strong) IBOutlet NSWindow *shipPanel;
+// A return's forms, as their sheets bind them: RequestCustomerReturn
+// (RequestSupplierReturn) while Return Line's sheet is shown,
+// ReceiveCustomerReturn (SendSupplierReturn) while its task's is.
+@property (nonatomic, readonly, strong, nullable) LBFormValues *returnAskForm;
+@property (nonatomic, readonly, strong, nullable) LBFormValues *returnDoForm;
+@property (nonatomic, strong) IBOutlet NSWindow *returnAskPanel;
+@property (nonatomic, strong) IBOutlet NSWindow *returnDoPanel;
 @property (nonatomic, strong) IBOutlet NSTableView *linesTable;
 // What its form chooses from: the catalog's customers (suppliers), items,
 // locations.
@@ -68,6 +80,15 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)submitConfirm:(nullable id)sender;
 - (IBAction)submitReceive:(nullable id)sender;
 - (IBAction)submitShip:(nullable id)sender;
+// Return Line: a return asked for of the line chosen, so many
+// (moveQuantity), for returnReason, in its sheet; its Submit saves it,
+// requested (nothing moved yet: a keeper receives it, or sends it back,
+// Model/CustomerReturn.bpmn, SupplierReturn.bpmn). The return's task's
+// sheet's Submit: its form saved (returned, its moves made; or
+// cancelled), submitted to the task.
+- (IBAction)returnLine:(nullable id)sender;
+- (IBAction)submitReturnAsk:(nullable id)sender;
+- (IBAction)submitReturnDone:(nullable id)sender;
 - (IBAction)dismissForm:(nullable id)sender;
 // A purchase's Receive: its sheet, a move of each line outstanding.
 - (IBAction)receiveGoods:(nullable id)sender;

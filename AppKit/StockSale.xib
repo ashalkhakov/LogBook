@@ -8,6 +8,8 @@
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockOrderWindowController">
       <connections>
         <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="returnAskPanel" destination="returnAskPanel" id="returnAskPanelOutlet"/>
+        <outlet property="returnDoPanel" destination="returnDoPanel" id="returnDoPanelOutlet"/>
         <outlet property="confirmPanel" destination="confirmPanel" id="confirmPanelOutlet"/>
         <outlet property="shipPanel" destination="shipPanel" id="shipPanelOutlet"/>
         <outlet property="lineList" destination="lineList" id="lineListOutlet"/>
@@ -41,6 +43,331 @@
         <binding destination="ShipGoodsForm" name="contentSet" keyPath="selection.moves" id="shipMovesContent"/>
       </connections>
     </arrayController>
+    <objectController objectClassName="CustomerReturn" userLabel="Return Form" id="RequestCustomerReturnForm">
+      <connections>
+        <binding destination="-2" name="contentObject" keyPath="returnAskForm" id="RequestCustomerReturnFormContent"/>
+      </connections>
+    </objectController>
+    <arrayController editable="YES" userLabel="Return Lines" id="returnAskLines">
+      <connections>
+        <binding destination="RequestCustomerReturnForm" name="contentSet" keyPath="selection.customerReturnLines" id="returnAskLinesContent"/>
+      </connections>
+    </arrayController>
+    <objectController objectClassName="CustomerReturn" userLabel="Return Done Form" id="ReceiveCustomerReturnForm">
+      <connections>
+        <binding destination="-2" name="contentObject" keyPath="returnDoForm" id="ReceiveCustomerReturnFormContent"/>
+      </connections>
+    </objectController>
+    <arrayController editable="YES" userLabel="Return Done Lines" id="returnDoLines">
+      <connections>
+        <binding destination="ReceiveCustomerReturnForm" name="contentSet" keyPath="selection.customerReturnLines" id="returnDoLinesContent"/>
+      </connections>
+    </arrayController>
+    <window title="Return" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="returnAskPanel" customClass="NSPanel">
+      <windowStyleMask key="styleMask" titled="YES"/>
+      <rect key="contentRect" x="200" y="200" width="420" height="210"/>
+      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
+      <view key="contentView" id="returnAskPanelContent">
+        <rect key="frame" x="0" y="0" width="420" height="210"/>
+        <autoresizingMask key="autoresizingMask"/>
+        <subviews>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnAskLineLabel">
+            <rect key="frame" x="14" y="176" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Line" id="returnAskLineLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="returnAskLine" id="returnAskLine">
+            <rect key="frame" x="108" y="170" width="296" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="returnAskLineCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="returnAskLineMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="RequestCustomerReturnForm" name="content" keyPath="selection.choices.customerReturnLines.saleLine" id="returnAskLineContent"/>
+              <binding destination="RequestCustomerReturnForm" name="contentValues" keyPath="selection.choices.customerReturnLines.saleLine.stockItem.lbTitle" previousBinding="returnAskLineContent" id="returnAskLineValues"/>
+              <binding destination="returnAskLines" name="selectedObject" keyPath="selection.saleLine" previousBinding="returnAskLineValues" id="returnAskLineChosen"/>
+            </connections>
+          </popUpButton>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnAskQuantityLabel">
+            <rect key="frame" x="14" y="146" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many" id="returnAskQuantityLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="returnAskQuantity" id="returnAskQuantity">
+            <rect key="frame" x="110" y="143" width="100" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" alignment="left" id="returnAskQuantityCell">
+              <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="returnAskQuantityFormatter"/>
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="returnAskLines" name="value" keyPath="selection.askedQuantity" id="returnAskQuantityValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnAskReasonLabel">
+            <rect key="frame" x="14" y="116" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason" id="returnAskReasonLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="returnAskReason" id="returnAskReason">
+            <rect key="frame" x="108" y="110" width="296" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="returnAskReasonCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="returnAskReasonMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="RequestCustomerReturnForm" name="content" keyPath="selection.items.returnReason" id="returnAskReasonContent"/>
+              <binding destination="RequestCustomerReturnForm" name="selectedObject" keyPath="selection.returnReason" previousBinding="returnAskReasonContent" id="returnAskReasonChosen"/>
+            </connections>
+          </popUpButton>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnAskNoteLabel">
+            <rect key="frame" x="14" y="86" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="returnAskNoteLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="returnAskNote" id="returnAskNote">
+            <rect key="frame" x="110" y="83" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" alignment="left" id="returnAskNoteCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="RequestCustomerReturnForm" name="value" keyPath="selection.note" id="returnAskNoteValue"/>
+            </connections>
+          </textField>
+          <button verticalHuggingPriority="750" identifier="dismissReturnAsk" id="dismissReturnAsk">
+            <rect key="frame" x="220" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissReturnAskCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="dismissForm:" target="-2" id="dismissReturnAskAction"/>
+            </connections>
+          </button>
+          <button verticalHuggingPriority="750" identifier="submitReturnAsk" id="submitReturnAsk">
+            <rect key="frame" x="315" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitReturnAskCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="submitReturnAsk:" target="-2" id="submitReturnAskAction"/>
+            </connections>
+          </button>
+        </subviews>
+      </view>
+    </window>
+    <window title="Receive the return" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="returnDoPanel" customClass="NSPanel">
+      <windowStyleMask key="styleMask" titled="YES"/>
+      <rect key="contentRect" x="200" y="200" width="420" height="300"/>
+      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
+      <view key="contentView" id="returnDoPanelContent">
+        <rect key="frame" x="0" y="0" width="420" height="300"/>
+        <autoresizingMask key="autoresizingMask"/>
+        <subviews>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoItemLabel">
+            <rect key="frame" x="14" y="266" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item" id="returnDoItemLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="returnDoItem" id="returnDoItem">
+            <rect key="frame" x="110" y="263" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="returnDoItemCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="returnDoLines" name="value" keyPath="selection.saleLine.stockItem.lbTitle" id="returnDoItemValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoQuantityLabel">
+            <rect key="frame" x="14" y="236" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many" id="returnDoQuantityLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="returnDoQuantity" id="returnDoQuantity">
+            <rect key="frame" x="110" y="233" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="returnDoQuantityCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="returnDoLines" name="value" keyPath="selection.askedQuantity" id="returnDoQuantityValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoReasonLabel">
+            <rect key="frame" x="14" y="206" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason" id="returnDoReasonLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="returnDoReason" id="returnDoReason">
+            <rect key="frame" x="110" y="203" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="returnDoReasonCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="ReceiveCustomerReturnForm" name="value" keyPath="selection.returnReason" id="returnDoReasonValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoNoteLabel">
+            <rect key="frame" x="14" y="176" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="returnDoNoteLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="returnDoNote" id="returnDoNote">
+            <rect key="frame" x="110" y="173" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="returnDoNoteCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="ReceiveCustomerReturnForm" name="value" keyPath="selection.note" id="returnDoNoteValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoDayLabel">
+            <rect key="frame" x="14" y="146" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Received on" id="returnDoDayLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <datePicker verticalHuggingPriority="750" identifier="returnDoDay" id="returnDoDay">
+            <rect key="frame" x="110" y="140" width="140" height="27"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <datePickerCell key="cell" borderStyle="bezel" alignment="left" id="returnDoDayCell">
+              <font key="font" metaFont="system"/>
+              <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <datePickerElements key="datePickerElements" year="YES" month="YES" day="YES"/>
+            </datePickerCell>
+            <connections>
+              <binding destination="ReceiveCustomerReturnForm" name="value" keyPath="selection.returnReceived" id="returnDoDayValue"/>
+            </connections>
+          </datePicker>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoAtLabel">
+            <rect key="frame" x="14" y="116" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Back to" id="returnDoAtLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="returnDoAt" id="returnDoAt">
+            <rect key="frame" x="108" y="110" width="296" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="returnDoAtCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="returnDoAtMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="ReceiveCustomerReturnForm" name="content" keyPath="selection.choices.returnedTo" id="returnDoAtContent"/>
+              <binding destination="ReceiveCustomerReturnForm" name="contentValues" keyPath="selection.choices.returnedTo.lbTitle" previousBinding="returnDoAtContent" id="returnDoAtValues"/>
+              <binding destination="ReceiveCustomerReturnForm" name="selectedObject" keyPath="selection.returnedTo" previousBinding="returnDoAtValues" id="returnDoAtChosen"/>
+            </connections>
+          </popUpButton>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoStateLabel">
+            <rect key="frame" x="14" y="86" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Returned" id="returnDoStateLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="returnDoState" id="returnDoState">
+            <rect key="frame" x="108" y="80" width="296" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="returnDoStateCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="returnDoStateMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="ReceiveCustomerReturnForm" name="content" keyPath="selection.items.returnState" id="returnDoStateContent"/>
+              <binding destination="ReceiveCustomerReturnForm" name="selectedObject" keyPath="selection.returnState" previousBinding="returnDoStateContent" id="returnDoStateChosen"/>
+            </connections>
+          </popUpButton>
+          <button verticalHuggingPriority="750" identifier="dismissReturnDo" id="dismissReturnDo">
+            <rect key="frame" x="220" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissReturnDoCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="dismissForm:" target="-2" id="dismissReturnDoAction"/>
+            </connections>
+          </button>
+          <button verticalHuggingPriority="750" identifier="submitReturnDone" id="submitReturnDone">
+            <rect key="frame" x="315" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitReturnDoneCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="submitReturnDone:" target="-2" id="submitReturnDoneAction"/>
+            </connections>
+          </button>
+        </subviews>
+      </view>
+    </window>
     <arrayController editable="YES" userLabel="Lines" id="lineList">
       <connections>
         <binding destination="EditSaleOrderForm" name="contentSet" keyPath="selection.saleLines" id="lineListContent"/>

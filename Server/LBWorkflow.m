@@ -216,6 +216,19 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
     if (context.persistentStoreCoordinator != _coordinator) return;
     NSMutableArray<NSArray<NSString *> *> *drafted = [NSMutableArray array];
     for (NSManagedObject *object in notification.userInfo[NSInsertedObjectsKey]) {
+        /* A return asked for: received back, or sent back, by a keeper of
+           its order's catalog. */
+        if ([object isKindOfClass:[CustomerReturn class]] || [object isKindOfClass:[SupplierReturn class]]) {
+            BOOL customer = [object isKindOfClass:[CustomerReturn class]];
+            NSUUID *backId = [object valueForKey:@"id"];
+            NSManagedObject *order = [object valueForKey:customer ? @"saleOrder" : @"purchaseOrder"];
+            NSUUID *catalog = [[order valueForKey:@"catalog"] valueForKey:@"id"];
+            if (backId && [[object valueForKey:@"returnState"] isEqual:@"Requested"]) {
+                [drafted addObject:@[ customer ? @"customerReturn" : @"supplierReturn", customer ? @"customerReturn" : @"supplierReturn",
+                                      backId.UUIDString, catalog.UUIDString ?: @"" ]];
+            }
+            continue;
+        }
         /* A transfer asked for: moved by a keeper of where it goes from. */
         if ([object isKindOfClass:[StockTransfer class]]) {
             StockTransfer *transfer = (StockTransfer *)object;

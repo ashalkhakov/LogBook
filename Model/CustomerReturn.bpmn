@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="customer-return-definitions" targetNamespace="https://github.com/ashalkhakov/LogBook">
+  <bpmn:import importType="http://schemas.neumont.edu/ORM/2006-04/ORMRoot" location="Logbook.orm" namespace="Logbook"/>
+  <bpmn:import importType="http://schemas.ormkit.org/2026-10/Flows" location="Selling.flow" namespace="Selling"/>
+  <bpmn:process id="customerReturn" name="Customer return" isExecutable="true">
+    <bpmn:documentation>A customer return asked for (docs/STOCK.md, Returns): so many of its sale's lines to come back, nothing moved yet. Its variable customerReturn is the return's id. A keeper of its catalog receives it with the Selling flow's ReceiveReturn (its ReceiveCustomerReturn form): returned, its moves made into where it came back to, or cancelled.</bpmn:documentation>
+    <bpmn:startEvent id="requested" name="Asked for"/>
+    <bpmn:userTask id="receive" name="Receive the return" camunda:candidateGroups="=[&quot;keeper:&quot; + catalog]" camunda:formKey="ormkit:flow:Selling.flow#ReceiveReturn"/>
+    <bpmn:endEvent id="returned" name="Returned"/>
+    <bpmn:sequenceFlow id="toDo" sourceRef="requested" targetRef="receive"/>
+    <bpmn:sequenceFlow id="toReturned" sourceRef="receive" targetRef="returned"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="customerReturn_Diagram">
+    <bpmndi:BPMNPlane id="customerReturn_Plane" bpmnElement="customerReturn">
+      <bpmndi:BPMNShape id="requested_Shape" bpmnElement="requested">
+        <dc:Bounds x="152" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="receive_Shape" bpmnElement="receive">
+        <dc:Bounds x="240" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="returned_Shape" bpmnElement="returned">
+        <dc:Bounds x="392" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="toDo_Edge" bpmnElement="toDo">
+        <di:waypoint x="188" y="120"/>
+        <di:waypoint x="240" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toReturned_Edge" bpmnElement="toReturned">
+        <di:waypoint x="340" y="120"/>
+        <di:waypoint x="392" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -28,7 +28,11 @@ from Logbook.wfdeployment beside it.
   as ConfirmSaleOrder saves it and submitted: Ship the goods; 2 of its 3
   shipped as ShipGoods saves them (each move's item, place, maker and
   moment worked out as it saves): Ship the goods again; the last one: the
-  order closed, no task left.
+  order closed, no task left;
+- one of it asked to come back (a customer return requested, its line):
+  Receive the return, nothing moved yet; received at the shelf as
+  ReceiveCustomerReturn saves it, and submitted: its move made into the
+  shelf, no task left.
 
 As the app does them: what a form saves is the logbook's, and its instance
 submitted completes the task. The server's engine works after each save
@@ -42,6 +46,7 @@ import sys
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import uuid
 
@@ -262,6 +267,29 @@ def walk(odata, workflow):
     status, body = request("GET", odata + "SaleOrders(%s)?$select=OrderState,IsFullyShipped" % sale)
     check("the sale closed by the process", status == 200 and body.get("OrderState") == "Closed" and body.get("IsFullyShipped"),
           (status, body))
+
+    def held():
+        status, body = request("GET", odata + "Holdings?$filter=" + urllib.parse.quote("Location/Id eq %s" % shelf) + "&$select=Quantity")
+        return sum(float(h["Quantity"]) for h in body.get("value", [])) if status == 200 else None
+
+    before = held()
+    back, asked = str(uuid.uuid4()), str(uuid.uuid4())
+    status, body = request("POST", odata + "CustomerReturns", {
+        "Id": back, "RunningNumber": 1, "ReturnState": "Requested", "ReturnReason": "Not wanted",
+        "SaleOrder@odata.bind": "SaleOrders(%s)" % sale, "ReturnAskedBy@odata.bind": "Users('anna@example.org')",
+        "CustomerReturnLines": [{"Id": asked, "AskedQuantity": 1, "SaleLine@odata.bind": "SaleLines(%s)" % sold}]})
+    check("one asked to come back: a return requested, its line", status == 201, (status, body))
+    check("Receive the return", settled(["Receive the return"]) == ["Receive the return"], tasks())
+    check("nothing moved yet", held() == before, (held(), before))
+    status, body = request("PATCH", odata + "CustomerReturns(%s)" % back, {
+        "ReturnState": "Returned", "ReturnReceived": "2026-11-14", "ReturnRecorded": "2026-11-14T09:00:00Z",
+        "ReturnedTo@odata.bind": "Locations(%s)" % shelf, "ReturnRecordedBy@odata.bind": "Users('anna@example.org')"})
+    check("received at the shelf as ReceiveCustomerReturn saves it", status == 204, (status, body))
+    status, body = submit(tasks()[0][1], "CustomerReturn", {"id": back, "returnReceived": "2026-11-14", "returnedTo": shelf,
+                                                            "returnState": "Returned"})
+    check("its form submitted to the task", status == 204, (status, body))
+    check("its move made into the shelf: one more there", held() == (before or 0) + 1, (held(), before))
+    check("received: no task left", settled([]) == [], tasks())
 
 
 if __name__ == "__main__":

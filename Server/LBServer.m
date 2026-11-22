@@ -239,7 +239,7 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
     _service.willSave = ^BOOL(NSManagedObjectContext *context, NSError **refused) {
         NSError *why = nil;
         if (![context lb_completeRemindersOfChangedEvents:&why] || ![context lb_shipPartsOfChangedEvents:&why]
-            || ![context lb_confirmChangedOrders:&why] || ![context lb_completeShippedMoves:&why] || ![context lb_postChangedCounts:&why] || ![context lb_moveChangedTransfers:&why] || ![context lb_holdMovedItems:&why]) {
+            || ![context lb_confirmChangedOrders:&why] || ![context lb_completeShippedMoves:&why] || ![context lb_postChangedCounts:&why] || ![context lb_moveChangedTransfers:&why] || ![context lb_returnChangedReturns:&why] || ![context lb_holdMovedItems:&why]) {
             /* A procedure's refusal, as its action answers it: the
                client's to change (400), in its words. */
             if (refused) {

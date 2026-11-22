@@ -22,4 +22,14 @@
     </flow:Transition>
     <flow:Transition From="ship" On="SubmitDone" Kind="Close"></flow:Transition>
     <flow:Transition From="ship" On="Cancel" Kind="Close"></flow:Transition>
+    <flow:Entry Name="ReceiveReturn" Screen="returnDo"></flow:Entry>
+    <flow:Screen id="returnAsk" Form="_AF494D87-0765-4693-9629-C862C650EE21" Name="RequestCustomerReturn" X="900" Y="800" Width="420" Height="280"></flow:Screen>
+    <flow:Screen id="returnDo" Form="_17576D7F-DD21-46AC-8220-08B5742D54DD" Name="ReceiveCustomerReturn" X="1400" Y="800" Width="420" Height="320"></flow:Screen>
+    <flow:Transition From="order" On="Trigger" Control="returnLine" To="returnAsk" Kind="Overlay">
+        <flow:Give Node="_6ADA0D1F-2603-47D0-B516-FCD7983E97A0" From="order._CC240294-9D60-43A8-8D34-7F776F16E55C"></flow:Give>
+    </flow:Transition>
+    <flow:Transition From="returnAsk" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="returnAsk" On="Cancel" Kind="Close"></flow:Transition>
+    <flow:Transition From="returnDo" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="returnDo" On="Cancel" Kind="Close"></flow:Transition>
 </flow:Flow>

@@ -58,6 +58,8 @@
 #import "SupplierReturn+CoreDataClass.h"
 #import "CountLine+CoreDataClass.h"
 #import "StockTransfer+CoreDataClass.h"
+#import "CustomerReturnLine+CoreDataClass.h"
+#import "SupplierReturnLine+CoreDataClass.h"
 #import "Event+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
 #import "TyreChange+CoreDataClass.h"
@@ -135,6 +137,29 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // Moved, MoveStock's) moved as Transfer moves it, its move part of it, made
 // by who moved it, then; refused for one moved or cancelled, changed again.
 - (BOOL)lb_moveChangedTransfers:(NSError **)error;
+// Before a save: each return a keeper returned (its state from Requested
+// to Returned: ReceiveCustomerReturn's, SendSupplierReturn's) received
+// back, or sent back, as Return does it: of what its lines ask for;
+// refused for one returned or cancelled, changed again.
+- (BOOL)lb_returnChangedReturns:(NSError **)error;
+@end
+
+@interface CustomerReturn (LBStock)
+// So many of each of its order's lines (by id) received back where it came
+// back to, a move of each into it, made by the user then: refused for an
+// order not confirmed or closed, a line not of it, a phantom kit's, or
+// more than went out and has not come back; or with no place or day.
+- (BOOL)lb_receive:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities by:(nullable User *)user at:(NSDate *)now error:(NSError **)error;
+// What its lines ask for, received so, by who recorded it, when.
+- (BOOL)lb_receiveAsked:(NSError **)error;
+@end
+
+@interface SupplierReturn (LBStock)
+// So many of each of its order's lines sent back from where it went from,
+// a move of each out of it: refused as Return refuses it, or where less
+// is held there.
+- (BOOL)lb_send:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities by:(nullable User *)user at:(NSDate *)now error:(NSError **)error;
+- (BOOL)lb_sendAsked:(NSError **)error;
 @end
 
 @interface StockCount (LBStock)

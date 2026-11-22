@@ -1313,12 +1313,47 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBType(window, @"moveQuantity", @"1");
     [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];
     LBClick(window, @"returnLine");
+    LBCheck(@"Return Line: its sheet, RequestSupplierReturn, a damaged bracket", window.attachedSheet == purchase.returnAskPanel
+                && [purchase.returnAskForm.session.form.name isEqualToString:@"RequestSupplierReturn"]
+                && [[purchase.returnAskForm valueForKey:@"returnReason"] isEqualToString:@"Damaged"],
+            purchase.lastError ?: purchase.returnAskForm);
+    LBClick(purchase.returnAskPanel, @"submitReturnAsk");
     SupplierReturn *sent = purchase.returns.firstObject;
     NSDecimalNumber *left = [LBServerOf(bracket) totalQuantity];
-    LBCheck(@"a damaged bracket sent back from Main / Default: PO-GAR-0001/1, listed; 9 more on hand than before",
-            purchase.returns.count == 1 && [sent.lbNumber isEqualToString:@"PO-GAR-0001/1"] && [sent.returnReason isEqualToString:@"Damaged"]
-                && [left compare:[brackets decimalNumberBySubtracting:[NSDecimalNumber one]]] == NSOrderedSame,
+    LBCheck(@"asked for: PO-GAR-0001/1, listed, requested; nothing sent back yet", purchase.returns.count == 1
+                && [sent.lbNumber isEqualToString:@"PO-GAR-0001/1"] && [sent.returnState isEqualToString:@"Requested"]
+                && [left compare:brackets] == NSOrderedSame && !window.attachedSheet,
             purchase.lastError ?: left);
+    names = LBTasksOf(tasks, sent, @[ @"Send the return" ]);
+    LBCheck(@"supplier return started: Send the return", [names isEqualToArray:@[ @"Send the return" ]], names);
+    NSUInteger sending = NSNotFound;
+    for (NSUInteger i = 0; i < tasks.openTasks.count && sending == NSNotFound; i++) {
+        if ([tasks.openTasks[i].businessKey isEqualToString:sent.id.UUIDString]) sending = i;
+    }
+    if (sending != NSNotFound) {
+        [tasks.window makeKeyAndOrderFront:nil];
+        [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:sending] byExtendingSelection:NO];
+        LBClick(tasks.window, @"open");
+        LBStockOrderWindowController *sender = tasks.orderWindow;
+        sender.quiet = YES;
+        LBCheck(@"opened in the order's window, SendSupplierReturn's sheet at once", sender.window.attachedSheet == sender.returnDoPanel
+                    && [sender.returnDoForm.session.form.name isEqualToString:@"SendSupplierReturn"],
+                sender.lastError ?: sender.returnDoForm);
+        LBChoose(sender.returnDoPanel, @"returnDoAt", @"Main / Default");
+        LBChoose(sender.returnDoPanel, @"returnDoState", @"Returned");
+        LBClick(sender.returnDoPanel, @"submitReturnDone");
+        left = [LBServerOf(bracket) totalQuantity];
+        SupplierReturn *there = LBServerOf(sent);
+        [there.managedObjectContext refreshObject:there mergeChanges:NO];
+        LBCheck(@"a damaged bracket sent back from Main / Default: returned, 9 more on hand than before",
+                [there.returnState isEqualToString:@"Returned"] && there.moves.count == 1
+                    && [left compare:[brackets decimalNumberBySubtracting:[NSDecimalNumber one]]] == NSOrderedSame && !sender.window.attachedSheet,
+                sender.lastError ?: left);
+        names = LBTasksOf(tasks, sent, @[]);
+        LBCheck(@"and its task done", names.count == 0, names);
+        [sender close];
+    }
+    [window makeKeyAndOrderFront:nil];
     LBSnapshot(window, @"stock-purchase");
     [purchase close];
 

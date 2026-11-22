@@ -120,7 +120,8 @@
 - (NSManagedObject *)orderAbout:(NSString *)businessKey {
     NSUUID *orderId = businessKey ? [[NSUUID alloc] initWithUUIDString:businessKey] : nil;
     if (!orderId) return nil;
-    for (Class kind in @[ [PurchaseOrder class], [SaleOrder class], [StockCount class], [StockTransfer class] ]) {
+    for (Class kind in @[ [PurchaseOrder class], [SaleOrder class], [StockCount class], [StockTransfer class], [CustomerReturn class],
+                         [SupplierReturn class] ]) {
         NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(kind)];
         fetch.predicate = [NSPredicate predicateWithFormat:@"id == %@", orderId];
         NSManagedObject *order = [[_store.context executeFetchRequest:fetch error:NULL] firstObject];
@@ -147,6 +148,9 @@
     NSString *about = task ? task.businessKey : waiting.businessKey;
     NSManagedObject *order = [self orderAbout:about];
     if (!order) return about ?: @"";
+    if ([order isKindOfClass:[CustomerReturn class]] || [order isKindOfClass:[SupplierReturn class]]) {
+        return [NSString stringWithFormat:@"%@, %@", [order valueForKey:@"lbNumber"] ?: @"", [order valueForKey:@"returnReason"] ?: @""];
+    }
     if ([order isKindOfClass:[StockTransfer class]]) {
         StockTransfer *transfer = (StockTransfer *)order;
         return [NSString stringWithFormat:@"%@: %@ from %@ to %@", transfer.stockItem.itemName ?: @"", transfer.transferQuantity.stringValue ?: @"",
@@ -194,6 +198,8 @@
         ? [[LBStockCountWindowController alloc] initWithStore:_store count:(StockCount *)order]
         : [order isKindOfClass:[StockTransfer class]]
         ? [[LBStockItemWindowController alloc] initWithStore:_store transfer:(StockTransfer *)order]
+        : [order isKindOfClass:[CustomerReturn class]] || [order isKindOfClass:[SupplierReturn class]]
+        ? [[LBStockOrderWindowController alloc] initWithStore:_store returning:order]
         : [[LBStockOrderWindowController alloc] initWithStore:_store order:order];
     _stepWindow = window;
     window.task = task;

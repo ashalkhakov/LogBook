@@ -56,7 +56,7 @@ Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit -lGSUpdat
 # The model's forms' contracts (ormtool xforms): each record's, and the
 # stock's processes' steps.
 LB_FORMS = $(foreach f,RecordFillUp RecordService RecordExpense RecordTrip RecordIncome RecordDocument RecordInspection \
-	RecordMeterReading RecordTyreChange RecordTyreSet EditPurchaseOrder ConfirmPurchaseOrder ReceiveGoods EditSaleOrder ConfirmSaleOrder ShipGoods CountStock ReviewStockCount RequestTransfer MoveStock,$(LB_MODEL)/Forms/$(f).ormform) \
+	RecordMeterReading RecordTyreChange RecordTyreSet EditPurchaseOrder ConfirmPurchaseOrder ReceiveGoods EditSaleOrder ConfirmSaleOrder ShipGoods CountStock ReviewStockCount RequestTransfer MoveStock RequestCustomerReturn ReceiveCustomerReturn RequestSupplierReturn SendSupplierReturn,$(LB_MODEL)/Forms/$(f).ormform) \
 	$(patsubst Model/%.flow,$(LB_MODEL)/Forms/%.ormflow,$(wildcard Model/*.flow))
 Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib AppKit/Preferences.xib AppKit/Lists.xib AppKit/StockWindow.xib \
 	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib AppKit/Parts.xib AppKit/TasksWindow.xib AppKit/Logbook.png \

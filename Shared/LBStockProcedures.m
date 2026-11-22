@@ -424,6 +424,10 @@ static BOOL LBReturnable(NSManagedObject *order, NSError **error) {
     return YES;
 }
 
+static NSArray *LBCustomerReturnLines(SaleOrder *order, NSDictionary<NSUUID *, NSDecimalNumber *> *quantities, NSError **error);
+static NSArray *LBSupplierReturnLines(PurchaseOrder *order, NSDictionary<NSUUID *, NSDecimalNumber *> *quantities, Location *location,
+                                      NSError **error);
+
 @implementation SaleOrder (LBStock)
 
 - (NSString *)lb_number {
@@ -536,8 +540,33 @@ static BOOL LBReturnable(NSManagedObject *order, NSError **error) {
 
 - (CustomerReturn *)lb_returnLines:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities at:(Location *)location on:(NSDate *)day
                             reason:(NSString *)reason note:(NSString *)note by:(User *)user at:(NSDate *)now error:(NSError **)error {
-    if (!LBReturnable(self, error)) return nil;
-    NSArray *lines = LBLines(self.saleLines, quantities, error);
+    if (!location) return LBRefuse(error, @"Say where it came back to."), nil;
+    if (!LBCustomerReturnLines(self, quantities, error)) return nil;
+    NSManagedObjectContext *context = self.managedObjectContext;
+    int32_t number = LBNextOf(self.customerReturns);
+    CustomerReturn *back = LBNew([CustomerReturn class], context, LBNamedUUID([NSString stringWithFormat:@"%@ return %d", LBText(self.id), number]));
+    back.saleOrder = self;
+    back.runningNumber = number;
+    back.returnReceived = LBDay(day);
+    back.returnedTo = location;
+    back.returnReason = reason;
+    back.note = note;
+    back.returnState = @"Returned";
+    if (![back lb_receive:quantities by:user at:now error:error]) {
+        [context deleteObject:back];
+        return nil;
+    }
+    return back;
+}
+
+@end
+
+/* The order's lines so many of which come back: refused for an order not
+   confirmed or closed, a line not of it, a phantom kit's, or more than
+   went out and has not come back. */
+static NSArray *LBCustomerReturnLines(SaleOrder *order, NSDictionary<NSUUID *, NSDecimalNumber *> *quantities, NSError **error) {
+    if (!LBReturnable(order, error)) return nil;
+    NSArray *lines = LBLines(order.saleLines, quantities, error);
     if (!lines) return nil;
     for (SaleLine *line in lines) {
         if (line.stockItem.isAPhantomKit) {
@@ -549,22 +578,31 @@ static BOOL LBReturnable(NSManagedObject *order, NSError **error) {
                                                               line.stockItem.itemName, LBQuantityText(quantities[line.id])]), nil;
         }
     }
-    NSManagedObjectContext *context = self.managedObjectContext;
-    int32_t number = LBNextOf(self.customerReturns);
-    CustomerReturn *back = LBNew([CustomerReturn class], context, LBNamedUUID([NSString stringWithFormat:@"%@ return %d", LBText(self.id), number]));
-    back.saleOrder = self;
-    back.runningNumber = number;
-    back.returnReceived = LBDay(day);
-    back.returnedTo = location;
-    back.returnReason = reason;
-    back.note = note;
+    return lines;
+}
+
+@implementation CustomerReturn (LBStock)
+
+- (BOOL)lb_receive:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities by:(User *)user at:(NSDate *)now error:(NSError **)error {
+    if (!self.returnedTo || !self.returnReceived) return LBRefuse(error, @"Say where it came back to, and on what day.");
+    NSArray *lines = LBCustomerReturnLines(self.saleOrder, quantities, error);
+    if (!lines) return NO;
     for (SaleLine *line in lines) {
-        NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"%@ for %@", LBText(back.id), LBText(line.id)]);
-        Move *move = LBMove(context, uuid, line.stockItem, quantities[line.id], nil, location, user, now);
-        move.customerReturn = back;
+        NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"%@ for %@", LBText(self.id), LBText(line.id)]);
+        Move *move = LBMove(self.managedObjectContext, uuid, line.stockItem, quantities[line.id], nil, self.returnedTo, user, now);
+        move.customerReturn = self;
         move.returnedSaleLine = line;
     }
-    return back;
+    return YES;
+}
+
+- (BOOL)lb_receiveAsked:(NSError **)error {
+    NSMutableDictionary *quantities = [NSMutableDictionary dictionary];
+    for (CustomerReturnLine *line in self.customerReturnLines) {
+        if (line.isDeleted || !line.saleLine.id || !line.askedQuantity) continue;
+        quantities[line.saleLine.id] = [quantities[line.saleLine.id] ?: [NSDecimalNumber zero] decimalNumberByAdding:line.askedQuantity];
+    }
+    return [self lb_receive:quantities by:self.returnRecordedBy ?: self.returnAskedBy at:self.returnRecorded ?: [NSDate date] error:error];
 }
 
 @end
@@ -620,17 +658,8 @@ static BOOL LBReturnable(NSManagedObject *order, NSError **error) {
 
 - (SupplierReturn *)lb_returnLines:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities from:(Location *)location on:(NSDate *)day
                             reason:(NSString *)reason note:(NSString *)note by:(User *)user at:(NSDate *)now error:(NSError **)error {
-    if (!LBReturnable(self, error)) return nil;
-    NSArray *lines = LBLines(self.purchaseLines, quantities, error);
-    if (!lines) return nil;
-    for (PurchaseLine *line in lines) {
-        NSDecimalNumber *in = [LBMovedBy(line.moves) decimalNumberBySubtracting:LBMovedBy(line.movesAsReturnedPurchaseLine)];
-        if ([quantities[line.id] compare:in] == NSOrderedDescending) {
-            return LBRefuse(error, [NSString stringWithFormat:@"%@ of %@ came in and have not gone back, not %@.", LBQuantityText(in),
-                                                              line.stockItem.itemName, LBQuantityText(quantities[line.id])]), nil;
-        }
-        if (!LBHolds(location, line.stockItem, quantities[line.id], error)) return nil;
-    }
+    if (!location) return LBRefuse(error, @"Say where it went back from."), nil;
+    if (!LBSupplierReturnLines(self, quantities, location, error)) return nil;
     NSManagedObjectContext *context = self.managedObjectContext;
     int32_t number = LBNextOf(self.supplierReturns);
     SupplierReturn *back = LBNew([SupplierReturn class], context, LBNamedUUID([NSString stringWithFormat:@"%@ return %d", LBText(self.id), number]));
@@ -640,13 +669,57 @@ static BOOL LBReturnable(NSManagedObject *order, NSError **error) {
     back.returnedFrom = location;
     back.returnReason = reason;
     back.note = note;
-    for (PurchaseLine *line in lines) {
-        NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"%@ for %@", LBText(back.id), LBText(line.id)]);
-        Move *move = LBMove(context, uuid, line.stockItem, quantities[line.id], location, nil, user, now);
-        move.supplierReturn = back;
-        move.returnedPurchaseLine = line;
+    back.returnState = @"Returned";
+    if (![back lb_send:quantities by:user at:now error:error]) {
+        [context deleteObject:back];
+        return nil;
     }
     return back;
+}
+
+@end
+
+/* The order's lines so many of which go back from the location: refused
+   as Return refuses it, or where less is held there. */
+static NSArray *LBSupplierReturnLines(PurchaseOrder *order, NSDictionary<NSUUID *, NSDecimalNumber *> *quantities, Location *location,
+                                      NSError **error) {
+    if (!LBReturnable(order, error)) return nil;
+    NSArray *lines = LBLines(order.purchaseLines, quantities, error);
+    if (!lines) return nil;
+    for (PurchaseLine *line in lines) {
+        NSDecimalNumber *in = [LBMovedBy(line.moves) decimalNumberBySubtracting:LBMovedBy(line.movesAsReturnedPurchaseLine)];
+        if ([quantities[line.id] compare:in] == NSOrderedDescending) {
+            return LBRefuse(error, [NSString stringWithFormat:@"%@ of %@ came in and have not gone back, not %@.", LBQuantityText(in),
+                                                              line.stockItem.itemName, LBQuantityText(quantities[line.id])]), nil;
+        }
+        if (!LBHolds(location, line.stockItem, quantities[line.id], error)) return nil;
+    }
+    return lines;
+}
+
+@implementation SupplierReturn (LBStock)
+
+- (BOOL)lb_send:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities by:(User *)user at:(NSDate *)now error:(NSError **)error {
+    Location *location = self.returnedFrom;
+    if (!location || !self.returnShipped) return LBRefuse(error, @"Say where it went back from, and on what day.");
+    NSArray *lines = LBSupplierReturnLines(self.purchaseOrder, quantities, location, error);
+    if (!lines) return NO;
+    for (PurchaseLine *line in lines) {
+        NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"%@ for %@", LBText(self.id), LBText(line.id)]);
+        Move *move = LBMove(self.managedObjectContext, uuid, line.stockItem, quantities[line.id], location, nil, user, now);
+        move.supplierReturn = self;
+        move.returnedPurchaseLine = line;
+    }
+    return YES;
+}
+
+- (BOOL)lb_sendAsked:(NSError **)error {
+    NSMutableDictionary *quantities = [NSMutableDictionary dictionary];
+    for (SupplierReturnLine *line in self.supplierReturnLines) {
+        if (line.isDeleted || !line.purchaseLine.id || !line.askedQuantity) continue;
+        quantities[line.purchaseLine.id] = [quantities[line.purchaseLine.id] ?: [NSDecimalNumber zero] decimalNumberByAdding:line.askedQuantity];
+    }
+    return [self lb_send:quantities by:self.returnRecordedBy ?: self.returnAskedBy at:self.returnRecorded ?: [NSDate date] error:error];
 }
 
 @end
@@ -1012,6 +1085,26 @@ static BOOL LBLive(NSSet<NSManagedObject *> *objects) {
         if (!move) return NO;
         move.stockTransfer = transfer;
         move.id = LBNamedUUID([NSString stringWithFormat:@"%@ moved", LBText(transfer.id)]);
+    }
+    return YES;
+}
+
+- (BOOL)lb_returnChangedReturns:(NSError **)error {
+    NSMutableArray *returned = [NSMutableArray array];
+    for (NSManagedObject *object in self.updatedObjects) {
+        if (![object isKindOfClass:[CustomerReturn class]] && ![object isKindOfClass:[SupplierReturn class]]) continue;
+        NSString *was = [object committedValuesForKeys:@[ @"returnState" ]][@"returnState"];
+        NSString *now = [object valueForKey:@"returnState"];
+        if (was == now || [was isEqual:now]) continue;
+        if (![was isEqual:@"Requested"]) return LBRefuse(error, @"A return returned or cancelled stays as it was: ask for another.");
+        if ([now isEqual:@"Returned"]) [returned addObject:object];
+    }
+    for (NSManagedObject *back in [returned sortedArrayUsingFunction:LBByID context:NULL]) {
+        /* Returned where it was (a device's, its moves come with it). */
+        if (LBLive([back valueForKey:@"moves"])) continue;
+        BOOL done = [back isKindOfClass:[CustomerReturn class]] ? [(CustomerReturn *)back lb_receiveAsked:error]
+                                                                : [(SupplierReturn *)back lb_sendAsked:error];
+        if (!done) return NO;
     }
     return YES;
 }

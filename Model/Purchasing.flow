@@ -19,4 +19,14 @@
     </flow:Transition>
     <flow:Transition From="receive" On="SubmitDone" Kind="Close"></flow:Transition>
     <flow:Transition From="receive" On="Cancel" Kind="Close"></flow:Transition>
+    <flow:Entry Name="SendReturn" Screen="returnDo"></flow:Entry>
+    <flow:Screen id="returnAsk" Form="_45AE99AF-80CA-41C9-990A-B0494F7B6CC2" Name="RequestSupplierReturn" X="900" Y="800" Width="420" Height="280"></flow:Screen>
+    <flow:Screen id="returnDo" Form="_A01A1E43-3C62-4AA6-BD32-A1F7BDEBB8B2" Name="SendSupplierReturn" X="1400" Y="800" Width="420" Height="320"></flow:Screen>
+    <flow:Transition From="order" On="Trigger" Control="returnLine" To="returnAsk" Kind="Overlay">
+        <flow:Give Node="_1689597F-9606-4968-AD29-4532BBA100F0" From="order._9FC4FBEC-4794-4686-8A44-8D3AA5E968A0"></flow:Give>
+    </flow:Transition>
+    <flow:Transition From="returnAsk" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="returnAsk" On="Cancel" Kind="Close"></flow:Transition>
+    <flow:Transition From="returnDo" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="returnDo" On="Cancel" Kind="Close"></flow:Transition>
 </flow:Flow>

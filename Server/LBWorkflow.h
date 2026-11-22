@@ -46,6 +46,15 @@
 // Transferring (Model/Transferring.flow: Move, its MoveStock): moved, its
 // move made as it saves (lb_moveChangedTransfers), or cancelled.
 //
+// Customer return and supplier return (Model/CustomerReturn.bpmn,
+// SupplierReturn.bpmn): each return asked for (RequestCustomerReturn,
+// RequestSupplierReturn) starts one, its variable customerReturn or
+// supplierReturn the return's id, catalog its order's catalog's; Receive
+// the return (Send the return) its keepers', done with the flow Selling's
+// ReceiveReturn (Purchasing's SendReturn: ReceiveCustomerReturn,
+// SendSupplierReturn): returned, its moves made as it saves
+// (lb_returnChangedReturns), or cancelled.
+//
 // Settings: Workflow, the engine's store (a SQLite file; default
 // Workflow.sqlite beside the logbook's; Temporary with a temporary
 // logbook); Processes, the built deployment (default
