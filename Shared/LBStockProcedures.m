@@ -674,24 +674,6 @@ static BOOL LBWithin(Location *location, Location *counted) {
 - (StockCount *)lb_countLocation:(Location *)location found:(NSArray<LBCounted *> *)found on:(NSDate *)day by:(User *)user
                               at:(NSDate *)now error:(NSError **)error {
     if (location && location.warehouse != self) return LBRefuse(error, @"That location is in another warehouse."), nil;
-    /* What was found, by item and location; what is held there besides,
-       found none. */
-    NSMutableDictionary *counted = [NSMutableDictionary dictionary];
-    for (LBCounted *each in found) {
-        BOOL covered = each.location.warehouse == self && (!location || LBWithin(each.location, location));
-        if (!covered) return LBRefuse(error, [NSString stringWithFormat:@"%@ is not where this count counts.", each.location.locationName]), nil;
-        if (!each.quantity || [each.quantity compare:[NSDecimalNumber zero]] == NSOrderedAscending) {
-            return LBRefuse(error, @"Say how many were found: none, or more."), nil;
-        }
-        counted[@[ each.item.objectID, each.location.objectID ]] = each;
-    }
-    for (Location *place in self.locations) {
-        if (location && !LBWithin(place, location)) continue;
-        for (Holding *holding in place.holdings) {
-            NSArray *key = @[ holding.stockItem.objectID, place.objectID ];
-            if (!counted[key]) counted[key] = [LBCounted countedItem:holding.stockItem at:place quantity:[NSDecimalNumber zero]];
-        }
-    }
     NSManagedObjectContext *context = self.managedObjectContext;
     StockCount *count = LBNew([StockCount class], context, nil);
     count.warehouse = self;
@@ -699,19 +681,11 @@ static BOOL LBWithin(Location *location, Location *counted) {
     count.countedOn = LBDay(day);
     count.counter = user;
     count.runningNumber = LBNextOf(self.stockCounts);
-    for (LBCounted *each in [counted.allValues sortedArrayUsingFunction:LBByItemAndLocation context:NULL]) {
-        NSDecimalNumber *difference = [each.quantity decimalNumberBySubtracting:[each.location lb_heldOf:each.item]];
-        NSComparisonResult sign = [difference compare:[NSDecimalNumber zero]];
-        if (sign == NSOrderedSame) continue;
-        BOOL out = sign == NSOrderedAscending;
-        NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"%@ for %@ at %@", LBText(count.id), LBText(each.item.id),
-                                                              LBText(each.location.id)]);
-        Move *move = LBMove(context, uuid, each.item, out ? [[NSDecimalNumber zero] decimalNumberBySubtracting:difference] : difference,
-                            out ? each.location : nil, out ? nil : each.location, user, now);
-        move.adjustmentReason = @"Count";
-        move.stockCount = count;
+    if (![count lb_postFound:found at:now error:error]) {
+        [context deleteObject:count];
+        return nil;
     }
-    if (!location) self.lastInventory = LBDay(day);
+    count.countState = @"Posted";
     return count;
 }
 
@@ -900,6 +874,58 @@ static NSDecimalNumber *LBShippedOf(SaleLine *line) {
 
 @end
 
+@implementation StockCount (LBStock)
+
+- (BOOL)lb_postFound:(NSArray<LBCounted *> *)found at:(NSDate *)now error:(NSError **)error {
+    Warehouse *warehouse = self.warehouse;
+    Location *location = self.countedLocation;
+    /* What was found, by item and location; what is held there besides,
+       found none. */
+    NSMutableDictionary *counted = [NSMutableDictionary dictionary];
+    for (LBCounted *each in found) {
+        BOOL covered = each.location.warehouse == warehouse && (!location || LBWithin(each.location, location));
+        if (!covered) return LBRefuse(error, [NSString stringWithFormat:@"%@ is not where this count counts.", each.location.locationName]);
+        if (!each.quantity || [each.quantity compare:[NSDecimalNumber zero]] == NSOrderedAscending) {
+            return LBRefuse(error, @"Say how many were found: none, or more.");
+        }
+        counted[@[ each.item.objectID, each.location.objectID ]] = each;
+    }
+    for (Location *place in warehouse.locations) {
+        if (location && !LBWithin(place, location)) continue;
+        for (Holding *holding in place.holdings) {
+            NSArray *key = @[ holding.stockItem.objectID, place.objectID ];
+            if (!counted[key]) counted[key] = [LBCounted countedItem:holding.stockItem at:place quantity:[NSDecimalNumber zero]];
+        }
+    }
+    NSManagedObjectContext *context = self.managedObjectContext;
+    for (LBCounted *each in [counted.allValues sortedArrayUsingFunction:LBByItemAndLocation context:NULL]) {
+        NSDecimalNumber *difference = [each.quantity decimalNumberBySubtracting:[each.location lb_heldOf:each.item]];
+        NSComparisonResult sign = [difference compare:[NSDecimalNumber zero]];
+        if (sign == NSOrderedSame) continue;
+        BOOL out = sign == NSOrderedAscending;
+        NSUUID *uuid = LBNamedUUID([NSString stringWithFormat:@"%@ for %@ at %@", LBText(self.id), LBText(each.item.id),
+                                                              LBText(each.location.id)]);
+        Move *move = LBMove(context, uuid, each.item, out ? [[NSDecimalNumber zero] decimalNumberBySubtracting:difference] : difference,
+                            out ? each.location : nil, out ? nil : each.location, self.counter, now);
+        move.adjustmentReason = @"Count";
+        move.stockCount = self;
+    }
+    if (!location) warehouse.lastInventory = self.countedOn;
+    return YES;
+}
+
+- (BOOL)lb_post:(NSError **)error {
+    NSMutableArray *found = [NSMutableArray array];
+    for (CountLine *line in [self.countLines.allObjects sortedArrayUsingFunction:LBByID context:NULL]) {
+        if (line.isDeleted) continue;
+        if (!line.stockItem || !line.location || !line.found) return LBRefuse(error, @"Each line of a count says what was found of an item where.");
+        [found addObject:[LBCounted countedItem:line.stockItem at:line.location quantity:line.found]];
+    }
+    return [self lb_postFound:found at:[NSDate date] error:error];
+}
+
+@end
+
 @implementation NSManagedObjectContext (LBParts)
 
 - (BOOL)lb_shipPartsOfChangedEvents:(NSError **)error {
@@ -932,6 +958,26 @@ static NSDecimalNumber *LBShippedOf(SaleLine *line) {
         [order setValue:LBOrderDraft forKey:@"orderState"];
         BOOL done = [order isKindOfClass:[SaleOrder class]] ? [(SaleOrder *)order lb_confirm:error] : [(PurchaseOrder *)order lb_confirm:error];
         if (!done) return NO;
+    }
+    return YES;
+}
+
+- (BOOL)lb_postChangedCounts:(NSError **)error {
+    NSMutableArray *posted = [NSMutableArray array];
+    for (NSManagedObject *object in self.updatedObjects) {
+        if (![object isKindOfClass:[StockCount class]]) continue;
+        NSString *was = [object committedValuesForKeys:@[ @"countState" ]][@"countState"];
+        NSString *now = ((StockCount *)object).countState;
+        if (was == now || [was isEqual:now]) continue;
+        /* Reviewed (or taken before counts were reviewed, posted as it was
+           taken): no more to change. */
+        if (![was isEqual:@"Counted"]) {
+            return LBRefuse(error, @"A count reviewed stays as it was: count again.");
+        }
+        if ([was isEqual:@"Counted"] && [now isEqual:@"Posted"]) [posted addObject:object];
+    }
+    for (StockCount *count in [posted sortedArrayUsingFunction:LBByID context:NULL]) {
+        if (![count lb_post:error]) return NO;
     }
     return YES;
 }

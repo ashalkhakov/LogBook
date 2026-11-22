@@ -2,6 +2,8 @@
 #import "LBTasks.h"
 #import "LBStore.h"
 #import "LBStockOrderWindowController.h"
+#import "LBStockCountWindowController.h"
+#import "LBStockDisplay.h"
 #import "LBStockProcedures.h"
 #import "LBLocalStore.h"
 #import "LBConflicts.h"
@@ -106,6 +108,10 @@
 
 /* The order a task is about (its business key: a purchase's, a sale's),
    in the store's context. */
+- (LBStockOrderWindowController *)orderWindow {
+    return [_stepWindow isKindOfClass:[LBStockOrderWindowController class]] ? (LBStockOrderWindowController *)_stepWindow : nil;
+}
+
 - (NSManagedObject *)orderOf:(LBTask *)task {
     return [self orderAbout:task.businessKey];
 }
@@ -113,7 +119,7 @@
 - (NSManagedObject *)orderAbout:(NSString *)businessKey {
     NSUUID *orderId = businessKey ? [[NSUUID alloc] initWithUUIDString:businessKey] : nil;
     if (!orderId) return nil;
-    for (Class kind in @[ [PurchaseOrder class], [SaleOrder class] ]) {
+    for (Class kind in @[ [PurchaseOrder class], [SaleOrder class], [StockCount class] ]) {
         NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(kind)];
         fetch.predicate = [NSPredicate predicateWithFormat:@"id == %@", orderId];
         NSManagedObject *order = [[_store.context executeFetchRequest:fetch error:NULL] firstObject];
@@ -140,6 +146,11 @@
     NSString *about = task ? task.businessKey : waiting.businessKey;
     NSManagedObject *order = [self orderAbout:about];
     if (!order) return about ?: @"";
+    if ([order isKindOfClass:[StockCount class]]) {
+        StockCount *count = (StockCount *)order;
+        NSString *place = count.countedLocation ? count.countedLocation.lbTitle : count.warehouse.lbTitle;
+        return [NSString stringWithFormat:@"%@, %@", count.lbNumber, place ?: @""];
+    }
     NSString *party = [[order valueForKey:[order isKindOfClass:[SaleOrder class]] ? @"customer" : @"supplier"] valueForKey:@"lbTitle"];
     NSString *number = [order valueForKey:@"lb_number"];
     return party.length ? [NSString stringWithFormat:@"%@, %@", number, party] : number;
@@ -169,13 +180,17 @@
 - (void)openOrderAbout:(NSString *)businessKey task:(LBTask *)task named:(NSString *)name sender:(id)sender {
     NSManagedObject *order = [self orderAbout:businessKey];
     if (!order) {
-        self.messageLabel.stringValue = [NSString stringWithFormat:@"%@: its order is not in the logbook.", name];
+        self.messageLabel.stringValue = [NSString stringWithFormat:@"%@: what it is about is not in the logbook.", name];
         return;
     }
-    _orderWindow = [[LBStockOrderWindowController alloc] initWithStore:_store order:order];
-    _orderWindow.task = task;
-    _orderWindow.tasks = _tasks;
-    [_orderWindow showWindow:sender];
+    /* An order's window, or a count's. */
+    LBStockEditor *window = [order isKindOfClass:[StockCount class]]
+        ? [[LBStockCountWindowController alloc] initWithStore:_store count:(StockCount *)order]
+        : [[LBStockOrderWindowController alloc] initWithStore:_store order:order];
+    _stepWindow = window;
+    window.task = task;
+    window.tasks = _tasks;
+    [window showWindow:sender];
 }
 
 #pragma mark The steps waiting

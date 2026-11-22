@@ -305,6 +305,19 @@ A count is an object of its own in the model, as a shipment is:
 `StockCount` (of a location, on a day, by a user), grouping its
 adjustments ([Changes to the model](#changes-to-the-model)).
 
+**Counted, then reviewed.** In the app a count is taken with the model's
+form CountStock (the count's window, `AppKit/StockCount.xib`): a line
+(`CountLine`) for each item at each place, what was found, what the place
+holds shown if the counter asks; submitted, it is saved as **counted**,
+and nothing is adjusted yet. Its process, **count review**
+(`Model/CountReview.bpmn`), gives a manager of its catalog Review the
+count (the flow Counting's Review, ReviewStockCount, a sheet over the
+count, opened from Window > Tasks): **posted**, its differences adjusted
+as it saves, against what is held then (what is held where it counts
+and no line found, none); or **rejected**, to be counted again. A count
+reviewed stays as it was. The server's `Count` action still counts and
+posts at once (a count of before, with no state, was posted so).
+
 ## Assembly
 
 `Assemble` makes so many batches of an assembled kit at a location: a move

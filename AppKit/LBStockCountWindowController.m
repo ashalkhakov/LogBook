@@ -1,67 +1,48 @@
 #import "LBStockCountWindowController.h"
 #import "LBStore.h"
 #import "LBStockDisplay.h"
-
-@interface LBCountRow ()
-- (instancetype)initWithHeld:(NSDictionary *)held shows:(BOOL)shows;
-- (void)setShows:(BOOL)shows;
-@end
-
-@implementation LBCountRow {
-    /* What the count's places hold: by item and location. */
-    NSDictionary *_held;
-    BOOL _shows;
-}
-
-- (instancetype)initWithHeld:(NSDictionary *)held shows:(BOOL)shows {
-    if ((self = [super init])) {
-        _held = held;
-        _shows = shows;
-    }
-    return self;
-}
-
-+ (NSSet<NSString *> *)keyPathsForValuesAffectingExpectedShown {
-    return [NSSet setWithObjects:@"item", @"location", nil];
-}
-
-- (void)setShows:(BOOL)shows {
-    [self willChangeValueForKey:@"expectedShown"];
-    _shows = shows;
-    [self didChangeValueForKey:@"expectedShown"];
-}
-
-- (NSDecimalNumber *)expectedShown {
-    if (!_shows || !_item || !_location) return nil;
-    return _held[@[ _item.objectID, _location.objectID ]] ?: [NSDecimalNumber zero];
-}
-
-@end
+#import "LBStockProcedures.h"
+#import "LBTasks.h"
+#import "LBFormValues.h"
+#import <ORMRuntime/ORMFormSession.h>
+#import <ORMRuntime/ORMFlowSession.h>
 
 @interface LBStockCountWindowController ()
 @property (nonatomic, readwrite, copy) NSArray<LBCountPlace *> *countPlaces;
-@property (nonatomic, readwrite, copy) NSArray<LBCountRow *> *rowsCounted;
-@property (nonatomic, readwrite, copy) NSArray<Location *> *countLocations;
-@property (nonatomic, readwrite, copy) NSArray<StockItem *> *catalogItems;
+@property (nonatomic, readwrite, strong) StockCount *stockCount;
+@property (nonatomic, readwrite, strong) LBFormValues *countForm;
+@property (nonatomic, readwrite, strong) LBFormValues *reviewForm;
 @end
 
 @implementation LBStockCountWindowController {
-    /* What the count being taken is of; none, none is. */
-    LBCountPlace *_counting;
-    /* What its places hold, as the count started. */
-    NSDictionary *_held;
+    ORMFlowSession *_flow;
+    NSError *_flowError;
 }
 
 - (instancetype)initWithStore:(LBStore *)store catalog:(Catalog *)catalog {
     if ((self = [super initWithStore:store windowNibName:@"StockCount"])) {
         self.catalog = [self own:catalog];
         _countPlaces = @[];
-        _rowsCounted = @[];
-        _countLocations = @[];
-        _catalogItems = @[];
-        _held = @{};
+        NSError *error = nil;
+        _flow = [ORMFlowSession flowNamed:@"Counting" error:&error];
+        if (!_flow) _flowError = error;
     }
     return self;
+}
+
+- (instancetype)initWithStore:(LBStore *)store count:(StockCount *)count {
+    if ((self = [self initWithStore:store catalog:count.warehouse.catalog])) {
+        _stockCount = [self own:count];
+    }
+    return self;
+}
+
+- (ORMFlowSession *)flow {
+    return _flow;
+}
+
+- (NSString *)businessKey {
+    return _stockCount.id.UUIDString;
 }
 
 - (NSArray<NSArrayController *> *)editedControllers {
@@ -77,77 +58,139 @@
     self.countPlaces = places;
     NSUInteger kept = _countPlace ? [places indexOfObject:_countPlace] : NSNotFound;
     self.countPlace = kept != NSNotFound ? places[kept] : places.firstObject;
-    self.catalogItems = [self fetch:[StockItem class] where:[NSPredicate predicateWithFormat:@"catalog == %@", self.catalog]
-                           sortedBy:self.byTitle];
+    /* A count taken, shown as its form has it. */
+    if (_stockCount && !_stockCount.inserted && !self.window.attachedSheet) [self openCountForm];
 }
 
+- (void)windowDidLoad {
+    [super windowDidLoad];
+    _countRows.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"stockItem.itemName" ascending:YES],
+                                    [NSSortDescriptor sortDescriptorWithKey:@"location.lbTitle" ascending:YES] ];
+    [self setShowsExpected:_showsExpected];
+}
+
+/* Opened for its review's task: its sheet over the count at once. */
+- (void)showWindow:(id)sender {
+    [super showWindow:sender];
+    if (!_stockCount || !self.task.entryName || ![self.task.flowName isEqualToString:@"Counting"] || self.window.attachedSheet) return;
+    NSError *error = nil;
+    ORMFlowStep *step = [_flow beginAt:self.task.entryName key:_stockCount.id.UUIDString error:&error];
+    if (!step) return [self reportError:error ?: _flowError];
+    if (![step.formName isEqualToString:@"ReviewStockCount"]) {
+        return [self refuse:[NSString stringWithFormat:@"%@ has no view in the count's window.", step.formName]];
+    }
+    self.reviewForm = [self valuesOfForm:step.formName given:step.given object:_stockCount];
+    if (_reviewForm) [self.window beginSheet:_reviewPanel completionHandler:nil];
+}
+
+/* What is held, shown or not: the column of what each line's place holds
+   (its form's held). */
 - (void)setShowsExpected:(BOOL)shows {
     _showsExpected = shows;
-    for (LBCountRow *row in _rowsCounted) [row setShows:shows];
+    [_countRowsTable tableColumnWithIdentifier:@"expected"].hidden = !shows;
 }
 
-- (LBCountRow *)rowOf:(StockItem *)item at:(Location *)place {
-    LBCountRow *row = [[LBCountRow alloc] initWithHeld:_held shows:_showsExpected];
-    row.item = item;
-    row.location = place;
-    return row;
+- (void)openCountForm {
+    NSMutableDictionary *given = [@{ @"warehouse" : _stockCount.warehouse.id.UUIDString ?: @"",
+                                     @"runningNumber" : [NSString stringWithFormat:@"%d", _stockCount.runningNumber],
+                                     @"counter" : _stockCount.counter.email ?: @"",
+                                     @"countState" : _stockCount.countState ?: @"" } mutableCopy];
+    if (_stockCount.countedLocation) given[@"countedLocation"] = _stockCount.countedLocation.id.UUIDString;
+    self.countForm = [self valuesOfForm:@"CountStock" given:given object:_stockCount];
+}
+
+- (CountLine *)lineOf:(StockItem *)item at:(Location *)place {
+    CountLine *line = [NSEntityDescription insertNewObjectForEntityForName:@"CountLine" inManagedObjectContext:self.context];
+    line.id = [NSUUID UUID];
+    line.stockCount = _stockCount;
+    line.stockItem = item;
+    line.location = place;
+    /* What the place holds of it, as the model works it out when it saves
+       (CountLineHeld): shown while the count is taken. */
+    for (Holding *holding in place.holdings) {
+        if (holding.stockItem == item) line.held = holding.quantity;
+    }
+    return line;
 }
 
 - (IBAction)startCount:(id)sender {
     if (!_countPlace || ![self commitEdits]) return;
-    _counting = _countPlace;
+    if (_stockCount.inserted) [self.context rollback];
+    Warehouse *warehouse = _countPlace.warehouse;
+    int32_t number = 0;
+    for (StockCount *each in warehouse.stockCounts) number = MAX(number, each.runningNumber);
+    StockCount *count = [NSEntityDescription insertNewObjectForEntityForName:@"StockCount" inManagedObjectContext:self.context];
+    count.id = [NSUUID UUID];
+    count.warehouse = warehouse;
+    count.countedLocation = _countPlace.location;
+    count.countedOn = [NSDate date];
+    count.counter = self.user;
+    count.runningNumber = number + 1;
+    count.countState = @"Counted";
+    self.stockCount = count;
     NSMutableArray *at = [NSMutableArray array];
-    for (Location *place in _counting.locations) [at addObject:[NSPredicate predicateWithFormat:@"location == %@", place]];
-    NSArray *holdings = [self fetch:[Holding class] where:[NSCompoundPredicate orPredicateWithSubpredicates:at]
-                           sortedBy:@[ [NSSortDescriptor sortDescriptorWithKey:@"stockItem.itemName" ascending:YES],
-                                       [NSSortDescriptor sortDescriptorWithKey:@"location.lbTitle" ascending:YES] ]];
-    NSMutableDictionary *held = [NSMutableDictionary dictionary];
+    for (Location *place in _countPlace.locations) [at addObject:[NSPredicate predicateWithFormat:@"location == %@", place]];
+    NSArray *holdings = [self fetch:[Holding class] where:[NSCompoundPredicate orPredicateWithSubpredicates:at] sortedBy:nil];
     for (Holding *holding in holdings) {
-        if (holding.stockItem && holding.location) held[@[ holding.stockItem.objectID, holding.location.objectID ]] = holding.quantity ?: [NSDecimalNumber zero];
+        if (holding.stockItem && holding.location) [self lineOf:holding.stockItem at:holding.location];
     }
-    _held = held;
-    NSMutableArray *rows = [NSMutableArray array];
-    for (Holding *holding in holdings) {
-        if (holding.stockItem && holding.location) [rows addObject:[self rowOf:holding.stockItem at:holding.location]];
-    }
-    self.countLocations = _counting.locations;
-    self.rowsCounted = rows;
+    [self openCountForm];
 }
 
 - (IBAction)addCountRow:(id)sender {
-    if (!_counting) return [self refuse:@"Start a count first."];
+    if (!_stockCount.inserted) return [self refuse:@"Start a count first."];
     if (![self commitEdits]) return;
-    LBCountRow *row = [self rowOf:_catalogItems.firstObject at:_countLocations.firstObject];
-    self.rowsCounted = [_rowsCounted arrayByAddingObject:row];
-    [_countRows setSelectedObjects:@[ row ]];
+    NSArray *items = [_countForm valueForKeyPath:@"choices.countLines.stockItem"];
+    NSArray *places = [_countForm valueForKeyPath:@"choices.countLines.location"];
+    /* Where it counts: its location, else the warehouse's first. */
+    Location *place = _stockCount.countedLocation ?: [places firstObject];
+    CountLine *line = [self lineOf:[items firstObject] at:place];
+    [_countRows rearrangeObjects];
+    [_countRows setSelectedObjects:@[ line ]];
 }
 
 - (IBAction)removeCountRow:(id)sender {
-    NSMutableArray *rows = [_rowsCounted mutableCopy];
-    [rows removeObjectsInArray:_countRows.selectedObjects];
-    self.rowsCounted = rows;
+    for (CountLine *line in _countRows.selectedObjects) [self.context deleteObject:line];
 }
 
-- (IBAction)postCount:(id)sender {
-    if (!_counting || ![self commitEdits]) return;
-    NSMutableArray *found = [NSMutableArray array];
-    NSMutableSet *seen = [NSMutableSet set];
-    for (LBCountRow *row in _rowsCounted) {
-        if (!row.item || !row.location || !row.found) return [self refuse:@"Type what was found of each (0 for none)."];
-        NSArray *key = @[ row.item.objectID, row.location.objectID ];
-        if ([seen containsObject:key]) {
-            return [self refuse:[NSString stringWithFormat:@"%@ at %@ is counted twice.", row.item.lbTitle, row.location.lbTitle]];
-        }
-        [seen addObject:key];
-        [found addObject:@{ @"Item": row.item.id.UUIDString, @"Location": row.location.id.UUIDString, @"Quantity": row.found }];
+- (IBAction)submitCount:(id)sender {
+    if (!_stockCount.inserted || ![self commitEdits]) return;
+    for (CountLine *line in _stockCount.countLines) {
+        if (!line.isDeleted && !line.found) return [self refuse:@"Type what was found of each (0 for none)."];
     }
-    NSMutableDictionary *parameters = [@{ @"Found": found } mutableCopy];
-    if (_counting.location) parameters[@"Location"] = _counting.location;
-    id count = [self performAction:@"Count" on:_counting.warehouse parameters:parameters];
-    if (!count) return;
-    _posted = [count isKindOfClass:[StockCount class]] ? [self own:count] : nil;
-    _counting = nil;
-    self.rowsCounted = @[];
+    /* Saved by its form, opened again on it as it is now. */
+    LBFormValues *now = [self valuesOfForm:@"CountStock" given:_countForm.session.given object:_stockCount];
+    NSError *error = nil;
+    if (!now || ![now.session save:&error]) {
+        if (now) [self refuseForm:now error:error under:self.window.contentView];
+        return;
+    }
+    _submitted = _stockCount;
+    self.countForm = nil;
+    self.stockCount = nil;
+    [self readAgain];
+}
+
+- (IBAction)submitReview:(id)sender {
+    if (![self submitForm:_reviewForm sheet:_reviewPanel]) return;
+    [self endReview];
+}
+
+- (void)endReview {
+    NSWindow *sheet = self.window.attachedSheet;
+    if (sheet) [self.window endSheet:sheet];
+    [sheet orderOut:nil];
+    self.reviewForm = nil;
+    [self readAgain];
+}
+
+- (IBAction)dismissForm:(id)sender {
+    [self.context rollback];
+    [self endReview];
+}
+
+- (void)cancelOperation:(id)sender {
+    if (self.window.attachedSheet) [self dismissForm:sender];
 }
 
 @end

@@ -1,7 +1,7 @@
 // The open tasks of the server's processes (LBTasks.h), in a window of
 // their own (TasksWindow.xib; Window > Tasks): each a person's step --
-// Confirm the order, Receive the goods, Ship the goods -- with the order
-// it is about.
+// Confirm the order, Receive the goods, Ship the goods, Review the count
+// -- with the order or count it is about.
 // Open (or a double-click) shows its order in the order's window
 // (LBStockOrderWindowController's task), where its step is done: Confirm
 // or Cancel for ConfirmPurchaseOrder (ConfirmSaleOrder), Receive for
@@ -17,7 +17,7 @@
 
 #import <AppKit/AppKit.h>
 
-@class LBStore, LBTasks, LBTask, LBStockOrderWindowController, LBPendingSubmission;
+@class LBStore, LBTasks, LBTask, LBStockOrderWindowController, LBStockEditor, LBPendingSubmission;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -35,6 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSTextField *messageLabel;
 // The window the last task opened was shown in.
 @property (nonatomic, readonly, strong, nullable) LBStockOrderWindowController *orderWindow;
+// The window its last task was opened in: an order's, or a count's (Review
+// the count).
+@property (nonatomic, readonly, strong, nullable) LBStockEditor *stepWindow;
 
 - (IBAction)refresh:(nullable id)sender;
 - (IBAction)openTask:(nullable id)sender;

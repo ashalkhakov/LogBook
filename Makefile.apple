@@ -82,12 +82,12 @@ $(ORMKIT_PRODUCTS)/ORMRuntime.framework $(ORMTOOL):
 	@echo "no ORMKit (or no ODataKit) in .deps: gnustep-release-actions' scripts/deps.sh apple fetches what .github/pins.env names"; exit 1
 
 # The model's outputs, from the model.
-$(MODEL)/.made: Model/Logbook.orm Model/Purchasing.flow Model/Selling.flow $(ORMTOOL)
+$(MODEL)/.made: Model/Logbook.orm $(wildcard Model/*.flow) $(ORMTOOL)
 	rm -rf $(MODEL) && mkdir -p $(MODEL)
 	$(ORMTOOL) coredata Model/Logbook.orm $(MODEL)/Logbook.xcdatamodeld Logbook \
 	  --validation $(MODEL)/Constraints >$(MODEL)/mapping.txt
 	$(ORMTOOL) forml Model/Logbook.orm $(MODEL)/Logbook.forml
-	$(ORMTOOL) xforms Model/Logbook.orm $(MODEL)/Forms/ --flow Model/Purchasing.flow --flow Model/Selling.flow >$(MODEL)/forms.txt
+	$(ORMTOOL) xforms Model/Logbook.orm $(MODEL)/Forms/ --flow Model/Purchasing.flow --flow Model/Selling.flow --flow Model/Counting.flow >$(MODEL)/forms.txt
 	touch $@
 
 $(MODEL)/Constraints/LogbookValidation.m: $(MODEL)/.made ;
@@ -198,7 +198,8 @@ check: all
 	$(ORMTOOL) flow Model/Logbook.orm Model/Records.flow
 	$(ORMTOOL) flow Model/Logbook.orm Model/Purchasing.flow
 	$(ORMTOOL) flow Model/Logbook.orm Model/Selling.flow
-	python3 Tests/contract-check.py $(MODEL)/Forms AppKit/MainWindow.xib AppKit/StockPurchase.xib AppKit/StockSale.xib
+	$(ORMTOOL) flow Model/Logbook.orm Model/Counting.flow
+	python3 Tests/contract-check.py $(MODEL)/Forms AppKit/MainWindow.xib AppKit/StockPurchase.xib AppKit/StockSale.xib AppKit/StockCount.xib
 	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	$(BUILD)/lb-stock-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	Tests/form-check.sh $(BUILD)/logbook-server $(BUILD)/lb-form-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms

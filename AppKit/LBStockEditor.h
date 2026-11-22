@@ -13,7 +13,7 @@
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
 
-@class LBStore, Catalog, User;
+@class LBStore, Catalog, User, LBTask, LBTasks, LBFormValues, LBPendingSubmission;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -67,6 +67,30 @@ extern NSString *const LBStockCatalogKey;
 @property (nonatomic) BOOL quiet;
 // What was typed as a quantity: a decimal number; nil, said, otherwise.
 - (nullable NSDecimalNumber *)typed:(nullable NSString *)text;
+
+// Its forms (LBFormValues.h; ORMKit's docs/FORMS.md): the model's form of
+// the name opened on the object as the context has it now, given what it
+// comes with, saved as the store saves; nil, and why said, where it does
+// not open. A save refused said under its controls where the view has
+// them, the rest in the form's words.
+- (nullable LBFormValues *)valuesOfForm:(NSString *)name given:(NSDictionary *)given object:(NSManagedObject *)object;
+- (void)refuseForm:(LBFormValues *)values error:(nullable NSError *)error under:(NSView *)view;
+
+// The process's task it was opened for (LBTasksWindowController.h), named
+// in its title; nil: no task. What its processes are about: an order's,
+// a count's id (each window's -businessKey). A step's form saved in its
+// sheet, then its instance submitted to the open task of it about that
+// (this one, or found), which the server's process goes on with
+// (Server/LBWorkflow.h); the tasks are asked again. Offline first, where
+// the server cannot be reached, the step waits, saved (Window > Tasks:
+// waiting), and is submitted after a sync. NO, said, where refused.
+@property (nonatomic, strong, nullable) LBTask *task;
+@property (nonatomic, strong, nullable) LBTasks *tasks;
+@property (nonatomic, readonly, strong, nullable) LBPendingSubmission *waiting;
+- (nullable NSString *)businessKey;
+- (BOOL)submitForm:(LBFormValues *)values sheet:(NSWindow *)sheet;
+- (BOOL)wait:(NSString *)formName about:(NSString *)about instance:(NSString *)instance task:(nullable NSString *)taskName;
+- (void)stepDone:(NSString *)form;
 
 - (IBAction)save:(nullable id)sender;
 - (IBAction)revertChanges:(nullable id)sender;

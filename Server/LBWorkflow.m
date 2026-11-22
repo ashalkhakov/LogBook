@@ -209,6 +209,14 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
     if (context.persistentStoreCoordinator != _coordinator) return;
     NSMutableArray<NSArray<NSString *> *> *drafted = [NSMutableArray array];
     for (NSManagedObject *object in notification.userInfo[NSInsertedObjectsKey]) {
+        /* A count taken: its review, by its catalog's managers. */
+        if ([object isKindOfClass:[StockCount class]]) {
+            StockCount *count = (StockCount *)object;
+            if (count.id && [count.countState isEqualToString:@"Counted"]) {
+                [drafted addObject:@[ @"countReview", @"stockCount", count.id.UUIDString, count.warehouse.catalog.id.UUIDString ?: @"" ]];
+            }
+            continue;
+        }
         BOOL sale = [object isKindOfClass:[SaleOrder class]];
         if (!sale && ![object isKindOfClass:[PurchaseOrder class]]) continue;
         if (sale && (((SaleOrder *)object).serviceAsPartsSale || ((SaleOrder *)object).tyreChangeAsPartsSale)) continue;

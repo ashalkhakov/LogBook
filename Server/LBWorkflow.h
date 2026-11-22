@@ -32,6 +32,13 @@
 //                   outstanding
 //   closeSaleOrder  the order closed (its Close)
 //
+// Count review (Model/CountReview.bpmn): each count saved as counted (a
+// keeper's, CountStock) starts it, its variable stockCount the count's id,
+// catalog its warehouse's catalog's; Review the count the managers', done
+// with the flow Counting (Model/Counting.flow: Review, its
+// ReviewStockCount): posted, the count's differences adjusted as it saves
+// (lb_postChangedCounts), or rejected.
+//
 // Settings: Workflow, the engine's store (a SQLite file; default
 // Workflow.sqlite beside the logbook's; Temporary with a temporary
 // logbook); Processes, the built deployment (default

@@ -1407,28 +1407,64 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
     NSWindow *sheet = counting.window;
     LBChoose(sheet, @"countPlace", @"Garage / Shelf A");
     LBClick(sheet, @"startCount");
-    LBCountRow *boltRow = counting.rowsCounted.firstObject;
-    LBCheck(@"a count of Shelf A started: the bolts held there", counting.rowsCounted.count == 1
-                                                                   && [boltRow.item.itemName isEqualToString:@"Bolt"],
-            [counting.rowsCounted valueForKeyPath:@"item.itemName"]);
+    CountLine *boltRow = [counting.countRows.arrangedObjects firstObject];
+    LBCheck(@"a count of Shelf A started, a view of CountStock: the bolts held there",
+            [counting.countForm.session.form.name isEqualToString:@"CountStock"] && [counting.countRows.arrangedObjects count] == 1
+                && [boltRow.stockItem.itemName isEqualToString:@"Bolt"],
+            [counting.countRows.arrangedObjects valueForKeyPath:@"stockItem.itemName"]);
     LBClick(sheet, @"countShowsExpected");
-    LBCheck(@"what is held shown when asked: 2", LBIs(boltRow.expectedShown, @"2"), boltRow.expectedShown);
+    LBCheck(@"what is held shown when asked: 2", LBIs(boltRow.held, @"2")
+                && ![counting.countRowsTable tableColumnWithIdentifier:@"expected"].hidden,
+            boltRow.held);
     [counting.countRows setSelectedObjects:boltRow ? @[ boltRow ] : @[]];
     LBTypeInCell(sheet, @"countRowsTable", 3, @"1");
     LBClick(sheet, @"addCountRow");
     LBChoose(sheet, @"countRowItem", @"Bracket");
     LBTypeInCell(sheet, @"countRowsTable", 3, @"4");
     LBSnapshot(sheet, @"stock-count");
-    LBClick(sheet, @"postCount");
-    StockCount *count = counting.posted;
+    LBClick(sheet, @"submitCount");
+    StockCount *count = counting.submitted;
     NSPredicate *atShelfA = [NSPredicate predicateWithFormat:@"location.id == %@", boltRow.location.id];
     NSMutableDictionary *held = [NSMutableDictionary dictionary];
     for (Holding *holding in LBServerObjects([Holding class], atShelfA)) held[holding.stockItem.itemName ?: @""] = holding.quantity;
-    LBCheck(@"posted: CT-GAR-0001, its two adjustments; the server holds 1 bolt and 4 brackets at Shelf A",
-            [count.lbNumber isEqualToString:@"CT-GAR-0001"] && count.moves.count == 2 && LBIs(held[@"Bolt"], @"1") && LBIs(held[@"Bracket"], @"4")
-                && counting.rowsCounted.count == 0,
+    LBCheck(@"submitted: CT-GAR-0001, counted, its two lines, nothing adjusted yet: the server holds 2 bolts at Shelf A",
+            [count.lbNumber isEqualToString:@"CT-GAR-0001"] && [count.countState isEqualToString:@"Counted"] && count.countLines.count == 2
+                && count.moves.count == 0 && LBIs(held[@"Bolt"], @"2") && !held[@"Bracket"],
             counting.lastError ?: held);
     [counting close];
+    LBTasksWindowController *tasks = LBTasksWindow();
+    NSArray *names = LBTasksOf(tasks, count, @[ @"Review the count" ]);
+    LBCheck(@"count review started: Review the count, a manager's", [names isEqualToArray:@[ @"Review the count" ]], tasks.messageLabel.stringValue ?: names);
+    NSUInteger row = NSNotFound;
+    for (NSUInteger i = 0; i < tasks.openTasks.count && row == NSNotFound; i++) {
+        if ([tasks.openTasks[i].businessKey isEqualToString:count.id.UUIDString]) row = i;
+    }
+    if (row != NSNotFound) {
+        [tasks.window makeKeyAndOrderFront:nil];
+        [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+        LBClick(tasks.window, @"open");
+        LBStockCountWindowController *review = (LBStockCountWindowController *)tasks.stepWindow;
+        review.quiet = YES;
+        LBCheck(@"opened in the count's window, its review's sheet at once: ReviewStockCount, its two lines",
+                [review isKindOfClass:[LBStockCountWindowController class]] && review.window.attachedSheet == review.reviewPanel
+                    && [review.reviewForm.session.form.name isEqualToString:@"ReviewStockCount"] && [[review.reviewForm valueForKey:@"countLines"] count] == 2,
+                review.lastError ?: review.reviewForm);
+        LBChoose(review.reviewPanel, @"reviewState", @"Posted");
+        LBClick(review.reviewPanel, @"submitReview");
+        [held removeAllObjects];
+        for (Holding *holding in LBServerObjects([Holding class], atShelfA)) held[holding.stockItem.itemName ?: @""] = holding.quantity;
+        StockCount *there = LBServerOf(count);
+        [there.managedObjectContext refreshObject:there mergeChanges:NO];
+        LBCheck(@"posted: its two adjustments; the server holds 1 bolt and 4 brackets at Shelf A",
+                [there.countState isEqualToString:@"Posted"] && there.moves.count == 2 && LBIs(held[@"Bolt"], @"1") && LBIs(held[@"Bracket"], @"4")
+                    && !review.window.attachedSheet,
+                review.lastError ?: held);
+        names = LBTasksOf(tasks, count, @[]);
+        LBCheck(@"and its task done", names.count == 0, names);
+        [review close];
+    }
+    [tasks close];
+
     LBSpin();
     LBCheck(@"the Counts tab lists it", [[stock.catalogCounts valueForKey:@"lbNumber"] containsObject:@"CT-GAR-0001"],
             [stock.catalogCounts valueForKey:@"lbNumber"]);

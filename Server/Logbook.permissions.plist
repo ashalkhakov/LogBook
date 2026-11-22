@@ -360,10 +360,18 @@
       delete = ( { relation = manager; from = assembledAt; } );
     };
     StockCount = {
+      manager = ( { relation = manager; from = warehouse; } );
+      keeper  = ( { relation = keeper; from = warehouse; } );
       read   = ( { relation = read; from = warehouse; } );
       insert = ( { relation = keeper; from = warehouse; } );
       update = ( { relation = manager; from = warehouse; } );
       delete = ( { relation = manager; from = warehouse; } );
+    };
+    CountLine = {
+      read   = ( { relation = read; from = stockCount; } );
+      insert = ( { relation = keeper; from = stockCount; } );
+      update = ( { relation = manager; from = stockCount; } );
+      delete = ( { relation = manager; from = stockCount; } );
     };
   };
 }

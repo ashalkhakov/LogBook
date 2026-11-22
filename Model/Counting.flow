@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow:Flow xmlns:flow="http://schemas.ormkit.org/2026-10/Flows" Name="Counting" Model="Logbook.orm">
+    <flow:Entry Name="Count" Screen="count"></flow:Entry>
+    <flow:Entry Name="Review" Screen="review"></flow:Entry>
+    <flow:Screen id="count" Form="_75FD9875-AD36-42E3-8B29-76369964FFC3" Name="CountStock" X="0" Y="0" Width="660" Height="520"></flow:Screen>
+    <flow:Screen id="review" Form="_6FFA1AD1-B477-4EF0-9BB1-ABEA30A0704C" Name="ReviewStockCount" X="760" Y="0" Width="420" Height="340"></flow:Screen>
+    <flow:Transition From="count" On="SubmitDone" Kind="Back"></flow:Transition>
+    <flow:Transition From="review" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="review" On="Cancel" Kind="Close"></flow:Transition>
+</flow:Flow>

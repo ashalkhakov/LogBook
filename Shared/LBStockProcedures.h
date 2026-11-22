@@ -56,6 +56,7 @@
 #import "ItemCode+CoreDataClass.h"
 #import "CustomerReturn+CoreDataClass.h"
 #import "SupplierReturn+CoreDataClass.h"
+#import "CountLine+CoreDataClass.h"
 #import "Event+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
 #import "TyreChange+CoreDataClass.h"
@@ -125,6 +126,21 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // makes it: of its line's item, from where the shipment went, made by who
 // recorded it and when; the shipment to where its order ships.
 - (BOOL)lb_completeShippedMoves:(NSError **)error;
+// Before a save: each count a review posted (its state from Counted to
+// Posted, ReviewStockCount's) posted (-[StockCount lb_post:]); refused for
+// one reviewed already, changed again.
+- (BOOL)lb_postChangedCounts:(NSError **)error;
+@end
+
+@interface StockCount (LBStock)
+// Its differences adjusted: each line's item at its location against what
+// is held there now, what is held where it counts and no line says found
+// none; each difference an adjustment of reason Count, part of it, made by
+// its counter; the warehouse's last counted day set, where all of it was
+// counted. Refused for a line of a place it does not cover, or less than
+// none found.
+- (BOOL)lb_post:(NSError **)error;
+- (BOOL)lb_postFound:(NSArray<LBCounted *> *)found at:(NSDate *)now error:(NSError **)error;
 @end
 
 // A service's or a tyre change's parts: the lines of a sale of them to the

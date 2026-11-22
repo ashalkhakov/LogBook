@@ -64,6 +64,10 @@
     return _sale ? @"Selling" : @"Purchasing";
 }
 
+- (NSString *)businessKey {
+    return [[_order valueForKey:@"id"] UUIDString];
+}
+
 - (NSString *)orderFormName {
     return _sale ? @"EditSaleOrder" : @"EditPurchaseOrder";
 }
@@ -72,9 +76,9 @@
    screen over it at once (Confirm the order's sheet). */
 - (void)showWindow:(id)sender {
     [super showWindow:sender];
-    if (!_task.entryName || ![_task.flowName isEqualToString:self.flowName] || self.window.attachedSheet) return;
+    if (!self.task.entryName || ![self.task.flowName isEqualToString:self.flowName] || self.window.attachedSheet) return;
     NSError *error = nil;
-    ORMFlowStep *step = [_flow beginAt:_task.entryName key:[[_order valueForKey:@"id"] UUIDString] error:&error];
+    ORMFlowStep *step = [_flow beginAt:self.task.entryName key:[[_order valueForKey:@"id"] UUIDString] error:&error];
     if (!step) return [self reportError:error ?: _flowError];
     _confirmState = nil;
     [self show:step];
@@ -134,25 +138,6 @@
 
 #pragma mark Its forms
 
-/* The model's form opened on the object as the context has it now, given
-   what it comes with, saved as the store saves; its values as a view binds
-   them (LBFormValues.h). nil, and why said, where it does not open. */
-- (LBFormValues *)valuesOfForm:(NSString *)name given:(NSDictionary *)given object:(NSManagedObject *)object {
-    NSError *error = nil;
-    ORMForm *form = [ORMForm formNamed:name error:&error];
-    ORMFormSession *session = form ? [[ORMFormSession alloc] initWithForm:form given:given] : nil;
-    LBStore *store = self.store;
-    [session useContext:self.context saving:^BOOL(NSManagedObjectContext *context, NSError **failure) {
-        return [store saveContext:context error:failure];
-    }];
-    session.key = [[object valueForKey:@"id"] UUIDString];
-    if (!session || ![session open:&error]) {
-        [self reportError:error];
-        return nil;
-    }
-    return [[LBFormValues alloc] initWithSession:session object:object];
-}
-
 /* An order's changes saved by its form (EditPurchaseOrder, EditSaleOrder),
    opened on it as it is now; what else changed, with it. */
 - (BOOL)saveChanges {
@@ -166,73 +151,6 @@
         return NO;
     }
     return [super saveChanges];
-}
-
-/* What a save refused, said: under its controls where the view has them,
-   the rest in the form's words. */
-- (void)refuseForm:(LBFormValues *)values error:(NSError *)error under:(NSView *)view {
-    NSArray<NSString *> *rest = error ? @[ error.localizedDescription ?: @"" ] : [values showErrors:values.session.errors under:view];
-    [self refuse:rest.count ? [rest componentsJoinedByString:@"\n"] : @"Not saved: see under its fields."];
-}
-
-/* A step's form saved, opened again on its object as it is now (what its
-   sheet changed of it), then its instance submitted to the order's task
-   of it where one is open: the process goes on with it. */
-- (BOOL)submitForm:(LBFormValues *)values sheet:(NSWindow *)sheet {
-    [sheet makeFirstResponder:nil];
-    LBFormValues *now = [self valuesOfForm:values.session.form.name given:values.session.given object:values.object];
-    NSError *error = nil;
-    if (!now || ![now.session save:&error]) {
-        if (now) [self refuseForm:now error:error under:sheet.contentView];
-        return NO;
-    }
-    [self saveChanges];
-    /* The server's tasks, where it has some: opened from Window > Tasks,
-       those; from the stock's window, asked here. */
-    if (!_tasks && self.store.serviceRoot) _tasks = [[LBTasks alloc] initWithServiceRoot:self.store.serviceRoot signIn:self.store.signIn];
-    NSString *formName = now.session.form.name;
-    NSString *about = [[_order valueForKey:@"id"] UUIDString];
-    NSString *instance = [LBTasks instanceOf:now.session];
-    /* What the form saved, at the server before its task is told: the
-       process goes on with the facts. Offline first, where the server
-       cannot be reached, the step waits, saved (Window > Tasks), and is
-       submitted after a sync. */
-    if (![self.store syncAndWait:&error]) {
-        if (self.store.local) return [self wait:formName about:about instance:instance task:_task.name];
-        [self reportError:error];
-        return NO;
-    }
-    error = nil;
-    LBTask *task = [_task.formName isEqualToString:formName] ? _task : [_tasks openTaskOfForm:formName about:about error:&error];
-    if (!task && self.store.local && [LBTasks isUnreachable:error]) return [self wait:formName about:about instance:instance task:_task.name];
-    if (error) [self reportError:error];
-    if (task && ![_tasks submitInstance:instance toTask:task error:&error]) {
-        if (self.store.local && [LBTasks isUnreachable:error]) return [self wait:formName about:about instance:instance task:task.name];
-        [self reportError:error];
-        return NO;
-    }
-    /* Submitted: one of it that waited is done with. */
-    for (LBPendingSubmission *waiting in [self.store.local.appState pendingSubmissions]) {
-        if (task && [waiting.formName isEqualToString:formName] && [waiting.businessKey isEqualToString:about]) [self.store.local.appState removeSubmission:waiting];
-    }
-    _waiting = nil;
-    [self stepDone:formName];
-    return YES;
-}
-
-/* The step saved here, waiting to be submitted (LBAppState): said, unless
-   quiet. */
-- (BOOL)wait:(NSString *)formName about:(NSString *)about instance:(NSString *)instance task:(NSString *)taskName {
-    _waiting = [self.store.local.appState keepSubmissionOfForm:formName about:about taskName:taskName instance:instance];
-    if (!self.quiet) {
-        NSAlert *alert = [[NSAlert alloc] init];
-        alert.alertStyle = NSAlertStyleInformational;
-        alert.messageText = @"Saved here, not submitted yet";
-        alert.informativeText = [NSString stringWithFormat:@"The server cannot be reached. %@ waits in Window > Tasks, and is submitted "
-                                                           @"after the next sync.", taskName.length ? taskName : @"The step"];
-        [alert beginSheetModalForWindow:self.window completionHandler:nil];
-    }
-    return YES;
 }
 
 /* The sheet shown gone, and its form, the flow's way on its outcome
@@ -305,18 +223,10 @@
     if ([self submitForm:_confirmForm sheet:_confirmPanel]) [self endForm:@"SubmitDone"];
 }
 
-/* The step of the form's done here: the title says it no more, and the
-   tasks are asked again. */
-- (void)stepDone:(NSString *)form {
-    if (![_task.formName isEqualToString:form]) return;
-    self.task = nil;
-    [_tasks noteChange];
-}
-
 /* Its title: the order's number, and the task it was opened for. */
 - (NSString *)windowTitle {
     NSString *number = [_order valueForKey:@"lb_number"] ?: @"";
-    return _task ? [NSString stringWithFormat:@"%@ — %@", number, _task.name] : number;
+    return self.task ? [NSString stringWithFormat:@"%@ — %@", number, self.task.name] : number;
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingWindowTitle {

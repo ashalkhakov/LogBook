@@ -54,26 +54,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSArray<NSString *> *returnReasons;
 @property (nonatomic, copy) NSString *returnReason;
 
-// The process's task it was opened for (LBTasksWindowController.h), named
-// in its title. A purchase's steps are done here with the model's forms --
-// Confirm or Cancel with ConfirmPurchaseOrder, Receive with ReceiveGoods:
-// the form saved, then its instance submitted to the order's open task of
-// it (this one, or found), which the server's process goes on with
-// (Server/LBWorkflow.h); the title says it no more, and the tasks are asked
-// again. nil: no task. A task done with a flow's entry
-// (ormkit:flow:Purchasing.flow#Confirm) opens its step's sheet as the
-// window is shown.
-@property (nonatomic, strong, nullable) LBTask *task;
+// A task done with a flow's entry (ormkit:flow:Purchasing.flow#Confirm,
+// LBStockEditor's task) opens its step's sheet as the window is shown.
 // An order's way through its forms (Model/Purchasing.flow, Selling.flow,
 // ORMRuntime's ORMFlowSession): the order's window its EditPurchaseOrder
 // (EditSaleOrder); its Confirm, Cancel and Receive (Ship) buttons the
 // flow's triggers, each sheet the screen they lead to, its Submit and
 // Cancel the ways back.
 @property (nonatomic, readonly, strong, nullable) ORMFlowSession *flow;
-@property (nonatomic, strong, nullable) LBTasks *tasks;
-// The step its form saved last that waits to be submitted (offline first,
-// the server not reached: Window > Tasks); nil where it went.
-@property (nonatomic, readonly, strong, nullable) LBPendingSubmission *waiting;
 
 // A purchase's step sheet's Submit: its form saved, then submitted to
 // the order's task of it; its Cancel (and Escape): nothing of it kept.

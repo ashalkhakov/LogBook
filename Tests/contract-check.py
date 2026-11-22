@@ -57,6 +57,8 @@ def check_rows(problems, rid, label, repeat, bindings, offered):
         if dest != rid or not (path.startswith('arrangedObjects.') or path.startswith('selection.')):
             continue
         keys = path.split('.', 1)[1].split('.')
+        if keys[0].startswith('@'):
+            continue  # a collection operator (arrangedObjects.@count): the rows', no element
         if keys[0] == 'choices' and len(keys) > 1 and keys[1] in choices_of(repeat):
             if binding in OFFERING:
                 offered.add(keys[1])
