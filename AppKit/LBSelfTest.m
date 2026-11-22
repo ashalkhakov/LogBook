@@ -312,7 +312,11 @@ static void LBAttachmentSteps(LBMainWindowController *controller, Vehicle *kept)
     [controller.attachments setSelectionIndexes:[NSIndexSet indexSet]];
     LBSpin();
     NSButton *open = (NSButton *)LBControl(window.contentView, @"openAttachment");
-    LBCheck(@"nothing to open with no attachment chosen", open && !open.isEnabled, nil);
+    LBCheck(@"nothing to open with no attachment chosen", open && !open.isEnabled,
+            [NSString stringWithFormat:@"button %@ enabled %d, chosen %lu of %lu, table's %lu", open, open.isEnabled,
+                                       (unsigned long)controller.attachments.selectionIndexes.count,
+                                       (unsigned long)[controller.attachments.arrangedObjects count],
+                                       (unsigned long)table.selectedRowIndexes.count]);
     [controller.attachments setSelectionIndex:0];
     LBSpin();
     LBClick(window, @"openAttachment");
