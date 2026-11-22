@@ -115,7 +115,7 @@
                 <binding destination="InspectionForm" name="contentArray" keyPath="selection.answers" id="answersContent"/>
             </connections>
         </arrayController>
-        <arrayController editable="NO" userLabel="Answer Options" id="answerOptions">
+        <arrayController editable="NO" avoidsEmptySelection="NO" userLabel="Answer Options" id="answerOptions">
             <connections>
                 <binding destination="answers" name="contentArray" keyPath="selection.choices.options" id="answerOptionsContent"/>
             </connections>

@@ -23,6 +23,8 @@ static void *LBAnswerChosen = &LBAnswerChosen;
 }
 
 - (id)transformedValue:(id)value {
+    /* A placeholder's text, as GNUstep gives one, as it is. */
+    if ([value isKindOfClass:[NSString class]]) return value;
     NSArray *texts = [[value valueForKey:@"optionText"] sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)];
     return [texts componentsJoinedByString:@", "] ?: @"";
 }
@@ -68,6 +70,18 @@ static void *LBAnswerChosen = &LBAnswerChosen;
        changed for another answer, its selection is not this one's. */
     NSArray *theirs = [answer valueForKeyPath:@"choices.options"] ?: @[];
     if (![[NSSet setWithArray:_answerOptions.arrangedObjects ?: @[]] isEqualToSet:[NSSet setWithArray:theirs]] || !theirs.count) return;
+    /* And only options of its own question: what GNUstep says of the list
+       while it changes can be another answer's (said, to be found). */
+    id question = [answer valueForKey:@"question"];
+    for (id option in chosen) {
+        if ([option valueForKey:@"question"] != question) {
+            NSLog(@"LBAnswersController: options of another question not taken: %@ chose %@ of %@; listed %@, its choices %@",
+                  [question valueForKey:@"questionText"], [chosen valueForKey:@"optionText"],
+                  [[chosen valueForKey:@"question"] valueForKey:@"questionText"],
+                  [_answerOptions.arrangedObjects valueForKey:@"optionText"], [theirs valueForKey:@"optionText"]);
+            return;
+        }
+    }
     [answer setValue:chosen forKey:@"options"];
 }
 
@@ -118,8 +132,9 @@ static void *LBAnswerChosen = &LBAnswerChosen;
         Answer *answer = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Answer class])
                                                        inManagedObjectContext:_inspection.managedObjectContext];
         answer.id = [NSUUID UUID];
-        answer.inspection = _inspection;
+        /* Its question first: the form's rows have it as it is one. */
         answer.question = question;
+        answer.inspection = _inspection;
     }
     [_answers rearrangeObjects];
 }
