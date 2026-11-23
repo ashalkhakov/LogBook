@@ -1558,7 +1558,26 @@ static void LBStockSteps(LBMainWindowController *controller) {
     LBCheck(@"the stock window", window != nil, nil);
     if (!window) return;
     stock.quiet = YES;
+    /* With no catalog, what needs one cannot be clicked; with one, can. */
+    NSMutableArray *ofCatalog = [NSMutableArray array];
+    for (NSString *name in @[ @"showSettings", @"addItem", @"newSale", @"newPurchase", @"newCount" ]) {
+        /* On a tab not shown too: each tab's view. */
+        NSButton *button = (NSButton *)LBControl(window.contentView, name);
+        for (NSTabViewItem *tab in stock.tabs.tabViewItems) button = button ?: (NSButton *)LBControl(tab.view, name);
+        if (button) [ofCatalog addObject:button];
+    }
+    LBCheck(@"Settings, Add, New Sale, New Purchase, New Count there", ofCatalog.count == 5, [ofCatalog valueForKey:@"identifier"]);
+    NSMutableArray *enabled = [NSMutableArray array];
+    for (NSButton *button in ofCatalog) {
+        if (button.isEnabled) [enabled addObject:button.identifier];
+    }
+    LBCheck(@"no catalog yet: they are not enabled", stock.catalog || !enabled.count, enabled);
     LBClick(window, @"newCatalog");
+    [enabled removeAllObjects];
+    for (NSButton *button in ofCatalog) {
+        if (!button.isEnabled) [enabled addObject:button.identifier];
+    }
+    LBCheck(@"a catalog: they are enabled", stock.catalog && !enabled.count, enabled);
     Catalog *kept = LBServerOf(stock.catalog);
     LBCheck(@"a new catalog, saved: the user's, with its warehouse Main and its Default location",
             [kept.catalogOwner.email isEqualToString:stock.store.user.email] && [[[kept.warehouses anyObject] warehouseName] isEqualToString:@"Main"]
