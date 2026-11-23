@@ -1262,6 +1262,16 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBClick(window, @"addLine");
     LBChoose(window, @"lineItem", @"Bracket");
     LBTypeInCell(window, @"linesTable", 1, @"10");
+    /* Of an item with no unit cost (a new one): saving says which value
+       of what is missing, not Core Data's "Please provide a valid value". */
+    PurchaseLine *uncosted = purchase.lines.lastObject;
+    uncosted.lineUnitCostAmount = nil;
+    uncosted.lineUnitCostCurrency = nil;
+    LBClick(window, @"save");
+    NSString *refusal = purchase.lastError.localizedRecoverySuggestion ?: purchase.lastError.localizedDescription;
+    LBCheck(@"saved with no unit cost: refused, saying the purchase line's unit cost is missing",
+            [refusal containsString:@"Purchase line of Bracket: its line unit cost amount is missing."],
+            refusal);
     LBTypeInCell(window, @"linesTable", 2, @"1");
     LBSavedIn(purchase, @"its line, 10 brackets at 1, saved");
     names = LBTasksOf(tasks, bought, @[ @"Confirm the order" ]);

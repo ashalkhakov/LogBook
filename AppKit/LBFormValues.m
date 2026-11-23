@@ -1,6 +1,7 @@
 #import "LBFormValues.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
+#import <objc/runtime.h>
 
 static NSISO8601DateFormatter *LBFormDates(void) {
     static NSISO8601DateFormatter *dates;
@@ -171,6 +172,25 @@ static void *LBRowChanged = &LBRowChanged;
     NSDictionary<NSString *, id> *_choices;
     NSDictionary<NSString *, NSArray<NSString *> *> *_items;
     NSMutableDictionary<NSString *, NSArray<LBFormRow *> *> *_rows;
+}
+
+static char LBSaveFailureKey;
+
++ (void)session:(ORMFormSession *)session
+     useContext:(NSManagedObjectContext *)context
+         saving:(BOOL (^)(NSManagedObjectContext *context, NSError **failure))saving {
+    __weak ORMFormSession *weak = session;
+    [session useContext:context saving:^BOOL(NSManagedObjectContext *saved, NSError **failure) {
+        NSError *refused = nil;
+        BOOL ok = saving(saved, &refused);
+        if (weak) objc_setAssociatedObject(weak, &LBSaveFailureKey, ok ? nil : refused, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        if (!ok && failure) *failure = refused;
+        return ok;
+    }];
+}
+
++ (NSError *)saveFailureOf:(ORMFormSession *)session {
+    return session ? objc_getAssociatedObject(session, &LBSaveFailureKey) : nil;
 }
 
 - (instancetype)initWithSession:(ORMFormSession *)session context:(NSManagedObjectContext *)context {

@@ -158,7 +158,7 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
     ORMForm *form = [ORMForm formNamed:name error:&error];
     ORMFormSession *session = form ? [[ORMFormSession alloc] initWithForm:form given:given ?: @{}] : nil;
     LBStore *store = _windowController.store;
-    [session useContext:_windowController.context saving:^BOOL(NSManagedObjectContext *context, NSError **failure) {
+    if (session) [LBFormValues session:session useContext:_windowController.context saving:^BOOL(NSManagedObjectContext *context, NSError **failure) {
         return [store save:failure];
     }];
     session.key = [[object valueForKey:@"id"] UUIDString];
@@ -324,9 +324,14 @@ static NSInteger LBLatestFirst(id a, id b, void *context) {
 - (BOOL)save:(LBFormValues *)form {
     NSError *error = nil;
     if ([form.session save:&error]) return YES;
-    NSArray<NSString *> *rest = error ? @[ error.localizedDescription ?: @"" ] : [form showErrors:form.session.errors under:_forms];
-    if (rest.count || !error) return [self refuse:rest.count ? [rest componentsJoinedByString:@"\n"] : @"Not saved: see under its fields."];
-    return NO;
+    /* What the store refused, each violation said; else under the fields. */
+    NSError *failure = error ?: [LBFormValues saveFailureOf:form.session];
+    if (failure) {
+        [_windowController reportError:failure];
+        return NO;
+    }
+    NSArray<NSString *> *rest = [form showErrors:form.session.errors under:_forms];
+    return [self refuse:rest.count ? [rest componentsJoinedByString:@"\n"] : @"Not saved: see under its fields."];
 }
 
 /* The form submitted to the server's action on the object (its procedure,

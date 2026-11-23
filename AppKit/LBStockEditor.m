@@ -129,19 +129,17 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 
 /* Saved, not yet said to the others. */
 - (BOOL)saveHere {
-    if (!_context.hasChanges) return YES;
+    /* Nothing left to save (a form saved it): saved, what was refused
+       before no longer so. */
+    if (!_context.hasChanges) {
+        _lastError = nil;
+        return YES;
+    }
     [self completeMoney];
     NSError *error = nil;
     if ([_store saveContext:_context error:&error]) {
         _lastError = nil;
         return YES;
-    }
-    NSArray *each = error.userInfo[NSDetailedErrorsKey];
-    if (each.count) {
-        NSString *said = [[each valueForKey:NSStringFromSelector(@selector(localizedDescription))] componentsJoinedByString:@"\n"];
-        error = [NSError errorWithDomain:error.domain code:error.code
-                                userInfo:@{ NSLocalizedDescriptionKey: @"The changes break the stock's rules",
-                                            NSLocalizedRecoverySuggestionErrorKey: said }];
     }
     [self reportError:error];
     return NO;
@@ -169,7 +167,14 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     return result;
 }
 
+/* A save's refusal, each violation said, wherever it comes from (a save
+   here, an action's save offline): Core Data's message names none. */
 - (void)reportError:(NSError *)error {
+    if (error.userInfo[NSDetailedErrorsKey] || error.userInfo[NSValidationKeyErrorKey]) {
+        error = [NSError errorWithDomain:error.domain code:error.code
+                                userInfo:@{ NSLocalizedDescriptionKey: @"The changes break the stock's rules",
+                                            NSLocalizedRecoverySuggestionErrorKey: [[LBLocalStore sentencesOfError:error] componentsJoinedByString:@"\n"] }];
+    }
     _lastError = error;
     if (error && !_quiet) [self presentError:error];
 }
@@ -232,7 +237,7 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     ORMForm *form = [ORMForm formNamed:name error:&error];
     ORMFormSession *session = form ? [[ORMFormSession alloc] initWithForm:form given:given] : nil;
     LBStore *store = self.store;
-    [session useContext:self.context saving:^BOOL(NSManagedObjectContext *context, NSError **failure) {
+    if (session) [LBFormValues session:session useContext:self.context saving:^BOOL(NSManagedObjectContext *context, NSError **failure) {
         return [store saveContext:context error:failure];
     }];
     session.key = [[object valueForKey:@"id"] UUIDString];
@@ -246,7 +251,11 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 /* What a save refused, said: under its controls where the view has them,
    the rest in the form's words. */
 - (void)refuseForm:(LBFormValues *)values error:(NSError *)error under:(NSView *)view {
-    NSArray<NSString *> *rest = error ? @[ error.localizedDescription ?: @"" ] : [values showErrors:values.session.errors under:view];
+    /* What the store refused, each violation said (Core Data's own name
+       the object and the property); else under the controls. */
+    NSError *failure = error ?: [LBFormValues saveFailureOf:values.session];
+    if (failure) return [self reportError:failure];
+    NSArray<NSString *> *rest = [values showErrors:values.session.errors under:view];
     [self refuse:rest.count ? [rest componentsJoinedByString:@"\n"] : @"Not saved: see under its fields."];
 }
 

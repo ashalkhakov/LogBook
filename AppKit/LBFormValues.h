@@ -26,6 +26,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface LBFormValues : NSObject
 
+// The session's context, saved by the block, the failure kept: ORMKit
+// keeps only its sentence ("Multiple validation errors occurred.").
++ (void)session:(ORMFormSession *)session
+     useContext:(NSManagedObjectContext *)context
+         saving:(BOOL (^)(NSManagedObjectContext *context, NSError **failure))saving;
+// What its last save's block refused (nil, none): each violation in it.
++ (nullable NSError *)saveFailureOf:(ORMFormSession *)session;
+
 - (instancetype)initWithSession:(ORMFormSession *)session context:(NSManagedObjectContext *)context;
 // The same, each value set written into the object too: its properties the
 // form's elements by name.

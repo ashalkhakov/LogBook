@@ -355,10 +355,59 @@ static NSString *LBCount(NSUInteger n) {
     return warnings;
 }
 
+/* A name as words: "lineUnitCostAmount" "line unit cost amount",
+   "PurchaseLine" "purchase line". */
+static NSString *LBWords(NSString *name) {
+    NSMutableString *words = [NSMutableString string];
+    for (NSUInteger i = 0; i < name.length; i++) {
+        unichar c = [name characterAtIndex:i];
+        BOOL upper = [[NSCharacterSet uppercaseLetterCharacterSet] characterIsMember:c];
+        if (upper && i > 0) [words appendString:@" "];
+        [words appendString:upper ? [[NSString stringWithCharacters:&c length:1] lowercaseString] : [NSString stringWithCharacters:&c length:1]];
+    }
+    return words;
+}
+
+/* What Core Data says of a value it refuses ("Please provide a valid
+   value."), said of the object and the property: which, and why. */
+static NSString *LBValidationSentence(NSError *error) {
+    NSManagedObject *object = error.userInfo[NSValidationObjectErrorKey];
+    NSString *key = error.userInfo[NSValidationKeyErrorKey];
+    if (![error.domain isEqualToString:NSCocoaErrorDomain] || ![object isKindOfClass:[NSManagedObject class]] || !key.length) return nil;
+    NSString *why;
+    switch (error.code) {
+    case NSValidationMissingMandatoryPropertyError: why = @"is missing"; break;
+    case NSValidationNumberTooSmallError: why = @"is too small"; break;
+    case NSValidationNumberTooLargeError: why = @"is too large"; break;
+    case NSValidationDateTooSoonError: why = @"is too early"; break;
+    case NSValidationDateTooLateError: why = @"is too late"; break;
+    case NSValidationStringTooShortError: why = @"is too short"; break;
+    case NSValidationStringTooLongError: why = @"is too long"; break;
+    case NSValidationStringPatternMatchingError: why = @"is not one it can be"; break;
+    case NSValidationRelationshipLacksMinimumCountError: why = @"has too few"; break;
+    case NSValidationRelationshipExceedsMaximumCountError: why = @"has too many"; break;
+    case NSValidationRelationshipDeniedDeleteError: why = @"keeps it from being removed"; break;
+    default: return nil;
+    }
+    id value = error.userInfo[NSValidationValueErrorKey];
+    NSString *said = value && value != [NSNull null] && error.code != NSValidationMissingMandatoryPropertyError
+                     && ![value isKindOfClass:[NSSet class]] ? [NSString stringWithFormat:@" (%@)", value] : @"";
+    NSString *title = [object respondsToSelector:NSSelectorFromString(@"lbTitle")] ? [object valueForKey:@"lbTitle"] : nil;
+    NSString *entity = LBWords(object.entity.name);
+    NSString *what = title.length ? [NSString stringWithFormat:@"%@ %@", entity, title] : [@"a " stringByAppendingString:entity];
+    /* A line, by its item: "purchase line of Bracket". */
+    NSManagedObject *item = !title.length && object.entity.relationshipsByName[@"stockItem"] ? [object valueForKey:@"stockItem"] : nil;
+    NSString *itemTitle = [item respondsToSelector:NSSelectorFromString(@"lbTitle")] ? [item valueForKey:@"lbTitle"] : nil;
+    if (itemTitle.length) what = [NSString stringWithFormat:@"%@ of %@", entity, itemTitle];
+    what = [[[what substringToIndex:1] uppercaseString] stringByAppendingString:[what substringFromIndex:1]];
+    return [NSString stringWithFormat:@"%@: its %@%@ %@.", what, LBWords(key), said, why];
+}
+
 static void LBFlattenInto(NSError *error, NSMutableArray<NSString *> *into) {
     NSArray *each = error.userInfo[NSDetailedErrorsKey];
     if (!each.count) {
-        if (error.localizedDescription.length && ![into containsObject:error.localizedDescription]) [into addObject:error.localizedDescription];
+        NSString *sentence = LBValidationSentence(error) ?: error.localizedDescription;
+        if (sentence.length && ![into containsObject:sentence]) [into addObject:sentence];
         return;
     }
     for (NSError *e in each) LBFlattenInto(e, into);

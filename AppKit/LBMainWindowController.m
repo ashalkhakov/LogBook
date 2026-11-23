@@ -550,6 +550,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (void)reportError:(NSError *)error {
+    error = [self willPresentError:error];
     _lastError = error;
     if (error && !_quiet) [self presentError:error];
 }
@@ -658,9 +659,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 /* A save's refusal, each violation said: Core Data's message names none. */
 - (NSError *)willPresentError:(NSError *)error {
-    NSArray *each = error.userInfo[NSDetailedErrorsKey];
-    if (!each.count) return error;
-    NSString *said = [[each valueForKey:NSStringFromSelector(@selector(localizedDescription))] componentsJoinedByString:@"\n"];
+    if (!error.userInfo[NSDetailedErrorsKey] && !error.userInfo[NSValidationKeyErrorKey]) return error;
+    NSString *said = [[LBLocalStore sentencesOfError:error] componentsJoinedByString:@"\n"];
     return [NSError errorWithDomain:error.domain code:error.code
                            userInfo:@{ NSLocalizedDescriptionKey: @"The changes break the logbook's rules",
                                        NSLocalizedRecoverySuggestionErrorKey: said }];
@@ -685,7 +685,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     if (answer == NSAlertThirdButtonReturn) return YES;
     NSError *error = nil;
     if ([_store save:&error]) return YES;
-    [self presentError:error];
+    [self presentError:[self willPresentError:error]];
     return NO;
 }
 
