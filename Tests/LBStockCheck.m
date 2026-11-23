@@ -1040,6 +1040,50 @@ static void LBPartsUsed(void) {
     [context rollback];
 }
 
+/* A count taken in a window (a child context), submitted: the main
+   context knew its ID before the window's save brought it there (a list
+   asked for it), so it is updated there, not inserted, with no state
+   stored before. It is new all the same: counted, not refused as a
+   count reviewed. One stored with no state (taken before counts were
+   reviewed) still stays as it was. */
+static void LBCountFromAWindow(void) {
+    NSManagedObjectContext *main = LBNewStore();
+    NSManagedObjectContext *window = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+    window.parentContext = main;
+    StockCount *count = LBInsert([StockCount class], window);
+    count.countedOn = [NSDate date];
+    count.runningNumber = 1;
+    count.countState = @"Counted";
+    NSError *error = nil;
+    LBCheck(@"a window's count, its ID the store's", [window obtainPermanentIDsForObjects:@[ count ] error:&error], error);
+    [main objectWithID:count.objectID];
+    LBCheck(@"saved into the main context", [window lb_postChangedCounts:&error] && [window save:&error], error);
+    StockCount *there = (StockCount *)[main objectWithID:count.objectID];
+    printf("     (in the main context: inserted %d, updated %d)\n", there.isInserted, there.isUpdated);
+    error = nil;
+    LBCheck(@"its counts posted there: new, not refused as reviewed", [main lb_postChangedCounts:&error], error.localizedDescription);
+    LBCheck(@"and saved", [main save:&error], LBSaid(error));
+    there.countState = nil;
+    LBCheck(@"stored with no state, saved", [main save:&error], LBSaid(error));
+    there.countState = @"Posted";
+    error = nil;
+    LBCheck(@"one stored with no state, posted: refused", ![main lb_postChangedCounts:&error], nil);
+    printf("     (%s)\n", error.localizedDescription.UTF8String);
+    [main rollback];
+    /* Not stored yet, its state none in the main context, counted in the
+       window: new, counted. */
+    StockCount *unsaved = LBInsert([StockCount class], main);
+    unsaved.countedOn = [NSDate date];
+    unsaved.runningNumber = 2;
+    LBCheck(@"another, its ID the store's, not saved", [main obtainPermanentIDsForObjects:@[ unsaved ] error:&error], error);
+    StockCount *mine = (StockCount *)[window objectWithID:unsaved.objectID];
+    mine.countState = @"Counted";
+    error = nil;
+    LBCheck(@"counted in the window: new, not refused", [window lb_postChangedCounts:&error], error.localizedDescription);
+    [window rollback];
+    [main rollback];
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -1060,6 +1104,7 @@ int main(int argc, const char *argv[]) {
         LBStockProcedures();
         LBReturns();
         LBPartsUsed();
+        LBCountFromAWindow();
         printf("stock: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

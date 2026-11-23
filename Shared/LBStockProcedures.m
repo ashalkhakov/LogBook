@@ -999,6 +999,22 @@ static NSDecimalNumber *LBShippedOf(SaleLine *line) {
 
 @end
 
+/* Whether the object is in the store: saved, not only in a context (a
+   window's, the main one's). */
+static BOOL LBStored(NSManagedObject *object) {
+    NSPersistentStoreCoordinator *coordinator = object.managedObjectContext.persistentStoreCoordinator;
+    if (!coordinator || object.objectID.isTemporaryID) return NO;
+    NSManagedObjectContext *store = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    store.persistentStoreCoordinator = coordinator;
+    __block BOOL there = NO;
+    [store performBlockAndWait:^{
+        NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:object.entity.name];
+        request.predicate = [NSPredicate predicateWithFormat:@"self == %@", object.objectID];
+        there = [store countForFetchRequest:request error:NULL] > 0;
+    }];
+    return there;
+}
+
 /* Whether any of them is not being deleted. */
 static BOOL LBLive(NSSet<NSManagedObject *> *objects) {
     for (NSManagedObject *object in objects) {
@@ -1047,13 +1063,17 @@ static BOOL LBLive(NSSet<NSManagedObject *> *objects) {
     NSMutableArray *posted = [NSMutableArray array];
     for (NSManagedObject *object in self.updatedObjects) {
         if (![object isKindOfClass:[StockCount class]]) continue;
-        NSString *was = [object committedValuesForKeys:@[ @"countState" ]][@"countState"];
+        id was = [object committedValuesForKeys:@[ @"countState" ]][@"countState"];
+        if (was == [NSNull null]) was = nil;
         NSString *now = ((StockCount *)object).countState;
         if (was == now || [was isEqual:now]) continue;
-        /* Reviewed (or taken before counts were reviewed, posted as it was
-           taken): no more to change. */
-        if (![was isEqual:@"Counted"]) {
-            return LBRefuse(error, @"A count reviewed stays as it was: count again.");
+        /* Reviewed (posted or rejected), or taken before counts were
+           reviewed (stored with no state, posted as it was taken): no more
+           to change. One not stored yet is new, whatever this context
+           thought of it before. */
+        if (![was isEqual:@"Counted"] && (was || LBStored(object))) {
+            return LBRefuse(error, [NSString stringWithFormat:@"A count reviewed stays as it was: count again (count %d was %@, now %@).",
+                                                              ((StockCount *)object).runningNumber, was ?: @"taken before reviews", now ?: @"none"]);
         }
         if ([was isEqual:@"Counted"] && [now isEqual:@"Posted"]) [posted addObject:object];
     }

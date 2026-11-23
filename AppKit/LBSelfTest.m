@@ -1521,6 +1521,47 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
         LBCheck(@"and its task done", names.count == 0, names);
         [review close];
     }
+
+    /* Counted again, as held (1 bolt, 4 brackets): nothing to adjust,
+       submitted and posted all the same. */
+    [stock.tabs selectTabViewItemWithIdentifier:@"counts"];
+    LBSpin();
+    LBClick(window, @"newCount");
+    LBStockCountWindowController *recount = LBOpened(stock, [LBStockCountWindowController class]);
+    recount.quiet = YES;
+    sheet = recount.window;
+    LBChoose(sheet, @"countPlace", @"Garage (all of it)");
+    LBClick(sheet, @"startCount");
+    for (CountLine *line in [recount.countRows.arrangedObjects copy]) {
+        [recount.countRows setSelectedObjects:@[ line ]];
+        LBTypeInCell(sheet, @"countRowsTable", 3, line.held.stringValue ?: @"0");
+    }
+    LBClick(sheet, @"submitCount");
+    StockCount *asHeld = recount.submitted;
+    LBCheck(@"counted as held: CT-GAR-0002 submitted, counted", [asHeld.lbNumber isEqualToString:@"CT-GAR-0002"]
+                && [asHeld.countState isEqualToString:@"Counted"],
+            recount.lastError.localizedRecoverySuggestion ?: recount.lastError ?: asHeld.countState);
+    [recount close];
+    names = asHeld ? LBTasksOf(tasks, asHeld, @[ @"Review the count" ]) : @[];
+    row = NSNotFound;
+    for (NSUInteger i = 0; i < tasks.openTasks.count && row == NSNotFound; i++) {
+        if ([tasks.openTasks[i].businessKey isEqualToString:asHeld.id.UUIDString]) row = i;
+    }
+    LBCheck(@"its Review the count", row != NSNotFound, names);
+    if (row != NSNotFound) {
+        [tasks.window makeKeyAndOrderFront:nil];
+        [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
+        LBClick(tasks.window, @"open");
+        LBStockCountWindowController *review = (LBStockCountWindowController *)tasks.stepWindow;
+        review.quiet = YES;
+        LBChoose(review.reviewPanel, @"reviewState", @"Posted");
+        LBClick(review.reviewPanel, @"submitReview");
+        StockCount *there = LBServerOf(asHeld);
+        [there.managedObjectContext refreshObject:there mergeChanges:NO];
+        LBCheck(@"posted, nothing adjusted", [there.countState isEqualToString:@"Posted"] && there.moves.count == 0 && !review.window.attachedSheet,
+                review.lastError.localizedRecoverySuggestion ?: review.lastError ?: there.countState);
+        [review close];
+    }
     [tasks close];
 
     LBSpin();
