@@ -1084,6 +1084,49 @@ static void LBCountFromAWindow(void) {
     [main rollback];
 }
 
+
+
+@interface LBWatcher : NSObject
+@property (nonatomic) NSUInteger heard;
+@end
+@implementation LBWatcher
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    self.heard++;
+}
+@end
+
+/* A contact made a customer and a supplier as the settings' boxes do it:
+   through KVC, the contact observed (a binding): one of each, its own;
+   unticked, none. */
+static void LBTickedThroughABinding(void) {
+    NSManagedObjectContext *root = LBNewStore();
+    NSManagedObjectContext *window = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
+    window.parentContext = root;
+    LBWatcher *watcher = [[LBWatcher alloc] init];
+    Contact *contact = LBInsert([Contact class], window);
+    contact.contactName = @"Bob's Garage";
+    for (NSString *key in @[ @"lb_isCustomer", @"lb_isSupplier" ]) [contact addObserver:watcher forKeyPath:key options:0 context:NULL];
+    [contact setValue:@YES forKey:@"lb_isCustomer"];
+    [contact setValue:@YES forKey:@"lb_isSupplier"];
+    NSArray *customers = [window executeFetchRequest:[NSFetchRequest fetchRequestWithEntityName:@"Customer"] error:NULL];
+    NSArray *suppliers = [window executeFetchRequest:[NSFetchRequest fetchRequestWithEntityName:@"Supplier"] error:NULL];
+    LBCheck(@"ticked through a binding: a customer and a supplier, the contact's, ticked", contact.lb_isCustomer && contact.lb_isSupplier
+                && customers.count == 1 && suppliers.count == 1 && contact.customer == customers.firstObject && contact.supplier == suppliers.firstObject,
+            ([NSString stringWithFormat:@"customer %d of %lu, supplier %d of %lu", contact.lb_isCustomer, (unsigned long)customers.count,
+                                        contact.lb_isSupplier, (unsigned long)suppliers.count]));
+    [contact setValue:@YES forKey:@"lb_isCustomer"];
+    customers = [window executeFetchRequest:[NSFetchRequest fetchRequestWithEntityName:@"Customer"] error:NULL];
+    LBCheck(@"ticked again: still the one", customers.count == 1, @(customers.count));
+    [contact setValue:@NO forKey:@"lb_isCustomer"];
+    [contact setValue:@NO forKey:@"lb_isSupplier"];
+    [window processPendingChanges];
+    customers = [window executeFetchRequest:[NSFetchRequest fetchRequestWithEntityName:@"Customer"] error:NULL];
+    suppliers = [window executeFetchRequest:[NSFetchRequest fetchRequestWithEntityName:@"Supplier"] error:NULL];
+    LBCheck(@"unticked: none", !contact.lb_isCustomer && !contact.lb_isSupplier && customers.count == 0 && suppliers.count == 0,
+            ([NSString stringWithFormat:@"%lu customers, %lu suppliers", (unsigned long)customers.count, (unsigned long)suppliers.count]));
+    for (NSString *key in @[ @"lb_isCustomer", @"lb_isSupplier" ]) [contact removeObserver:watcher forKeyPath:key];
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -1105,6 +1148,7 @@ int main(int argc, const char *argv[]) {
         LBReturns();
         LBPartsUsed();
         LBCountFromAWindow();
+        LBTickedThroughABinding();
         printf("stock: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

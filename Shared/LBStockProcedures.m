@@ -183,14 +183,21 @@ static int32_t LBNextOf(NSSet *documents) {
     return self.customer != nil && !self.customer.isDeleted;
 }
 
+/* Both sides of the relationship set here: set through a binding (the
+   settings' Customer box, KVO's will/did change of lb_isCustomer around
+   it), Core Data leaves this contact's side as it was, and each click
+   made another customer of no one. */
 - (void)setLb_isCustomer:(BOOL)flag {
     if (flag == self.lb_isCustomer) return;
     if (flag) {
         Customer *customer = LBNew([Customer class], self.managedObjectContext, nil);
         customer.contact = self;
         customer.catalog = self.catalog;
+        self.customer = customer;
     } else if (self.customer.saleOrders.count == 0) {
-        [self.managedObjectContext deleteObject:self.customer];
+        Customer *customer = self.customer;
+        self.customer = nil;
+        [self.managedObjectContext deleteObject:customer];
     }
 }
 
@@ -204,8 +211,11 @@ static int32_t LBNextOf(NSSet *documents) {
         Supplier *supplier = LBNew([Supplier class], self.managedObjectContext, nil);
         supplier.contact = self;
         supplier.catalog = self.catalog;
+        self.supplier = supplier;
     } else if (self.supplier.purchaseOrders.count == 0 && self.supplier.supplierItems.count == 0) {
-        [self.managedObjectContext deleteObject:self.supplier];
+        Supplier *supplier = self.supplier;
+        self.supplier = nil;
+        [self.managedObjectContext deleteObject:supplier];
     }
 }
 

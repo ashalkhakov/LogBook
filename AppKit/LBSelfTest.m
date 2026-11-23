@@ -917,7 +917,17 @@ static void LBStockSettingsSteps(LBStockWindowController *stock, LBCatalogSettin
     [settings.contactList.selectedObjects.firstObject setValue:@YES forKey:@"lb_isSupplier"];
     LBClick(window, @"addContact");
     LBTypeInRow(window, @"the contact's name", @"Bob's Garage");
-    [settings.contactList.selectedObjects.firstObject setValue:@YES forKey:@"lb_isCustomer"];
+    /* Its Customer box ticked as its binding does it (KVC, the contact
+       observed by the table): one customer, his, and the box ticked. */
+    Contact *bob = settings.contactList.selectedObjects.firstObject;
+    [bob setValue:@YES forKey:@"lb_isCustomer"];
+    LBSpin();
+    NSArray *customers = [settings.catalog.managedObjectContext executeFetchRequest:[NSFetchRequest fetchRequestWithEntityName:@"Customer"] error:NULL];
+    customers = [customers filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"catalog == %@ AND isDeleted == NO", settings.catalog]];
+    LBCheck(@"Customer ticked: one customer, Bob's, the box ticked", customers.count == 1 && [customers.firstObject contact] == bob && bob.lb_isCustomer,
+            [NSString stringWithFormat:@"%lu customers, of %@; same contact %d, his ticked %d, his customer %@", (unsigned long)customers.count,
+                                       [customers valueForKeyPath:@"contact.contactName"], [customers.firstObject contact] == bob, bob.lb_isCustomer,
+                                       bob.customer]);
     LBType(window, @"contactShipTo", @"1 Yard Lane");
     LBSavedIn(settings, @"the settings saved");
     Catalog *kept = LBServerOf(settings.catalog);
@@ -1246,6 +1256,8 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     [sold.managedObjectContext refreshObject:sold mergeChanges:NO];
     LBCheck(@"its process done: no task left, the server's order closed", names.count == 0 && [sold.orderState isEqualToString:@"Closed"],
             names.count ? names : sold.orderState);
+    NSArray *noOnes = LBServerObjects([Customer class], [NSPredicate predicateWithFormat:@"contact == nil"]);
+    LBCheck(@"every customer a contact's: none of no one made by the sale's saves", noOnes.count == 0, @(noOnes.count));
     [sale close];
 
     NSDecimalNumber *bracketsBefore = [LBServerOf(bracket) totalQuantity];
