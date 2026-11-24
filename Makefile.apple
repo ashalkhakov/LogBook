@@ -70,7 +70,7 @@ INC = -I$(MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity -I$(GEN
 LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(ODATAKIT_DIRS)) \
 	-F$(ORMKIT_PRODUCTS) -Wl,-rpath,$(ORMKIT_PRODUCTS) \
 	-framework ORMRuntime -framework ODataSync -framework ODataService -framework HTTPServerKit \
-	-framework ODataIncrementalStore -framework OTelKit -framework ODataKit -framework CoreData -framework Foundation
+	-framework ODataIncrementalStore -framework OTelKit -framework ODataKit -framework CoreData -framework Foundation -lsqlite3
 
 .PHONY: all check install installcheck clean ios ios-check ios-install ios-installcheck
 APP = $(BUILD)/Logbook.app
@@ -216,7 +216,7 @@ check: all
 	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	$(BUILD)/lb-stock-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	Tests/form-check.sh $(BUILD)/logbook-server $(BUILD)/lb-form-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms
-	$(BUILD)/lb-import-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms Tests/drivvo-export.csv
+	$(BUILD)/lb-import-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms Tests/drivvo-export.csv Tests/maintrack-store.sql
 	Tests/import-check.sh $(BUILD)/logbook-server $(BUILD)/logbook-import Tests/drivvo-export.csv
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
 	python3 Tests/process-check.py $(BUILD)/logbook-server
@@ -279,7 +279,7 @@ ios-app:
 	  iOS/Info.plist > $(IOS_APP)/Info.plist
 	xcrun -sdk $(SDK) clang -target $(call ios_target,$(SDK)) $(IOS_FLAGS) $(addprefix -F,$(IOS_FRAMEWORKS)) -F$(IOS_ORMRUNTIME) \
 	  $(IOS_SOURCES) $(GENERATED)/*.m -framework ORMRuntime $(foreach f,$(ODATAKIT),-framework $(f)) \
-	  -framework UIKit -framework CoreData -framework Foundation -framework Security \
+	  -framework UIKit -framework CoreData -framework Foundation -framework Security -lsqlite3 \
 	  -Xlinker -rpath -Xlinker @executable_path/Frameworks -o $(IOS_APP)/Logbook
 	rm -rf $(IOS_BUILD)/$(SDK)/Logbook.app.dSYM && mv $(IOS_APP)/Logbook.dSYM $(IOS_BUILD)/$(SDK)/Logbook.app.dSYM
 	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans $(IOS_APP)/

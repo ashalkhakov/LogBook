@@ -5975,10 +5975,10 @@ replaces, which is retired then.</orm:Text>
 			</orm:Fact>
 			<orm:Fact id="_13E88952-E904-452B-98B0-2C4175D8D5BF" _Name="ServiceItemCostMoney">
 				<orm:FactRoles>
-					<orm:Role id="_9FE717B6-0A35-4240-9871-C5555C79BA85" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+					<orm:Role id="_9FE717B6-0A35-4240-9871-C5555C79BA85" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_046DBB94-CEE9-4E20-B771-D0E7AB0C7B4D" />
 					</orm:Role>
-					<orm:Role id="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="Cost">
+					<orm:Role id="_DC666F0B-18AA-4B94-8CC4-5C1B6E669C16" _IsMandatory="false" _Multiplicity="ZeroToOne" Name="Cost">
 						<orm:RolePlayer ref="_8D76C545-8595-4FF3-981B-EF4585A47794" />
 					</orm:Role>
 				</orm:FactRoles>
@@ -5999,8 +5999,7 @@ replaces, which is retired then.</orm:Text>
 					</orm:ReadingOrder>
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
-					<orm:UniquenessConstraint ref="_490D75EB-9CF0-40EB-A145-CF6DC36671AA" />
-					<orm:MandatoryConstraint ref="_C9BD8873-DACF-408B-8D76-F4F7529DE934" />
+					<orm:UniquenessConstraint ref="_21260FE6-BA23-4E06-88CB-DFDFD1A2FC21" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_5D44EAEF-D1C5-4FFE-A0A6-F7EA15AAE16F" _Name="ServiceItemWasChargedMoney">
@@ -21547,16 +21546,6 @@ was moved (docs/PROCESSES.md 6).</orm:Text>
 					<orm:Role id="_100CE2D0-5EE3-4733-80DF-A7641F52EBCA" ref="_9B7348E6-758A-4962-9A77-8A0D63EC7B5D" />
 				</orm:RoleSequence>
 			</orm:MandatoryConstraint>
-			<orm:UniquenessConstraint id="_490D75EB-9CF0-40EB-A145-CF6DC36671AA" Name="InternalUniquenessConstraint117" IsInternal="true">
-				<orm:RoleSequence>
-					<orm:Role id="_1AF6AB24-F7CB-44DD-A989-172FAF9CCEA4" ref="_9FE717B6-0A35-4240-9871-C5555C79BA85" />
-				</orm:RoleSequence>
-			</orm:UniquenessConstraint>
-			<orm:MandatoryConstraint id="_C9BD8873-DACF-408B-8D76-F4F7529DE934" Name="SimpleMandatoryConstraint59" IsSimple="true">
-				<orm:RoleSequence>
-					<orm:Role id="_184BA928-8C9D-4364-B49F-625225B43CFC" ref="_9FE717B6-0A35-4240-9871-C5555C79BA85" />
-				</orm:RoleSequence>
-			</orm:MandatoryConstraint>
 			<orm:UniquenessConstraint id="_75B64E60-55D2-42E2-A2D4-A5DE4E8D22B0" Name="InternalUniquenessConstraint118" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_D5ECFE93-AF91-425A-98C0-1A5498EC7F6E" ref="_53549BE9-AC63-4EC0-9BF0-6AD9CD6F9E02" />
@@ -27753,6 +27742,16 @@ adjustment.</orm:Text>
 					</orm:RoleSequence>
 				</orm:RoleSequences>
 			</orm:ExclusionConstraint>
+			<orm:UniquenessConstraint id="_21260FE6-BA23-4E06-88CB-DFDFD1A2FC21" Name="InternalUniquenessConstraint569" IsInternal="true">
+				<orm:Notes>
+					<orm:Note id="_541424D4-AC33-47AE-91D3-BAF25E3FFE4E">
+						<orm:Text>A task done at no cost (at home, or the cost not known) says none.</orm:Text>
+					</orm:Note>
+				</orm:Notes>
+				<orm:RoleSequence>
+					<orm:Role id="_D014BFEB-1CA6-4547-92CE-6C557A36328E" ref="_9FE717B6-0A35-4240-9871-C5555C79BA85" />
+				</orm:RoleSequence>
+			</orm:UniquenessConstraint>
 		</orm:Constraints>
 		<orm:DataTypes>
 			<orm:UnspecifiedDataType id="_75EA85C2-1A83-415B-A49C-FCBB218BCD3B" />

@@ -23,7 +23,15 @@ typedef BOOL (^LBImportSaving)(NSManagedObjectContext *context, NSError **error)
 
    Drivvo: its CSV export, a section per kind (##Vehicle, ##Refuelling,
    ##Service), each with a header row; times in the user's time zone,
-   amounts in the user's currency (Drivvo's export says neither). */
+   amounts in the user's currency (Drivvo's export says neither).
+
+   MainTrack: its store (Maintrack.sqlite, read from a copy): each bike a
+   bicycle of the user's (the one of its name, else made), each component
+   one of the bike it was first fitted to, each ride a trip, each
+   assignment a component change fitting it (retiring the one of its part
+   taken off then), each invoice a service, its log entries the tasks; the
+   readings worked out from the rides. It makes its own vehicles: the one
+   given is not used. */
 @interface LBImport : NSObject
 
 /* The export at the URL, read; nil and why where it is none Logbook
@@ -31,10 +39,13 @@ typedef BOOL (^LBImportSaving)(NSManagedObjectContext *context, NSError **error)
 + (nullable instancetype)importOfFile:(NSURL *)file error:(NSError **)error;
 + (nullable instancetype)importOfData:(NSData *)data named:(NSString *)name error:(NSError **)error;
 
-/* Whose export: "Drivvo". */
+/* Whose export: "Drivvo", "MainTrack". */
 @property (nonatomic, readonly, copy) NSString *source;
 /* The vehicles the export is of, as it names them. */
 @property (nonatomic, readonly, copy) NSArray<NSString *> *vehicleNames;
+/* It makes the vehicles its records go into (MainTrack's bikes): none is
+   chosen for it. */
+@property (nonatomic, readonly) BOOL makesVehicles;
 /* How many records it has, of each kind ("fill-ups": 10). */
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, NSNumber *> *counts;
 /* Those counts said: "2 fill-ups, 1 service". */
@@ -52,12 +63,12 @@ typedef BOOL (^LBImportSaving)(NSManagedObjectContext *context, NSError **error)
 /* What it would make of the vehicle's records, the user entering them:
    leftOut said; NO and why where the export cannot go into it at all (a
    driver who does not drive it, a unit Logbook has not). */
-- (BOOL)planForVehicle:(Vehicle *)vehicle by:(User *)user error:(NSError **)error;
+- (BOOL)planForVehicle:(nullable Vehicle *)vehicle by:(User *)user error:(NSError **)error;
 
 /* Planned, then entered, each record its form's save: made, those of it
    the vehicle had already passed over. Stops at the first refused, saying
    which record and why; those before it stay made. */
-- (BOOL)importIntoVehicle:(Vehicle *)vehicle
+- (BOOL)importIntoVehicle:(nullable Vehicle *)vehicle
                        by:(User *)user
                   context:(NSManagedObjectContext *)context
                    saving:(LBImportSaving)saving

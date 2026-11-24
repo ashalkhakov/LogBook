@@ -76,8 +76,26 @@ docker run --rm -v "$PWD":/in --entrypoint /app/logbook-import ghcr.io/ashalkhak
 
 A server that asks for a sign-in is signed in to by its device flow (a
 code to type at a page) or a password; one that asks for none takes
-`-Email`. The vehicle must be set up already: Drivvo's export says no make
-or year.
+`-Email`.
+
+What it reads:
+
+- **Drivvo's CSV export** goes into a vehicle set up already (`-Vehicle`):
+  the export says no make or year. Its fill-ups and services; its one fuel
+  taken as the vehicle's, its services as Maintenance.
+- **MainTrack's store** (`Maintrack.sqlite`: on a Mac where MainTrack is
+  installed, in `~/Library/Group Containers/group.kiwiswift.mainTrack/`)
+  makes its own vehicles, so takes no `-Vehicle`: each bike a bicycle (of
+  its name, else its brand and model), each component one of the bike it
+  was first fitted to, each ride a trip (its readings added up from the
+  rides before it), each assignment a component change (retiring the part
+  taken off then), each invoice a service, its log entries the tasks. It
+  reads a copy of the store, so MainTrack may be running.
+
+```sh
+build/logbook-import -Server https://logbook.example.com/ \
+  ~/Library/Group\ Containers/group.kiwiswift.mainTrack/Maintrack.sqlite
+```
 
 ## Signing in with Keycloak (or another OpenID Connect provider)
 

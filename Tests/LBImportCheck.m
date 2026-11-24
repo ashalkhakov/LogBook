@@ -2,7 +2,7 @@
 // store of the model's own, through the model's forms as the app enters
 // them. Each check a line, "ok" or "FAIL"; 1 when one failed.
 //
-//   lb-import-check build/Logbook.momd build/Logbook.ormplans build/Model/Forms Tests/drivvo-export.csv
+//   lb-import-check build/Logbook.momd build/Logbook.ormplans build/Model/Forms Tests/drivvo-export.csv Tests/maintrack-store.sql
 //
 // - Drivvo's CSV read: its sections, the vehicle it is of, how many of
 //   each; a quoted field with commas and quotes in it;
@@ -31,6 +31,11 @@
 #import "Service+CoreDataClass.h"
 #import "ServiceItem+CoreDataClass.h"
 #import "CostKind+CoreDataClass.h"
+#import "Trip+CoreDataClass.h"
+#import "VehicleComponent+CoreDataClass.h"
+#import "ComponentChange+CoreDataClass.h"
+#import "LBProcedures.h"
+#include <sqlite3.h>
 #import "VehicleDriver+CoreDataClass.h"
 #import "DistanceUnit+CoreDataClass.h"
 #import "VolumeUnit+CoreDataClass.h"
@@ -215,6 +220,120 @@ static void LBDrivvoSteps(NSString *export) {
     printf("said: %s\n", error.localizedDescription.UTF8String);
 }
 
+/* MainTrack's store (Tests/maintrack-store.sql, made a SQLite file here):
+   its bikes made bicycles of the user's, a bike of no brand or model by
+   its name; its rides trips, their readings added up; its components of
+   the bike they were first on (a tyre, of the bike its wheel was on), each
+   assignment a change fitting it, the wheel taken off retired by the one
+   fitted then, two alike fitted at once both; an invoice a service, its
+   log entries the tasks, the amount on the first, a free one's at no
+   cost; what has no place said (retired, a component on no bike, an
+   invoice of no bike, a plan); imported again, nothing made. */
+static void LBMainTrackSteps(NSString *sqlPath) {
+    NSString *sql = [NSString stringWithContentsOfFile:sqlPath encoding:NSUTF8StringEncoding error:NULL];
+    NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:
+                                                 [NSString stringWithFormat:@"Maintrack-%@.sqlite", [NSProcessInfo processInfo].globallyUniqueString]];
+    sqlite3 *db = NULL;
+    char *failed = NULL;
+    BOOL made = sql && sqlite3_open(path.fileSystemRepresentation, &db) == SQLITE_OK && sqlite3_exec(db, sql.UTF8String, NULL, NULL, &failed) == SQLITE_OK;
+    LBCheck(@"MainTrack's store made, from Tests/maintrack-store.sql", made, failed ? @(failed) : sqlPath);
+    if (db) sqlite3_close(db);
+    if (!made) return;
+
+    NSManagedObjectContext *context = LBNewStore();
+    User *anna = LBUser(@"anna@example.org", @"Anna Driver", context);
+    NSError *error = nil;
+    if (![context orm_prepareForSave:&error] || ![context save:&error]) {
+        LBCheck(@"the user saved", NO, error);
+        return;
+    }
+    LBImportSaving saving = ^BOOL(NSManagedObjectContext *c, NSError **failure) {
+        return [c orm_prepareForSave:failure] && [c save:failure];
+    };
+    LBImport *import = [LBImport importOfFile:[NSURL fileURLWithPath:path] error:&error];
+    import.formNamed = ^ORMForm *(NSString *name, NSError **failure) {
+        NSData *data = [NSData dataWithContentsOfFile:[LBForms stringByAppendingPathComponent:[name stringByAppendingPathExtension:@"ormform"]]];
+        id list = data ? [NSPropertyListSerialization propertyListWithData:data options:0 format:NULL error:failure] : nil;
+        return list ? [ORMForm formWithPropertyList:list error:failure] : nil;
+    };
+    LBCheck(@"MainTrack's store read: 2 bicycles, 7 components, 4 rides, 2 services", import && [import.source isEqualToString:@"MainTrack"]
+                && import.makesVehicles && [import.counts[@"bicycles"] isEqual:@2] && [import.counts[@"components"] isEqual:@7]
+                && [import.counts[@"rides"] isEqual:@4] && [import.counts[@"services"] isEqual:@2],
+            error ?: import.counts);
+    LBCheck(@"planned with no vehicle chosen", [import planForVehicle:nil by:anna error:&error], error);
+    NSString *said = [import.leftOut componentsJoinedByString:@"\n"];
+    LBCheck(@"said: Old Frame's name as its make and model, retired; the saddle on no bike; an invoice of no bike; the plan",
+            [said containsString:@"Old Frame: no brand or model"] && [said containsString:@"Old Frame: retired"]
+                && [said containsString:@"Spare saddle: on no bike"] && [said containsString:@"2022-09-28 at VeloDim: of no bike"]
+                && [said containsString:@"1 service plans"] && [said containsString:@"its size '56'"],
+            said);
+    NSUInteger madeCount = 0, skipped = 0;
+    BOOL done = [import importIntoVehicle:nil by:anna context:context saving:saving made:&madeCount skipped:&skipped error:&error];
+    LBCheck(@"imported: 2 bicycles, 6 components, 4 trips, 6 changes, 2 services", done && madeCount == 20 && skipped == 0,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu passed over", (unsigned long)madeCount, (unsigned long)skipped]);
+    Vehicle *commuter = nil, *old = nil;
+    for (Vehicle *each in anna.ownedVehicles) {
+        if ([each.vehicleName isEqualToString:@"Commuter"]) commuter = each;
+        if ([each.vehicleName isEqualToString:@"Old Frame"]) old = each;
+    }
+    LBCheck(@"Commuter a bicycle, a Surly Long Haul Trucker of 2019, bought for 1200 EUR; Old Frame its name as its make and model",
+            [commuter.vehicleKind isEqualToString:@"Bicycle"] && [commuter.make isEqualToString:@"Surly"]
+                && [commuter.carModel isEqualToString:@"Long Haul Trucker"] && commuter.manufactureYear == 2019
+                && LBIs(commuter.purchasePriceAmount, @"1200") && [commuter.purchasePriceCurrency isEqualToString:@"EUR"] && commuter.purchaseDate
+                && [old.make isEqualToString:@"Old Frame"] && [old.carModel isEqualToString:@"Old Frame"] && !old.fuel,
+            [NSString stringWithFormat:@"%@ %@ %@ %d; %@ %@", commuter.vehicleKind, commuter.make, commuter.carModel, commuter.manufactureYear,
+                                       old.make, old.carModel]);
+    NSArray<Trip *> *trips = LBRecords([Trip class], commuter);
+    LBCheck(@"its rides trips, the readings added up: 0-10, 10-30, 30-45 km, the Zwift one virtual",
+            trips.count == 3 && LBIs(trips[0].mileageQuantity, @"0") && LBIs(trips[0].distanceQuantity, @"10")
+                && LBIs(trips[1].mileageQuantity, @"10") && LBIs(trips[1].distanceQuantity, @"30") && LBIs(trips[2].mileageQuantity, @"30")
+                && LBIs(trips[2].distanceQuantity, @"45") && [trips[2].note containsString:@"(virtual ride)"]
+                && [trips[0].note containsString:@"(commute)"] && [trips[0].moment timeIntervalSinceDate:trips[0].timestamp] == 1800,
+            [trips valueForKey:@"distanceQuantity"]);
+    NSMutableDictionary<NSString *, VehicleComponent *> *parts = [NSMutableDictionary dictionary];
+    NSUInteger tyres = 0;
+    for (Record *record in commuter.records) {
+        if (![record isKindOfClass:[VehicleComponent class]]) continue;
+        VehicleComponent *part = (VehicleComponent *)record;
+        parts[part.componentName] = part;
+        if ([part.componentKind isEqualToString:@"Tyre"]) tyres++;
+    }
+    VehicleComponent *wheels = parts[@"Shimano WH-R500"], *mavic = parts[@"Mavic 27\""];
+    LBCheck(@"its components: the two wheel sets, both tyres (on its wheel), both chainrings; the WH-R500 bought for 3581",
+            parts.count == 5 && tyres == 2 && wheels && mavic && parts[@"Inner chainring, 38 teeth"] && parts[@"Outer chainring, 50 teeth"]
+                && LBIs(wheels.totalAmount, @"3581") && wheels.date && !mavic.date,
+            parts.allKeys);
+    ComponentChange *fit = wheels.componentChange;
+    LBCheck(@"the WH-R500 fitted on 2020-03-13 at 10 km, retiring the Mavic set", fit && LBIs(fit.mileageQuantity, @"10")
+                && fit.retiredVehicleComponent == mavic && mavic.wasRetiredByComponentChange == fit,
+            fit.retiredVehicleComponent.componentName);
+    DistanceUnit *km = [[context executeFetchRequest:[NSFetchRequest fetchRequestWithEntityName:@"DistanceUnit"] error:NULL]
+        filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"code == 'km'"]].firstObject;
+    LBCheck(@"its wear: 35 km since (to the latest reading, 45)", [[wheels lb_wornIn:km] isEqualToNumber:@35], [wheels lb_wornIn:km]);
+    NSArray<Service *> *services = LBRecords([Service class], commuter);
+    Service *home = services.firstObject, *shop = services.lastObject;
+    NSArray<ServiceItem *> *shopItems = [shop.serviceItems.allObjects sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"task" ascending:YES] ]];
+    LBCheck(@"two services: the chain cleaned at home at no cost, at 30 km; at VeloDim the BB replaced (1360) and the chain lubed (no cost), at 45 km",
+            services.count == 2 && [home.garage isEqualToString:@"myself"] && home.serviceItems.count == 1
+                && !((ServiceItem *)home.serviceItems.anyObject).costAmount && LBIs(home.mileageQuantity, @"30")
+                && [shop.garage isEqualToString:@"VeloDim"] && shopItems.count == 2 && [shopItems[0].task isEqualToString:@"Lub Chain"]
+                && !shopItems[0].costAmount && [shopItems[0].note isEqualToString:@"Ceramic lube"]
+                && [shopItems[1].task isEqualToString:@"Replace Bottom Bracket"] && LBIs(shopItems[1].costAmount, @"1360")
+                && [shop.note containsString:@"Invoice A-17."] && LBIs(shop.mileageQuantity, @"45"),
+            [NSString stringWithFormat:@"%@ / %@", [home.serviceItems valueForKey:@"task"], [shop.serviceItems valueForKey:@"task"]]);
+
+    import = [LBImport importOfFile:[NSURL fileURLWithPath:path] error:&error];
+    import.formNamed = ^ORMForm *(NSString *name, NSError **failure) {
+        NSData *data = [NSData dataWithContentsOfFile:[LBForms stringByAppendingPathComponent:[name stringByAppendingPathExtension:@"ormform"]]];
+        id list = data ? [NSPropertyListSerialization propertyListWithData:data options:0 format:NULL error:failure] : nil;
+        return list ? [ORMForm formWithPropertyList:list error:failure] : nil;
+    };
+    done = [import importIntoVehicle:nil by:anna context:context saving:saving made:&madeCount skipped:&skipped error:&error];
+    LBCheck(@"imported again: nothing made, the 20 passed over", done && madeCount == 0 && skipped == 20 && anna.ownedVehicles.count == 2,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu passed over", (unsigned long)madeCount, (unsigned long)skipped]);
+    [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 5) {
@@ -235,6 +354,7 @@ int main(int argc, const char *argv[]) {
         }
         [ORMTables registerTables:tables named:@"Logbook"];
         LBDrivvoSteps(export);
+        if (argc > 5) LBMainTrackSteps(@(argv[5]));
         printf("import: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

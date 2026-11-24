@@ -7,6 +7,7 @@
 //
 //   logbook-import -Server https://logbook.example.org/ -Vehicle Golf Drivvo.csv
 //   logbook-import -Server http://127.0.0.1:8080/ -Email anna@example.org -Vehicle Golf Drivvo.csv
+//   logbook-import -Server https://logbook.example.org/ ~/Library/Group\ Containers/group.kiwiswift.mainTrack/Maintrack.sqlite
 //
 // Settings:
 //
@@ -15,7 +16,8 @@
 //             asks for one, it is signed in to by its device flow (a code
 //             to type at a page), the tokens kept as the desktop's are
 //   Vehicle   the vehicle (its name) the records go into: one the user
-//             owns, set up already (Drivvo's export has no make or year)
+//             owns, set up already (Drivvo's export has no make or year);
+//             none for MainTrack's store, whose bikes are made vehicles
 //   LeaveOut  YES: import even though the export says things Logbook has
 //             no place for (each is said first; NO, the default, stops)
 //   Model, Plans, Forms   the compiled model, its tables, the forms'
@@ -134,13 +136,14 @@ int main(int argc, const char *argv[]) {
         }
         NSURL *root = LBServiceRootOf([settings stringForKey:@"Server"] ?: @"");
         NSString *named = [settings stringForKey:@"Vehicle"];
-        if (!file || !root || !named.length) {
-            fprintf(stderr, "usage: logbook-import -Server address [-Email you@example.org] -Vehicle name [-LeaveOut YES] export.csv\n");
+        if (!file || !root) {
+            fprintf(stderr, "usage: logbook-import -Server address [-Email you@example.org] [-Vehicle name] [-LeaveOut YES] export.csv|Maintrack.sqlite\n");
             return 2;
         }
         NSError *error = nil;
         LBImport *import = [LBImport importOfFile:[NSURL fileURLWithPath:file] error:&error];
         if (!import) return LBFail(@"%@", error.localizedDescription);
+        if (!import.makesVehicles && !named.length) return LBFail(@"%@'s export goes into a vehicle already set up: say which (-Vehicle).", import.source);
         NSURL *forms = LBBeside(@"Forms", @"Forms");
         import.formNamed = ^ORMForm *(NSString *name, NSError **failure) {
             NSData *data = [NSData dataWithContentsOfURL:[forms URLByAppendingPathComponent:[name stringByAppendingPathExtension:@"ormform"]]
@@ -196,13 +199,17 @@ int main(int argc, const char *argv[]) {
             for (Vehicle *each in user.ownedVehicles) {
                 if ([each.vehicleName isEqualToString:named]) vehicle = each;
             }
-            if (!vehicle) {
+            if (!vehicle && !import.makesVehicles) {
                 NSArray *names = [[user.ownedVehicles valueForKey:@"vehicleName"] allObjects];
                 return LBFail(@"%@ owns no vehicle named %@ (%@). Add it in Logbook first: Drivvo's export says no make or year.", user.email,
                               named, names.count ? [names componentsJoinedByString:@", "] : @"none");
             }
-            printf("%s's export of %s: %s, into %s.\n", import.source.UTF8String, [import.vehicleNames componentsJoinedByString:@", "].UTF8String,
-                   import.summary.UTF8String, vehicle.vehicleName.UTF8String);
+            if (import.makesVehicles)
+                printf("%s's %s (%s), each a vehicle of yours.\n", import.source.UTF8String, import.summary.UTF8String,
+                       [import.vehicleNames componentsJoinedByString:@", "].UTF8String);
+            else
+                printf("%s's export of %s: %s, into %s.\n", import.source.UTF8String, [import.vehicleNames componentsJoinedByString:@", "].UTF8String,
+                       import.summary.UTF8String, vehicle.vehicleName.UTF8String);
             if (![import planForVehicle:vehicle by:user error:&error]) return LBFail(@"%@", error.localizedDescription);
             if (import.leftOut.count) {
                 printf("Logbook has no place for these, or takes them so:\n");

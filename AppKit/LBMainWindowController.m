@@ -593,15 +593,15 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 - (IBAction)importRecords:(id)sender {
     Vehicle *vehicle = [self chosenVehicle];
-    if (!vehicle) {
-        return [self reportError:[NSError errorWithDomain:LBImportErrorDomain code:1
-                                                 userInfo:@{ NSLocalizedDescriptionKey : @"Choose the vehicle to import into first.",
-                                                             NSLocalizedRecoverySuggestionErrorKey :
-                                                                 @"An export goes into a vehicle already set up: Drivvo's says no make or year." }]];
-    }
     if (![self commitEdits]) return;
     NSOpenPanel *panel = [NSOpenPanel openPanel];
-    panel.message = [NSString stringWithFormat:@"Choose an export to import into %@: Drivvo's CSV.", vehicle.vehicleName];
+    panel.message = vehicle ? [NSString stringWithFormat:@"Choose an export: Drivvo's CSV (into %@), or MainTrack's store (Maintrack.sqlite).",
+                                                         vehicle.vehicleName]
+                            : @"Choose an export: MainTrack's store (Maintrack.sqlite), or Drivvo's CSV with a vehicle chosen first.";
+    /* MainTrack's store, where it is on this Mac: its folder is hidden. */
+    NSString *mainTrack = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Group Containers/group.kiwiswift.mainTrack"];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:[mainTrack stringByAppendingPathComponent:@"Maintrack.sqlite"]])
+        panel.directoryURL = [NSURL fileURLWithPath:mainTrack isDirectory:YES];
     [panel beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
         if (response != NSModalResponseOK || !panel.URL) return;
         /* After the panel has gone: the summary is a sheet of its own. */
@@ -616,9 +616,17 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 - (void)askToImport:(NSURL *)file intoVehicle:(Vehicle *)vehicle {
     NSError *error = nil;
     LBImport *import = [LBImport importOfFile:file error:&error];
+    if (import && !import.makesVehicles && !vehicle) {
+        return [self reportError:[NSError errorWithDomain:LBImportErrorDomain code:1
+                                                 userInfo:@{ NSLocalizedDescriptionKey : @"Choose the vehicle to import into first.",
+                                                             NSLocalizedRecoverySuggestionErrorKey :
+                                                                 @"Drivvo's export goes into a vehicle already set up: it says no make or year." }]];
+    }
     if (!import || ![import planForVehicle:vehicle by:_store.user error:&error]) return [self reportError:error];
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = [NSString stringWithFormat:@"Import %@'s export into %@?", import.source, vehicle.vehicleName];
+    alert.messageText = import.makesVehicles ? [NSString stringWithFormat:@"Import %@'s %@?", import.source,
+                                                                          [import.vehicleNames componentsJoinedByString:@", "]]
+                                             : [NSString stringWithFormat:@"Import %@'s export into %@?", import.source, vehicle.vehicleName];
     alert.informativeText = [NSString stringWithFormat:@"%@.%@", import.summary,
                                                        import.leftOut.count ? @" Logbook has no place for these, or takes them so:" : @""];
     [alert addButtonWithTitle:@"Import"];

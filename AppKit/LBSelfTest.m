@@ -10,6 +10,7 @@
 #import "Vehicle+CoreDataClass.h"
 #import "User+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
+#include <sqlite3.h>
 #import "ComponentChange+CoreDataClass.h"
 #import "VehicleComponent+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
@@ -349,6 +350,7 @@ static void LBAttachmentSteps(LBMainWindowController *controller, Vehicle *kept)
 static NSArray *LBServerObjects(Class cls, NSPredicate *predicate);
 static void LBImportSteps(LBMainWindowController *controller);
 static void LBBicycleSteps(LBMainWindowController *controller);
+static void LBMainTrackSteps(LBMainWindowController *controller);
 
 /* The user's currency set in the Preferences window, as a user does. */
 static void LBPreferenceSteps(LBMainWindowController *controller) {
@@ -2613,6 +2615,7 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
     LBCalendarSteps(controller);
     LBImportSteps(controller);
     LBBicycleSteps(controller);
+    LBMainTrackSteps(controller);
     LBQuantityFieldAlone();
     LBConnectSteps();
 }
@@ -2741,6 +2744,48 @@ static void LBBicycleSteps(LBMainWindowController *controller) {
             said);
     [controller.store.context rollback];
     [controller readAgain];
+}
+
+/* MainTrack's store (Tests/maintrack-store.sql, which app-check.sh names in
+   LB_MAINTRACK_SQL), as File > Import… takes it with no vehicle chosen:
+   its bikes made the user's bicycles, on the server; imported again,
+   nothing made. */
+static void LBMainTrackSteps(LBMainWindowController *controller) {
+    NSString *sqlPath = [NSProcessInfo processInfo].environment[@"LB_MAINTRACK_SQL"];
+    NSString *sql = sqlPath ? [NSString stringWithContentsOfFile:sqlPath encoding:NSUTF8StringEncoding error:NULL] : nil;
+    LBCheck(@"MainTrack's store to import (LB_MAINTRACK_SQL)", sql != nil, sqlPath ?: @"not given");
+    if (!sql) return;
+    NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:@"lb-self-test-Maintrack.sqlite"];
+    [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
+    sqlite3 *db = NULL;
+    char *failed = NULL;
+    BOOL made = sqlite3_open(path.fileSystemRepresentation, &db) == SQLITE_OK && sqlite3_exec(db, sql.UTF8String, NULL, NULL, &failed) == SQLITE_OK;
+    if (db) sqlite3_close(db);
+    LBCheck(@"MainTrack's store made", made, failed ? @(failed) : nil);
+    if (!made) return;
+    NSUInteger count = 0, skipped = 0;
+    NSError *error = nil;
+    BOOL done = [controller importFile:[NSURL fileURLWithPath:path] intoVehicle:nil made:&count skipped:&skipped error:&error];
+    LBCheck(@"MainTrack's store imported with no vehicle chosen: 20 made", done && count == 20 && skipped == 0,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
+    NSArray *listed = [controller.vehicles.arrangedObjects valueForKey:NSStringFromSelector(@selector(vehicleName))];
+    LBCheck(@"its bikes listed: Commuter, Old Frame", [listed containsObject:@"Commuter"] && [listed containsObject:@"Old Frame"], listed);
+    if (LBAppStore.local) [LBAppStore syncAndWait:NULL];
+    Vehicle *there = LBVehicleNamed(@"Commuter");
+    NSUInteger trips = 0, changes = 0;
+    for (Record *record in there.records) {
+        [record.managedObjectContext refreshObject:record mergeChanges:NO];
+        if ([record isKindOfClass:[Trip class]]) trips++;
+        if ([record isKindOfClass:[ComponentChange class]]) changes++;
+    }
+    LBCheck(@"the server has Commuter, a bicycle, its 3 trips and 6 component changes", [there.vehicleKind isEqualToString:@"Bicycle"]
+                && trips == 3 && changes == 6,
+            [NSString stringWithFormat:@"%@: %lu trips, %lu changes; issues %@", there.vehicleKind, (unsigned long)trips, (unsigned long)changes,
+                                       [LBAppStore.local.issues valueForKey:@"message"]]);
+    done = [controller importFile:[NSURL fileURLWithPath:path] intoVehicle:nil made:&count skipped:&skipped error:&error];
+    LBCheck(@"imported again: nothing made, 20 there", done && count == 0 && skipped == 20,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
+    [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
 }
 
 static void LBSteps(LBMainWindowController *controller) {

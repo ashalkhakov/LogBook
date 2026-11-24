@@ -52,7 +52,7 @@ Logbook_COREDATA_CODEGEN = yes
 Logbook_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity $(ODATASYNC_INCLUDE_DIRS)
 Logbook_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
 # GSUpdater, the stack's: the app's updates (AppKit/LBUpdater-GNUstep.m).
-Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit -lGSUpdater
+Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit -lGSUpdater -lsqlite3
 # The model's forms' contracts (ormtool xforms): each record's, and the
 # stock's processes' steps.
 LB_FORMS = $(foreach f,RecordFillUp RecordService RecordExpense RecordTrip RecordIncome RecordDocument RecordInspection \
@@ -73,7 +73,7 @@ logbook-import_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 logbook-import_COREDATA_CODEGEN = yes
 logbook-import_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
 logbook-import_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
-logbook-import_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
+logbook-import_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lsqlite3
 logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Server/LBStockActions.m Server/LBWorkflow.m \
 	Shared/LBProcedures.m Shared/LBStockProcedures.m \
 	$(LB_MODEL)/Constraints/LogbookValidation.m
@@ -125,7 +125,7 @@ lb-import-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 lb-import-check_COREDATA_CODEGEN = yes
 lb-import-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
 lb-import-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
-lb-import-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
+lb-import-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lsqlite3
 
 # The offline store (the iOS app's) against a server: devices, signed in.
 lb-sync-check_OBJC_FILES = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m \
@@ -218,7 +218,7 @@ check:: all
 	obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
 	obj/lb-stock-check obj/Logbook.momd obj/Logbook.ormplans
 	Tests/form-check.sh obj/logbook-server obj/lb-form-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms
-	obj/lb-import-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms Tests/drivvo-export.csv
+	obj/lb-import-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms Tests/drivvo-export.csv Tests/maintrack-store.sql
 	Tests/import-check.sh obj/logbook-server obj/logbook-import Tests/drivvo-export.csv
 	python3 Tests/serve-and-check.py obj/logbook-server
 	python3 Tests/process-check.py obj/logbook-server

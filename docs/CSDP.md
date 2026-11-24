@@ -1201,7 +1201,7 @@ honestly be missing, and each such case is listed with why.
 | Trip | vehicle, start and end moments, start and end distances, driver | from, to and purpose (a paid ride may not record them) |
 | FillUp | vehicle, moment, distance, volume, fuel, cost, station, driver | |
 | Service | vehicle, moment, distance, kind, currency, driver | items (a service may have no tasks listed); title (its kind and tasks say what it was); garage (work done at home, or a garage not known: Drivvo's services often name none); discount (none given); payment method (not everyone keeps it); instalments (paid at once, when missing) |
-| ServiceItem | service, task, cost | note; what it was charged in another currency (only when it was) |
+| ServiceItem | service, task | cost (a task done at home, or its cost not known: MainTrack's are mostly so); note; what it was charged in another currency (only when it was) |
 | TyreSet | vehicle, name, season, model, size | price and the date bought, both or neither (a set that came with the car) |
 | TyreChange | vehicle, moment, distance, the set fitted, tread, driver | |
 | VehicleComponent | vehicle, name, kind | price and the date bought, both or neither |

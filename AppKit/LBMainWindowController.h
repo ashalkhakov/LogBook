@@ -97,14 +97,15 @@ NS_ASSUME_NONNULL_BEGIN
 // The chosen component's wear, said: "1200 km since it was fitted".
 @property (nonatomic, readonly, copy) NSString *componentWear;
 
-// File > Import…: another app's export (LBImport.h: Drivvo's CSV) into the
-// chosen vehicle, through the model's forms. What the export says that
+// File > Import…: another app's export (LBImport.h) through the model's
+// forms: Drivvo's CSV into the chosen vehicle, MainTrack's store into
+// vehicles of its own (its bikes). What the export says that
 // Logbook has no place for is shown first (ImportSummary.xib), and nothing
 // is made unless the user says Import.
 - (IBAction)importRecords:(nullable id)sender;
 // The same of a file, with nothing asked when quiet (the self-test): the
 // left out taken. Made and passed over said; NO and why where refused.
-- (BOOL)importFile:(NSURL *)file intoVehicle:(Vehicle *)vehicle made:(NSUInteger *_Nullable)made skipped:(NSUInteger *_Nullable)skipped
+- (BOOL)importFile:(NSURL *)file intoVehicle:(nullable Vehicle *)vehicle made:(NSUInteger *_Nullable)made skipped:(NSUInteger *_Nullable)skipped
              error:(NSError **)error;
 // ImportSummary.xib's view and its list, the owner's while it is shown.
 @property (nonatomic, strong, nullable) IBOutlet NSView *importSummaryView;
