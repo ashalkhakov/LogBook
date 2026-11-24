@@ -324,6 +324,9 @@ static void LBAttachmentSteps(LBMainWindowController *controller, Vehicle *kept)
     NSTableView *table = (NSTableView *)LBControl(window.contentView, @"attachmentsTable");
     LBCheck(@"the record's attachment listed beside it", [names isEqualToArray:@[ @"receipt-0914.jpg" ]] && table.numberOfRows == 1, names);
     [controller.attachments setSelectionIndexes:[NSIndexSet indexSet]];
+    /* A sync done meanwhile, the record's attachments read again: still
+       none chosen. */
+    if (LBAppStore.local) [[NSNotificationCenter defaultCenter] postNotificationName:LBLocalStoreDidSyncNotification object:LBAppStore.local];
     LBSpin();
     NSButton *open = (NSButton *)LBControl(window.contentView, @"openAttachment");
     LBCheck(@"nothing to open with no attachment chosen", open && !open.isEnabled,
@@ -922,7 +925,11 @@ static void LBStockSettingsSteps(LBStockWindowController *stock, LBCatalogSettin
     LBClick(window, @"addLocation");
     LBTypeInRow(window, @"a location's name", @"Shelf A");
     LBClick(window, @"addLocation");
-    LBTypeInRow(window, @"a location's name", @"Shelf B");
+    /* A sync done while its name is typed (one every minute, and after
+       saves): the row stays being typed into. */
+    if (LBAppStore.local) [[NSNotificationCenter defaultCenter] postNotificationName:LBLocalStoreDidSyncNotification object:LBAppStore.local];
+    LBSpin();
+    LBTypeInRow(window, @"a location's name, a sync done meanwhile,", @"Shelf B");
     LBClick(window, @"addCategory");
     LBTypeInRow(window, @"the category's name", @"Fasteners");
     LBClick(window, @"addContact");
@@ -1138,7 +1145,10 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
     LBClick(purchase.confirmPanel, @"submitConfirm");
     LBCheck(@"offline: confirmed here, the sheet gone, its step saved and waiting", [order.orderState isEqualToString:@"Confirmed"]
                 && !window.attachedSheet && !purchase.lastError && [purchase.waiting.formName isEqualToString:@"ConfirmPurchaseOrder"],
-            purchase.lastError ?: order.orderState);
+            purchase.lastError ?: [NSString stringWithFormat:@"%@; sheet %@; waiting %@; now %@, the last sync %@ (%@); the flow at %@", order.orderState,
+                                   window.attachedSheet.title ?: @"none", purchase.waiting.formName ?: @"none", [NSDate date],
+                                   stock.store.local.lastSync ?: @"never", stock.store.local.lastSyncError.localizedDescription ?: @"no error",
+                                   purchase.flow.step.name]);
     [purchase close];
     LBWaitingRow(tasks, @"Confirm the order");
     NSButton *submit = (NSButton *)LBControl(tasks.window.contentView, @"submitWaiting");

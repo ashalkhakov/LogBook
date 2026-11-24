@@ -29,6 +29,17 @@
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 
+/* Something being typed in the window, or in its sheet: a field's editor
+   open. Read again then, its row or field would be taken from under it. */
+static BOOL LBTyping(NSWindow *window) {
+    for (NSWindow *each in @[ window ?: [NSNull null], window.attachedSheet ?: [NSNull null] ]) {
+        if (![each isKindOfClass:[NSWindow class]]) continue;
+        id responder = each.firstResponder;
+        if ([responder isKindOfClass:[NSText class]] && [(NSText *)responder isFieldEditor]) return YES;
+    }
+    return NO;
+}
+
 static void *LBVehicleChosen = &LBVehicleChosen;
 static void *LBRecordChosen = &LBRecordChosen;
 static void *LBRecordsChanged = &LBRecordsChanged;
@@ -75,6 +86,11 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 /* Offline first: what a sync brought down (another device's), shown. */
 - (void)storeDidSync:(NSNotification *)note {
+    /* Not while the user types: once they are done. */
+    if (self.isWindowLoaded && LBTyping(self.window)) {
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(storeDidSync:) object:nil];
+        return [self performSelector:@selector(storeDidSync:) withObject:nil afterDelay:1];
+    }
     [self readAgain];
 }
 

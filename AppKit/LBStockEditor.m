@@ -8,6 +8,17 @@
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 
+/* Something being typed in the window, or in its sheet: a field's editor
+   open. Read again then, its row or field would be taken from under it. */
+static BOOL LBTyping(NSWindow *window) {
+    for (NSWindow *each in @[ window ?: [NSNull null], window.attachedSheet ?: [NSNull null] ]) {
+        if (![each isKindOfClass:[NSWindow class]]) continue;
+        id responder = each.firstResponder;
+        if ([responder isKindOfClass:[NSText class]] && [(NSText *)responder isFieldEditor]) return YES;
+    }
+    return NO;
+}
+
 NSNotificationName const LBStockDidChangeNotification = @"LBStockDidChangeNotification";
 NSString *const LBStockCatalogKey = @"LBStockCatalog";
 
@@ -77,11 +88,18 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 - (void)stockDidChange:(NSNotification *)note {
     if (!self.isWindowLoaded) return;
     NSManagedObjectID *changed = note.userInfo[LBStockCatalogKey];
-    if (!changed || !_catalog || [changed isEqual:_catalog.objectID]) [self readAgain];
+    if (!changed || !_catalog || [changed isEqual:_catalog.objectID]) [self storeDidSync:nil];
 }
 
+/* What a sync brought down, or another window saved, read again. */
 - (void)storeDidSync:(NSNotification *)note {
-    if (self.isWindowLoaded) [self readAgain];
+    if (!self.isWindowLoaded) return;
+    /* Not while the user types: once they are done. */
+    if (LBTyping(self.window)) {
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(storeDidSync:) object:nil];
+        return [self performSelector:@selector(storeDidSync:) withObject:nil afterDelay:1];
+    }
+    [self readAgain];
 }
 
 - (void)announce {

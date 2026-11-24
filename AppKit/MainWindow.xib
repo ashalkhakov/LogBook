@@ -54,7 +54,7 @@
                 <binding destination="-2" name="sortDescriptors" keyPath="byTitle" id="volumeUnitsOrder"/>
             </connections>
         </arrayController>
-        <arrayController objectClassName="Attachment" userLabel="Attachments" id="attachments">
+        <arrayController objectClassName="Attachment" avoidsEmptySelection="NO" userLabel="Attachments" id="attachments">
             <connections>
                 <binding destination="records" name="contentSet" keyPath="selection.attachments" id="attachmentsContent"/>
             </connections>
