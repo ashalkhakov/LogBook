@@ -1,6 +1,7 @@
 #import "LBFieldIssues.h"
 #import "LBFormValues.h"
 #import <ORMRuntime/ORMValidator.h>
+#import <objc/runtime.h>
 
 /* A field: the control, the object its controller's selection is (a
    record's, behind its form values), the property it shows. */
@@ -36,14 +37,25 @@ static NSArray<NSString *> *LBKeysOf(NSError *error) {
     return [key isKindOfClass:[NSString class]] ? @[ key ] : @[];
 }
 
+static char LBLabelWas, LBBadge;
+
+/* A label's text and colour as the window has it. */
+static NSArray *LBWasOf(NSTextField *label) {
+    NSArray *was = objc_getAssociatedObject(label, &LBLabelWas);
+    if (!was) {
+        was = @[ label.stringValue ?: @"", label.textColor ?: [NSColor controlTextColor] ];
+        objc_setAssociatedObject(label, &LBLabelWas, was, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+    return was;
+}
+
 @implementation LBFieldIssues {
     __weak NSView *_root;
-    /* Each label as the window has it, before it was marked. */
-    NSMapTable<NSTextField *, NSArray *> *_labels;
-    /* Each field's ⚠. */
-    NSMapTable<NSView *, NSTextField *> *_badges;
-    /* The controllers whose selection is watched. */
-    NSHashTable *_watched;
+    /* The controllers whose selection is watched. (Each label's text as
+       the window has it, and each field's ⚠, are theirs: associated, so
+       gone with them; GNUstep's weak-keyed tables keep a freed key's
+       entry.) */
+    NSMutableArray *_watched;
     NSDictionary *_issues;
     NSArray *_tabs;
     BOOL _scheduled;
@@ -52,9 +64,7 @@ static NSArray<NSString *> *LBKeysOf(NSError *error) {
 - (instancetype)initWithView:(NSView *)root {
     if ((self = [super init])) {
         _root = root;
-        _labels = [NSMapTable weakToStrongObjectsMapTable];
-        _badges = [NSMapTable weakToStrongObjectsMapTable];
-        _watched = [NSHashTable weakObjectsHashTable];
+        _watched = [NSMutableArray array];
         _issues = @{};
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextChanged:)
                                                      name:NSManagedObjectContextObjectsDidChangeNotification object:nil];
@@ -160,7 +170,7 @@ static void LBChosenTabs(NSView *view, NSMutableArray *into) {
     for (NSView *each in field.superview.subviews) {
         if (each == field || ![each isKindOfClass:[NSTextField class]]) continue;
         NSTextField *text = (NSTextField *)each;
-        if (text.isEditable || text.isBezeled || [_badges objectForKey:field] == text) continue;
+        if (text.isEditable || text.isBezeled || objc_getAssociatedObject(field, &LBBadge) == text) continue;
         if (fabs(NSMidY(text.frame) - NSMidY(frame)) > 8 || NSMaxX(text.frame) > NSMinX(frame) + 4) continue;
         if (!best || NSMaxX(text.frame) > NSMaxX(best.frame)) best = text;
     }
@@ -168,8 +178,8 @@ static void LBChosenTabs(NSView *view, NSMutableArray *into) {
 }
 
 - (NSView *)badgeOf:(NSView *)field {
-    NSTextField *badge = [_badges objectForKey:field];
-    return badge.isHidden ? nil : badge;
+    NSTextField *badge = objc_getAssociatedObject(field, &LBBadge);
+    return badge.isHidden || !badge.superview ? nil : badge;
 }
 
 #pragma mark Checking
@@ -220,13 +230,18 @@ static BOOL LBEmpty(id value) {
     }
     _issues = issues;
 
-    /* Labels as they were, then marked again. */
-    for (NSTextField *label in _labels) {
-        NSArray *was = [_labels objectForKey:label];
-        label.stringValue = was[0];
-        label.textColor = was[1];
+    /* The shown fields' labels as they were, their ⚠ hidden; then marked
+       again. */
+    for (LBIssueField *field in fields) {
+        NSView *view = field.view;
+        NSTextField *label = view ? [self labelOf:view] : nil;
+        if (label) {
+            NSArray *was = LBWasOf(label);
+            label.stringValue = was[0];
+            label.textColor = was[1];
+        }
+        [(NSView *)objc_getAssociatedObject(view, &LBBadge) setHidden:YES];
     }
-    for (NSView *field in _badges) [[_badges objectForKey:field] setHidden:YES];
     for (LBIssueField *field in fields) {
         NSView *view = field.view;
         if (!view) continue;
@@ -235,8 +250,7 @@ static BOOL LBEmpty(id value) {
         BOOL required = LBMandatory(field.object.entity.propertiesByName[field.key]) || (sentences.count && LBEmpty(value));
         NSTextField *label = [self labelOf:view];
         if (label) {
-            if (![_labels objectForKey:label]) [_labels setObject:@[ label.stringValue ?: @"", label.textColor ?: [NSColor labelColor] ] forKey:label];
-            NSString *text = [_labels objectForKey:label][0];
+            NSString *text = LBWasOf(label)[0];
             if (required && ![text containsString:@"*"])
                 text = [text hasSuffix:@":"] ? [[text substringToIndex:text.length - 1] stringByAppendingString:@" *:"]
                                              : [text stringByAppendingString:@" *"];
@@ -249,7 +263,7 @@ static BOOL LBEmpty(id value) {
 
 /* Its ⚠: beside the field where the row has room, else left of its label. */
 - (void)showBadgeAt:(NSView *)field saying:(NSString *)said label:(NSTextField *)label {
-    NSTextField *badge = [_badges objectForKey:field];
+    NSTextField *badge = objc_getAssociatedObject(field, &LBBadge);
     if (!badge) {
         badge = [[NSTextField alloc] initWithFrame:NSMakeRect(0, 0, 16, 16)];
         badge.editable = NO;
@@ -260,7 +274,7 @@ static BOOL LBEmpty(id value) {
         badge.stringValue = @"⚠";
         badge.textColor = LBInvalidColor();
         badge.alignment = NSTextAlignmentCenter;
-        [_badges setObject:badge forKey:field];
+        objc_setAssociatedObject(field, &LBBadge, badge, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
     NSView *row = field.superview;
     NSRect frame = field.frame;
