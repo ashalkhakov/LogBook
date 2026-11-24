@@ -36,7 +36,7 @@
 #import "DistanceUnit+CoreDataClass.h"
 #import "ExpenseKind+CoreDataClass.h"
 #import "Checklist+CoreDataClass.h"
-#import "VehicleComponent+CoreDataClass.h"
+#import "StockUnit+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -182,11 +182,16 @@ FOUNDATION_EXPORT NSDate *LBAddMonths(NSDate *day, NSInteger months);
                    error:(NSError **)error;
 @end
 
-@interface VehicleComponent (LBProcedures)
-// How far it has worn, in the unit: from the reading of the change that
-// fitted it to that of the one that retired it, or else the vehicle's
-// latest reading now. nil: not fitted, or at no reading.
+@interface StockUnit (LBProcedures)
+// How far it has worn, in the unit, as a component: each time it was
+// fitted, what its vehicle covered from that change's reading until it was
+// removed (or fitted elsewhere, or the unit it was fitted into removed),
+// or else until the vehicle's latest reading; less the virtual trips then
+// where the change skips them. nil: never fitted, or at no reading.
 - (nullable NSDecimalNumber *)lb_wornIn:(DistanceUnit *)unit;
+// The vehicle it is fitted to now (directly, or in a unit fitted to it);
+// nil: not fitted (in stock, or gone).
+- (nullable Vehicle *)lb_fittedTo;
 @end
 
 @interface Record (LBProcedures)

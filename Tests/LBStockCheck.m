@@ -27,6 +27,8 @@
 
 #import <Foundation/Foundation.h>
 #import "StockUnit+CoreDataClass.h"
+#import "LBProcedures.h"
+#import "ComponentChange+CoreDataClass.h"
 #import <CoreData/CoreData.h>
 #import "LogbookValidation.h"
 #import "LBStockProcedures.h"
@@ -1206,6 +1208,72 @@ static void LBUnits(void) {
     out.adjustmentReason = @"Lost";
     out.stockUnit = unit;
     LBCheck(@"moved out (lost): nowhere", LBSave(context, &why) && unit.location == nil, why ?: unit.location.locationName);
+
+    /* A chain on the shelf, fitted to a bicycle: out of stock (Fitted);
+       taken off and put away in the living room: back in there (Removed).
+       As the server saves: the procedures first, then holdings. */
+    BOOL (^settled)(void) = ^BOOL {
+        NSError *error = nil;
+        BOOL ok = [context lb_completeRemindersOfChangedEvents:&error] && [context lb_holdMovedItems:&error]
+                  && [context orm_prepareForSave:&error] && [context save:&error];
+        if (!ok) {
+            NSLog(@"not saved: %@", LBSaid(error));
+            [context rollback];
+        }
+        return ok;
+    };
+    StockItem *kmc = LBItem(&stock, @"KMC X9");
+    StockUnit *chain = LBInsert([StockUnit class], context);
+    chain.id = [NSUUID UUID];
+    chain.stockItem = kmc;
+    Move *found = LBAdjust(&stock, kmc, @"1", @"Found");
+    found.stockUnit = chain;
+    found.moment = [NSDate dateWithTimeIntervalSinceNow:-7200];
+    Vehicle *bike = LBInsert([Vehicle class], context);
+    bike.id = [NSUUID UUID];
+    bike.vehicleName = @"Commuter";
+    bike.vehicleKind = @"Bicycle";
+    bike.make = @"Surly";
+    bike.carModel = @"Long Haul Trucker";
+    bike.owner = anna;
+    bike.hasNoMeter = YES;
+    LBCheck(@"a chain on the shelf, and a bicycle: saved", settled() && chain.location == basement, chain.location.locationName);
+    ComponentChange *on = LBInsert([ComponentChange class], context);
+    on.id = [NSUUID UUID];
+    on.vehicle = bike;
+    on.enteredBy = anna;
+    on.driver = anna;
+    on.timestamp = [NSDate dateWithTimeIntervalSinceNow:-3600];
+    on.stockUnit = chain;
+    Holding *shelf = nil;
+    BOOL fitted = settled();
+    for (Holding *h in kmc.holdings) if (h.location == basement) shelf = h;
+    Move *fittedOut = on.moves.anyObject;
+    LBCheck(@"fitted: moved out of stock as Fitted, the shelf holding none, the chain nowhere in stock", fitted && on.moves.count == 1
+                && [fittedOut.adjustmentReason isEqualToString:@"Fitted"] && fittedOut.source == basement && fittedOut.stockUnit == chain
+                && LBSame(shelf.quantity, @"0") && chain.location == nil,
+            [NSString stringWithFormat:@"%lu moves, %@, held %@, at %@", (unsigned long)on.moves.count, fittedOut.adjustmentReason, shelf.quantity,
+                                       chain.location.locationName]);
+    StockItem *newer = LBItem(&stock, @"KMC X10");
+    StockUnit *spare = LBInsert([StockUnit class], context);
+    spare.id = [NSUUID UUID];
+    spare.stockItem = newer;
+    ComponentChange *swap = LBInsert([ComponentChange class], context);
+    swap.id = [NSUUID UUID];
+    swap.vehicle = bike;
+    swap.enteredBy = anna;
+    swap.driver = anna;
+    swap.timestamp = [NSDate date];
+    swap.stockUnit = spare;
+    swap.removedStockUnit = chain;
+    swap.location = room;
+    BOOL swapped = settled();
+    Holding *kept = nil;
+    for (Holding *h in kmc.holdings) if (h.location == room) kept = h;
+    LBCheck(@"taken off for another, put away in the living room: moved back in there as Removed",
+            swapped && chain.location == room && LBSame(kept.quantity, @"1") && swap.moves.count == 1
+                && [swap.moves.anyObject.adjustmentReason isEqualToString:@"Removed"],
+            [NSString stringWithFormat:@"at %@, held %@, %lu moves", chain.location.locationName, kept.quantity, (unsigned long)swap.moves.count]);
 }
 
 int main(int argc, const char *argv[]) {

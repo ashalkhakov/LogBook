@@ -141,8 +141,8 @@ Due from now, or from the last time the work was done, as the owner says
 
 The service layer works out where it is due from: the moment and distance
 given, else the latest event of the vehicle that did the work (a service
-with an item of the task, a component change fitting one of the kind the
-task is named as, an expense of the kind, an inspection through the
+with an item of the task, a component change fitting a unit of an item of
+the category the task is named as, an expense of the kind, an inspection through the
 checklist), else now and the vehicle's latest distance. It adds the
 schedule's intervals: the distance interval to the distance, the months
 to the date (as `ReminderNextDue` does for the date). It records:

@@ -32,7 +32,10 @@
 #import "ServiceItem+CoreDataClass.h"
 #import "CostKind+CoreDataClass.h"
 #import "Trip+CoreDataClass.h"
-#import "VehicleComponent+CoreDataClass.h"
+#import "StockUnit+CoreDataClass.h"
+#import "StockItem+CoreDataClass.h"
+#import "Catalog+CoreDataClass.h"
+#import "Category+CoreDataClass.h"
 #import "ComponentChange+CoreDataClass.h"
 #import "LBProcedures.h"
 #include <sqlite3.h>
@@ -262,14 +265,14 @@ static void LBMainTrackSteps(NSString *sqlPath) {
             error ?: import.counts);
     LBCheck(@"planned with no vehicle chosen", [import planForVehicle:nil by:anna error:&error], error);
     NSString *said = [import.leftOut componentsJoinedByString:@"\n"];
-    LBCheck(@"said: Old Frame's name as its make and model, retired; the saddle on no bike; an invoice of no bike; the plan",
+    LBCheck(@"said: Old Frame's name as its make and model, retired; the saddle never fitted; an invoice of no bike; the plan",
             [said containsString:@"Old Frame: no brand or model"] && [said containsString:@"Old Frame: retired"]
-                && [said containsString:@"Spare saddle: on no bike"] && [said containsString:@"2022-09-28 at VeloDim: of no bike"]
+                && [said containsString:@"Spare saddle: never fitted"] && [said containsString:@"2022-09-28 at VeloDim: of no bike"]
                 && [said containsString:@"1 service plans"] && [said containsString:@"its size '56'"],
             said);
     NSUInteger madeCount = 0, skipped = 0;
     BOOL done = [import importIntoVehicle:nil by:anna context:context saving:saving made:&madeCount skipped:&skipped error:&error];
-    LBCheck(@"imported: 2 bicycles, 6 components, 4 trips, 6 changes, 2 services", done && madeCount == 20 && skipped == 0,
+    LBCheck(@"imported: 2 bicycles, a catalog, 6 items and their 7 units, 4 trips, 6 changes, 2 services", done && madeCount == 28 && skipped == 0,
             error ?: [NSString stringWithFormat:@"%lu made, %lu passed over", (unsigned long)madeCount, (unsigned long)skipped]);
     Vehicle *commuter = nil, *old = nil;
     for (Vehicle *each in anna.ownedVehicles) {
@@ -280,36 +283,36 @@ static void LBMainTrackSteps(NSString *sqlPath) {
             [commuter.vehicleKind isEqualToString:@"Bicycle"] && [commuter.make isEqualToString:@"Surly"]
                 && [commuter.carModel isEqualToString:@"Long Haul Trucker"] && commuter.manufactureYear == 2019
                 && LBIs(commuter.purchasePriceAmount, @"1200") && [commuter.purchasePriceCurrency isEqualToString:@"EUR"] && commuter.purchaseDate
-                && [old.make isEqualToString:@"Old Frame"] && [old.carModel isEqualToString:@"Old Frame"] && !old.fuel,
+                && [old.make isEqualToString:@"Old Frame"] && [old.carModel isEqualToString:@"Old Frame"] && !old.fuel
+                && commuter.hasNoMeter && old.hasNoMeter,
             [NSString stringWithFormat:@"%@ %@ %@ %d; %@ %@", commuter.vehicleKind, commuter.make, commuter.carModel, commuter.manufactureYear,
                                        old.make, old.carModel]);
     NSArray<Trip *> *trips = LBRecords([Trip class], commuter);
     LBCheck(@"its rides trips, the readings added up: 0-10, 10-30, 30-45 km, the Zwift one virtual",
             trips.count == 3 && LBIs(trips[0].mileageQuantity, @"0") && LBIs(trips[0].distanceQuantity, @"10")
                 && LBIs(trips[1].mileageQuantity, @"10") && LBIs(trips[1].distanceQuantity, @"30") && LBIs(trips[2].mileageQuantity, @"30")
-                && LBIs(trips[2].distanceQuantity, @"45") && [trips[2].note containsString:@"(virtual ride)"]
+                && LBIs(trips[2].distanceQuantity, @"45") && trips[2].isVirtual && LBIs(trips[2].lengthQuantity, @"15")
                 && [trips[0].note containsString:@"(commute)"] && [trips[0].moment timeIntervalSinceDate:trips[0].timestamp] == 1800,
             [trips valueForKey:@"distanceQuantity"]);
-    NSMutableDictionary<NSString *, VehicleComponent *> *parts = [NSMutableDictionary dictionary];
-    NSUInteger tyres = 0;
-    for (Record *record in commuter.records) {
-        if (![record isKindOfClass:[VehicleComponent class]]) continue;
-        VehicleComponent *part = (VehicleComponent *)record;
-        parts[part.componentName] = part;
-        if ([part.componentKind isEqualToString:@"Tyre"]) tyres++;
-    }
-    VehicleComponent *wheels = parts[@"Shimano WH-R500"], *mavic = parts[@"Mavic 27\""];
-    LBCheck(@"its components: the two wheel sets, both tyres (on its wheel), both chainrings; the WH-R500 bought for 3581",
-            parts.count == 5 && tyres == 2 && wheels && mavic && parts[@"Inner chainring, 38 teeth"] && parts[@"Outer chainring, 50 teeth"]
-                && LBIs(wheels.totalAmount, @"3581") && wheels.date && !mavic.date,
-            parts.allKeys);
-    ComponentChange *fit = wheels.componentChange;
-    LBCheck(@"the WH-R500 fitted on 2020-03-13 at 10 km, retiring the Mavic set", fit && LBIs(fit.mileageQuantity, @"10")
-                && fit.retiredVehicleComponent == mavic && mavic.wasRetiredByComponentChange == fit,
-            fit.retiredVehicleComponent.componentName);
+    Catalog *catalog = nil;
+    for (Catalog *each in anna.ownedCatalogs) if ([each.catalogName isEqualToString:@"Bike parts"]) catalog = each;
+    NSMutableDictionary<NSString *, StockItem *> *items = [NSMutableDictionary dictionary];
+    for (StockItem *each in catalog.stockItems) items[each.itemName] = each;
+    StockItem *wheels = items[@"Shimano WH-R500"], *tyres = items[@"Panaracer GravelKing+ 700x32C"];
+    LBCheck(@"its parts items of 'Bike parts', made: 6, the two tyres one item of two units; the WH-R500 a Wheel Set by Shimano, 3581",
+            catalog && items.count == 6 && tyres.stockUnits.count == 2 && [wheels.category.categoryName isEqualToString:@"Wheel Set"]
+                && [wheels.manufacturer isEqualToString:@"Shimano"] && [wheels.mpn isEqualToString:@"WH-R500"] && LBIs(wheels.unitCostAmount, @"3581")
+                && items[@"Spare saddle"].stockUnits.count == 1 && !items[@"Spare saddle"].stockUnits.anyObject.location,
+            items.allKeys);
+    StockUnit *wheel = wheels.stockUnits.anyObject, *mavic = items[@"Mavic 27\""].stockUnits.anyObject;
+    ComponentChange *fit = wheel.componentChanges.anyObject;
+    LBCheck(@"the WH-R500 fitted on 2020-03-13 at 10 km, removing the Mavic set; the tyres fitted into it",
+            fit && LBIs(fit.mileageQuantity, @"10") && fit.removedStockUnit == mavic && fit.vehicle == commuter && wheel.componentChangesAsHost.count == 2,
+            fit.removedStockUnit.stockItem.itemName);
     DistanceUnit *km = [[context executeFetchRequest:[NSFetchRequest fetchRequestWithEntityName:@"DistanceUnit"] error:NULL]
         filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"code == 'km'"]].firstObject;
-    LBCheck(@"its wear: 35 km since (to the latest reading, 45)", [[wheels lb_wornIn:km] isEqualToNumber:@35], [wheels lb_wornIn:km]);
+    LBCheck(@"its wear: 35 km (to 45, where the Zwift ride ended)", [[wheel lb_wornIn:km] isEqualToNumber:@35] && [wheel lb_fittedTo] == commuter,
+            [wheel lb_wornIn:km]);
     NSArray<Service *> *services = LBRecords([Service class], commuter);
     Service *home = services.firstObject, *shop = services.lastObject;
     NSArray<ServiceItem *> *shopItems = [shop.serviceItems.allObjects sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"task" ascending:YES] ]];
@@ -329,7 +332,8 @@ static void LBMainTrackSteps(NSString *sqlPath) {
         return list ? [ORMForm formWithPropertyList:list error:failure] : nil;
     };
     done = [import importIntoVehicle:nil by:anna context:context saving:saving made:&madeCount skipped:&skipped error:&error];
-    LBCheck(@"imported again: nothing made, the 20 passed over", done && madeCount == 0 && skipped == 20 && anna.ownedVehicles.count == 2,
+    LBCheck(@"imported again: nothing made, the 27 passed over", done && madeCount == 0 && skipped == 27 && anna.ownedVehicles.count == 2
+                && catalog.stockItems.count == 6,
             error ?: [NSString stringWithFormat:@"%lu made, %lu passed over", (unsigned long)madeCount, (unsigned long)skipped]);
     [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
 }

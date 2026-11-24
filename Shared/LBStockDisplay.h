@@ -16,6 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 @interface Catalog (LBStockDisplay) <LBTitled>
 @end
 @interface StockItem (LBStockDisplay) <LBTitled>
+// Its title, with its catalog's name ("Corner Workshop: Bolt") where an item
+// of another catalog has the same: as a list of every catalog's says it.
+@property (nonatomic, readonly) NSString *lbToldTitle;
 // Whether a reorder rule of it is due.
 @property (nonatomic, readonly) BOOL lbIsDue;
 @end
@@ -31,6 +34,9 @@ NS_ASSUME_NONNULL_BEGIN
 @end
 // A location by its warehouse and where it is within: "Garage / Shelf A".
 @interface Location (LBStockDisplay) <LBTitled>
+// Its title, with its catalog's name ("Corner Workshop: Main / Default")
+// where a location of another catalog has the same.
+@property (nonatomic, readonly) NSString *lbToldTitle;
 @end
 @interface Holding (LBStockDisplay)
 @property (nonatomic, readonly, copy) NSString *lbLocationTitle;

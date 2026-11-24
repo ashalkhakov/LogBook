@@ -56,6 +56,11 @@ typedef BOOL (^LBImportSaving)(NSManagedObjectContext *context, NSError **error)
    method 'Card'"). */
 @property (nonatomic, readonly, copy) NSArray<NSString *> *leftOut;
 
+/* MainTrack's: the catalog its components go into as units of its items
+   (the user's of that name, made where they have none): "Bike parts" where
+   none is named. */
+@property (nonatomic, copy, nullable) NSString *catalogName;
+
 /* The forms the records are entered through, by name (ORMForm
    formNamed: where nil). */
 @property (nonatomic, copy, nullable) ORMForm *_Nullable (^formNamed)(NSString *name, NSError **error);

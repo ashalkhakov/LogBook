@@ -10,7 +10,11 @@
 #import "FillUp+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
 #import "DistanceUnit+CoreDataClass.h"
-#import "VehicleComponent+CoreDataClass.h"
+#import "StockUnit+CoreDataClass.h"
+#import "StockItem+CoreDataClass.h"
+#import "Catalog+CoreDataClass.h"
+#import "Category+CoreDataClass.h"
+#import "LBStockProcedures.h"
 #import "Trip+CoreDataClass.h"
 #import "ComponentChange+CoreDataClass.h"
 
@@ -177,10 +181,9 @@ static NSString *LBUnitIn(NSString *column) {
 @property (nonatomic, copy) NSDictionary<NSString *, NSString *> *values;
 @property (nonatomic, copy) NSDictionary<NSString *, NSArray *> *repeats;
 /* MainTrack's: the bike it is of (else the vehicle imported into); the
-   component it makes (its key, once made, what later entries refer to);
-   the elements that are a component made before (element: its pk). */
+   elements that are a part's unit (element: the part's pk), keyed as the
+   units are made. */
 @property (nonatomic, strong) NSNumber *bike;
-@property (nonatomic, strong) NSNumber *makes;
 @property (nonatomic, copy) NSDictionary<NSString *, NSNumber *> *refers;
 @end
 
@@ -194,12 +197,24 @@ static NSString *LBUnitIn(NSString *column) {
 @property (nonatomic) int32_t year;
 @property (nonatomic, strong) NSDate *bought;
 @property (nonatomic, strong) NSDecimalNumber *price;
+@property (nonatomic, strong) NSDecimalNumber *odometer;
 @end
 
 @implementation LBEntry
 @end
 
 @implementation LBBike
+@end
+
+/* A component of MainTrack's, made a unit of an item of the catalog's. */
+@interface LBPart : NSObject
+@property (nonatomic, strong) NSNumber *pk;
+@property (nonatomic, copy) NSString *item, *category, *manufacturer, *model, *serial, *note;
+@property (nonatomic, strong) NSDecimalNumber *cost;
+@property (nonatomic, strong) NSDate *bought;
+@end
+
+@implementation LBPart
 @end
 
 @implementation LBImport {
@@ -209,6 +224,7 @@ static NSString *LBUnitIn(NSString *column) {
     NSDictionary<NSString *, NSArray<NSDictionary *> *> *_tables;
     NSDictionary<NSString *, NSNumber *> *_entities;
     NSArray<LBBike *> *_bikes;
+    NSArray<LBPart *> *_parts;
 }
 
 static BOOL LBIsSQLite(NSData *data) {
@@ -537,7 +553,7 @@ static BOOL LBIsSQLite(NSData *data) {
     for (Record *record in vehicle.records) {
         if (![record isKindOfClass:entry.kind] || record.isDeleted) continue;
         if (component && [record isKindOfClass:[ComponentChange class]]
-            && ![((ComponentChange *)record).vehicleComponent.id.UUIDString isEqualToString:component]) continue;
+            && ![((ComponentChange *)record).stockUnit.id.UUIDString isEqualToString:component]) continue;
         Event *event = (Event *)record;
         if (fabs(event.timestamp.timeIntervalSinceReferenceDate - entry.moment.timeIntervalSinceReferenceDate) < 1
             && (!entry.mileage || [event.mileageQuantity compare:entry.mileage] == NSOrderedSame)) return YES;
@@ -781,6 +797,7 @@ static NSString *LBDecimal(double value) {
         if (!brand || !model)
             [leftOut addObject:[NSString stringWithFormat:@"Bicycle %@: no %@ in MainTrack; its name taken as it", bike.name,
                                                          !brand && !model ? @"brand or model" : !brand ? @"brand" : @"model"]];
+        if (LBDouble(row, @"ZINITIALODOMETER") > 0) bike.odometer = [NSDecimalNumber decimalNumberWithString:LBDecimal(LBDouble(row, @"ZINITIALODOMETER"))];
         int32_t year = (int32_t)LBDouble(row, @"ZYEAR");
         bike.year = year >= 1886 ? year : 0;
         double price = LBDouble(row, @"ZPURCHASEVALUE");
@@ -806,7 +823,7 @@ static NSString *LBDecimal(double value) {
             double from = readingAt(bike, start), km = LBKilometres(LBDouble(ride, @"ZDISTANCE"), LBText(ride, @"ZDISTANCEUNITRAWVALUE"));
             NSMutableArray *note = [NSMutableArray array];
             if (LBText(ride, @"ZTEXT")) [note addObject:LBText(ride, @"ZTEXT")];
-            if ([LBText(ride, @"ZACTIVITYTYPERAWVALUE") isEqualToString:@"VirtualRide"] || [ride[@"ZTRAINNER"] intValue]) [note addObject:@"(virtual ride)"];
+            BOOL virtual = [LBText(ride, @"ZACTIVITYTYPERAWVALUE") isEqualToString:@"VirtualRide"] || [ride[@"ZTRAINNER"] intValue];
             if ([ride[@"ZCOMMUTE"] intValue]) [note addObject:@"(commute)"];
             if (LBText(ride, @"ZNOTES")) [note addObject:LBText(ride, @"ZNOTES")];
             if (LBText(ride, @"ZPOLYLINE") || LBText(ride, @"ZLOCATION") || LBDouble(ride, @"ZSTARTLATITUDE") != 0) routes++;
@@ -815,8 +832,10 @@ static NSString *LBDecimal(double value) {
                                               @"mileageDistanceUnit" : @"km",
                                               @"moment" : [write stringFromDate:[start dateByAddingTimeInterval:MAX(0, LBDouble(ride, @"ZDURATION"))]],
                                               @"distanceQuantity" : LBDecimal(from + km), @"distanceDistanceUnit" : @"km",
+                                              @"lengthQuantity" : LBDecimal(km), @"lengthDistanceUnit" : @"km",
                                               @"driver" : user.email ?: @"" } mutableCopy];
             if (note.count) values[@"note"] = [note componentsJoinedByString:@" "];
+            if (virtual) values[@"isVirtual"] = @"true";
             LBEntry *entry = [[LBEntry alloc] init];
             entry.form = @"RecordTrip";
             entry.what = [NSString stringWithFormat:@"The ride of %@ on %@", named(bike), [day stringFromDate:start]];
@@ -849,79 +868,65 @@ static NSString *LBDecimal(double value) {
     };
     bikeOf = bikeOfAt;
 
-    /* Each component, of the bike it was first on. */
-    NSMutableDictionary<NSNumber *, NSNumber *> *componentBike = [NSMutableDictionary dictionary];
+    /* Each component a unit of an item of the catalog's (the item: its
+       name, of the category of its part, by its brand); it is wherever its
+       changes put it. */
+    NSMutableArray<LBPart *> *parts = [NSMutableArray array];
+    NSMutableSet<NSNumber *> *isPart = [NSMutableSet set];
     for (NSDictionary *row in _tables[@"ZMANAGEDGEAR"]) {
         NSNumber *pk = row[@"Z_PK"];
         if (![row[@"Z_ENT"] isEqual:_entities[@"ManagedComponent"]]) continue;
-        NSDate *first = nil;
-        for (NSDictionary *a in assignments) {
-            if ([a[@"ZASSIGNEE"] isEqual:pk] && LBMoment(a, @"ZSTARTDATE")) {
-                first = LBMoment(a, @"ZSTARTDATE");
-                break;
-            }
-        }
-        NSNumber *bike = first ? bikeOf(pk, first, 0) : nil;
-        if (!bike) {
-            [leftOut addObject:[NSString stringWithFormat:@"Component %@: on no bike (Logbook keeps a component of its vehicle)", named(pk)]];
-            continue;
-        }
-        componentBike[pk] = bike;
-        NSString *kind = LBText(row, @"ZPARTTYPERAW");
-        NSMutableDictionary *values = [@{ @"componentName" : named(pk), @"componentKind" : kind ?: @"Part" } mutableCopy];
-        if (!kind) [leftOut addObject:[NSString stringWithFormat:@"Component %@: no part type in MainTrack; a Part", named(pk)]];
+        LBPart *part = [[LBPart alloc] init];
+        part.pk = pk;
+        part.item = named(pk);
+        part.category = LBText(row, @"ZPARTTYPERAW");
+        if (!part.category) [leftOut addObject:[NSString stringWithFormat:@"Component %@: no part type in MainTrack; of no category", named(pk)]];
+        part.manufacturer = LBText(row, @"ZBRAND");
+        part.model = LBText(row, @"ZMODEL");
+        part.serial = LBText(row, @"ZSERIALNUMBER");
+        part.note = LBText(row, @"ZNOTES");
         double price = LBDouble(row, @"ZPURCHASEVALUE");
+        if (price > 0) part.cost = [NSDecimalNumber decimalNumberWithString:LBDecimal(price)];
         NSDate *bought = LBMoment(row, @"ZPURCHASEDATE");
-        /* Bought on a day for so much, both or neither (the model's rule). */
-        if (bought && price > 0) {
-            values[@"date"] = [write stringFromDate:[day dateFromString:[day stringFromDate:bought]]];
-            values[@"totalAmount"] = LBDecimal(price);
-            values[@"totalCurrency"] = currency;
-        } else if (bought || price > 0) {
-            [leftOut addObject:[NSString stringWithFormat:@"Component %@: %@ (Logbook keeps the day bought and the cost together)", named(pk),
-                                                         bought ? [NSString stringWithFormat:@"bought on %@, for nothing said", [day stringFromDate:bought]]
-                                                                : [NSString stringWithFormat:@"its cost %@, on no day", LBDecimal(price)]]];
-        }
-        if (LBText(row, @"ZNOTES")) values[@"note"] = LBText(row, @"ZNOTES");
+        if (bought) part.bought = [day dateFromString:[day stringFromDate:bought]];
         if ([row[@"ZIMAGEDATA"] length]) photos++;
-        LBEntry *entry = [[LBEntry alloc] init];
-        entry.form = @"RecordVehicleComponent";
-        entry.what = [NSString stringWithFormat:@"Component %@", named(pk)];
-        entry.kind = [VehicleComponent class];
-        entry.moment = [NSDate distantPast];
-        entry.bike = bike;
-        entry.makes = pk;
-        entry.values = values;
-        [entries addObject:entry];
+        BOOL fitted = NO;
+        for (NSDictionary *a in assignments) fitted = fitted || [a[@"ZASSIGNEE"] isEqual:pk];
+        if (!fitted) [leftOut addObject:[NSString stringWithFormat:@"Component %@: never fitted; a unit of your stock at no place", named(pk)]];
+        [parts addObject:part];
+        [isPart addObject:pk];
     }
 
-    /* Each assignment a change fitting the component; one taken off a
-       little before or after (two days) on that bike, of the same part, is
-       the one it retired. */
+    /* Each assignment a change fitting the unit, to the bike it was on then
+       (into the unit it was assigned to: a tyre into a wheel); one of the
+       same part taken off that bike a little before or after (two days) is
+       the one it removed. */
     NSMutableSet *paired = [NSMutableSet set];
     for (NSDictionary *a in assignments) {
         NSNumber *component = a[@"ZASSIGNEE"];
         NSDate *from = LBMoment(a, @"ZSTARTDATE");
-        if (!componentBike[component] || !from) continue;
+        if (![isPart containsObject:component] || !from) continue;
         NSNumber *bike = bikeOf(component, from, 0);
-        if (![bike isEqual:componentBike[component]]) {
-            [leftOut addObject:[NSString stringWithFormat:@"Component %@: fitted to %@ on %@ too (Logbook keeps a component of one vehicle)",
-                                                         named(component), bike ? named(bike) : @"another", [day stringFromDate:from]]];
+        if (!bike) {
+            [leftOut addObject:[NSString stringWithFormat:@"Component %@: fitted on %@ into %@, on no bike then", named(component),
+                                                         [day stringFromDate:from], named(a[@"ZASSIGNOR"])]];
             continue;
         }
         NSNumber *retired = nil;
         for (NSDictionary *b in assignments) {
             NSDate *until = LBMoment(b, @"ZENDDATE");
             NSNumber *other = b[@"ZASSIGNEE"];
-            if (!until || [other isEqual:component] || [paired containsObject:b[@"Z_PK"]] || !componentBike[other]) continue;
-            if (![componentBike[other] isEqual:bike] || fabs([until timeIntervalSinceDate:from]) > 2 * 86400) continue;
+            if (!until || [other isEqual:component] || [paired containsObject:b[@"Z_PK"]] || ![isPart containsObject:other]) continue;
+            if (![bikeOf(other, until, 0) isEqual:bike] && ![bikeOf(other, [until dateByAddingTimeInterval:-1], 0) isEqual:bike]) continue;
+            if (fabs([until timeIntervalSinceDate:from]) > 2 * 86400) continue;
             if (![LBText(gear[other], @"ZPARTTYPERAW") ?: @"" isEqualToString:LBText(gear[component], @"ZPARTTYPERAW") ?: @""]) continue;
             retired = other;
             [paired addObject:b[@"Z_PK"]];
             break;
         }
-        NSMutableDictionary *refers = [@{ @"vehicleComponent" : component } mutableCopy];
-        if (retired) refers[@"retiredVehicleComponent"] = retired;
+        NSMutableDictionary *refers = [@{ @"stockUnit" : component } mutableCopy];
+        if (retired) refers[@"removedStockUnit"] = retired;
+        if ([isPart containsObject:a[@"ZASSIGNOR"]]) refers[@"host"] = a[@"ZASSIGNOR"];
         double reading = readingAt(bike, from);
         LBEntry *entry = [[LBEntry alloc] init];
         entry.form = @"RecordComponentChange";
@@ -937,7 +942,7 @@ static NSString *LBDecimal(double value) {
     }
     for (NSDictionary *b in assignments) {
         NSDate *until = LBMoment(b, @"ZENDDATE");
-        if (until && componentBike[b[@"ZASSIGNEE"]] && ![paired containsObject:b[@"Z_PK"]])
+        if (until && [isPart containsObject:b[@"ZASSIGNEE"]] && ![paired containsObject:b[@"Z_PK"]])
             [leftOut addObject:[NSString stringWithFormat:@"Component %@: taken off on %@ (Logbook retires one as another is fitted)",
                                                          named(b[@"ZASSIGNEE"]), [day stringFromDate:until]]];
     }
@@ -1026,6 +1031,7 @@ static NSString *LBDecimal(double value) {
     [entries sortUsingComparator:^NSComparisonResult(LBEntry *a, LBEntry *b) { return [a.moment compare:b.moment]; }];
     _entries = entries;
     _bikes = bikes;
+    _parts = parts;
     self.leftOut = leftOut;
     return YES;
 }
@@ -1042,6 +1048,14 @@ static NSString *LBDecimal(double value) {
     vehicle.id = [NSUUID UUID];
     vehicle.vehicleName = bike.name;
     vehicle.vehicleKind = @"Bicycle";
+    /* No meter: its readings, its rides added up (LBProcedures). */
+    vehicle.hasNoMeter = YES;
+    if (bike.odometer) {
+        NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([DistanceUnit class])];
+        fetch.predicate = [NSPredicate predicateWithFormat:@"code == %@", @"km"];
+        vehicle.purchaseMileageQuantity = bike.odometer;
+        vehicle.purchaseMileageDistanceUnit = [[context executeFetchRequest:fetch error:NULL] firstObject];
+    }
     vehicle.make = bike.make;
     vehicle.carModel = bike.model;
     if (bike.year) vehicle.manufactureYear = bike.year;
@@ -1061,6 +1075,100 @@ static NSString *LBDecimal(double value) {
     return vehicle;
 }
 
+/* The parts' units, in the catalog named (the user's of that name, else
+   made): an item of each name (of its part's category, its brand's), and
+   a unit of it each; an item had already keeps its units, the parts taken
+   as them in order, and more made where there are more. Each part's unit's
+   key in keys. */
+- (BOOL)unitsOfParts:(NSMutableDictionary<NSNumber *, NSString *> *)keys by:(User *)user context:(NSManagedObjectContext *)context
+              saving:(LBImportSaving)saving made:(NSUInteger *)made skipped:(NSUInteger *)skipped error:(NSError **)error {
+    NSString *name = _catalogName.length ? _catalogName : @"Bike parts";
+    Catalog *catalog = nil;
+    for (Catalog *each in user.ownedCatalogs) {
+        if ([each.catalogName isEqualToString:name] && !each.isDeleted) catalog = each;
+    }
+    if (!catalog) {
+        catalog = [Catalog lb_newCatalogNamed:name owner:user inContext:context];
+        catalog.currency = user.currency;
+        if (made) (*made)++;
+    }
+    NSMutableDictionary<NSString *, Category *> *categories = [NSMutableDictionary dictionary];
+    for (Category *each in catalog.categories) if (each.categoryName) categories[each.categoryName] = each;
+    NSMutableDictionary<NSString *, StockItem *> *items = [NSMutableDictionary dictionary];
+    for (StockItem *each in catalog.stockItems) if (each.itemName && !each.isDeleted) items[each.itemName] = each;
+    NSMutableDictionary<NSString *, NSMutableArray<LBPart *> *> *byItem = [NSMutableDictionary dictionary];
+    for (LBPart *part in [_parts sortedArrayUsingComparator:^NSComparisonResult(LBPart *a, LBPart *b) { return [a.pk compare:b.pk]; }]) {
+        if (!byItem[part.item]) byItem[part.item] = [NSMutableArray array];
+        [byItem[part.item] addObject:part];
+    }
+    for (NSString *itemName in [byItem.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
+        NSArray<LBPart *> *group = byItem[itemName];
+        StockItem *item = items[itemName];
+        if (!item) {
+            item = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([StockItem class]) inManagedObjectContext:context];
+            item.id = [NSUUID UUID];
+            item.itemName = itemName;
+            item.catalog = catalog;
+            item.created = [NSDate date];
+            item.sku = [catalog lb_nextSKU];
+            LBPart *first = group.firstObject;
+            if (first.category) {
+                Category *category = categories[first.category];
+                if (!category) {
+                    category = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Category class]) inManagedObjectContext:context];
+                    category.id = [NSUUID UUID];
+                    category.categoryName = first.category;
+                    category.catalog = catalog;
+                    categories[first.category] = category;
+                }
+                item.category = category;
+            }
+            if (first.manufacturer) {
+                item.manufacturer = first.manufacturer;
+                if (first.model) item.mpn = first.model;
+            }
+            for (LBPart *part in group) {
+                if (part.cost && !item.unitCostAmount) {
+                    item.unitCostAmount = part.cost;
+                    item.unitCostCurrency = user.currency;
+                }
+                if (part.bought && !item.purchased) item.purchased = part.bought;
+            }
+            if (made) (*made)++;
+        } else if (skipped) {
+            (*skipped)++;
+        }
+        NSArray<StockUnit *> *had = [item.stockUnits.allObjects sortedArrayUsingComparator:^NSComparisonResult(StockUnit *a, StockUnit *b) {
+            return [a.id.UUIDString compare:b.id.UUIDString];
+        }];
+        for (NSUInteger i = 0; i < group.count; i++) {
+            LBPart *part = group[i];
+            /* By its serial where it has one, else in order. */
+            StockUnit *unit = nil;
+            for (StockUnit *each in had) if (part.serial && [each.serialNumber isEqualToString:part.serial]) unit = each;
+            if (!unit && !part.serial && i < had.count && !had[i].serialNumber) unit = had[i];
+            if (unit) {
+                if (skipped) (*skipped)++;
+            } else {
+                unit = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([StockUnit class]) inManagedObjectContext:context];
+                unit.id = [NSUUID UUID];
+                unit.stockItem = item;
+                unit.serialNumber = part.serial;
+                unit.note = part.note;
+                if (made) (*made)++;
+            }
+            keys[part.pk] = unit.id.UUIDString;
+        }
+    }
+    NSError *failure = nil;
+    if (!saving(context, &failure)) {
+        [context rollback];
+        if (error) *error = LBImportError(@"The parts' items and units refused: %@", failure ? LBRefusal(failure) : @"not saved");
+        return NO;
+    }
+    return YES;
+}
+
 - (BOOL)importMainTrackBy:(User *)user context:(NSManagedObjectContext *)context saving:(LBImportSaving)saving
                      made:(NSUInteger *)made skipped:(NSUInteger *)skipped error:(NSError **)error {
     if (![self planMainTrackBy:user error:error]) return NO;
@@ -1075,27 +1183,10 @@ static NSString *LBDecimal(double value) {
     }
     NSMutableDictionary<NSNumber *, NSString *> *keys = [NSMutableDictionary dictionary];
     NSMutableDictionary<NSString *, ORMForm *> *forms = [NSMutableDictionary dictionary];
-    /* What this import made: a component of the same name and kind as one
-       it made (two tyres alike) is another, not the one it made. */
-    NSMutableSet<NSString *> *madeHere = [NSMutableSet set];
+    if (_parts.count && ![self unitsOfParts:keys by:user context:context saving:saving made:made skipped:skipped error:error]) return NO;
     for (LBEntry *entry in _entries) {
         Vehicle *vehicle = vehicles[entry.bike];
         if (!vehicle) continue;
-        /* A component the vehicle has already, by its name and kind. */
-        if (entry.makes) {
-            VehicleComponent *had = nil;
-            for (Record *record in vehicle.records) {
-                if ([record isKindOfClass:[VehicleComponent class]] && !record.isDeleted && ![madeHere containsObject:record.id.UUIDString]
-                    && ![keys.allValues containsObject:record.id.UUIDString]
-                    && [((VehicleComponent *)record).componentName isEqualToString:entry.values[@"componentName"]]
-                    && [((VehicleComponent *)record).componentKind isEqualToString:entry.values[@"componentKind"]]) had = (VehicleComponent *)record;
-            }
-            if (had) {
-                keys[entry.makes] = had.id.UUIDString;
-                if (skipped) (*skipped)++;
-                continue;
-            }
-        }
         NSMutableDictionary *values = [entry.values mutableCopy];
         BOOL missing = NO;
         for (NSString *element in entry.refers) {
@@ -1104,7 +1195,7 @@ static NSString *LBDecimal(double value) {
             else missing = YES;
         }
         if (missing) continue;
-        if (!entry.makes && [self vehicle:vehicle has:entry fitting:values[@"vehicleComponent"]]) {
+        if ([self vehicle:vehicle has:entry fitting:values[@"stockUnit"]]) {
             if (skipped) (*skipped)++;
             continue;
         }
@@ -1144,8 +1235,6 @@ static NSString *LBDecimal(double value) {
             if (error) *error = LBImportError(@"%@ refused: %@", entry.what, [said componentsJoinedByString:@"; "]);
             return NO;
         }
-        if (entry.makes) keys[entry.makes] = session.savedKey;
-        if (session.savedKey) [madeHere addObject:session.savedKey];
         if (made) (*made)++;
     }
     return YES;

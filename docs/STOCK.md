@@ -289,6 +289,24 @@ first move into its location and kept at zero after the last out, so its
 history stays reachable. The item card and the location's screen list
 holdings; neither edits a quantity.
 
+## Units, manufacturers, and components
+
+A **unit** (StockUnit) is one of an item told from the others: by its
+serial number where it has one (an Apple TV's), or simply itself (a
+chain). It is held and moved as itself: a move may move one unit, of its
+item, one of it; and a unit is where its latest move left it (`StockUnit
+is at Location`, derived), nowhere once moved out. Two units of an item
+never share a serial. An item may say who makes it and their number of it
+(`StockItem is made by Manufacturer`, `has PartNumber (as MPN)`).
+
+A unit fitted to a vehicle is a **component** (docs/CSDP.md, A
+component): a component change of the vehicle fits it (into another unit
+fitted to it, where it goes into one: a tyre into a wheel set), and may
+remove one and put it away at a location. Fitted from stock, it moves out
+(a move made for the change, `Fitted`); put away, it moves back in there
+(`Removed`). So a spare part on a shelf and the part on the bicycle are
+one thing, wherever it is.
+
 ## Moves: transfers and adjustments
 
 **A transfer** moves so many of an item from one location to another (a
@@ -613,6 +631,10 @@ Shipment was shipped on Date.                -- now optional: planned first
   at once, as in the first version.
 
 ### Lots, serials and expiry
+
+Serial numbers are in (Units, above), as designed here: a unit of an item,
+of a serial unique per item, where its last move left it. Lots and expiry
+are still to come.
 
 Some items are kept by lot (food, medicines, paint: what came in together,
 with one expiry), some by serial number (one of each: tools, machines).

@@ -1,4 +1,5 @@
 #import "LBDisplay.h"
+#import "StockItem+CoreDataClass.h"
 #import "Event+CoreDataClass.h"
 #import "Document+CoreDataClass.h"
 #import "ExpenseKind+CoreDataClass.h"
@@ -90,16 +91,13 @@ static id LBUnitCoded(NSString *entity, NSString *code, NSManagedObjectContext *
 }
 @end
 
-@implementation VehicleComponent (LBDisplay)
+@implementation StockUnit (LBDisplay)
 - (NSString *)lbTitle {
-    return self.componentKind.length ? [NSString stringWithFormat:@"%@ (%@)", self.componentName ?: @"", self.componentKind]
-                                     : self.componentName ?: @"";
+    NSString *item = self.stockItem.itemName ?: @"";
+    return self.serialNumber.length ? [NSString stringWithFormat:@"%@ #%@", item, self.serialNumber] : item;
 }
 + (NSSet<NSString *> *)keyPathsForValuesAffectingLbTitle {
-    return [NSSet setWithObjects:NSStringFromSelector(@selector(componentName)), NSStringFromSelector(@selector(componentKind)), nil];
-}
-+ (NSSet<NSString *> *)keyPathsForValuesAffectingLbDate {
-    return [NSSet setWithObject:NSStringFromSelector(@selector(date))];
+    return [NSSet setWithObjects:NSStringFromSelector(@selector(serialNumber)), @"stockItem.itemName", nil];
 }
 @end
 
@@ -128,13 +126,13 @@ NSString * const LBAnyOf = @"Any of";
 @implementation Record (LBDisplay)
 
 + (NSArray<NSString *> *)lbKinds {
-    return @[ @"FillUp", @"Service", @"Expense", @"Trip", @"Income", @"TyreChange", @"TyreSet", @"ComponentChange", @"VehicleComponent",
+    return @[ @"FillUp", @"Service", @"Expense", @"Trip", @"Income", @"TyreChange", @"TyreSet", @"ComponentChange",
               @"Document", @"MeterReading", @"Inspection" ];
 }
 
 + (NSString *)lbKindOfEntityNamed:(NSString *)name {
     NSDictionary *said = @{ @"FillUp": @"Fill-up", @"TyreChange": @"Tyre change", @"TyreSet": @"Tyre set",
-                            @"ComponentChange": @"Component change", @"VehicleComponent": @"Component", @"MeterReading": @"Meter reading" };
+                            @"ComponentChange": @"Component change", @"MeterReading": @"Meter reading" };
     return said[name] ?: name;
 }
 
@@ -145,7 +143,6 @@ NSString * const LBAnyOf = @"Any of";
 - (NSDate *)lbDate {
     if ([self isKindOfClass:[Event class]]) return ((Event *)self).timestamp;
     if ([self isKindOfClass:[TyreSet class]]) return ((TyreSet *)self).date;
-    if ([self isKindOfClass:[VehicleComponent class]]) return ((VehicleComponent *)self).date;
     if ([self isKindOfClass:[Document class]]) return ((Document *)self).date;
     return nil;
 }

@@ -183,7 +183,7 @@ $(BUILD)/Forms/.made: $(MODEL)/.made
 	rm -rf $(BUILD)/Forms && mkdir -p $(BUILD)/Forms && cp $(MODEL)/Forms/*.ormform $(BUILD)/Forms/ && touch $@
 
 # Another app's export imported through the model's forms (Tests/LBImportCheck.m).
-IMPORT_CHECK = Tests/LBImportCheck.m Shared/LBImport.m Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+IMPORT_CHECK = Tests/LBImportCheck.m Shared/LBImport.m Shared/LBProcedures.m Shared/LBStockProcedures.m Shared/LBDisplay.m $(MODEL)/Constraints/LogbookValidation.m
 $(BUILD)/lb-import-check: $(MODEL)/.made $(IMPORT_CHECK) $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) $(IMPORT_CHECK) $(GENERATED)/*.m $(LIBS) -o $@
 

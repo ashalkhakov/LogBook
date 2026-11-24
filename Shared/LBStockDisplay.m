@@ -4,7 +4,23 @@
 - (NSString *)lbTitle { return self.catalogName ?: @""; }
 @end
 
+/* An object's title, with its catalog's name where another of the entity
+   in another catalog has the same title. */
+static NSString *LBToldTitle(NSManagedObject *object, NSString *title, Catalog *catalog, Catalog * (^catalogOf)(id)) {
+    NSManagedObjectContext *context = object.managedObjectContext;
+    if (!context || !catalog.catalogName.length) return title;
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:object.entity.name];
+    for (id other in [context executeFetchRequest:fetch error:NULL] ?: @[]) {
+        if (other != object && catalogOf(other) != catalog && [[other lbTitle] isEqualToString:title])
+            return [NSString stringWithFormat:@"%@: %@", catalog.catalogName, title];
+    }
+    return title;
+}
+
 @implementation StockItem (LBStockDisplay)
+- (NSString *)lbToldTitle {
+    return LBToldTitle(self, self.lbTitle ?: @"", self.catalog, ^Catalog *(StockItem *other) { return other.catalog; });
+}
 - (NSString *)lbTitle { return self.itemName ?: @""; }
 
 - (BOOL)lbIsDue {
@@ -38,6 +54,9 @@
 @end
 
 @implementation Location (LBStockDisplay)
+- (NSString *)lbToldTitle {
+    return LBToldTitle(self, self.lbTitle ?: @"", self.warehouse.catalog, ^Catalog *(Location *other) { return other.warehouse.catalog; });
+}
 - (NSString *)lbTitle {
     NSMutableArray *names = [NSMutableArray array];
     for (Location *at = self; at; at = at.container) [names insertObject:at.locationName ?: @"" atIndex:0];

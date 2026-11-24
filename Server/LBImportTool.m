@@ -18,6 +18,8 @@
 //   Vehicle   the vehicle (its name) the records go into: one the user
 //             owns, set up already (Drivvo's export has no make or year);
 //             none for MainTrack's store, whose bikes are made vehicles
+//   Catalog   MainTrack's: the catalog its components go into, as units
+//             of its items (yours of that name, else made; "Bike parts")
 //   LeaveOut  YES: import even though the export says things Logbook has
 //             no place for (each is said first; NO, the default, stops)
 //   Model, Plans, Forms   the compiled model, its tables, the forms'
@@ -144,6 +146,7 @@ int main(int argc, const char *argv[]) {
         LBImport *import = [LBImport importOfFile:[NSURL fileURLWithPath:file] error:&error];
         if (!import) return LBFail(@"%@", error.localizedDescription);
         if (!import.makesVehicles && !named.length) return LBFail(@"%@'s export goes into a vehicle already set up: say which (-Vehicle).", import.source);
+        import.catalogName = [settings stringForKey:@"Catalog"];
         NSURL *forms = LBBeside(@"Forms", @"Forms");
         import.formNamed = ^ORMForm *(NSString *name, NSError **failure) {
             NSData *data = [NSData dataWithContentsOfURL:[forms URLByAppendingPathComponent:[name stringByAppendingPathExtension:@"ormform"]]

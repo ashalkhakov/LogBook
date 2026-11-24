@@ -10,9 +10,15 @@
 #import "Vehicle+CoreDataClass.h"
 #import "User+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
+#import "LBStockProcedures.h"
+#import "Move+CoreDataClass.h"
+#import "Location+CoreDataClass.h"
+#import "StockUnit+CoreDataClass.h"
+#import "StockItem+CoreDataClass.h"
+#import "Category+CoreDataClass.h"
+#import "Catalog+CoreDataClass.h"
 #include <sqlite3.h>
 #import "ComponentChange+CoreDataClass.h"
-#import "VehicleComponent+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "LBDisplay.h"
 #import "Answer+CoreDataClass.h"
@@ -1827,7 +1833,11 @@ static void LBPartsSteps(LBMainWindowController *controller, LBStockWindowContro
     LBPartsPanelController *parts = controller.partsPanel;
     LBCheck(@"its Parts panel", parts.window.isVisible && parts.event == service, nil);
     parts.quiet = YES;
-    LBChoose(parts.window, @"partsFrom", @"Main / Default");
+    /* Corner Workshop's Main / Default: said with its catalog's name where
+       another catalog (the imported bike parts) has one too. */
+    NSPopUpButton *from = (NSPopUpButton *)LBControl(parts.window.contentView, @"partsFrom");
+    LBChoose(parts.window, @"partsFrom", [from indexOfItemWithTitle:@"Corner Workshop: Main / Default"] >= 0 ? @"Corner Workshop: Main / Default"
+                                                                                                    : @"Main / Default");
     LBChoose(parts.window, @"partItem", @"Bolt");
     LBType(parts.window, @"partQuantity", @"2");
     LBClick(parts.window, @"usePart");
@@ -1873,7 +1883,11 @@ static void LBPartsSteps(LBMainWindowController *controller, LBStockWindowContro
     LBClick(window, @"ServiceParts");
     parts = controller.partsPanel;
     parts.quiet = YES;
-    LBChoose(parts.window, @"partsFrom", @"Main / Default");
+    /* Corner Workshop's Main / Default: said with its catalog's name where
+       another catalog (the imported bike parts) has one too. */
+    from = (NSPopUpButton *)LBControl(parts.window.contentView, @"partsFrom");
+    LBChoose(parts.window, @"partsFrom", [from indexOfItemWithTitle:@"Corner Workshop: Main / Default"] >= 0 ? @"Corner Workshop: Main / Default"
+                                                                                                    : @"Main / Default");
     LBChoose(parts.window, @"partItem", @"Bolt");
     LBType(parts.window, @"partQuantity", @"100");
     LBClick(parts.window, @"usePart");
@@ -2633,11 +2647,12 @@ static void LBImportSteps(LBMainWindowController *controller) {
     NSNib *nib = [[NSNib alloc] initWithNibNamed:@"ImportSummary" bundle:nil];
     BOOL loaded = [nib instantiateWithOwner:controller topLevelObjects:&objects];
     LBCheck(@"ImportSummary.xib loaded: its view and its list connected, the list in the view",
-            loaded && controller.importSummaryView && controller.importSummaryText
+            loaded && controller.importSummaryView && controller.importSummaryText && controller.importCatalogField
                 && [controller.importSummaryText isDescendantOf:controller.importSummaryView] && !controller.importSummaryText.isEditable,
             [NSString stringWithFormat:@"%d %@ %@", loaded, controller.importSummaryView, controller.importSummaryText]);
     controller.importSummaryView = nil;
     controller.importSummaryText = nil;
+    controller.importCatalogField = nil;
 
     NSManagedObjectContext *context = controller.context;
     Vehicle *damas = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:context];
@@ -2683,9 +2698,9 @@ static void LBImportSteps(LBMainWindowController *controller) {
 }
 
 /* A bicycle, as a user adds one: its kind chosen, no fuel or year said,
-   saved; a fill-up of it refused in the model's words. A chain bought,
-   then fitted by a component change, its wear worked out from a reading
-   after it; the server has them. */
+   saved; no meter, a ride's readings worked out from its length. A chain
+   in stock fitted to it from the component change's tab: out of stock,
+   its wear the ride's. A fill-up of it refused in the model's words. */
 static void LBBicycleSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
     NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
@@ -2705,29 +2720,70 @@ static void LBBicycleSteps(LBMainWindowController *controller) {
     Vehicle *kept = LBVehicleNamed(@"Self-test Bicycle");
     LBCheck(@"the server has it, a bicycle", [kept.vehicleKind isEqualToString:@"Bicycle"] && !kept.fuel, kept.vehicleKind);
 
+    /* No meter: its readings its trips' lengths, added up. */
+    [tabs selectTabViewItemWithIdentifier:@"vehicle"];
+    LBSpin();
+    NSButton *noMeter = (NSButton *)LBControl(window.contentView, @"vehicleHasNoMeter");
+    LBCheck(@"its No meter box", noMeter != nil, nil);
+    [noMeter performClick:nil];
+    LBSpin();
+    LBCheck(@"ticked: the bicycle has no meter", bike.hasNoMeter, nil);
     [tabs selectTabViewItemWithIdentifier:@"records"];
     LBSpin();
-    VehicleComponent *chain = (VehicleComponent *)LBAddRecord(controller, [VehicleComponent class]);
-    LBType(window, @"VehicleComponentName", @"KMC X9");
-    LBType(window, @"VehicleComponentKind", @"Chain");
-    VehicleComponent *keptChain = LBSaved(controller, chain, @"the chain saved");
-    LBCheck(@"the server has it, a chain", [keptChain.componentName isEqualToString:@"KMC X9"] && [keptChain.componentKind isEqualToString:@"Chain"],
-            keptChain);
-    LBChooseRecord(controller, chain);
-    LBCheck(@"not fitted yet, it says", [controller.componentWear hasPrefix:@"Not fitted"], controller.componentWear);
+    Trip *ride = (Trip *)LBAddRecord(controller, [Trip class]);
+    ride.timestamp = [NSDate dateWithTimeIntervalSinceNow:-7200];
+    ride.moment = [NSDate dateWithTimeIntervalSinceNow:-5400];
+    LBType(window, @"TripLengthValue", @"12");
+    Trip *keptRide = LBSaved(controller, ride, @"a ride of 12 km saved");
+    LBCheck(@"its readings worked out: from 0 to 12", LBIs(ride.mileageQuantity, @"0") && LBIs(ride.distanceQuantity, @"12")
+                && LBIs(keptRide.distanceQuantity, @"12"),
+            [NSString stringWithFormat:@"%@-%@", ride.mileageQuantity, ride.distanceQuantity]);
+
+    /* A chain in stock (a unit of an item of a catalog's), fitted from its
+       tab: out of stock, wearing with the bicycle. */
+    NSManagedObjectContext *context = controller.context;
+    Catalog *parts = [Catalog lb_newCatalogNamed:@"Self-test parts" owner:controller.store.user inContext:context];
+    Category *chains = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Category class]) inManagedObjectContext:context];
+    chains.id = [NSUUID UUID];
+    chains.categoryName = @"Chain";
+    chains.catalog = parts;
+    StockItem *kmc = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([StockItem class]) inManagedObjectContext:context];
+    kmc.id = [NSUUID UUID];
+    kmc.itemName = @"KMC X9";
+    kmc.catalog = parts;
+    kmc.category = chains;
+    kmc.created = [NSDate date];
+    kmc.sku = [parts lb_nextSKU];
+    StockUnit *chain = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([StockUnit class]) inManagedObjectContext:context];
+    chain.id = [NSUUID UUID];
+    chain.stockItem = kmc;
+    /* A warehouse of its own name: the stock steps choose Main / Default. */
+    parts.warehouses.anyObject.warehouseName = @"Self-test bench";
+    Location *shelf = parts.warehouses.anyObject.locations.anyObject;
+    Move *found = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Move class]) inManagedObjectContext:context];
+    found.id = [NSUUID UUID];
+    found.stockItem = kmc;
+    found.stockUnit = chain;
+    found.moved = [NSDecimalNumber one];
+    found.destination = shelf;
+    found.adjustmentReason = @"Found";
+    found.moment = [NSDate dateWithTimeIntervalSinceNow:-9000];
+    found.user = controller.store.user;
+    [shelf lb_holdingOf:kmc];
+    LBCheck(@"a chain in stock, a unit of KMC X9: saved", [controller saveChanges] && chain.location == shelf, controller.lastError ?: chain.location);
     ComponentChange *fit = (ComponentChange *)LBAddRecord(controller, [ComponentChange class]);
-    fit.timestamp = [NSDate dateWithTimeIntervalSinceNow:-3600];
-    LBType(window, @"ComponentChangeMileageValue", @"1000");
-    LBChoose(window, @"ComponentChangeComponent", @"KMC X9 (Chain)");
+    fit.timestamp = [NSDate dateWithTimeIntervalSinceNow:-8000];
+    LBChoose(window, @"ComponentChangeUnit", @"KMC X9");
+    LBType(window, @"ComponentChangePosition", @"Rear");
     ComponentChange *keptFit = LBSaved(controller, fit, @"the component change saved");
-    LBCheck(@"the server has it: the chain fitted at 1000", [keptFit.vehicleComponent.id isEqual:chain.id] && LBIs(keptFit.mileageQuantity, @"1000"),
-            keptFit);
-    MeterReading *read = (MeterReading *)LBAddRecord(controller, [MeterReading class]);
-    LBType(window, @"MeterReadingMileageValue", @"1450");
-    LBSaved(controller, read, @"a reading after it saved");
-    LBChooseRecord(controller, chain);
-    LBCheck(@"its wear worked out: 450 km since it was fitted", [controller.componentWear hasPrefix:@"450 "]
-                && [controller.componentWear hasSuffix:@"since it was fitted"],
+    LBCheck(@"the server has it: the chain fitted, at the rear, at 0 (before the ride)", [keptFit.stockUnit.id isEqual:chain.id]
+                && [keptFit.mountPosition isEqualToString:@"Rear"] && LBIs(fit.mileageQuantity, @"0"),
+            [NSString stringWithFormat:@"%@ %@ %@", keptFit.stockUnit.id, keptFit.mountPosition, fit.mileageQuantity]);
+    LBCheck(@"fitted from stock: moved out of it, Fitted", chain.location == nil && fit.moves.count == 1
+                && [fit.moves.anyObject.adjustmentReason isEqualToString:@"Fitted"],
+            chain.location.locationName ?: @(fit.moves.count));
+    LBChooseRecord(controller, fit);
+    LBCheck(@"its wear said: 12 km so far, fitted", [controller.componentWear hasPrefix:@"12 "] && [controller.componentWear hasSuffix:@"so far, fitted"],
             controller.componentWear);
     LBAddRecord(controller, [FillUp class]);
     LBType(window, @"FillUpMileageValue", @"1500");
@@ -2766,7 +2822,8 @@ static void LBMainTrackSteps(LBMainWindowController *controller) {
     NSUInteger count = 0, skipped = 0;
     NSError *error = nil;
     BOOL done = [controller importFile:[NSURL fileURLWithPath:path] intoVehicle:nil made:&count skipped:&skipped error:&error];
-    LBCheck(@"MainTrack's store imported with no vehicle chosen: 20 made", done && count == 20 && skipped == 0,
+    LBCheck(@"MainTrack's store imported with no vehicle chosen: 28 made (its bikes, a catalog of its parts' items and units, what happened)",
+            done && count == 28 && skipped == 0,
             error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
     NSArray *listed = [controller.vehicles.arrangedObjects valueForKey:NSStringFromSelector(@selector(vehicleName))];
     LBCheck(@"its bikes listed: Commuter, Old Frame", [listed containsObject:@"Commuter"] && [listed containsObject:@"Old Frame"], listed);
@@ -2783,7 +2840,7 @@ static void LBMainTrackSteps(LBMainWindowController *controller) {
             [NSString stringWithFormat:@"%@: %lu trips, %lu changes; issues %@", there.vehicleKind, (unsigned long)trips, (unsigned long)changes,
                                        [LBAppStore.local.issues valueForKey:@"message"]]);
     done = [controller importFile:[NSURL fileURLWithPath:path] intoVehicle:nil made:&count skipped:&skipped error:&error];
-    LBCheck(@"imported again: nothing made, 20 there", done && count == 0 && skipped == 20,
+    LBCheck(@"imported again: nothing made, 27 there", done && count == 0 && skipped == 27,
             error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
     [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
 }

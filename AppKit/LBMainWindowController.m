@@ -12,6 +12,7 @@
 #import "Rescheduling+CoreDataClass.h"
 #import "LBProcedures.h"
 #import "LBImport.h"
+#import "ComponentChange+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
@@ -130,7 +131,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     /* A day of the model (bought on, issued, expires) is a UTC day: its
        field reads and says it so, whatever the zone here. */
     for (NSTabViewItem *form in _recordForms.tabViewItems) {
-        for (NSString *identifier in @[ @"TyreSetDate", @"VehicleComponentDate", @"DocumentDate", @"DocumentExpires" ]) {
+        for (NSString *identifier in @[ @"TyreSetDate", @"DocumentDate", @"DocumentExpires" ]) {
             NSTextField *field = (NSTextField *)[self controlOf:identifier in:form.view];
             ((NSDateFormatter *)field.formatter).timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
         }
@@ -572,17 +573,17 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 - (NSString *)componentWear {
     id chosen = [_recordForm object];
-    VehicleComponent *component = [chosen isKindOfClass:[VehicleComponent class]] ? chosen : nil;
+    StockUnit *component = [chosen isKindOfClass:[ComponentChange class]] ? ((ComponentChange *)chosen).stockUnit : nil;
     if (!component) return @"";
-    if (!component.componentChange) return @"Not fitted yet: a component change fits it.";
     DistanceUnit *unit = [self distanceUnit];
     NSDecimalNumber *worn = unit ? [component lb_wornIn:unit] : nil;
-    if (!worn) return @"Fitted at no reading.";
+    if (!worn) return @"At no reading yet.";
     NSString *distance = [NSString stringWithFormat:@"%@ %@", [NSNumberFormatter localizedStringFromNumber:worn
                                                                                                 numberStyle:NSNumberFormatterDecimalStyle],
                                                      unit.code];
-    return component.wasRetiredByComponentChange ? [NSString stringWithFormat:@"%@ until it was retired", distance]
-                                                 : [NSString stringWithFormat:@"%@ since it was fitted", distance];
+    /* Every time it was fitted, so far: it may have been on another before. */
+    return [component lb_fittedTo] ? [NSString stringWithFormat:@"%@ so far, fitted", distance]
+                                   : [NSString stringWithFormat:@"%@ in all, not fitted now", distance];
 }
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingComponentWear {
@@ -639,13 +640,24 @@ static void *LBRecordsChanged = &LBRecordsChanged;
             alert.accessoryView = _importSummaryView;
         }
     }
+    /* MainTrack's parts: into a catalog of the user's, or a new one. */
+    if (_importCatalogField) {
+        NSArray *names = [[_store.user.ownedCatalogs valueForKey:NSStringFromSelector(@selector(catalogName))] allObjects];
+        [_importCatalogField addItemsWithObjectValues:[names sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)]];
+        _importCatalogField.stringValue = @"Bike parts";
+        for (NSView *view in _importCatalogField.superview.subviews) {
+            if (view == _importCatalogField || [view.identifier isEqualToString:@"importCatalogLabel"]) view.hidden = !import.makesVehicles;
+        }
+    }
     [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
+        NSString *catalog = self.importCatalogField.stringValue;
         self.importSummaryView = nil;
         self.importSummaryText = nil;
+        self.importCatalogField = nil;
         if (response != NSAlertFirstButtonReturn) return;
         NSUInteger made = 0, skipped = 0;
         NSError *failure = nil;
-        BOOL done = [self importFile:file intoVehicle:vehicle made:&made skipped:&skipped error:&failure];
+        BOOL done = [self importFile:file intoVehicle:vehicle catalogNamed:catalog made:&made skipped:&skipped error:&failure];
         if (!done) return [self reportError:failure];
         dispatch_async(dispatch_get_main_queue(), ^{
             NSAlert *said = [[NSAlert alloc] init];
@@ -657,9 +669,15 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (BOOL)importFile:(NSURL *)file intoVehicle:(Vehicle *)vehicle made:(NSUInteger *)made skipped:(NSUInteger *)skipped error:(NSError **)error {
+    return [self importFile:file intoVehicle:vehicle catalogNamed:nil made:made skipped:skipped error:error];
+}
+
+- (BOOL)importFile:(NSURL *)file intoVehicle:(Vehicle *)vehicle catalogNamed:(NSString *)catalog
+              made:(NSUInteger *)made skipped:(NSUInteger *)skipped error:(NSError **)error {
     if (![self commitEdits]) return NO;
     LBImport *import = [LBImport importOfFile:file error:error];
     if (!import) return NO;
+    import.catalogName = catalog.length ? catalog : nil;
     LBStore *store = _store;
     BOOL done = [import importIntoVehicle:vehicle by:store.user context:self.context
                                   saving:^BOOL(NSManagedObjectContext *context, NSError **failure) { return [store save:failure]; }
@@ -741,6 +759,11 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         if (![object isKindOfClass:[Event class]]) continue;
         Event *event = (Event *)object;
         if (event.mileageQuantity && !event.mileageDistanceUnit) event.mileageDistanceUnit = [self distanceUnit];
+        /* A trip's length typed with no unit: its readings', else the user's. */
+        if ([event isKindOfClass:[Trip class]]) {
+            Trip *trip = (Trip *)event;
+            if (trip.lengthQuantity && !trip.lengthDistanceUnit) trip.lengthDistanceUnit = trip.distanceDistanceUnit ?: [self distanceUnit];
+        }
     }
 }
 

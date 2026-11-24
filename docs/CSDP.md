@@ -18,8 +18,8 @@ sync, the code that checks the constraints, and the schema's listing.
   - fill-ups;
   - services and the tasks in them, each with its own cost;
   - tyre sets;
-  - components that wear and are replaced (a chain, brake pads), fitted
-    and retired;
+  - components that wear and are replaced (a chain, brake pads): units of
+    stock items, fitted, removed, put away;
   - documents;
   - other costs: parking, tolls, washes;
   - incomes: paid rides, freight, refunds, the car's sale;
@@ -221,32 +221,63 @@ too: the one on the car before it (step 7).
 
 ### A component
 
-> Anna's bicycle, the Commuter, is a Surly Long Haul Trucker. She bought a
-> KMC X9 chain for 25 EUR on 2026-07-28 and fitted it on 2026-08-01 at
-> 3,900 km, taking the old one off. She replaces the chain every 3,000 km.
+> Anna's bicycle, the Commuter, a Surly Long Haul Trucker, has no meter:
+> what it has covered is what its rides covered, 3,900 km since she bought
+> it. She keeps her spare parts in her garage. She bought a KMC X9 chain,
+> serial unknown, for 25 EUR, kept it on the garage's shelf, and fitted it
+> on 2026-08-01 at 3,900 km, taking the old one off and throwing it away.
+> She fitted a GravelKing tyre into the rear wheel set, which wears on no
+> ride on her trainer. She replaces the chain every 3,000 km.
 
 - Vehicle 'Commuter' is of VehicleKind 'Bicycle'.
-- VehicleComponent 'KMC X9' is of ComponentKind 'Chain'.
-- VehicleComponent 'KMC X9' cost Money 25 EUR, bought on Date 2026-07-28.
-- ComponentChange 31 fitted VehicleComponent 'KMC X9' on Vehicle 'Commuter'.
-- ComponentChange 31 retired VehicleComponent 'KMC X8'.
+- Vehicle 'Commuter' has no meter.
+- Trip 30 of Vehicle 'Commuter' covered Distance 25 km.
+- Trip 32 of Vehicle 'Commuter' is virtual.
+- StockUnit u1 is of StockItem 'KMC X9', of Category 'Chain', made by
+  Manufacturer 'KMC'.
+- Move m1 moved StockUnit u1 to Location 'Garage / Shelf'.
+- ComponentChange 31 fitted StockUnit u1, on Vehicle 'Commuter'.
+- ComponentChange 31 removed StockUnit u0.
 - ComponentChange 31 was at Moment 2026-08-01 10:00, at Distance 3900 km.
+- Move m2 is made for ComponentChange 31: StockUnit u1 out of the shelf,
+  for AdjustmentReason 'Fitted'.
+- ComponentChange 33 fitted StockUnit u2 into StockUnit u3 (the wheel set),
+  at MountPosition 'Rear'; ComponentChange 33 skips virtual trips.
 - Schedule 10 of Vehicle 'Commuter' is for Task 'Chain', recurring after
   Distance 3000 km.
 
-A component is a record of its vehicle, as a tyre set is (what it cost, its
-note); a change fits it at a moment and a reading, and may retire the one
-it replaces, which a change names (a component is not always replaced by
-one of its kind: a tyre for a puncture). How far a component has worn is
-worked out: from the change that fitted it to the one that retired it, or
-to the vehicle's latest reading. A change does the work of the task named
-as its component's kind, so a schedule for the task 'Chain' closes its
-reminder when a chain is fitted, as a service of a task does.
+A component is a unit of a stock item (step 3 of the stock's: StockUnit, a
+thing told from the others where it has a serial number), not a record of
+the vehicle: the same unit is stock on a shelf, then fitted to a bicycle,
+then taken off and put away, or fitted to another. So a spare chain and a
+fitted one are one fact type's population, as InvenTree's installed items
+and MainTrack's assignments (of a component to a bike, or to another
+component: a tyre to a wheel) both have it.
+
+A change of the vehicle fits it at a moment and a reading, to the vehicle
+or into another unit fitted to it, at a position, and may remove one,
+which it may put away at a location. Fitted from stock, the unit moves out
+of it (a move made for the change, Fitted); one removed and put away moves
+back in there (Removed); one not put away is thrown away. Where a unit is,
+is worked out from its moves (UnitPlace): nowhere in stock while fitted.
+
+How far a component has worn is worked out: each time it was fitted, what
+its vehicle covered from that change's reading until it was removed (or
+fitted elsewhere, or the unit it went into was removed), or until now;
+less the virtual trips then where the change skips them. A change does the
+work of the task named as its unit's item's category, so a schedule for
+the task 'Chain' closes its reminder when a chain is fitted, as a service
+of a task does.
+
+A vehicle with no meter has its events' readings worked out from its
+trips: what it was acquired at, then each trip's length added as it ends;
+an event at a moment is at what was covered before it. A trip says how far
+it went (its length) where its vehicle has no meter; its start and end
+readings follow.
 
 A bicycle has no fuel, VIN or registration, and is never filled up; a car
 or a motorcycle uses a fuel and was built in a year. A vehicle stored
-before vehicles had kinds says none, and is taken as motorised: a kind is
-at most one per vehicle so that those stored before need no migration.
+before vehicles had kinds says none, and is taken as motorised.
 
 ### A document
 
@@ -1204,8 +1235,9 @@ honestly be missing, and each such case is listed with why.
 | ServiceItem | service, task | cost (a task done at home, or its cost not known: MainTrack's are mostly so); note; what it was charged in another currency (only when it was) |
 | TyreSet | vehicle, name, season, model, size | price and the date bought, both or neither (a set that came with the car) |
 | TyreChange | vehicle, moment, distance, the set fitted, tread, driver | |
-| VehicleComponent | vehicle, name, kind | price and the date bought, both or neither |
-| ComponentChange | vehicle, moment, distance, the component fitted, driver | the one it retired (a component fitted to an empty place) |
+| ComponentChange | vehicle, moment, distance, the unit fitted, driver | the unit it went into (fitted to the vehicle itself), its position, the one it removed (fitted to an empty place), where that was put away (thrown away), skipping virtual trips (it wears on every trip) |
+| StockUnit | item | its serial number (a chain has none), note |
+| Trip (of a vehicle with no meter) | length | its readings, worked out |
 | Document | vehicle, kind, issuer, number, valid from | expiry (a registration certificate doesn't expire); cost (some are free) |
 | Expense | vehicle, moment, kind, cost, driver | distance (any event may say one); what it was charged in another currency |
 | Income | vehicle, moment, kind, money, driver | distance (a refund comes away from the car); the trip (only a ride logged as a trip has one); instalments (paid at once, when missing) |
@@ -1256,8 +1288,8 @@ Facts worked out from others by rules, not arithmetic:
    moment; cancelled, a cancel date; open, neither.
 6. **What did a reminder's work** (`Reminder was done by Event`): the
    first record of its vehicle, after it was set, that does its work: a
-   service with an item of its task, a component change fitting a
-   component of the kind its task is named as, an expense of its kind, or
+   service with an item of its task, a component change fitting a unit of
+   an item of the category its task is named as, an expense of its kind, or
    an inspection through its checklist. *Not a derivation:* the app's service
    layer, saving such a record, enters the reminder done by it, at its
    moment and at its distance when it has one, and makes the schedule's
@@ -1462,7 +1494,6 @@ A value comparison constraint compares two values of one instance.
 | Document | it expires after it's valid from |
 | Vehicle | sold (its CarSale's moment) on or after it was acquired |
 | TyreSet | bought on or before the first change that fitted it |
-| VehicleComponent | bought on or before the change that fitted it |
 | Reminder | done on or after the moment it was set (its record's moment) |
 
 ### Frequency constraints

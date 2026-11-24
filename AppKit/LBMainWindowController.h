@@ -107,9 +107,15 @@ NS_ASSUME_NONNULL_BEGIN
 // left out taken. Made and passed over said; NO and why where refused.
 - (BOOL)importFile:(NSURL *)file intoVehicle:(nullable Vehicle *)vehicle made:(NSUInteger *_Nullable)made skipped:(NSUInteger *_Nullable)skipped
              error:(NSError **)error;
+// The same, MainTrack's parts into the catalog named (nil: "Bike parts").
+- (BOOL)importFile:(NSURL *)file intoVehicle:(nullable Vehicle *)vehicle catalogNamed:(nullable NSString *)catalog
+              made:(NSUInteger *_Nullable)made skipped:(NSUInteger *_Nullable)skipped error:(NSError **)error;
 // ImportSummary.xib's view and its list, the owner's while it is shown.
 @property (nonatomic, strong, nullable) IBOutlet NSView *importSummaryView;
 @property (nonatomic, strong, nullable) IBOutlet NSTextView *importSummaryText;
+// Its catalog field: where MainTrack's parts go (a catalog of the user's,
+// or a new one's name); hidden for an export that makes no stock.
+@property (nonatomic, strong, nullable) IBOutlet NSComboBox *importCatalogField;
 // The signed-in user's unit of distance, else kilometres.
 - (nullable DistanceUnit *)distanceUnit;
 // What is being typed kept: NO when a field holds what cannot be.
