@@ -13,7 +13,7 @@
 
 @class LBPartsPanelController;
 
-@class LBImport;
+@class LBImport, LBFieldIssues;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -125,6 +125,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) IBOutlet NSView *inventreeConnectView;
 @property (nonatomic, strong, nullable) IBOutlet NSTextField *inventreeAddressField;
 @property (nonatomic, strong, nullable) IBOutlet NSSecureTextField *inventreeTokenField;
+// The rules the shown record or vehicle breaks, at its fields.
+@property (nonatomic, readonly, strong, nullable) LBFieldIssues *fieldIssues;
 // ImportSummary.xib's view and its list, the owner's while it is shown.
 @property (nonatomic, strong, nullable) IBOutlet NSView *importSummaryView;
 @property (nonatomic, strong, nullable) IBOutlet NSTextView *importSummaryText;

@@ -12,6 +12,7 @@
 #import "Rescheduling+CoreDataClass.h"
 #import "LBProcedures.h"
 #import "LBImport.h"
+#import "LBFieldIssues.h"
 #import <ODataSync/ODataSignIn.h>
 #import "ComponentChange+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
@@ -131,6 +132,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     /* Reference data, the model's: read once. */
     self.serviceKinds = [CostKind lbServiceKindsInContext:self.context];
     _attachments.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(fileName)) ascending:YES] ];
+    /* The rules a record or a vehicle breaks, at its fields. */
+    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.window.contentView];
+    [_fieldIssues setNeedsRefresh];
     /* A day of the model (bought on, issued, expires) is a UTC day: its
        field reads and says it so, whatever the zone here. */
     for (NSTabViewItem *form in _recordForms.tabViewItems) {

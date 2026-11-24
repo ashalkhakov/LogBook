@@ -570,6 +570,10 @@
 			isa = PBXBuildFile;
 			fileRef = 1A3310166FC5A264617FA591 /* LBStockEditor.m */;
 		};
+		7C2F1A0B3D4E5F6071829306 /* LBFieldIssues.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 7C2F1A0B3D4E5F6071829305 /* LBFieldIssues.m */;
+		};
 		D150CB72C0373BBF67E78758 /* main.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 9F9B62C3CEAF21088CC988DF /* main.m */;
@@ -873,6 +877,18 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBStockEditor.m;
+			sourceTree = "<group>";
+		};
+		7C2F1A0B3D4E5F6071829305 /* LBFieldIssues.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBFieldIssues.m;
+			sourceTree = "<group>";
+		};
+		7C2F1A0B3D4E5F6071829304 /* LBFieldIssues.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBFieldIssues.h;
 			sourceTree = "<group>";
 		};
 		1AA616881FDF64023A455351 /* OTelKit.xcframework */ = {
@@ -2030,6 +2046,8 @@
 				D754F8EB42F3ADAE0E299F79 /* LBSelfTest.m */,
 				B84277BF72A1805D5D8DB7FC /* LBStockCountWindowController.h */,
 				409C3F87EC54981EE98BFB26 /* LBStockCountWindowController.m */,
+				7C2F1A0B3D4E5F6071829304 /* LBFieldIssues.h */,
+				7C2F1A0B3D4E5F6071829305 /* LBFieldIssues.m */,
 				4DDC4EDEB5B9B0DABA7644A1 /* LBStockEditor.h */,
 				1A3310166FC5A264617FA591 /* LBStockEditor.m */,
 				2E035A472DE9048A40CC51E2 /* LBStockItemWindowController.h */,
@@ -2497,6 +2515,7 @@
 				DFBD0FF8323401C8CF5C5DF2 /* LBSelfTest.m */,
 				17A5EC43F70F3F6A0365515A /* LBStockCountWindowController.m */,
 				D133B5ACC3CED76663C79052 /* LBStockEditor.m */,
+				7C2F1A0B3D4E5F6071829306 /* LBFieldIssues.m */,
 				9FFA1CCB7AD055C596E55444 /* LBStockItemWindowController.m */,
 				C399DB33835639D25AA56269 /* LBStockOrderWindowController.m */,
 				4A7C39DF8D06BBC66581C911 /* LBStockWindowController.m */,

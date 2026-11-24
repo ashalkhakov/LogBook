@@ -1,5 +1,6 @@
 #import "LBSelfTest.h"
 #import "LBImport.h"
+#import "LBFieldIssues.h"
 #import "LBConnectPanel.h"
 #import "LBMainWindowController.h"
 #import "LBStore.h"
@@ -2606,8 +2607,25 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
     LBType(window, @"vehicleName", @"Family Golf");
     LBType(window, @"make", @"Volkswagen");
     LBType(window, @"carModel", @"Golf VII");
+    /* A car of no year or fuel: the rules it breaks at those fields, as
+       XFormsKit shows a constraint (LBFieldIssues). */
+    [(NSTabView *)LBControl(window.contentView, @"tabs") selectTabViewItemWithIdentifier:@"vehicle"];
+    [controller.fieldIssues refresh];
+    NSView *year = LBControl(window.contentView, @"manufactureYear");
+    NSTextField *yearLabel = [controller.fieldIssues labelOf:year];
+    NSView *badge = [controller.fieldIssues badgeOf:year];
+    NSArray *said = controller.fieldIssues.issues[@"Vehicle.manufactureYear"];
+    LBCheck(@"a car of no year: its Year field said required, red, a ⚠ beside it saying the rule",
+            [yearLabel.stringValue isEqualToString:@"Year *:"] && badge && [badge.toolTip containsString:@"Year"] && said.count
+                && controller.fieldIssues.issues[@"Vehicle.fuel"],
+            [NSString stringWithFormat:@"label %@, badge %@, issues %@", yearLabel.stringValue, badge.toolTip, controller.fieldIssues.issues]);
     LBType(window, @"manufactureYear", @"2016");
     LBType(window, @"fuel", @"Petrol");
+    [controller.fieldIssues refresh];
+    LBCheck(@"given a year and a fuel: no ⚠, the label as it was",
+            ![controller.fieldIssues badgeOf:year] && [yearLabel.stringValue isEqualToString:@"Year:"]
+                && !controller.fieldIssues.issues[@"Vehicle.manufactureYear"] && !controller.fieldIssues.issues[@"Vehicle.fuel"],
+            [NSString stringWithFormat:@"label %@, issues %@", yearLabel.stringValue, controller.fieldIssues.issues]);
     Vehicle *chosen = controller.vehicles.selectedObjects.firstObject;
     LBCheck(@"what was typed is the vehicle's", [chosen.vehicleName isEqualToString:@"Family Golf"] && chosen.manufactureYear == 2016,
             chosen.vehicleName);
