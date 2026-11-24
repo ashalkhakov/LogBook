@@ -5,7 +5,8 @@ name: Build
 # gnustep-release-actions' workflows, the same as every repository's. Every
 # push builds and tests it and uploads what is installed: Logbook for macOS,
 # for iOS (unsigned), for Linux (an AppImage, with its server) and for
-# Windows (an installer, the server in its runtime). A v* tag
+# Windows (an installer, the server in its runtime), and the server's
+# Docker image (ghcr.io/ashalkhakov/logbook-server, a tag's). A v* tag
 # (or a run started by hand with one) also releases them, attached to the
 # tag's release (a pre-release when the tag has a '-'). What it builds on is
 # in .github/pins.env.
@@ -56,3 +57,17 @@ jobs:
     with:
       tag: ${{ inputs.tag }}
       apps: Logbook=Logbook
+
+  # The server in an image of its own (Docker/server.Dockerfile), for amd64
+  # and arm64, exercised by .github/release/docker-test.sh; a tag's
+  # published as ghcr.io/ashalkhakov/logbook-server.
+  docker:
+    uses: ashalkhakov/gnustep-release-actions/.github/workflows/docker.yml@v1
+    with:
+      tag: ${{ inputs.tag }}
+      dockerfile: Docker/server.Dockerfile
+      images: =logbook-server
+      description: "Logbook's server: the vehicles' logbook every device syncs with, the model's rules kept as it writes"
+    permissions:
+      contents: read
+      packages: write

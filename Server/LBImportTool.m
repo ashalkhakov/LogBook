@@ -117,6 +117,9 @@ static void LBWaitFor(BOOL (^done)(void)) {
 }
 
 int main(int argc, const char *argv[]) {
+    /* A line at a time, piped too: what it says in the order it happens,
+       beside what the libraries log. */
+    setvbuf(stdout, NULL, _IOLBF, 0);
     @autoreleasepool {
         NSUserDefaults *settings = [NSUserDefaults standardUserDefaults];
         NSArray<NSString *> *arguments = [NSProcessInfo processInfo].arguments;

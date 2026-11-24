@@ -31,9 +31,10 @@ From [Releases](https://github.com/ashalkhakov/LogBook/releases/latest):
 
 Every push also uploads unsigned builds to its
 [Actions run](https://github.com/ashalkhakov/LogBook/actions). The apps
-talk to a `logbook-server`: run the AppImage's
-(`./Logbook-*.AppImage --server -StoreURL logbook.sqlite -Port 8080`), or
-build one ([docs/SERVER.md](docs/SERVER.md), signing in with Keycloak
+talk to a `logbook-server`: run its image
+(`docker run -p 8080:8080 -v logbook:/data ghcr.io/ashalkhakov/logbook-server`),
+the AppImage's (`./Logbook-*.AppImage --server -StoreURL logbook.sqlite -Port 8080`),
+or build one ([docs/SERVER.md](docs/SERVER.md), signing in with Keycloak
 included).
 
 Build from source:

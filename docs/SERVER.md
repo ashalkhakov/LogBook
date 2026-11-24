@@ -16,6 +16,69 @@ build/logbook-server -StoreURL logbook.sqlite -Port 8080 -Localhost NO   # built
 keeps it in a database server instead of a SQLite file: FreeCoreData's
 stores, which the AppImage carries.
 
+## In Docker
+
+The server's image holds the server, `logbook-import`, what they read
+beside them (the model, its tables, the permissions, the processes, the
+forms' contracts), FreeCoreData's PostgreSQL and MySQL/MariaDB stores, and
+the libraries they all run on. It has no shell and no package manager
+(`Docker/server.Dockerfile`, built on the releases `.github/pins.env`
+names, as SimpleNotes' server image is). A release publishes it as
+`ghcr.io/ashalkhakov/logbook-server`, for amd64 and arm64.
+
+```sh
+docker run -p 8080:8080 -v logbook:/data ghcr.io/ashalkhakov/logbook-server
+docker build -f Docker/server.Dockerfile -t logbook-server .   # from the repository's root
+```
+
+It runs as an unprivileged user (10001), and by default keeps its SQLite
+store, and the processes' store beside it, in the `/data` volume. Configure
+it with environment variables, `LB_` and a setting's name:
+
+| Variable | Default | |
+|---|---|---|
+| `LB_STORE_TYPE` | `SQLite` | `SQLite`, `PostgreSQL` or `MySQL` |
+| `LB_STORE_URL` | `/data/logbook.sqlite` | a path for SQLite, else the database's URL (`postgresql://user:password@host:5432/logbook`) |
+| `LB_WORKFLOW` | `Workflow.sqlite` beside a SQLite store | the processes' store: give one (`/data/Workflow.sqlite`) with a database server |
+| `LB_SERVICE_ROOT` | `http://<container>:8080/odata/` | the public URL the service is reached at: set it behind a reverse proxy, as its links begin with it |
+| `LB_PORT` | `8080` | |
+| `LB_JWT_ISSUER`, `LB_ALLOW_ANONYMOUS` | | signing in (below) |
+| `LB_ACCESS_LOG` | `json` | JSON lines, for a log collector |
+| `LB_HEALTH_PATH` | `/health` | for the orchestrator or the proxy |
+
+With PostgreSQL:
+
+```sh
+docker run -p 8080:8080 -v logbook:/data \
+  -e LB_STORE_TYPE=PostgreSQL -e LB_STORE_URL=postgresql://logbook:secret@db:5432/logbook \
+  -e LB_WORKFLOW=/data/Workflow.sqlite \
+  ghcr.io/ashalkhakov/logbook-server
+```
+
+Behind a reverse proxy (Nginx Proxy Manager, Caddy, Traefik), forward a
+host to the container's port 8080, and give the address users reach as
+`LB_SERVICE_ROOT` (`https://logbook.example.com/odata/`).
+
+## Importing another app's data
+
+`logbook-import` puts another app's export into a vehicle of a user's, as
+the desktop's File > Import… does: it syncs the user's logbook into a
+store of its own, enters each record through the model's form, and syncs
+them up, so the server keeps its rules and permissions as for any device.
+What the export says that Logbook has no place for is said first, and
+nothing is made unless `-LeaveOut YES` says to go ahead.
+
+```sh
+build/logbook-import -Server https://logbook.example.com/ -Vehicle Golf Drivvo.csv
+docker run --rm -v "$PWD":/in --entrypoint /app/logbook-import ghcr.io/ashalkhakov/logbook-server \
+  -Server https://logbook.example.com/ -Vehicle Golf /in/Drivvo.csv
+```
+
+A server that asks for a sign-in is signed in to by its device flow (a
+code to type at a page) or a password; one that asks for none takes
+`-Email`. The vehicle must be set up already: Drivvo's export says no make
+or year.
+
 ## Signing in with Keycloak (or another OpenID Connect provider)
 
 As SimpleNotes does:
