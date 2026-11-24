@@ -361,12 +361,86 @@ static BOOL LBIsSQLite(NSData *data) {
     return nil;
 }
 
+/* A plate as written on it: no case, spaces or dashes. */
+static NSString *LBPlate(NSString *plate) {
+    NSMutableString *bare = [NSMutableString string];
+    for (NSUInteger i = 0; i < plate.length; i++) {
+        unichar c = [plate characterAtIndex:i];
+        if (c != ' ' && c != '-' && c != 0x2013 && c != '.') [bare appendFormat:@"%C", c];
+    }
+    return bare.uppercaseString;
+}
+
+- (NSDictionary<NSString *, NSString *> *)vehicleRow {
+    return _sections[@"Vehicle"].rows.firstObject;
+}
+
+- (Vehicle *)vehicleOfUser:(User *)user how:(NSString **)how {
+    NSDictionary<NSString *, NSString *> *row = [self vehicleRow];
+    NSArray<Vehicle *> *mine = [user.ownedVehicles.allObjects filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"isDeleted == NO"]];
+    NSString *plate = LBPlate(row[@"License plate"] ?: @"");
+    if (plate.length) {
+        for (Vehicle *each in mine) {
+            if ([LBPlate(each.registrationNumber ?: @"") isEqualToString:plate]) {
+                if (how) *how = @"by its licence plate";
+                return each;
+            }
+        }
+    }
+    NSString *name = row[@"Name"];
+    if (name.length) {
+        for (Vehicle *each in mine) {
+            if ([each.vehicleName caseInsensitiveCompare:name] == NSOrderedSame) {
+                if (how) *how = @"by its name";
+                return each;
+            }
+        }
+    }
+    /* Its model's name, as a vehicle's name (one made by an import
+       before) or its model: one vehicle only. */
+    NSString *model = row[@"Model"];
+    if (model.length) {
+        for (Vehicle *each in mine) {
+            if ([each.vehicleName caseInsensitiveCompare:model] == NSOrderedSame) {
+                if (how) *how = @"by its name";
+                return each;
+            }
+        }
+        NSArray *ofModel = [mine filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"carModel ==[c] %@", model]];
+        if (ofModel.count == 1) {
+            if (how) *how = @"by its model";
+            return ofModel.firstObject;
+        }
+    }
+    return nil;
+}
+
+- (NSInteger)exportYear {
+    NSInteger year = [self vehicleRow][@"Year"].integerValue;
+    return year > 0 ? year : 0;
+}
+
 - (BOOL)planForVehicle:(Vehicle *)vehicle by:(User *)user error:(NSError **)error {
     if ([_source isEqualToString:@"InvenTree"]) return [self planInvenTreeBy:user error:error];
     if (self.makesVehicles) return [self planMainTrackBy:user error:error];
+    /* None chosen: the user's it is, else one made as it starts. */
+    _matchedVehicle = nil;
+    _matchedHow = nil;
+    _makesItsVehicle = NO;
+    _madeVehicleName = nil;
     if (!vehicle) {
-        if (error) *error = LBImportError(@"%@'s export goes into a vehicle already set up: choose it first.", _source);
-        return NO;
+        NSString *how = nil;
+        vehicle = [self vehicleOfUser:user how:&how];
+        _matchedVehicle = vehicle;
+        _matchedHow = how;
+        if (!vehicle) {
+            NSDictionary<NSString *, NSString *> *row = [self vehicleRow];
+            _makesItsVehicle = YES;
+            _madeVehicleName = row[@"Name"].length ? row[@"Name"] : row[@"Model"].length ? row[@"Model"] : @"Drivvo's vehicle";
+        }
+    } else {
+        _matchedVehicle = vehicle;
+        _matchedHow = @"as chosen";
     }
     NSMutableArray *leftOut = [NSMutableArray array];
     NSMutableArray<LBEntry *> *entries = [NSMutableArray array];
@@ -384,7 +458,7 @@ static BOOL LBIsSQLite(NSData *data) {
 
     /* The vehicle as Drivvo has it: what it says that the vehicle does
        not, left out (the import goes into a vehicle already set up). */
-    for (NSDictionary<NSString *, NSString *> *row in _sections[@"Vehicle"].rows) {
+    for (NSDictionary<NSString *, NSString *> *row in vehicle ? _sections[@"Vehicle"].rows : @[]) {
         NSString *named = row[@"Name"].length ? row[@"Name"] : row[@"Model"];
         NSString *plate = row[@"License plate"];
         if (plate.length && ![plate isEqualToString:vehicle.registrationNumber ?: @""])
@@ -401,6 +475,19 @@ static BOOL LBIsSQLite(NSData *data) {
         if (!LBIsZero(row[@"Sale price"]))
             [leftOut addObject:[NSString stringWithFormat:@"Vehicle %@: its sale price %@ (record the sale as an income)", named, row[@"Sale price"]]];
         if (row[@"Notes"].length) [leftOut addObject:[NSString stringWithFormat:@"Vehicle %@: its notes '%@'", named, row[@"Notes"]]];
+    }
+
+    if (!vehicle) {
+        NSDictionary<NSString *, NSString *> *row = [self vehicleRow];
+        for (NSString *column in row) {
+            if ([column hasPrefix:@"Fuel capacity"] && !LBIsZero(row[column]))
+                [leftOut addObject:[NSString stringWithFormat:@"Vehicle %@: its fuel capacity %@ (Logbook keeps no tank size)", _madeVehicleName, row[column]]];
+        }
+        if (!LBIsZero(row[@"Purchase price"]))
+            [leftOut addObject:[NSString stringWithFormat:@"Vehicle %@: its purchase price %@ (say it in the vehicle's Purchase)", _madeVehicleName, row[@"Purchase price"]]];
+        if (!LBIsZero(row[@"Sale price"]))
+            [leftOut addObject:[NSString stringWithFormat:@"Vehicle %@: its sale price %@ (record the sale as an income)", _madeVehicleName, row[@"Sale price"]]];
+        if (row[@"Notes"].length) [leftOut addObject:[NSString stringWithFormat:@"Vehicle %@: its notes '%@'", _madeVehicleName, row[@"Notes"]]];
     }
 
     /* Fill-ups. */
@@ -435,7 +522,7 @@ static BOOL LBIsSQLite(NSData *data) {
         User *driver = [self driverNamed:row[@"Driver"] ofVehicle:vehicle user:user];
         if (!driver) {
             if (error) *error = LBImportError(@"%@: its driver %@ is no one who drives %@ in Logbook: share the vehicle with them first.",
-                                              what, row[@"Driver"], vehicle.vehicleName);
+                                              what, row[@"Driver"], vehicle.vehicleName ?: self.madeVehicleName);
             return NO;
         }
         NSMutableDictionary *values = [@{ @"timestamp" : [write stringFromDate:moment], @"mileageQuantity" : row[distance] ?: @"",
@@ -510,7 +597,7 @@ static BOOL LBIsSQLite(NSData *data) {
         User *driver = [self driverNamed:first[@"Driver"] ofVehicle:vehicle user:user];
         if (!driver) {
             if (error) *error = LBImportError(@"%@: its driver %@ is no one who drives %@ in Logbook: share the vehicle with them first.",
-                                              what, first[@"Driver"], vehicle.vehicleName);
+                                              what, first[@"Driver"], vehicle.vehicleName ?: self.madeVehicleName);
             return NO;
         }
         NSMutableDictionary *values = [@{ @"timestamp" : [write stringFromDate:moment], @"mileageQuantity" : first[serviceDistance] ?: @"",
@@ -586,6 +673,12 @@ static BOOL LBIsSQLite(NSData *data) {
     if ([_source isEqualToString:@"InvenTree"]) return [self importInvenTreeBy:user context:context saving:saving made:made skipped:skipped error:error];
     if (self.makesVehicles) return [self importMainTrackBy:user context:context saving:saving made:made skipped:skipped error:error];
     if (![self planForVehicle:vehicle by:user error:error]) return NO;
+    vehicle = vehicle ?: _matchedVehicle;
+    if (!vehicle) {
+        vehicle = [self madeVehicleBy:user context:context saving:saving error:error];
+        if (!vehicle) return NO;
+        if (made) (*made)++;
+    }
     NSMutableDictionary<NSString *, ORMForm *> *forms = [NSMutableDictionary dictionary];
     for (LBEntry *entry in _entries) {
         if ([self vehicle:vehicle has:entry]) {
@@ -633,6 +726,44 @@ static BOOL LBIsSQLite(NSData *data) {
     return YES;
 }
 
+
+/* Drivvo's vehicle, the user's, made of what the export says and what
+   was given for what it says not (its make; its year where 0). */
+- (Vehicle *)madeVehicleBy:(User *)user context:(NSManagedObjectContext *)context saving:(LBImportSaving)saving
+                     error:(NSError **)error {
+    NSDictionary<NSString *, NSString *> *row = [self vehicleRow];
+    NSString *make = [_madeVehicleMake stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    NSInteger year = self.exportYear ?: _madeVehicleYear;
+    if (!make.length || year <= 0) {
+        if (error)
+            *error = LBImportError(@"Drivvo's export says no make%@ of %@, and no vehicle of yours is it (by its plate, name or model): "
+                                   @"say %@ for the vehicle the import makes.",
+                                   self.exportYear ? @"" : @" or year", _madeVehicleName, self.exportYear ? @"its make" : @"its make and year");
+        return nil;
+    }
+    NSSet *fuels = [NSSet setWithArray:[_sections[@"Refuelling"].rows valueForKey:@"Fuel"] ?: @[]];
+    NSMutableSet *named = [NSMutableSet set];
+    for (NSString *each in fuels) if ([each isKindOfClass:[NSString class]] && each.length) [named addObject:each];
+    Vehicle *vehicle = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:context];
+    vehicle.id = [NSUUID UUID];
+    vehicle.owner = user;
+    vehicle.vehicleKind = @"Car";
+    vehicle.vehicleName = _madeVehicleName;
+    vehicle.make = make;
+    vehicle.carModel = row[@"Model"].length ? row[@"Model"] : _madeVehicleName;
+    vehicle.manufactureYear = (int32_t)year;
+    if (row[@"License plate"].length) vehicle.registrationNumber = row[@"License plate"];
+    /* Its fuel: the one its fill-ups say; of several, the first's. */
+    NSString *fuel = named.count == 1 ? named.anyObject : [_sections[@"Refuelling"].rows.firstObject objectForKey:@"Fuel"];
+    vehicle.fuel = fuel.length ? fuel : nil;
+    NSError *failure = nil;
+    if (!saving(context, &failure)) {
+        [context rollback];
+        if (error) *error = LBImportError(@"The vehicle %@ refused: %@", _madeVehicleName, failure ? LBRefusal(failure) : @"not saved");
+        return nil;
+    }
+    return vehicle;
+}
 
 #pragma mark MainTrack's store
 

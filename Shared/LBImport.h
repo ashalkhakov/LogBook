@@ -79,6 +79,26 @@ typedef BOOL (^LBImportSaving)(NSManagedObjectContext *context, NSError **error)
    InvenTree's must be named. */
 @property (nonatomic, copy, nullable) NSString *catalogName;
 
+/* Drivvo's export goes into the user's vehicle it is: by its licence plate
+   (case, spaces and dashes aside), else its name, else its model where one
+   vehicle only has it. Planned with no vehicle, the one matched; none, a
+   new one is made as the import starts, of what the export says (its
+   name, else its model; the model, plate, fuel, year), the make and (where
+   the export says 0) the year given here, which it says nothing of. */
+- (nullable Vehicle *)vehicleOfUser:(User *)user how:(NSString *_Nullable *_Nullable)how;
+/* After planning: the vehicle matched (nil: a new one), and how ("by its
+   licence plate", "by its model"). */
+@property (nonatomic, readonly, strong, nullable) Vehicle *matchedVehicle;
+@property (nonatomic, readonly, copy, nullable) NSString *matchedHow;
+/* After planning: no vehicle matched, so one is made; the name it takes,
+   and the year the export says (0: none). */
+@property (nonatomic, readonly) BOOL makesItsVehicle;
+@property (nonatomic, readonly, copy, nullable) NSString *madeVehicleName;
+@property (nonatomic, readonly) NSInteger exportYear;
+/* What the vehicle made takes that the export does not say. */
+@property (nonatomic, copy, nullable) NSString *madeVehicleMake;
+@property (nonatomic) NSInteger madeVehicleYear;
+
 /* The forms the records are entered through, by name (ORMForm
    formNamed: where nil). */
 @property (nonatomic, copy, nullable) ORMForm *_Nullable (^formNamed)(NSString *name, NSError **error);

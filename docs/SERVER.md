@@ -69,9 +69,10 @@ What the export says that Logbook has no place for is said first, and
 nothing is made unless `-LeaveOut YES` says to go ahead.
 
 ```sh
-build/logbook-import -Server https://logbook.example.com/ -Vehicle Golf Drivvo.csv
+build/logbook-import -Server https://logbook.example.com/ Drivvo.csv
+build/logbook-import -Server https://logbook.example.com/ -Make Chevrolet -Year 2021 Drivvo.csv
 docker run --rm -v "$PWD":/in --entrypoint /app/logbook-import ghcr.io/ashalkhakov/logbook-server \
-  -Server https://logbook.example.com/ -Vehicle Golf /in/Drivvo.csv
+  -Server https://logbook.example.com/ /in/Drivvo.csv
 ```
 
 A server that asks for a sign-in is signed in to by its device flow (a
@@ -80,9 +81,14 @@ code to type at a page) or a password; one that asks for none takes
 
 What it reads:
 
-- **Drivvo's CSV export** goes into a vehicle set up already (`-Vehicle`):
-  the export says no make or year. Its fill-ups and services; its one fuel
-  taken as the vehicle's, its services as Maintenance.
+- **Drivvo's CSV export** goes into your vehicle it is. It's found by its
+  licence plate (case, spaces and dashes aside), else its name, else its
+  model when only one of your vehicles has it; `-Vehicle` names one instead.
+  When none is, a vehicle is made of what the export says: its name (else
+  its model), model, plate, fuel and year. The export says no make, and 0
+  for an unknown year, so `-Make` (and `-Year`) say them. Its fill-ups and
+  services go in; its one fuel is taken as the vehicle's, its services as
+  Maintenance.
 - **MainTrack's store** (`Maintrack.sqlite`: on a Mac where MainTrack is
   installed, in `~/Library/Group Containers/group.kiwiswift.mainTrack/`)
   makes its own vehicles, so takes no `-Vehicle`: each bike a bicycle (of

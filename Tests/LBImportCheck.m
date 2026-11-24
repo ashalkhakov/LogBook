@@ -123,6 +123,81 @@ static BOOL LBIs(NSDecimalNumber *number, NSString *text) {
     return number && [number compare:[NSDecimalNumber decimalNumberWithString:text]] == NSOrderedSame;
 }
 
+/* Drivvo's export into no vehicle chosen: the user's it is, by its plate
+   (written otherwise), else its model (one vehicle only); none, one made
+   of the export, its make (and year: the export says 0) said, refused
+   unsaid; imported again, the one made found by its name, nothing made. */
+static void LBDrivvoMatchSteps(NSString *export) {
+    /* Ben, who drives no one's vehicle here, left out. */
+    NSString *anyone = [export stringByReplacingOccurrencesOfString:@"\"Ben Driver\"" withString:@"\"\""];
+    LBImportSaving saving = ^BOOL(NSManagedObjectContext *c, NSError **failure) {
+        return [c orm_prepareForSave:failure] && [c save:failure];
+    };
+    NSError *error = nil;
+    NSManagedObjectContext *context = LBNewStore();
+    User *anna = LBUser(@"anna@example.org", @"Anna Driver", context);
+    Vehicle *(^car)(NSString *, NSString *, NSString *) = ^Vehicle *(NSString *name, NSString *model, NSString *plate) {
+        Vehicle *vehicle = LBInsert([Vehicle class], context);
+        vehicle.id = [NSUUID UUID];
+        vehicle.vehicleKind = @"Car";
+        vehicle.vehicleName = name;
+        vehicle.make = @"Volkswagen";
+        vehicle.carModel = model;
+        vehicle.manufactureYear = 2016;
+        vehicle.fuel = @"Petrol";
+        vehicle.registrationNumber = plate;
+        vehicle.owner = anna;
+        return vehicle;
+    };
+    Vehicle *golf = car(@"Golf '16", @"Golf", nil);
+    Vehicle *polo = car(@"Town car", @"Polo", @"01abc123");
+    if (![context orm_prepareForSave:&error] || ![context save:&error]) {
+        LBCheck(@"Anna's cars saved", NO, error);
+        return;
+    }
+    LBImport *import = LBRead(anyone, &error);
+    BOOL planned = [import planForVehicle:nil by:anna error:&error];
+    LBCheck(@"no vehicle chosen: Anna's Golf '16, by its model", planned && import.matchedVehicle == golf && !import.makesItsVehicle
+                && [import.matchedHow isEqualToString:@"by its model"],
+            error ?: [NSString stringWithFormat:@"%@ %@", import.matchedVehicle.vehicleName, import.matchedHow]);
+    NSString *plated = [anyone stringByReplacingOccurrencesOfString:@"\"\",\"Golf\",\"\"" withString:@"\"\",\"Golf\",\"01 ABC-123\""];
+    import = LBRead(plated, &error);
+    planned = [import planForVehicle:nil by:anna error:&error];
+    LBCheck(@"its plate 01 ABC-123: Anna's car of 01abc123, by its licence plate, before its model",
+            planned && import.matchedVehicle == polo && [import.matchedHow isEqualToString:@"by its licence plate"],
+            error ?: [NSString stringWithFormat:@"%@ %@", import.matchedVehicle.vehicleName, import.matchedHow]);
+
+    /* Dan has no vehicle: one is made. */
+    User *dan = LBUser(@"dan@example.org", @"Anna Driver", context);
+    [context save:NULL];
+    import = LBRead(anyone, &error);
+    planned = [import planForVehicle:nil by:dan error:&error];
+    LBCheck(@"none of Dan's: a new vehicle, Golf, its year unsaid (0)",
+            planned && import.makesItsVehicle && [import.madeVehicleName isEqualToString:@"Golf"] && import.exportYear == 0, error);
+    NSUInteger made = 0, skipped = 0;
+    error = nil;
+    BOOL done = [import importIntoVehicle:nil by:dan context:context saving:saving made:&made skipped:&skipped error:&error];
+    LBCheck(@"its make and year unsaid: refused, said, nothing made", !done && made == 0 && [error.localizedDescription containsString:@"make and year"]
+                && dan.ownedVehicles.count == 0,
+            error);
+    import.madeVehicleMake = @"Volkswagen";
+    import.madeVehicleYear = 2016;
+    error = nil;
+    done = [import importIntoVehicle:nil by:dan context:context saving:saving made:&made skipped:&skipped error:&error];
+    Vehicle *made_ = dan.ownedVehicles.anyObject;
+    LBCheck(@"given them: the Golf made (a car, Volkswagen, 2016, its Gasoline), its 4 records in it: 5 made",
+            done && made == 5 && dan.ownedVehicles.count == 1 && [made_.vehicleName isEqualToString:@"Golf"] && [made_.make isEqualToString:@"Volkswagen"]
+                && made_.manufactureYear == 2016 && [made_.fuel isEqualToString:@"Gasoline"] && [made_.vehicleKind isEqualToString:@"Car"]
+                && made_.records.count == 4,
+            error ?: [NSString stringWithFormat:@"%lu made; %@ %@ %d %@ %lu records", (unsigned long)made, made_.vehicleName, made_.make,
+                                                made_.manufactureYear, made_.fuel, (unsigned long)made_.records.count]);
+    import = LBRead(anyone, &error);
+    done = [import importIntoVehicle:nil by:dan context:context saving:saving made:&made skipped:&skipped error:&error];
+    LBCheck(@"imported again: the Golf found by its name, nothing made", done && made == 0 && skipped == 4 && dan.ownedVehicles.count == 1
+                && [import.matchedHow isEqualToString:@"by its name"],
+            error ?: [NSString stringWithFormat:@"%lu made, %lu passed over, %@", (unsigned long)made, (unsigned long)skipped, import.matchedHow]);
+}
+
 static void LBDrivvoSteps(NSString *export) {
     NSManagedObjectContext *context = LBNewStore();
     User *anna = LBUser(@"anna@example.org", @"Anna Driver", context);
@@ -501,6 +576,7 @@ int main(int argc, const char *argv[]) {
         }
         [ORMTables registerTables:tables named:@"Logbook"];
         LBDrivvoSteps(export);
+        LBDrivvoMatchSteps(export);
         if (argc > 5) LBMainTrackSteps(@(argv[5]));
         if (argc > 6) LBInvenTreeSteps(@(argv[6]), argc > 7 ? (NSUInteger)atol(argv[7]) : 0);
         printf("import: %lu failed\n", (unsigned long)LBFailures);

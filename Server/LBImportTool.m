@@ -5,8 +5,9 @@
 // then synced up. The server keeps its rules and its permissions as for
 // any device's changes.
 //
-//   logbook-import -Server https://logbook.example.org/ -Vehicle Golf Drivvo.csv
+//   logbook-import -Server https://logbook.example.org/ Drivvo.csv
 //   logbook-import -Server http://127.0.0.1:8080/ -Email anna@example.org -Vehicle Golf Drivvo.csv
+//   logbook-import -Server https://logbook.example.org/ -Make Chevrolet -Year 2021 Drivvo.csv
 //   logbook-import -Server https://logbook.example.org/ ~/Library/Group\ Containers/group.kiwiswift.mainTrack/Maintrack.sqlite
 //
 // Settings:
@@ -15,9 +16,13 @@
 //   Email     who imports, where the server asks for no sign-in; where it
 //             asks for one, it is signed in to by its device flow (a code
 //             to type at a page), the tokens kept as the desktop's are
-//   Vehicle   the vehicle (its name) the records go into: one the user
-//             owns, set up already (Drivvo's export has no make or year);
-//             none for MainTrack's store, whose bikes are made vehicles
+//   Vehicle   the vehicle (its name) Drivvo's records go into; left out,
+//             the user's it is by its licence plate, else its name, else
+//             its model (one vehicle only), else one made of what the
+//             export says; none for MainTrack's store, whose bikes are
+//             made vehicles
+//   Make, Year  a vehicle the import makes: its make (Drivvo's export
+//             says none), its year (where the export says 0)
 //   Catalog   the catalog stock goes into (yours of that name, else
 //             made): MainTrack's components, as units of its items ("Bike
 //             parts" where none is said); InvenTree's stock (say one)
@@ -144,7 +149,7 @@ int main(int argc, const char *argv[]) {
         NSString *named = [settings stringForKey:@"Vehicle"];
         NSString *inventree = [settings stringForKey:@"InvenTree"];
         if ((!file && !inventree) || !root) {
-            fprintf(stderr, "usage: logbook-import -Server address [-Email you@example.org] [-Vehicle name] [-Catalog name] [-LeaveOut YES] export.csv|Maintrack.sqlite\n"
+            fprintf(stderr, "usage: logbook-import -Server address [-Email you@example.org] [-Vehicle name | -Make make -Year year] [-Catalog name] [-LeaveOut YES] export.csv|Maintrack.sqlite\n"
                             "       logbook-import -Server address [-Email you@example.org] -InvenTree address -Catalog name [-LeaveOut YES]\n"
                             "         (the InvenTree token in LB_INVENTREE_TOKEN, or -Token)\n");
             return 2;
@@ -164,8 +169,10 @@ int main(int argc, const char *argv[]) {
         /* Drivvo's export goes into a vehicle; MainTrack's and InvenTree's
            need none. */
         BOOL intoAVehicle = !import.makesVehicles && !import.makesStock;
-        if (intoAVehicle && !named.length) return LBFail(@"%@'s export goes into a vehicle already set up: say which (-Vehicle).", import.source);
         import.catalogName = [settings stringForKey:@"Catalog"];
+        /* What a vehicle the import makes takes that the export says not. */
+        import.madeVehicleMake = [settings stringForKey:@"Make"];
+        import.madeVehicleYear = [settings integerForKey:@"Year"];
         NSURL *forms = LBBeside(@"Forms", @"Forms");
         import.formNamed = ^ORMForm *(NSString *name, NSError **failure) {
             NSData *data = [NSData dataWithContentsOfURL:[forms URLByAppendingPathComponent:[name stringByAppendingPathExtension:@"ormform"]]
@@ -221,20 +228,24 @@ int main(int argc, const char *argv[]) {
             for (Vehicle *each in user.ownedVehicles) {
                 if ([each.vehicleName isEqualToString:named]) vehicle = each;
             }
-            if (!vehicle && intoAVehicle) {
+            if (!vehicle && intoAVehicle && named.length) {
                 NSArray *names = [[user.ownedVehicles valueForKey:@"vehicleName"] allObjects];
-                return LBFail(@"%@ owns no vehicle named %@ (%@). Add it in Logbook first: Drivvo's export says no make or year.", user.email,
-                              named, names.count ? [names componentsJoinedByString:@", "] : @"none");
+                return LBFail(@"%@ owns no vehicle named %@ (%@). Leave -Vehicle out: the import finds yours by its plate, name or model, "
+                              @"else makes one.", user.email, named, names.count ? [names componentsJoinedByString:@", "] : @"none");
             }
             if ([import.source isEqualToString:@"InvenTree"])
                 printf("InvenTree's %s, into your catalog %s.\n", import.summary.UTF8String, import.catalogName.UTF8String ?: "(none named)");
             else if (import.makesVehicles)
                 printf("%s's %s (%s), each a vehicle of yours.\n", import.source.UTF8String, import.summary.UTF8String,
                        [import.vehicleNames componentsJoinedByString:@", "].UTF8String);
-            else
-                printf("%s's export of %s: %s, into %s.\n", import.source.UTF8String, [import.vehicleNames componentsJoinedByString:@", "].UTF8String,
-                       import.summary.UTF8String, vehicle.vehicleName.UTF8String);
             if (![import planForVehicle:vehicle by:user error:&error]) return LBFail(@"%@", error.localizedDescription);
+            if (intoAVehicle) {
+                NSString *into = import.makesItsVehicle
+                                     ? [NSString stringWithFormat:@"a new vehicle %@ (none of yours is it by its plate, name or model)", import.madeVehicleName]
+                                     : [NSString stringWithFormat:@"%@ (%@)", import.matchedVehicle.vehicleName, import.matchedHow];
+                printf("%s's export of %s: %s, into %s.\n", import.source.UTF8String, [import.vehicleNames componentsJoinedByString:@", "].UTF8String,
+                       import.summary.UTF8String, into.UTF8String);
+            }
             if (import.leftOut.count) {
                 printf("Logbook has no place for these, or takes them so:\n");
                 for (NSString *each in import.leftOut) printf("  - %s\n", each.UTF8String);

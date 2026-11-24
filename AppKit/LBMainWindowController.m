@@ -603,9 +603,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     Vehicle *vehicle = [self chosenVehicle];
     if (![self commitEdits]) return;
     NSOpenPanel *panel = [NSOpenPanel openPanel];
-    panel.message = vehicle ? [NSString stringWithFormat:@"Choose an export: Drivvo's CSV (into %@), or MainTrack's store (Maintrack.sqlite).",
-                                                         vehicle.vehicleName]
-                            : @"Choose an export: MainTrack's store (Maintrack.sqlite), or Drivvo's CSV with a vehicle chosen first.";
+    panel.message = @"Choose an export: Drivvo's CSV (into your vehicle it is, found by its plate, name or model, else a new one), "
+                    @"or MainTrack's store (Maintrack.sqlite).";
     /* MainTrack's store, where it is on this Mac: its folder is hidden. */
     NSString *mainTrack = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Group Containers/group.kiwiswift.mainTrack"];
     if ([[NSFileManager defaultManager] fileExistsAtPath:[mainTrack stringByAppendingPathComponent:@"Maintrack.sqlite"]])
@@ -628,14 +627,12 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [self askToImportRecordsOf:import intoVehicle:vehicle];
 }
 
-- (void)askToImportRecordsOf:(LBImport *)import intoVehicle:(Vehicle *)vehicle {
+- (void)askToImportRecordsOf:(LBImport *)import intoVehicle:(Vehicle *)chosen {
     NSError *error = nil;
-    if (!import.makesVehicles && !import.makesStock && !vehicle) {
-        return [self reportError:[NSError errorWithDomain:LBImportErrorDomain code:1
-                                                 userInfo:@{ NSLocalizedDescriptionKey : @"Choose the vehicle to import into first.",
-                                                             NSLocalizedRecoverySuggestionErrorKey :
-                                                                 @"Drivvo's export goes into a vehicle already set up: it says no make or year." }]];
-    }
+    /* Drivvo's export goes into the user's vehicle it is (by its plate,
+       name or model), else one made: not the one chosen in the window. */
+    Vehicle *vehicle = nil;
+    (void)chosen;
     /* Stock goes into a catalog: the one it went into before, else one
        named for where it comes from (the user may name another below). */
     BOOL inventree = [import.source isEqualToString:@"InvenTree"];
@@ -643,15 +640,25 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     if (import.makesStock) import.catalogName = catalogDefault;
     if (![import planForVehicle:vehicle by:_store.user error:&error]) return [self reportError:error];
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = inventree              ? [NSString stringWithFormat:@"Import InvenTree's %@?", import.summary]
-                        : import.makesVehicles ? [NSString stringWithFormat:@"Import %@'s %@?", import.source,
-                                                                            [import.vehicleNames componentsJoinedByString:@", "]]
-                                               : [NSString stringWithFormat:@"Import %@'s export into %@?", import.source, vehicle.vehicleName];
-    alert.informativeText = [NSString stringWithFormat:@"%@.%@", inventree ? @"Its stock goes into the catalog named below" : import.summary,
-                                                       import.leftOut.count ? @" Logbook has no place for these, or takes them so:" : @""];
+    BOOL intoAVehicle = !import.makesVehicles && !import.makesStock;
+    alert.messageText = inventree                ? [NSString stringWithFormat:@"Import InvenTree's %@?", import.summary]
+                        : import.makesVehicles   ? [NSString stringWithFormat:@"Import %@'s %@?", import.source,
+                                                                              [import.vehicleNames componentsJoinedByString:@", "]]
+                        : import.makesItsVehicle ? [NSString stringWithFormat:@"Import %@'s export into a new vehicle, %@?", import.source,
+                                                                              import.madeVehicleName]
+                                                 : [NSString stringWithFormat:@"Import %@'s export into %@ (found %@)?", import.source,
+                                                                              import.matchedVehicle.vehicleName, import.matchedHow];
+    if (intoAVehicle && import.makesItsVehicle)
+        alert.informativeText = [NSString stringWithFormat:@"%@. None of your vehicles is it by its plate, name or model: a new one is made. "
+                                                           @"The export says no make%@: say %@ below.", import.summary,
+                                                           import.exportYear ? @"" : @" or year", import.exportYear ? @"it" : @"them"];
+    if (!(intoAVehicle && import.makesItsVehicle))
+        alert.informativeText = [NSString stringWithFormat:@"%@.", inventree ? @"Its stock goes into the catalog named below" : import.summary];
+    if (import.leftOut.count)
+        alert.informativeText = [alert.informativeText stringByAppendingString:@" Logbook has no place for these, or takes them so:"];
     [alert addButtonWithTitle:@"Import"];
     [alert addButtonWithTitle:@"Cancel"];
-    if (import.leftOut.count || import.makesStock) {
+    if (import.leftOut.count || import.makesStock || import.makesItsVehicle) {
         NSArray *objects = nil;
         NSNib *nib = [[NSNib alloc] initWithNibNamed:@"ImportSummary" bundle:nil];
         if ([nib instantiateWithOwner:self topLevelObjects:&objects] && _importSummaryView) {
@@ -666,13 +673,23 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         _importCatalogField.stringValue = catalogDefault;
         for (NSView *view in _importCatalogField.superview.subviews) {
             if (view == _importCatalogField || [view.identifier isEqualToString:@"importCatalogLabel"]) view.hidden = !import.makesStock;
+            /* A vehicle made: its make, and its year where the export says none. */
+            if (view == _importMakeField || [view.identifier isEqualToString:@"importMakeLabel"]) view.hidden = !import.makesItsVehicle;
+            if (view == _importYearField || [view.identifier isEqualToString:@"importYearLabel"])
+                view.hidden = !import.makesItsVehicle || import.exportYear > 0;
         }
     }
     [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
         NSString *catalog = [self.importCatalogField.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if (import.makesItsVehicle) {
+            import.madeVehicleMake = self.importMakeField.stringValue;
+            import.madeVehicleYear = self.importYearField.integerValue;
+        }
         self.importSummaryView = nil;
         self.importSummaryText = nil;
         self.importCatalogField = nil;
+        self.importMakeField = nil;
+        self.importYearField = nil;
         if (response != NSAlertFirstButtonReturn) return;
         if (inventree && catalog.length) [[NSUserDefaults standardUserDefaults] setObject:catalog forKey:@"LBInvenTreeCatalog"];
         NSUInteger made = 0, skipped = 0;

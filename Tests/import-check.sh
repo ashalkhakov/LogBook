@@ -7,6 +7,7 @@
 # - without -LeaveOut: what Logbook has no place for said, nothing made, 1;
 # - with it: its fill-ups and service made, synced, on the server;
 # - again: nothing made, each passed over, 0;
+# - no -Vehicle: her Golf found (by its name), nothing made, 0;
 # - into a vehicle she does not own: refused, by name, 1.
 #
 #   Tests/import-check.sh build/logbook-server build/logbook-import Tests/drivvo-export.csv
@@ -63,6 +64,11 @@ status=0
 check "again: nothing made, the 4 passed over, 0" \
   "$([ $status = 0 ] && grep -q '^0 made, 4 there already' "$out" && [ "$(count ServiceItems)" = $((items_before + 2)) ] && echo yes)" \
   "$(cat "$out")"
+
+status=0
+"$tool" -Server "http://127.0.0.1:$port/" -Email anna@example.org -LeaveOut YES "$export_file" >"$out" 2>&1 || status=$?
+check "no -Vehicle: her Golf found by its name, nothing made, 0" \
+  "$([ $status = 0 ] && grep -q 'into Golf (by its name)' "$out" && grep -q '^0 made, 4 there already' "$out" && echo yes)" "$(cat "$out")"
 
 status=0
 "$tool" -Server "http://127.0.0.1:$port/" -Email anna@example.org -Vehicle Polo -LeaveOut YES "$export_file" >"$out" 2>&1 || status=$?

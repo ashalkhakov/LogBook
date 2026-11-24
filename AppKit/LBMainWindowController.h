@@ -134,6 +134,10 @@ NS_ASSUME_NONNULL_BEGIN
 // catalog of the user's, or a new one's name); hidden for an export that
 // makes no stock.
 @property (nonatomic, strong, nullable) IBOutlet NSComboBox *importCatalogField;
+// Its make and year: a vehicle Drivvo's import makes (none of the user's
+// is the export's), what the export says not; hidden otherwise.
+@property (nonatomic, strong, nullable) IBOutlet NSTextField *importMakeField;
+@property (nonatomic, strong, nullable) IBOutlet NSTextField *importYearField;
 // The signed-in user's unit of distance, else kilometres.
 - (nullable DistanceUnit *)distanceUnit;
 // What is being typed kept: NO when a field holds what cannot be.

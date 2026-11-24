@@ -2667,13 +2667,17 @@ static void LBImportSteps(LBMainWindowController *controller) {
     NSArray *objects = nil;
     NSNib *nib = [[NSNib alloc] initWithNibNamed:@"ImportSummary" bundle:nil];
     BOOL loaded = [nib instantiateWithOwner:controller topLevelObjects:&objects];
-    LBCheck(@"ImportSummary.xib loaded: its view and its list connected, the list in the view",
+    LBCheck(@"ImportSummary.xib loaded: its view and its list connected, the list in the view; a new vehicle's make and year fields",
             loaded && controller.importSummaryView && controller.importSummaryText && controller.importCatalogField
-                && [controller.importSummaryText isDescendantOf:controller.importSummaryView] && !controller.importSummaryText.isEditable,
+                && [controller.importSummaryText isDescendantOf:controller.importSummaryView] && !controller.importSummaryText.isEditable
+                && [controller.importMakeField isDescendantOf:controller.importSummaryView]
+                && [controller.importYearField isDescendantOf:controller.importSummaryView] && controller.importMakeField.isEditable,
             [NSString stringWithFormat:@"%d %@ %@", loaded, controller.importSummaryView, controller.importSummaryText]);
     controller.importSummaryView = nil;
     controller.importSummaryText = nil;
     controller.importCatalogField = nil;
+    controller.importMakeField = nil;
+    controller.importYearField = nil;
 
     NSManagedObjectContext *context = controller.context;
     Vehicle *damas = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:context];
