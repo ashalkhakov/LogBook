@@ -1,4 +1,6 @@
 #import "LBSelfTest.h"
+#import "LBImport.h"
+#import "LBFieldIssues.h"
 #import "LBConnectPanel.h"
 #import "LBMainWindowController.h"
 #import "LBStore.h"
@@ -10,6 +12,15 @@
 #import "Vehicle+CoreDataClass.h"
 #import "User+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
+#import "LBStockProcedures.h"
+#import "Move+CoreDataClass.h"
+#import "Location+CoreDataClass.h"
+#import "StockUnit+CoreDataClass.h"
+#import "StockItem+CoreDataClass.h"
+#import "Category+CoreDataClass.h"
+#import "Catalog+CoreDataClass.h"
+#include <sqlite3.h>
+#import "ComponentChange+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "LBDisplay.h"
 #import "Answer+CoreDataClass.h"
@@ -345,6 +356,10 @@ static void LBAttachmentSteps(LBMainWindowController *controller, Vehicle *kept)
 }
 
 static NSArray *LBServerObjects(Class cls, NSPredicate *predicate);
+static void LBImportSteps(LBMainWindowController *controller);
+static void LBBicycleSteps(LBMainWindowController *controller);
+static void LBMainTrackSteps(LBMainWindowController *controller);
+static void LBInvenTreeSteps(LBMainWindowController *controller);
 
 /* The user's currency set in the Preferences window, as a user does. */
 static void LBPreferenceSteps(LBMainWindowController *controller) {
@@ -1821,7 +1836,11 @@ static void LBPartsSteps(LBMainWindowController *controller, LBStockWindowContro
     LBPartsPanelController *parts = controller.partsPanel;
     LBCheck(@"its Parts panel", parts.window.isVisible && parts.event == service, nil);
     parts.quiet = YES;
-    LBChoose(parts.window, @"partsFrom", @"Main / Default");
+    /* Corner Workshop's Main / Default: said with its catalog's name where
+       another catalog (the imported bike parts) has one too. */
+    NSPopUpButton *from = (NSPopUpButton *)LBControl(parts.window.contentView, @"partsFrom");
+    LBChoose(parts.window, @"partsFrom", [from indexOfItemWithTitle:@"Corner Workshop: Main / Default"] >= 0 ? @"Corner Workshop: Main / Default"
+                                                                                                    : @"Main / Default");
     LBChoose(parts.window, @"partItem", @"Bolt");
     LBType(parts.window, @"partQuantity", @"2");
     LBClick(parts.window, @"usePart");
@@ -1867,7 +1886,11 @@ static void LBPartsSteps(LBMainWindowController *controller, LBStockWindowContro
     LBClick(window, @"ServiceParts");
     parts = controller.partsPanel;
     parts.quiet = YES;
-    LBChoose(parts.window, @"partsFrom", @"Main / Default");
+    /* Corner Workshop's Main / Default: said with its catalog's name where
+       another catalog (the imported bike parts) has one too. */
+    from = (NSPopUpButton *)LBControl(parts.window.contentView, @"partsFrom");
+    LBChoose(parts.window, @"partsFrom", [from indexOfItemWithTitle:@"Corner Workshop: Main / Default"] >= 0 ? @"Corner Workshop: Main / Default"
+                                                                                                    : @"Main / Default");
     LBChoose(parts.window, @"partItem", @"Bolt");
     LBType(parts.window, @"partQuantity", @"100");
     LBClick(parts.window, @"usePart");
@@ -2584,8 +2607,25 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
     LBType(window, @"vehicleName", @"Family Golf");
     LBType(window, @"make", @"Volkswagen");
     LBType(window, @"carModel", @"Golf VII");
+    /* A car of no year or fuel: the rules it breaks at those fields, as
+       XFormsKit shows a constraint (LBFieldIssues). */
+    [(NSTabView *)LBControl(window.contentView, @"tabs") selectTabViewItemWithIdentifier:@"vehicle"];
+    [controller.fieldIssues refresh];
+    NSView *year = LBControl(window.contentView, @"manufactureYear");
+    NSTextField *yearLabel = [controller.fieldIssues labelOf:year];
+    NSView *badge = [controller.fieldIssues badgeOf:year];
+    NSArray *said = controller.fieldIssues.issues[@"Vehicle.manufactureYear"];
+    LBCheck(@"a car of no year: its Year field said required, red, a ⚠ beside it saying the rule",
+            [yearLabel.stringValue isEqualToString:@"Year *:"] && badge && [badge.toolTip containsString:@"Year"] && said.count
+                && controller.fieldIssues.issues[@"Vehicle.fuel"],
+            [NSString stringWithFormat:@"label %@, badge %@, issues %@", yearLabel.stringValue, badge.toolTip, controller.fieldIssues.issues]);
     LBType(window, @"manufactureYear", @"2016");
     LBType(window, @"fuel", @"Petrol");
+    [controller.fieldIssues refresh];
+    LBCheck(@"given a year and a fuel: no ⚠, the label as it was",
+            ![controller.fieldIssues badgeOf:year] && [yearLabel.stringValue isEqualToString:@"Year:"]
+                && !controller.fieldIssues.issues[@"Vehicle.manufactureYear"] && !controller.fieldIssues.issues[@"Vehicle.fuel"],
+            [NSString stringWithFormat:@"label %@, issues %@", yearLabel.stringValue, controller.fieldIssues.issues]);
     Vehicle *chosen = controller.vehicles.selectedObjects.firstObject;
     LBCheck(@"what was typed is the vehicle's", [chosen.vehicleName isEqualToString:@"Family Golf"] && chosen.manufactureYear == 2016,
             chosen.vehicleName);
@@ -2607,8 +2647,284 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
     LBKindSteps(controller);
     LBCalendarViewAlone();
     LBCalendarSteps(controller);
+    LBImportSteps(controller);
+    LBBicycleSteps(controller);
+    LBMainTrackSteps(controller);
+    LBInvenTreeSteps(controller);
     LBQuantityFieldAlone();
     LBConnectSteps();
+}
+
+/* File > Import…: the menu's item, its summary's view (ImportSummary.xib)
+   loaded and connected, and an export of Drivvo's into a vehicle of its
+   own, as the menu does it without its panels: made, on the server, and
+   imported again, nothing made. */
+static void LBImportSteps(LBMainWindowController *controller) {
+    NSMenuItem *file = [NSApp.mainMenu itemWithTitle:@"File"];
+    NSMenuItem *item = [file.submenu itemWithTitle:@"Import…"];
+    LBCheck(@"File > Import…, its action the window's import", item && [NSStringFromSelector(item.action) isEqualToString:@"importRecords:"],
+            item ? NSStringFromSelector(item.action) : [file.submenu.itemArray valueForKey:@"title"]);
+    NSArray *objects = nil;
+    NSNib *nib = [[NSNib alloc] initWithNibNamed:@"ImportSummary" bundle:nil];
+    BOOL loaded = [nib instantiateWithOwner:controller topLevelObjects:&objects];
+    LBCheck(@"ImportSummary.xib loaded: its view and its list connected, the list in the view; a new vehicle's make and year fields",
+            loaded && controller.importSummaryView && controller.importSummaryText && controller.importCatalogField
+                && [controller.importSummaryText isDescendantOf:controller.importSummaryView] && !controller.importSummaryText.isEditable
+                && [controller.importMakeField isDescendantOf:controller.importSummaryView]
+                && [controller.importYearField isDescendantOf:controller.importSummaryView] && controller.importMakeField.isEditable,
+            [NSString stringWithFormat:@"%d %@ %@", loaded, controller.importSummaryView, controller.importSummaryText]);
+    controller.importSummaryView = nil;
+    controller.importSummaryText = nil;
+    controller.importCatalogField = nil;
+    controller.importMakeField = nil;
+    controller.importYearField = nil;
+
+    NSManagedObjectContext *context = controller.context;
+    Vehicle *damas = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:context];
+    damas.id = [NSUUID UUID];
+    damas.vehicleName = @"Self-test Damas";
+    damas.make = @"Daewoo";
+    damas.carModel = @"Damas";
+    damas.manufactureYear = 2010;
+    damas.fuel = @"Petrol";
+    damas.owner = controller.store.user;
+    LBCheck(@"a vehicle to import into, saved", [controller saveChanges], controller.lastError);
+    NSString *export = @"##Vehicle\n\"Name\",\"Model\",\"License plate\",\"Fuel capacity(L)\",\"Year\",\"Notes\",\"Purchase price\",\"Sale price\"\n"
+                       @"\"\",\"Damas\",\"\",\"37.00\",\"0\",\"\",\"0.0\",\"0.0\"\n\n"
+                       @"##Refuelling\n\"Odometer (km)\",\"Date\",\"Fuel\",\"Price / L\",\"Total cost\",\"Volume\",\"Filled tank completely\","
+                       @"\"Petrol station\",\"Driver\",\"Payment method\",\"Reason\",\"Notes\",\"Discount\"\n"
+                       @"\"1200\",\"2025-05-02 10:34:47\",\"Gasoline\",\"2.00\",\"44.00\",\"22.00\",\"Yes\",\"Petrol Asia\",\"\",\"\",\"\",\"\",\"0.0\"\n"
+                       @"\"1000\",\"2025-04-29 04:47:18\",\"Gasoline\",\"2.00\",\"30.00\",\"15.00\",\"Yes\",\"Royal Petrol\",\"\",\"\",\"\",\"\",\"0.0\"\n\n"
+                       @"##Service\n\"Odometer (km)\",\"Date\",\"Total cost\",\"Type of service\",\"Service location\",\"Driver\",\"Payment method\","
+                       @"\"Notes\",\"Title\",\"Discount\",\"Instalments\",\"First instalment\"\n"
+                       @"\"1300\",\"2025-05-19 14:50:47\",\"30.00\",\"Fuel Filter\",\"\",\"\",\"Money\",\"Labour only.\",\"\",\"0.0\",\"\",\"\"\n";
+    NSURL *url = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:@"lb-self-test-drivvo.csv"]];
+    [export writeToURL:url atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+    NSUInteger made = 0, skipped = 0;
+    NSError *error = nil;
+    BOOL done = [controller importFile:url intoVehicle:damas made:&made skipped:&skipped error:&error];
+    LBCheck(@"Drivvo's export imported: 3 made", done && made == 3 && skipped == 0,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)made, (unsigned long)skipped]);
+    if (LBAppStore.local) [LBAppStore syncAndWait:NULL];
+    Vehicle *there = LBVehicleNamed(@"Self-test Damas");
+    NSUInteger fills = 0, services = 0;
+    for (Record *record in there.records) {
+        [record.managedObjectContext refreshObject:record mergeChanges:NO];
+        if ([record isKindOfClass:[FillUp class]]) fills++;
+        if ([record isKindOfClass:[Service class]]) services++;
+    }
+    LBCheck(@"the server has them: two fill-ups, the service at no garage", fills == 2 && services == 1,
+            [NSString stringWithFormat:@"%lu fill-ups, %lu services; issues %@", (unsigned long)fills, (unsigned long)services,
+                                       [LBAppStore.local.issues valueForKey:@"message"]]);
+    done = [controller importFile:url intoVehicle:damas made:&made skipped:&skipped error:&error];
+    LBCheck(@"imported again: nothing made, 3 there", done && made == 0 && skipped == 3,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)made, (unsigned long)skipped]);
+    [[NSFileManager defaultManager] removeItemAtURL:url error:NULL];
+}
+
+/* A bicycle, as a user adds one: its kind chosen, no fuel or year said,
+   saved; no meter, a ride's readings worked out from its length. A chain
+   in stock fitted to it from the component change's tab: out of stock,
+   its wear the ride's. A fill-up of it refused in the model's words. */
+static void LBBicycleSteps(LBMainWindowController *controller) {
+    NSWindow *window = controller.window;
+    NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
+    [tabs selectTabViewItemWithIdentifier:@"vehicle"];
+    LBSpin();
+    LBClick(window, @"addVehicle");
+    Vehicle *bike = controller.vehicles.selectedObjects.firstObject;
+    LBCheck(@"a new vehicle, a car until said otherwise", [bike.vehicleKind isEqualToString:@"Car"], bike.vehicleKind);
+    LBType(window, @"vehicleName", @"Self-test Bicycle");
+    LBType(window, @"make", @"Surly");
+    LBType(window, @"carModel", @"Long Haul Trucker");
+    LBChoose(window, @"vehicleKind", @"Bicycle");
+    LBCheck(@"its Kind chosen: a bicycle", [bike.vehicleKind isEqualToString:@"Bicycle"], bike.vehicleKind);
+    LBClick(window, @"save");
+    LBCheck(@"a bicycle saved with no fuel and no year", !controller.store.context.hasChanges && !controller.lastError,
+            controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
+    Vehicle *kept = LBVehicleNamed(@"Self-test Bicycle");
+    LBCheck(@"the server has it, a bicycle", [kept.vehicleKind isEqualToString:@"Bicycle"] && !kept.fuel, kept.vehicleKind);
+
+    /* No meter: its readings its trips' lengths, added up. */
+    [tabs selectTabViewItemWithIdentifier:@"vehicle"];
+    LBSpin();
+    NSButton *noMeter = (NSButton *)LBControl(window.contentView, @"vehicleHasNoMeter");
+    LBCheck(@"its No meter box", noMeter != nil, nil);
+    [noMeter performClick:nil];
+    LBSpin();
+    LBCheck(@"ticked: the bicycle has no meter", bike.hasNoMeter, nil);
+    [tabs selectTabViewItemWithIdentifier:@"records"];
+    LBSpin();
+    Trip *ride = (Trip *)LBAddRecord(controller, [Trip class]);
+    ride.timestamp = [NSDate dateWithTimeIntervalSinceNow:-7200];
+    ride.moment = [NSDate dateWithTimeIntervalSinceNow:-5400];
+    LBType(window, @"TripLengthValue", @"12");
+    Trip *keptRide = LBSaved(controller, ride, @"a ride of 12 km saved");
+    LBCheck(@"its readings worked out: from 0 to 12", LBIs(ride.mileageQuantity, @"0") && LBIs(ride.distanceQuantity, @"12")
+                && LBIs(keptRide.distanceQuantity, @"12"),
+            [NSString stringWithFormat:@"%@-%@", ride.mileageQuantity, ride.distanceQuantity]);
+
+    /* A chain in stock (a unit of an item of a catalog's), fitted from its
+       tab: out of stock, wearing with the bicycle. */
+    NSManagedObjectContext *context = controller.context;
+    Catalog *parts = [Catalog lb_newCatalogNamed:@"Self-test parts" owner:controller.store.user inContext:context];
+    Category *chains = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Category class]) inManagedObjectContext:context];
+    chains.id = [NSUUID UUID];
+    chains.categoryName = @"Chain";
+    chains.catalog = parts;
+    StockItem *kmc = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([StockItem class]) inManagedObjectContext:context];
+    kmc.id = [NSUUID UUID];
+    kmc.itemName = @"KMC X9";
+    kmc.catalog = parts;
+    kmc.category = chains;
+    kmc.created = [NSDate date];
+    kmc.sku = [parts lb_nextSKU];
+    StockUnit *chain = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([StockUnit class]) inManagedObjectContext:context];
+    chain.id = [NSUUID UUID];
+    chain.stockItem = kmc;
+    /* A warehouse of its own name: the stock steps choose Main / Default. */
+    parts.warehouses.anyObject.warehouseName = @"Self-test bench";
+    Location *shelf = parts.warehouses.anyObject.locations.anyObject;
+    Move *found = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Move class]) inManagedObjectContext:context];
+    found.id = [NSUUID UUID];
+    found.stockItem = kmc;
+    found.stockUnit = chain;
+    found.moved = [NSDecimalNumber one];
+    found.destination = shelf;
+    found.adjustmentReason = @"Found";
+    found.moment = [NSDate dateWithTimeIntervalSinceNow:-9000];
+    found.user = controller.store.user;
+    [shelf lb_holdingOf:kmc];
+    LBCheck(@"a chain in stock, a unit of KMC X9: saved", [controller saveChanges] && chain.location == shelf, controller.lastError ?: chain.location);
+    ComponentChange *fit = (ComponentChange *)LBAddRecord(controller, [ComponentChange class]);
+    fit.timestamp = [NSDate dateWithTimeIntervalSinceNow:-8000];
+    LBChoose(window, @"ComponentChangeUnit", @"KMC X9");
+    LBType(window, @"ComponentChangePosition", @"Rear");
+    ComponentChange *keptFit = LBSaved(controller, fit, @"the component change saved");
+    LBCheck(@"the server has it: the chain fitted, at the rear, at 0 (before the ride)", [keptFit.stockUnit.id isEqual:chain.id]
+                && [keptFit.mountPosition isEqualToString:@"Rear"] && LBIs(fit.mileageQuantity, @"0"),
+            [NSString stringWithFormat:@"%@ %@ %@", keptFit.stockUnit.id, keptFit.mountPosition, fit.mileageQuantity]);
+    LBCheck(@"fitted from stock: moved out of it, Fitted", chain.location == nil && fit.moves.count == 1
+                && [fit.moves.anyObject.adjustmentReason isEqualToString:@"Fitted"],
+            chain.location.locationName ?: @(fit.moves.count));
+    LBChooseRecord(controller, fit);
+    LBCheck(@"its wear said: 12 km so far, fitted", [controller.componentWear hasPrefix:@"12 "] && [controller.componentWear hasSuffix:@"so far, fitted"],
+            controller.componentWear);
+    LBAddRecord(controller, [FillUp class]);
+    LBType(window, @"FillUpMileageValue", @"1500");
+    LBType(window, @"FillUpVolumeValue", @"1");
+    LBType(window, @"FillUpFuel", @"Petrol");
+    LBType(window, @"FillUpTotalValue", @"2");
+    BOOL quiet = controller.quiet;
+    controller.quiet = YES;
+    LBClick(window, @"save");
+    controller.quiet = quiet;
+    NSString *said = controller.lastError.localizedRecoverySuggestion ?: controller.lastError.localizedDescription ?: @"";
+    LBCheck(@"a fill-up of a bicycle refused, in the model's words", controller.store.context.hasChanges && controller.lastError
+                && [said rangeOfString:@"bicycle" options:NSCaseInsensitiveSearch].location != NSNotFound,
+            said);
+    [controller.store.context rollback];
+    [controller readAgain];
+}
+
+/* MainTrack's store (Tests/maintrack-store.sql, which app-check.sh names in
+   LB_MAINTRACK_SQL), as File > Import… takes it with no vehicle chosen:
+   its bikes made the user's bicycles, on the server; imported again,
+   nothing made. */
+static void LBMainTrackSteps(LBMainWindowController *controller) {
+    NSString *sqlPath = [NSProcessInfo processInfo].environment[@"LB_MAINTRACK_SQL"];
+    NSString *sql = sqlPath ? [NSString stringWithContentsOfFile:sqlPath encoding:NSUTF8StringEncoding error:NULL] : nil;
+    LBCheck(@"MainTrack's store to import (LB_MAINTRACK_SQL)", sql != nil, sqlPath ?: @"not given");
+    if (!sql) return;
+    NSString *path = [NSTemporaryDirectory() stringByAppendingPathComponent:@"lb-self-test-Maintrack.sqlite"];
+    [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
+    sqlite3 *db = NULL;
+    char *failed = NULL;
+    BOOL made = sqlite3_open(path.UTF8String, &db) == SQLITE_OK && sqlite3_exec(db, sql.UTF8String, NULL, NULL, &failed) == SQLITE_OK;
+    if (db) sqlite3_close(db);
+    LBCheck(@"MainTrack's store made", made, failed ? @(failed) : nil);
+    if (!made) return;
+    NSUInteger count = 0, skipped = 0;
+    NSError *error = nil;
+    BOOL done = [controller importFile:[NSURL fileURLWithPath:path] intoVehicle:nil made:&count skipped:&skipped error:&error];
+    LBCheck(@"MainTrack's store imported with no vehicle chosen: 28 made (its bikes, a catalog of its parts' items and units, what happened)",
+            done && count == 28 && skipped == 0,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
+    NSArray *listed = [controller.vehicles.arrangedObjects valueForKey:NSStringFromSelector(@selector(vehicleName))];
+    LBCheck(@"its bikes listed: Commuter, Old Frame", [listed containsObject:@"Commuter"] && [listed containsObject:@"Old Frame"], listed);
+    if (LBAppStore.local) [LBAppStore syncAndWait:NULL];
+    Vehicle *there = LBVehicleNamed(@"Commuter");
+    NSUInteger trips = 0, changes = 0;
+    for (Record *record in there.records) {
+        [record.managedObjectContext refreshObject:record mergeChanges:NO];
+        if ([record isKindOfClass:[Trip class]]) trips++;
+        if ([record isKindOfClass:[ComponentChange class]]) changes++;
+    }
+    LBCheck(@"the server has Commuter, a bicycle, its 3 trips and 6 component changes", [there.vehicleKind isEqualToString:@"Bicycle"]
+                && trips == 3 && changes == 6,
+            [NSString stringWithFormat:@"%@: %lu trips, %lu changes; issues %@", there.vehicleKind, (unsigned long)trips, (unsigned long)changes,
+                                       [LBAppStore.local.issues valueForKey:@"message"]]);
+    done = [controller importFile:[NSURL fileURLWithPath:path] intoVehicle:nil made:&count skipped:&skipped error:&error];
+    LBCheck(@"imported again: nothing made, 27 there", done && count == 0 && skipped == 27,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
+    [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
+}
+
+/* File > Import from InvenTree…: its item, its connect view
+   (InvenTreeConnect.xib) loaded and connected; then InvenTree's API
+   answered from Tests/inventree (made up; app-check.sh names it in
+   LB_INVENTREE_ANSWERS), imported as the menu does without its sheets into
+   a catalog of the user's: 29 made, on the server; imported again, nothing
+   made. */
+static void LBInvenTreeSteps(LBMainWindowController *controller) {
+    NSMenuItem *file = [NSApp.mainMenu itemWithTitle:@"File"];
+    NSMenuItem *item = [file.submenu itemWithTitle:@"Import from InvenTree…"];
+    LBCheck(@"File > Import from InvenTree…, its action the window's", item && [NSStringFromSelector(item.action) isEqualToString:@"importFromInvenTree:"],
+            item ? NSStringFromSelector(item.action) : [file.submenu.itemArray valueForKey:@"title"]);
+    NSArray *objects = nil;
+    NSNib *nib = [[NSNib alloc] initWithNibNamed:@"InvenTreeConnect" bundle:nil];
+    BOOL loaded = [nib instantiateWithOwner:controller topLevelObjects:&objects];
+    LBCheck(@"InvenTreeConnect.xib loaded: its view, its address field and its token's (secure) connected, in the view",
+            loaded && controller.inventreeConnectView && [controller.inventreeAddressField isDescendantOf:controller.inventreeConnectView]
+                && [controller.inventreeTokenField isKindOfClass:[NSSecureTextField class]]
+                && [controller.inventreeTokenField isDescendantOf:controller.inventreeConnectView] && controller.inventreeAddressField.isEditable,
+            [NSString stringWithFormat:@"%d %@ %@ %@", loaded, controller.inventreeConnectView, controller.inventreeAddressField,
+                                       controller.inventreeTokenField]);
+    controller.inventreeConnectView = nil;
+    controller.inventreeAddressField = nil;
+    controller.inventreeTokenField = nil;
+
+    NSString *folder = [NSProcessInfo processInfo].environment[@"LB_INVENTREE_ANSWERS"];
+    LBCheck(@"InvenTree's answers to import (LB_INVENTREE_ANSWERS)", folder != nil, @"not given");
+    if (!folder) return;
+    LBImport * (^read)(void) = ^LBImport * {
+        return [LBImport importOfInvenTree:[NSURL URLWithString:@"https://inventree.example.org/"] token:@"none"
+                                     fetch:^NSData *(NSString *path, NSError **failure) {
+                                         if (![path containsString:@"offset=0"]) return [@"{\"count\":0,\"results\":[]}" dataUsingEncoding:NSUTF8StringEncoding];
+                                         NSString *endpoint = [path componentsSeparatedByString:@"/?"].firstObject;
+                                         NSString *name = [[endpoint stringByReplacingOccurrencesOfString:@"/" withString:@"_"] stringByAppendingPathExtension:@"json"];
+                                         return [NSData dataWithContentsOfFile:[folder stringByAppendingPathComponent:name]];
+                                     }
+                                     error:NULL];
+    };
+    NSString *catalog = @"Self-test InvenTree";
+    NSUInteger count = 0, skipped = 0;
+    NSError *error = nil;
+    LBImport *import = read();
+    BOOL done = import && [controller importRecordsOf:import intoVehicle:nil catalogNamed:catalog made:&count skipped:&skipped error:&error];
+    LBCheck(@"InvenTree's stock imported into a catalog of the user's: 29 made", done && count == 29,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
+    if (LBAppStore.local) [LBAppStore syncAndWait:NULL];
+    Catalog *there = nil;
+    for (Catalog *each in controller.store.user.ownedCatalogs) if ([each.catalogName isEqualToString:catalog]) there = each;
+    [there.managedObjectContext refreshObject:there mergeChanges:NO];
+    LBCheck(@"the server has its 3 items, 2 orders, its supplier parts", there.stockItems.count == 3 && there.purchaseOrders.count == 2
+                && [[there.stockItems valueForKeyPath:@"@sum.supplierItems.@count"] integerValue] == 3,
+            [NSString stringWithFormat:@"%lu items, %lu orders; issues %@", (unsigned long)there.stockItems.count,
+                                       (unsigned long)there.purchaseOrders.count, [LBAppStore.local.issues valueForKey:@"message"]]);
+    done = [controller importRecordsOf:read() intoVehicle:nil catalogNamed:catalog made:&count skipped:&skipped error:&error];
+    LBCheck(@"imported again: nothing made", done && count == 0 && skipped > 0,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
 }
 
 static void LBSteps(LBMainWindowController *controller) {

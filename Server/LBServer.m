@@ -195,6 +195,12 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
         atexit(LBRemoveTemporaryStore);
     }
     NSMutableDictionary *options = [@{ NSPersistentHistoryTrackingKey: @YES } mutableCopy];
+    /* A store of the model before this one (a fact made optional, a new
+       one): migrated as it opens, as the devices' are. */
+    if (sqlite) {
+        options[NSMigratePersistentStoresAutomaticallyOption] = @YES;
+        options[NSInferMappingModelAutomaticallyOption] = @YES;
+    }
     if (!sqlite) {
         options[@"CDSQLStoreMigrateSchema"] = @YES;
         options[NSIgnorePersistentStoreVersioningOption] = @YES;

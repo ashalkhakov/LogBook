@@ -1,0 +1,55 @@
+{
+ "count": 3,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "pk": 1,
+   "name": "Router X1",
+   "IPN": "RX1",
+   "description": "Wi-Fi router",
+   "category": 2,
+   "active": true,
+   "assembly": false,
+   "is_template": false,
+   "variant_of": null,
+   "creation_date": "2026-01-10",
+   "notes": null,
+   "link": null,
+   "image": null,
+   "keywords": null
+  },
+  {
+   "pk": 2,
+   "name": "Mini PC N100",
+   "IPN": null,
+   "description": "Small desktop",
+   "category": 1,
+   "active": true,
+   "assembly": false,
+   "is_template": false,
+   "variant_of": null,
+   "creation_date": "2026-02-20",
+   "notes": "For the office",
+   "link": null,
+   "image": null,
+   "keywords": null
+  },
+  {
+   "pk": 3,
+   "name": "USB-C cable 1m",
+   "IPN": null,
+   "description": "",
+   "category": 3,
+   "active": true,
+   "assembly": false,
+   "is_template": false,
+   "variant_of": null,
+   "creation_date": "2026-02-20",
+   "notes": null,
+   "link": null,
+   "image": null,
+   "keywords": null
+  }
+ ]
+}

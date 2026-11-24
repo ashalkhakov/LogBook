@@ -4,6 +4,13 @@
 #import "ServiceItem+CoreDataClass.h"
 #import "Expense+CoreDataClass.h"
 #import "Inspection+CoreDataClass.h"
+#import "ComponentChange+CoreDataClass.h"
+#import "StockUnit+CoreDataClass.h"
+#import "StockItem+CoreDataClass.h"
+#import "Category+CoreDataClass.h"
+#import "Move+CoreDataClass.h"
+#import "Location+CoreDataClass.h"
+#import "Trip+CoreDataClass.h"
 #import "Attachment+CoreDataClass.h"
 #include <stdlib.h>
 #include <string.h>
@@ -181,10 +188,15 @@ static NSInteger LBIDOrder(id a, id b, void *context) {
 
 #pragma mark What a vehicle had done
 
-/* Whether the event does the work: a service with an item of the task, an
-   expense of the kind, an inspection through the checklist. */
+/* Whether the event does the work: a service with an item of the task, a
+   component change fitting a unit of an item of the category the task is
+   named as, an expense of the kind, an inspection through the checklist. */
 static BOOL LBDoesWork(Event *event, NSString *task, ExpenseKind *kind, Checklist *checklist) {
     if (task) {
+        /* A component fitted does the work of the task named as its item's
+           category: "Chain" every 3000 km, done when a chain is fitted. */
+        if ([event isKindOfClass:[ComponentChange class]])
+            return [((ComponentChange *)event).stockUnit.stockItem.category.categoryName isEqualToString:task];
         if (![event isKindOfClass:[Service class]]) return NO;
         for (ServiceItem *item in ((Service *)event).serviceItems) {
             if (!item.isDeleted && [item.task isEqualToString:task]) return YES;
@@ -935,6 +947,187 @@ static Event *LBFirstCloser(Reminder *reminder, NSArray<Event *> *events) {
 
 @end
 
+@implementation StockUnit (LBProcedures)
+
+/* The changes that fitted it, in time's order. */
+static NSArray<ComponentChange *> *LBFittings(StockUnit *unit) {
+    NSMutableArray *fittings = [NSMutableArray array];
+    for (ComponentChange *change in unit.componentChanges) {
+        if (!change.isDeleted && change.timestamp) [fittings addObject:change];
+    }
+    return [fittings sortedArrayUsingComparator:^NSComparisonResult(ComponentChange *a, ComponentChange *b) { return [a.timestamp compare:b.timestamp]; }];
+}
+
+/* What ends a fitting: the first change after it that removed the unit (or
+   the unit it was fitted into), or fitted it elsewhere; nil, it is on still. */
+static ComponentChange *LBFittingEnd(StockUnit *unit, ComponentChange *fitting) {
+    ComponentChange *end = nil;
+    NSMutableSet *ends = [NSMutableSet setWithSet:unit.wasRemovedByComponentChanges];
+    [ends unionSet:unit.componentChanges];
+    if (fitting.host) [ends unionSet:fitting.host.wasRemovedByComponentChanges];
+    for (ComponentChange *change in ends) {
+        if (change == fitting || change.isDeleted || !change.timestamp || [change.timestamp compare:fitting.timestamp] != NSOrderedDescending) continue;
+        if (!end || [change.timestamp compare:end.timestamp] == NSOrderedAscending) end = change;
+    }
+    return end;
+}
+
+static NSDecimalNumber *LBKm(Event *event) {
+    if (!event.mileageQuantity || !event.mileageDistanceUnit.factor) return nil;
+    return [event.mileageQuantity decimalNumberByMultiplyingBy:event.mileageDistanceUnit.factor];
+}
+
+/* How far the vehicle had come by the moment, in kilometres: the furthest
+   of its events' readings then, a trip's where it ended once it had (a
+   trip's own reading is where it began). nil: none at a distance. */
+static NSDecimalNumber *LBReachedBy(Vehicle *vehicle, NSDate *moment) {
+    NSDecimalNumber *furthest = nil;
+    for (Event *event in LBEventsOf(vehicle)) {
+        if ([event.timestamp compare:moment] == NSOrderedDescending) continue;
+        NSDecimalNumber *km = LBKm(event);
+        if ([event isKindOfClass:[Trip class]]) {
+            Trip *trip = (Trip *)event;
+            if (trip.distanceQuantity && trip.distanceDistanceUnit.factor && (!trip.moment || [trip.moment compare:moment] != NSOrderedDescending))
+                km = [trip.distanceQuantity decimalNumberByMultiplyingBy:trip.distanceDistanceUnit.factor];
+        }
+        if (km && (!furthest || [km compare:furthest] == NSOrderedDescending)) furthest = km;
+    }
+    return furthest;
+}
+
+- (NSDecimalNumber *)lb_wornIn:(DistanceUnit *)unit {
+    if (!unit.factor) return nil;
+    NSDecimalNumber *km = nil;
+    for (ComponentChange *fitting in LBFittings(self)) {
+        NSDecimalNumber *from = LBKm(fitting);
+        if (!from) continue;
+        ComponentChange *end = LBFittingEnd(self, fitting);
+        /* To the change that ended it on this vehicle, at its reading; else
+           (fitted elsewhere next, or on still) as far as this vehicle had
+           come by then. */
+        NSDate *untilMoment = end ? end.timestamp : [NSDate date];
+        NSDecimalNumber *to = end && [end.vehicle isEqual:fitting.vehicle] && LBKm(end) ? LBKm(end) : LBReachedBy(fitting.vehicle, untilMoment);
+        if (!to) continue;
+        NSDecimalNumber *covered = [to decimalNumberBySubtracting:from];
+        if (fitting.skipsVirtualTrips) {
+            for (Event *event in LBEventsOf(fitting.vehicle)) {
+                if (![event isKindOfClass:[Trip class]] || !((Trip *)event).isVirtual) continue;
+                if ([event.timestamp compare:fitting.timestamp] == NSOrderedAscending) continue;
+                if ([event.timestamp compare:untilMoment] != NSOrderedAscending) continue;
+                Trip *trip = (Trip *)event;
+                NSDecimalNumber *start = LBKm(trip), *finish = trip.distanceQuantity && trip.distanceDistanceUnit.factor
+                    ? [trip.distanceQuantity decimalNumberByMultiplyingBy:trip.distanceDistanceUnit.factor] : nil;
+                if (start && finish) covered = [covered decimalNumberBySubtracting:[finish decimalNumberBySubtracting:start]];
+            }
+        }
+        if ([covered compare:[NSDecimalNumber zero]] == NSOrderedAscending) covered = [NSDecimalNumber zero];
+        km = km ? [km decimalNumberByAdding:covered] : covered;
+    }
+    if (!km) return nil;
+    NSDecimalNumberHandler *whole = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain scale:0 raiseOnExactness:NO
+                                                                                   raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO];
+    return [km decimalNumberByDividingBy:unit.factor withBehavior:whole];
+}
+
+- (Vehicle *)lb_fittedTo {
+    ComponentChange *last = LBFittings(self).lastObject;
+    if (!last || LBFittingEnd(self, last)) return nil;
+    return last.vehicle;
+}
+
+@end
+
+#pragma mark Components and readings, settled as a save is
+
+/* A vehicle with no meter: its events' readings worked out from its trips,
+   in time's order (at a moment, what was there before a trip begun then),
+   from what it was acquired at: a trip begins where the last ended, and
+   ends what it covered on. */
+static void LBSettleTripReadings(NSManagedObjectContext *context) {
+    NSMutableSet<Vehicle *> *vehicles = [NSMutableSet set];
+    NSMutableSet *objects = [NSMutableSet setWithSet:context.insertedObjects];
+    [objects unionSet:context.updatedObjects];
+    for (NSManagedObject *object in objects) {
+        if ([object isKindOfClass:[Event class]] && ((Event *)object).vehicle) [vehicles addObject:((Event *)object).vehicle];
+        if ([object isKindOfClass:[Vehicle class]]) [vehicles addObject:(Vehicle *)object];
+    }
+    for (Vehicle *vehicle in vehicles) {
+        if (!vehicle.hasNoMeter || vehicle.isDeleted) continue;
+        NSArray<Event *> *events = [LBEventsOf(vehicle) sortedArrayUsingComparator:^NSComparisonResult(Event *a, Event *b) {
+            NSComparisonResult order = [a.timestamp compare:b.timestamp];
+            if (order != NSOrderedSame) return order;
+            /* At one moment, what is not a trip first: it is at the trip's start. */
+            return ([a isKindOfClass:[Trip class]] ? 1 : 0) - ([b isKindOfClass:[Trip class]] ? 1 : 0);
+        }];
+        DistanceUnit *unit = vehicle.purchaseMileageDistanceUnit;
+        for (Event *event in events) unit = unit ?: event.mileageDistanceUnit;
+        if (!unit.factor) {
+            NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([DistanceUnit class])];
+            fetch.predicate = [NSPredicate predicateWithFormat:@"code == %@", @"km"];
+            unit = [[context executeFetchRequest:fetch error:NULL] firstObject];
+        }
+        if (!unit.factor) continue;
+        NSDecimalNumber *reading = vehicle.purchaseMileageQuantity && vehicle.purchaseMileageDistanceUnit.factor
+            ? [[vehicle.purchaseMileageQuantity decimalNumberByMultiplyingBy:vehicle.purchaseMileageDistanceUnit.factor] decimalNumberByDividingBy:unit.factor]
+            : [NSDecimalNumber zero];
+        for (Event *event in events) {
+            if (![event.mileageQuantity isEqual:reading] || event.mileageDistanceUnit != unit) {
+                event.mileageQuantity = reading;
+                event.mileageDistanceUnit = unit;
+            }
+            if (![event isKindOfClass:[Trip class]]) continue;
+            Trip *trip = (Trip *)event;
+            NSDecimalNumber *length = trip.lengthQuantity && trip.lengthDistanceUnit.factor
+                ? [[trip.lengthQuantity decimalNumberByMultiplyingBy:trip.lengthDistanceUnit.factor] decimalNumberByDividingBy:unit.factor]
+                : [NSDecimalNumber zero];
+            NSDecimalNumber *end = [reading decimalNumberByAdding:length];
+            if (![trip.distanceQuantity isEqual:end] || trip.distanceDistanceUnit != unit) {
+                trip.distanceQuantity = end;
+                trip.distanceDistanceUnit = unit;
+            }
+            reading = end;
+        }
+    }
+}
+
+/* A component change new: the unit it fits, where it is in stock, moved
+   out (Fitted); the one it removes, put away, moved back in there
+   (Removed). Their moves of its, by name. */
+static void LBMoveFittedUnits(NSManagedObjectContext *context) {
+    for (NSManagedObject *object in context.insertedObjects) {
+        if (![object isKindOfClass:[ComponentChange class]]) continue;
+        ComponentChange *change = (ComponentChange *)object;
+        User *user = change.enteredBy ?: change.driver;
+        NSDate *moment = change.timestamp ?: [NSDate date];
+        StockUnit *fitted = change.stockUnit;
+        if (fitted.location && fitted.stockItem && !change.moves.count) {
+            Move *out = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Move class]) inManagedObjectContext:context];
+            out.id = LBNamedUUID([@"fitted by " stringByAppendingString:LBIDText(change.id)]);
+            out.stockItem = fitted.stockItem;
+            out.stockUnit = fitted;
+            out.moved = [NSDecimalNumber one];
+            out.source = fitted.location;
+            out.adjustmentReason = @"Fitted";
+            out.moment = moment;
+            out.user = user;
+            out.componentChange = change;
+        }
+        StockUnit *removed = change.removedStockUnit;
+        if (removed && change.location && removed.stockItem) {
+            Move *back = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Move class]) inManagedObjectContext:context];
+            back.id = LBNamedUUID([@"removed by " stringByAppendingString:LBIDText(change.id)]);
+            back.stockItem = removed.stockItem;
+            back.stockUnit = removed;
+            back.moved = [NSDecimalNumber one];
+            back.destination = change.location;
+            back.adjustmentReason = @"Removed";
+            back.moment = [moment dateByAddingTimeInterval:1];
+            back.user = user;
+            back.componentChange = change;
+        }
+    }
+}
+
 @implementation Record (LBProcedures)
 
 - (BOOL)lb_discardKeepingNextReminders:(NSNumber *)keep error:(NSError **)error {
@@ -957,19 +1150,25 @@ static Event *LBFirstCloser(Reminder *reminder, NSArray<Event *> *events) {
 #pragma mark Automatic completion
 
 /* Whether an event saved changes what it does: new, or changed in its
-   moment, vehicle, distance, kind, checklist or items. */
+   moment, vehicle, distance, kind, checklist, items or the component it
+   fitted. */
 static BOOL LBChangesWork(Event *event) {
     if (event.isInserted) return YES;
     NSSet<NSString *> *keys = [NSSet setWithObjects:NSStringFromSelector(@selector(timestamp)), NSStringFromSelector(@selector(vehicle)),
                                                     NSStringFromSelector(@selector(mileageQuantity)),
                                                     NSStringFromSelector(@selector(mileageDistanceUnit)), NSStringFromSelector(@selector(expenseKind)),
-                                                    NSStringFromSelector(@selector(checklist)), NSStringFromSelector(@selector(serviceItems)), nil];
+                                                    NSStringFromSelector(@selector(checklist)), NSStringFromSelector(@selector(serviceItems)),
+                                                    NSStringFromSelector(@selector(stockUnit)), nil];
     return [keys intersectsSet:[NSSet setWithArray:event.changedValues.allKeys]];
 }
 
 @implementation NSManagedObjectContext (LBProcedures)
 
 - (BOOL)lb_completeRemindersOfChangedEvents:(NSError **)error {
+    /* What closing a reminder reads first: the readings of a vehicle with
+       no meter; and what a component change moves in stock. */
+    LBSettleTripReadings(self);
+    LBMoveFittedUnits(self);
     NSMutableSet<Vehicle *> *vehicles = [NSMutableSet set];
     NSString *vehicleKey = NSStringFromSelector(@selector(vehicle));
     NSMutableSet *objects = [NSMutableSet setWithSet:self.insertedObjects];

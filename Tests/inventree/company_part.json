@@ -1,0 +1,37 @@
+{
+ "count": 3,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "pk": 1,
+   "part": 2,
+   "supplier": 1,
+   "SKU": "PS-N100",
+   "description": "Mini PC, 16 GB",
+   "pack_quantity": "1",
+   "pack_quantity_native": 1,
+   "link": null
+  },
+  {
+   "pk": 2,
+   "part": 3,
+   "supplier": 1,
+   "SKU": "PS-USBC1",
+   "description": null,
+   "pack_quantity": "3",
+   "pack_quantity_native": 3,
+   "link": null
+  },
+  {
+   "pk": 3,
+   "part": 1,
+   "supplier": 3,
+   "SKU": "BM-X1",
+   "description": null,
+   "pack_quantity": "1",
+   "pack_quantity_native": 1,
+   "link": null
+  }
+ ]
+}

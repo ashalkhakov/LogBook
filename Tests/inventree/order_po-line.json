@@ -1,0 +1,37 @@
+{
+ "count": 3,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "pk": 1,
+   "order": 1,
+   "part": 1,
+   "internal_part": 2,
+   "quantity": 1,
+   "received": 1,
+   "purchase_price": "250.00",
+   "purchase_price_currency": "USD"
+  },
+  {
+   "pk": 2,
+   "order": 1,
+   "part": 2,
+   "internal_part": null,
+   "quantity": 3,
+   "received": 3,
+   "purchase_price": null,
+   "purchase_price_currency": null
+  },
+  {
+   "pk": 3,
+   "order": 2,
+   "part": 3,
+   "internal_part": 1,
+   "quantity": 1,
+   "received": 0,
+   "purchase_price": "80.00",
+   "purchase_price_currency": "USD"
+  }
+ ]
+}

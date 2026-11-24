@@ -70,11 +70,11 @@ INC = -I$(MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity -I$(GEN
 LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(ODATAKIT_DIRS)) \
 	-F$(ORMKIT_PRODUCTS) -Wl,-rpath,$(ORMKIT_PRODUCTS) \
 	-framework ORMRuntime -framework ODataSync -framework ODataService -framework HTTPServerKit \
-	-framework ODataIncrementalStore -framework OTelKit -framework ODataKit -framework CoreData -framework Foundation
+	-framework ODataIncrementalStore -framework OTelKit -framework ODataKit -framework CoreData -framework Foundation -lsqlite3
 
 .PHONY: all check install installcheck clean ios ios-check ios-install ios-installcheck
 APP = $(BUILD)/Logbook.app
-all: $(BUILD)/logbook-server $(BUILD)/Logbook.wfdeployment $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(BUILD)/Logbook.permissions.plist $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-stock-check $(BUILD)/lb-sync-check $(BUILD)/lb-form-check
+all: $(BUILD)/logbook-server $(BUILD)/Logbook.wfdeployment $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(BUILD)/Logbook.permissions.plist $(APP) $(BUILD)/lb-procedures-check $(BUILD)/lb-stock-check $(BUILD)/lb-sync-check $(BUILD)/lb-form-check $(BUILD)/lb-import-check $(BUILD)/logbook-import $(BUILD)/Forms/.made
 
 # ORMKit's runtime, and its ormtool, which generates from the model: the
 # release's, in .deps.
@@ -171,6 +171,22 @@ FORM_CHECK = Tests/LBFormCheck.m Shared/LBProcedures.m $(MODEL)/Constraints/Logb
 $(BUILD)/lb-form-check: $(MODEL)/.made $(FORM_CHECK) $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) $(FORM_CHECK) $(GENERATED)/*.m $(LIBS) -o $@
 
+# logbook-import (Server/LBImportTool.m): another app's export into a
+# server's logbook, as the desktop's File > Import… does it; the forms'
+# contracts it enters records through beside it, in Forms.
+IMPORT_TOOL = Server/LBImportTool.m Shared/LBImport.m Shared/LBSignIn.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m \
+	Shared/LBDisplay.m Shared/LBProcedures.m Shared/LBStockProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+$(BUILD)/logbook-import: $(MODEL)/.made $(IMPORT_TOOL) $(wildcard Shared/*.h) $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	$(CC) $(FLAGS) $(INC) $(IMPORT_TOOL) $(GENERATED)/*.m $(LIBS) -o $@
+
+$(BUILD)/Forms/.made: $(MODEL)/.made
+	rm -rf $(BUILD)/Forms && mkdir -p $(BUILD)/Forms && cp $(MODEL)/Forms/*.ormform $(BUILD)/Forms/ && touch $@
+
+# Another app's export imported through the model's forms (Tests/LBImportCheck.m).
+IMPORT_CHECK = Tests/LBImportCheck.m Shared/LBImport.m Shared/LBProcedures.m Shared/LBStockProcedures.m Shared/LBDisplay.m $(MODEL)/Constraints/LogbookValidation.m
+$(BUILD)/lb-import-check: $(MODEL)/.made $(IMPORT_CHECK) $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
+	$(CC) $(FLAGS) $(INC) $(IMPORT_CHECK) $(GENERATED)/*.m $(LIBS) -o $@
+
 # The desktop app: its code, its windows (the XIBs compiled), the model, its
 # tables and its forms' contracts in its resources.
 # The updater's Apple half (AppKit/LBUpdater.h); the GNUstep half is the GNUmakefile's.
@@ -200,6 +216,8 @@ check: all
 	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	$(BUILD)/lb-stock-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	Tests/form-check.sh $(BUILD)/logbook-server $(BUILD)/lb-form-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms
+	$(BUILD)/lb-import-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms Tests/drivvo-export.csv Tests/maintrack-store.sql Tests/inventree 29
+	Tests/import-check.sh $(BUILD)/logbook-server $(BUILD)/logbook-import Tests/drivvo-export.csv
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
 	python3 Tests/process-check.py $(BUILD)/logbook-server
 	python3 Tests/roles-check.py $(BUILD)/logbook-server
@@ -261,7 +279,7 @@ ios-app:
 	  iOS/Info.plist > $(IOS_APP)/Info.plist
 	xcrun -sdk $(SDK) clang -target $(call ios_target,$(SDK)) $(IOS_FLAGS) $(addprefix -F,$(IOS_FRAMEWORKS)) -F$(IOS_ORMRUNTIME) \
 	  $(IOS_SOURCES) $(GENERATED)/*.m -framework ORMRuntime $(foreach f,$(ODATAKIT),-framework $(f)) \
-	  -framework UIKit -framework CoreData -framework Foundation -framework Security \
+	  -framework UIKit -framework CoreData -framework Foundation -framework Security -lsqlite3 \
 	  -Xlinker -rpath -Xlinker @executable_path/Frameworks -o $(IOS_APP)/Logbook
 	rm -rf $(IOS_BUILD)/$(SDK)/Logbook.app.dSYM && mv $(IOS_APP)/Logbook.dSYM $(IOS_BUILD)/$(SDK)/Logbook.app.dSYM
 	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans $(IOS_APP)/

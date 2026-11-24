@@ -313,6 +313,15 @@
       delete = ( { relation = manager; from = purchaseOrder; } );
     };
 
+    // A unit of an item, by its serial number: seen with its item, written
+    // by the catalog's owner, as the item is (where it is, its moves say).
+    StockUnit = {
+      read   = ( { relation = read; from = stockItem; } );
+      insert = ( { relation = owner; from = stockItem; } );
+      update = ( { relation = owner; from = stockItem; } );
+      delete = ( { relation = owner; from = stockItem; } );
+    };
+
     // What moves stock: made by a keeper where it is, changed or removed
     // by a manager there.
     Holding = {

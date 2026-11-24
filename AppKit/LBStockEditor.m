@@ -1,4 +1,5 @@
 #import "LBStockEditor.h"
+#import "LBFieldIssues.h"
 #import "LBStore.h"
 #import "LBLocalStore.h"
 #import "LBStockProcedures.h"
@@ -47,6 +48,9 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     [super windowDidLoad];
     self.window.delegate = (id<NSWindowDelegate>)self;
     [self readAgain];
+    /* The rules what is edited breaks, at its fields. */
+    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.window.contentView];
+    [_fieldIssues setNeedsRefresh];
 }
 
 - (User *)user {

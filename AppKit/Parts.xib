@@ -46,7 +46,7 @@
             </popUpButtonCell>
             <connections>
               <binding destination="-2" name="content" keyPath="locations" id="partsFromContent"/>
-              <binding destination="-2" name="contentValues" keyPath="locations.lbTitle" previousBinding="partsFromContent" id="partsFromValues"/>
+              <binding destination="-2" name="contentValues" keyPath="locations.lbToldTitle" previousBinding="partsFromContent" id="partsFromValues"/>
               <binding destination="-2" name="selectedObject" keyPath="partsLocation" previousBinding="partsFromValues" id="partsFromChosen"/>
             </connections>
           </popUpButton>
@@ -159,7 +159,7 @@
             </popUpButtonCell>
             <connections>
               <binding destination="-2" name="content" keyPath="items" id="partItemContent"/>
-              <binding destination="-2" name="contentValues" keyPath="items.lbTitle" previousBinding="partItemContent" id="partItemValues"/>
+              <binding destination="-2" name="contentValues" keyPath="items.lbToldTitle" previousBinding="partItemContent" id="partItemValues"/>
               <binding destination="-2" name="selectedObject" keyPath="chosenItem" previousBinding="partItemValues" id="partItemChosen"/>
             </connections>
           </popUpButton>

@@ -11,6 +11,10 @@
 #import "Reminder+CoreDataClass.h"
 #import "Rescheduling+CoreDataClass.h"
 #import "LBProcedures.h"
+#import "LBImport.h"
+#import "LBFieldIssues.h"
+#import <ODataSync/ODataSignIn.h>
+#import "ComponentChange+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
@@ -54,6 +58,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 @implementation LBMainWindowController {
     NSArray<NSString *> *_tyreSetTitles;
+    /* The window's title while InvenTree is read. */
+    NSString *_inventreeTitle;
     NSArray<NSString *> *_tripTitles;
     /* The chosen record as its model's form has it (Record<Kind>). */
     LBFormValues *_recordForm;
@@ -126,6 +132,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     /* Reference data, the model's: read once. */
     self.serviceKinds = [CostKind lbServiceKindsInContext:self.context];
     _attachments.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(fileName)) ascending:YES] ];
+    /* The rules a record or a vehicle breaks, at its fields. */
+    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.window.contentView];
+    [_fieldIssues setNeedsRefresh];
     /* A day of the model (bought on, issued, expires) is a UTC day: its
        field reads and says it so, whatever the zone here. */
     for (NSTabViewItem *form in _recordForms.tabViewItems) {
@@ -565,6 +574,221 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     return NO;
 }
 
+- (NSArray<NSString *> *)vehicleKinds {
+    return @[ @"Car", @"Motorcycle", @"Bicycle" ];
+}
+
+- (NSString *)componentWear {
+    id chosen = [_recordForm object];
+    StockUnit *component = [chosen isKindOfClass:[ComponentChange class]] ? ((ComponentChange *)chosen).stockUnit : nil;
+    if (!component) return @"";
+    DistanceUnit *unit = [self distanceUnit];
+    NSDecimalNumber *worn = unit ? [component lb_wornIn:unit] : nil;
+    if (!worn) return @"At no reading yet.";
+    NSString *distance = [NSString stringWithFormat:@"%@ %@", [NSNumberFormatter localizedStringFromNumber:worn
+                                                                                                numberStyle:NSNumberFormatterDecimalStyle],
+                                                     unit.code];
+    /* Every time it was fitted, so far: it may have been on another before. */
+    return [component lb_fittedTo] ? [NSString stringWithFormat:@"%@ so far, fitted", distance]
+                                   : [NSString stringWithFormat:@"%@ in all, not fitted now", distance];
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingComponentWear {
+    return [NSSet setWithObject:@"chosenRecords"];
+}
+
+#pragma mark Import
+
+- (IBAction)importRecords:(id)sender {
+    Vehicle *vehicle = [self chosenVehicle];
+    if (![self commitEdits]) return;
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    panel.message = @"Choose an export: Drivvo's CSV (into your vehicle it is, found by its plate, name or model, else a new one), "
+                    @"or MainTrack's store (Maintrack.sqlite).";
+    /* MainTrack's store, where it is on this Mac: its folder is hidden. */
+    NSString *mainTrack = [NSHomeDirectory() stringByAppendingPathComponent:@"Library/Group Containers/group.kiwiswift.mainTrack"];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:[mainTrack stringByAppendingPathComponent:@"Maintrack.sqlite"]])
+        panel.directoryURL = [NSURL fileURLWithPath:mainTrack isDirectory:YES];
+    [panel beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
+        if (response != NSModalResponseOK || !panel.URL) return;
+        /* After the panel has gone: the summary is a sheet of its own. */
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self askToImport:panel.URL intoVehicle:vehicle];
+        });
+    }];
+}
+
+/* What the export would make, and what it leaves out, said; imported once
+   the user says Import. */
+- (void)askToImport:(NSURL *)file intoVehicle:(Vehicle *)vehicle {
+    NSError *error = nil;
+    LBImport *import = [LBImport importOfFile:file error:&error];
+    if (!import) return [self reportError:error];
+    [self askToImportRecordsOf:import intoVehicle:vehicle];
+}
+
+- (void)askToImportRecordsOf:(LBImport *)import intoVehicle:(Vehicle *)chosen {
+    NSError *error = nil;
+    /* Drivvo's export goes into the user's vehicle it is (by its plate,
+       name or model), else one made: not the one chosen in the window. */
+    Vehicle *vehicle = nil;
+    (void)chosen;
+    /* Stock goes into a catalog: the one it went into before, else one
+       named for where it comes from (the user may name another below). */
+    BOOL inventree = [import.source isEqualToString:@"InvenTree"];
+    NSString *catalogDefault = inventree ? ([[NSUserDefaults standardUserDefaults] stringForKey:@"LBInvenTreeCatalog"] ?: @"InvenTree") : @"Bike parts";
+    if (import.makesStock) import.catalogName = catalogDefault;
+    if (![import planForVehicle:vehicle by:_store.user error:&error]) return [self reportError:error];
+    NSAlert *alert = [[NSAlert alloc] init];
+    BOOL intoAVehicle = !import.makesVehicles && !import.makesStock;
+    alert.messageText = inventree                ? [NSString stringWithFormat:@"Import InvenTree's %@?", import.summary]
+                        : import.makesVehicles   ? [NSString stringWithFormat:@"Import %@'s %@?", import.source,
+                                                                              [import.vehicleNames componentsJoinedByString:@", "]]
+                        : import.makesItsVehicle ? [NSString stringWithFormat:@"Import %@'s export into a new vehicle, %@?", import.source,
+                                                                              import.madeVehicleName]
+                                                 : [NSString stringWithFormat:@"Import %@'s export into %@ (found %@)?", import.source,
+                                                                              import.matchedVehicle.vehicleName, import.matchedHow];
+    if (intoAVehicle && import.makesItsVehicle)
+        alert.informativeText = [NSString stringWithFormat:@"%@. None of your vehicles is it by its plate, name or model: a new one is made. "
+                                                           @"The export says no make%@: say %@ below.", import.summary,
+                                                           import.exportYear ? @"" : @" or year", import.exportYear ? @"it" : @"them"];
+    if (!(intoAVehicle && import.makesItsVehicle))
+        alert.informativeText = [NSString stringWithFormat:@"%@.", inventree ? @"Its stock goes into the catalog named below" : import.summary];
+    if (import.leftOut.count)
+        alert.informativeText = [alert.informativeText stringByAppendingString:@" Logbook has no place for these, or takes them so:"];
+    [alert addButtonWithTitle:@"Import"];
+    [alert addButtonWithTitle:@"Cancel"];
+    if (import.leftOut.count || import.makesStock || import.makesItsVehicle) {
+        NSArray *objects = nil;
+        NSNib *nib = [[NSNib alloc] initWithNibNamed:@"ImportSummary" bundle:nil];
+        if ([nib instantiateWithOwner:self topLevelObjects:&objects] && _importSummaryView) {
+            [_importSummaryText setString:import.leftOut.count ? [@"• " stringByAppendingString:[import.leftOut componentsJoinedByString:@"\n• "]] : @""];
+            alert.accessoryView = _importSummaryView;
+        }
+    }
+    /* Its stock: into a catalog of the user's, or a new one. */
+    if (_importCatalogField) {
+        NSArray *names = [[_store.user.ownedCatalogs valueForKey:NSStringFromSelector(@selector(catalogName))] allObjects];
+        [_importCatalogField addItemsWithObjectValues:[names sortedArrayUsingSelector:@selector(localizedCaseInsensitiveCompare:)]];
+        _importCatalogField.stringValue = catalogDefault;
+        for (NSView *view in _importCatalogField.superview.subviews) {
+            if (view == _importCatalogField || [view.identifier isEqualToString:@"importCatalogLabel"]) view.hidden = !import.makesStock;
+            /* A vehicle made: its make, and its year where the export says none. */
+            if (view == _importMakeField || [view.identifier isEqualToString:@"importMakeLabel"]) view.hidden = !import.makesItsVehicle;
+            if (view == _importYearField || [view.identifier isEqualToString:@"importYearLabel"])
+                view.hidden = !import.makesItsVehicle || import.exportYear > 0;
+        }
+    }
+    [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
+        NSString *catalog = [self.importCatalogField.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+        if (import.makesItsVehicle) {
+            import.madeVehicleMake = self.importMakeField.stringValue;
+            import.madeVehicleYear = self.importYearField.integerValue;
+        }
+        self.importSummaryView = nil;
+        self.importSummaryText = nil;
+        self.importCatalogField = nil;
+        self.importMakeField = nil;
+        self.importYearField = nil;
+        if (response != NSAlertFirstButtonReturn) return;
+        if (inventree && catalog.length) [[NSUserDefaults standardUserDefaults] setObject:catalog forKey:@"LBInvenTreeCatalog"];
+        NSUInteger made = 0, skipped = 0;
+        NSError *failure = nil;
+        BOOL done = [self importRecordsOf:import intoVehicle:vehicle catalogNamed:catalog made:&made skipped:&skipped error:&failure];
+        if (!done) return [self reportError:failure];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSAlert *said = [[NSAlert alloc] init];
+            said.messageText = [NSString stringWithFormat:@"%lu made, %lu there already.", (unsigned long)made, (unsigned long)skipped];
+            said.informativeText = @"They are synced with the rest of your logbook.";
+            [said beginSheetModalForWindow:self.window completionHandler:nil];
+        });
+    }];
+}
+
+- (BOOL)importFile:(NSURL *)file intoVehicle:(Vehicle *)vehicle made:(NSUInteger *)made skipped:(NSUInteger *)skipped error:(NSError **)error {
+    return [self importFile:file intoVehicle:vehicle catalogNamed:nil made:made skipped:skipped error:error];
+}
+
+- (BOOL)importFile:(NSURL *)file intoVehicle:(Vehicle *)vehicle catalogNamed:(NSString *)catalog
+              made:(NSUInteger *)made skipped:(NSUInteger *)skipped error:(NSError **)error {
+    if (![self commitEdits]) return NO;
+    LBImport *import = [LBImport importOfFile:file error:error];
+    if (!import) return NO;
+    return [self importRecordsOf:import intoVehicle:vehicle catalogNamed:catalog made:made skipped:skipped error:error];
+}
+
+- (BOOL)importRecordsOf:(LBImport *)import intoVehicle:(Vehicle *)vehicle catalogNamed:(NSString *)catalog
+                   made:(NSUInteger *)made skipped:(NSUInteger *)skipped error:(NSError **)error {
+    if (![self commitEdits]) return NO;
+    import.catalogName = catalog.length ? catalog : nil;
+    LBStore *store = _store;
+    BOOL done = [import importIntoVehicle:vehicle by:store.user context:self.context
+                                  saving:^BOOL(NSManagedObjectContext *context, NSError **failure) { return [store save:failure]; }
+                                    made:made skipped:skipped error:error];
+    [self readAgain];
+    return done;
+}
+
+/* InvenTree's address and token asked, then its stock read (away from the
+   window: it may take a while), then asked to import as an export is. */
+- (IBAction)importFromInvenTree:(id)sender {
+    if (![self commitEdits]) return;
+    NSArray *objects = nil;
+    NSNib *nib = [[NSNib alloc] initWithNibNamed:@"InvenTreeConnect" bundle:nil];
+    if (![nib instantiateWithOwner:self topLevelObjects:&objects] || !_inventreeConnectView) return;
+    ODataSecretStore *secrets = [[ODataSecretStore alloc] initWithServiceName:@"Logbook InvenTree"];
+    NSString *address = [[NSUserDefaults standardUserDefaults] stringForKey:@"LBInvenTreeAddress"];
+    if (address.length) {
+        _inventreeAddressField.stringValue = address;
+        _inventreeTokenField.stringValue = [secrets secretsForAccount:address][@"token"] ?: @"";
+    }
+    NSAlert *alert = [[NSAlert alloc] init];
+    alert.messageText = @"Import from InvenTree";
+    alert.informativeText = @"Its address, and an API token that may read its parts, stock and purchase orders (in InvenTree: your user's settings, API Tokens).";
+    alert.accessoryView = _inventreeConnectView;
+    [alert addButtonWithTitle:@"Connect"];
+    [alert addButtonWithTitle:@"Cancel"];
+    [(NSWindow *)alert.window setInitialFirstResponder:address.length ? _inventreeTokenField : _inventreeAddressField];
+    [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
+        NSCharacterSet *space = [NSCharacterSet whitespaceAndNewlineCharacterSet];
+        NSString *typed = [self.inventreeAddressField.stringValue stringByTrimmingCharactersInSet:space];
+        NSString *token = [self.inventreeTokenField.stringValue stringByTrimmingCharactersInSet:space];
+        self.inventreeConnectView = nil;
+        self.inventreeAddressField = nil;
+        self.inventreeTokenField = nil;
+        if (response != NSAlertFirstButtonReturn) return;
+        if (typed.length && ![typed containsString:@"://"]) typed = [@"https://" stringByAppendingString:typed];
+        NSURL *root = typed.length ? [NSURL URLWithString:[typed hasSuffix:@"/"] ? typed : [typed stringByAppendingString:@"/"]] : nil;
+        if (!root.host.length || !token.length) {
+            return [self reportError:[NSError errorWithDomain:LBImportErrorDomain code:1
+                                                     userInfo:@{ NSLocalizedDescriptionKey : @"Say InvenTree's address and an API token." }]];
+        }
+        [[NSUserDefaults standardUserDefaults] setObject:typed forKey:@"LBInvenTreeAddress"];
+        [secrets setSecrets:@{ @"token" : token } forAccount:typed];
+        [self readInvenTree:root token:token];
+    }];
+}
+
+- (void)readInvenTree:(NSURL *)root token:(NSString *)token {
+    _inventreeTitle = self.window.title;
+    self.window.title = [NSString stringWithFormat:@"%@ — reading InvenTree…", _inventreeTitle];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSError *error = nil;
+        LBImport *read = [LBImport importOfInvenTree:root token:token fetch:nil error:&error];
+        [self performSelectorOnMainThread:@selector(readInvenTreeGave:) withObject:read ?: (id)error ?: [NSNull null] waitUntilDone:NO];
+    });
+}
+
+/* What reading InvenTree gave: its import, else why not. */
+- (void)readInvenTreeGave:(id)gave {
+    if (_inventreeTitle) self.window.title = _inventreeTitle;
+    _inventreeTitle = nil;
+    if ([gave isKindOfClass:[LBImport class]]) return [self askToImportRecordsOf:gave intoVehicle:nil];
+    [self reportError:[gave isKindOfClass:[NSError class]] ? gave
+                                                           : [NSError errorWithDomain:LBImportErrorDomain code:1
+                                                                             userInfo:@{ NSLocalizedDescriptionKey : @"InvenTree was not read." }]];
+}
+
 - (void)reportError:(NSError *)error {
     error = [self willPresentError:error];
     _lastError = error;
@@ -638,6 +862,11 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         if (![object isKindOfClass:[Event class]]) continue;
         Event *event = (Event *)object;
         if (event.mileageQuantity && !event.mileageDistanceUnit) event.mileageDistanceUnit = [self distanceUnit];
+        /* A trip's length typed with no unit: its readings', else the user's. */
+        if ([event isKindOfClass:[Trip class]]) {
+            Trip *trip = (Trip *)event;
+            if (trip.lengthQuantity && !trip.lengthDistanceUnit) trip.lengthDistanceUnit = trip.distanceDistanceUnit ?: [self distanceUnit];
+        }
     }
 }
 
@@ -727,6 +956,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 - (id)newObject {
     Vehicle *vehicle = [super newObject];
     vehicle.owner = _windowController.store.user;
+    /* A car, most likely: the user says otherwise. */
+    vehicle.vehicleKind = @"Car";
     return vehicle;
 }
 

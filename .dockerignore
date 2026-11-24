@@ -1,0 +1,7 @@
+build
+obj
+.deps
+**/.DS_Store
+**/obj
+**/*.app
+Logbook.app

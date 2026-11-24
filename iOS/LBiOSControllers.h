@@ -177,6 +177,11 @@ FOUNDATION_EXPORT CGFloat const LBPhotoLongestSide;
 // What a user types into one, or picks: text for a text or number field,
 // an NSDate, an NSNumber for a switch, an object for a choice.
 - (BOOL)enter:(nullable id)value intoField:(NSString *)title;
+// The rules the object breaks that name the field, as said in the red note
+// under it (none: no note); and its title as shown, " *" where it must
+// have a value.
+- (NSArray<NSString *> *)issuesOfField:(NSString *)title;
+- (nullable NSString *)shownTitleOf:(NSString *)title;
 // A service's item (a task and what it cost).
 - (void)addItemTask:(NSString *)task cost:(NSDecimalNumber *)cost;
 // An inspection's answer to the question.

@@ -11,6 +11,7 @@
 #import "VolumeUnit+CoreDataClass.h"
 #import "CostKind+CoreDataClass.h"
 #import "TyreSet+CoreDataClass.h"
+#import "StockUnit+CoreDataClass.h"
 #import "Checklist+CoreDataClass.h"
 #import "Question+CoreDataClass.h"
 #import "Income+CoreDataClass.h"
@@ -55,6 +56,11 @@ extern NSString * const LBAnyOf;
 // An any-of question: the one kind with options to choose from.
 @property (nonatomic, readonly) BOOL lbTakesOptions;
 @end
+// "KMC X9 chain" or "Apple TV 4K #DHKWM657JD": its item's name, and its
+// serial number where it has one, as a component change's pop-ups list it.
+@interface StockUnit (LBDisplay) <LBTitled>
+@end
+
 @interface TyreSet (LBDisplay) <LBTitled>
 @end
 @interface Checklist (LBDisplay) <LBTitled>

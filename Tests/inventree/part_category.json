@@ -1,0 +1,25 @@
+{
+ "count": 3,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "pk": 1,
+   "name": "Computers",
+   "parent": null,
+   "description": ""
+  },
+  {
+   "pk": 2,
+   "name": "Network",
+   "parent": null,
+   "description": ""
+  },
+  {
+   "pk": 3,
+   "name": "Cables",
+   "parent": 1,
+   "description": "Leads and adapters"
+  }
+ ]
+}

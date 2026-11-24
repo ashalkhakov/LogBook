@@ -13,6 +13,8 @@
 
 @class LBPartsPanelController;
 
+@class LBImport, LBFieldIssues;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface LBMainWindowController : NSWindowController
@@ -92,6 +94,50 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The vehicle chosen, when one is.
 - (nullable Vehicle *)chosenVehicle;
+// What a vehicle may be (the model's VehicleKind): its Kind pop-up's.
+@property (nonatomic, readonly, copy) NSArray<NSString *> *vehicleKinds;
+// The chosen component's wear, said: "1200 km since it was fitted".
+@property (nonatomic, readonly, copy) NSString *componentWear;
+
+// File > Import…: another app's export (LBImport.h) through the model's
+// forms: Drivvo's CSV into the chosen vehicle, MainTrack's store into
+// vehicles of its own (its bikes). What the export says that
+// Logbook has no place for is shown first (ImportSummary.xib), and nothing
+// is made unless the user says Import.
+- (IBAction)importRecords:(nullable id)sender;
+// The same of a file, with nothing asked when quiet (the self-test): the
+// left out taken. Made and passed over said; NO and why where refused.
+- (BOOL)importFile:(NSURL *)file intoVehicle:(nullable Vehicle *)vehicle made:(NSUInteger *_Nullable)made skipped:(NSUInteger *_Nullable)skipped
+             error:(NSError **)error;
+// The same, MainTrack's parts into the catalog named (nil: "Bike parts").
+- (BOOL)importFile:(NSURL *)file intoVehicle:(nullable Vehicle *)vehicle catalogNamed:(nullable NSString *)catalog
+              made:(NSUInteger *_Nullable)made skipped:(NSUInteger *_Nullable)skipped error:(NSError **)error;
+// File > Import from InvenTree…: its address and an API token asked
+// (InvenTreeConnect.xib; the address kept in the defaults, the token in
+// the system's secret store), its stock read, then as an export: what
+// Logbook has no place for shown, into the catalog the user names.
+- (IBAction)importFromInvenTree:(nullable id)sender;
+// An import read already (a file's, InvenTree's) into the vehicle (its
+// stock into the catalog named): made and passed over said.
+- (BOOL)importRecordsOf:(LBImport *)import intoVehicle:(nullable Vehicle *)vehicle catalogNamed:(nullable NSString *)catalog
+                   made:(NSUInteger *_Nullable)made skipped:(NSUInteger *_Nullable)skipped error:(NSError **)error;
+// InvenTreeConnect.xib's view and its fields, the owner's while shown.
+@property (nonatomic, strong, nullable) IBOutlet NSView *inventreeConnectView;
+@property (nonatomic, strong, nullable) IBOutlet NSTextField *inventreeAddressField;
+@property (nonatomic, strong, nullable) IBOutlet NSSecureTextField *inventreeTokenField;
+// The rules the shown record or vehicle breaks, at its fields.
+@property (nonatomic, readonly, strong, nullable) LBFieldIssues *fieldIssues;
+// ImportSummary.xib's view and its list, the owner's while it is shown.
+@property (nonatomic, strong, nullable) IBOutlet NSView *importSummaryView;
+@property (nonatomic, strong, nullable) IBOutlet NSTextView *importSummaryText;
+// Its catalog field: where MainTrack's parts or InvenTree's stock go (a
+// catalog of the user's, or a new one's name); hidden for an export that
+// makes no stock.
+@property (nonatomic, strong, nullable) IBOutlet NSComboBox *importCatalogField;
+// Its make and year: a vehicle Drivvo's import makes (none of the user's
+// is the export's), what the export says not; hidden otherwise.
+@property (nonatomic, strong, nullable) IBOutlet NSTextField *importMakeField;
+@property (nonatomic, strong, nullable) IBOutlet NSTextField *importYearField;
 // The signed-in user's unit of distance, else kilometres.
 - (nullable DistanceUnit *)distanceUnit;
 // What is being typed kept: NO when a field holds what cannot be.

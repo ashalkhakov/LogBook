@@ -22,12 +22,16 @@ NS_ASSUME_NONNULL_BEGIN
 extern NSNotificationName const LBStockDidChangeNotification;
 extern NSString *const LBStockCatalogKey;
 
+@class LBFieldIssues;
+
 @interface LBStockEditor : NSWindowController
 
 - (instancetype)initWithStore:(LBStore *)store windowNibName:(NSString *)name;
 @property (nonatomic, readonly, strong) LBStore *store;
 // Its own, over the store's (LBStore -newContext): what the XIB binds to.
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;
+// The rules what is edited breaks, at its fields.
+@property (nonatomic, readonly, strong, nullable) LBFieldIssues *fieldIssues;
 // The catalog it is of, in its context; nil, none yet.
 @property (nonatomic, strong, nullable) Catalog *catalog;
 // The user, in its context.

@@ -77,6 +77,14 @@
 			isa = PBXBuildFile;
 			fileRef = D0D9070083F80CD0D5733CD9 /* StockItem.xib */;
 		};
+		1C4A264FCFA2C77B33A648D2 /* ImportSummary.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 79BD7E3003262AA6A6464465 /* ImportSummary.xib */;
+		};
+		6A1E0C3F9D2B4E57A8C1D2E3 /* InvenTreeConnect.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 6A1E0C3F9D2B4E57A8C1D2E4 /* InvenTreeConnect.xib */;
+		};
 		1DDAAAA209F502AABBD87A63 /* ODataKit.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
@@ -158,6 +166,10 @@
 		3F41127A5339F1DA846D2D0A /* LBConflicts.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 690202E342F3343CCC4A45AF /* LBConflicts.m */;
+		};
+		3F7C532CB7E0493F83FB6C39 /* LBImport.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 352653C4276B2B999855FBF3 /* LBImport.m */;
 		};
 		452718B1690F227FE8DA5A4B /* ODataService.xcframework */ = {
 			isa = PBXBuildFile;
@@ -356,6 +368,10 @@
 			isa = PBXBuildFile;
 			fileRef = 2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */;
 		};
+		89A02AE57FC82B49FE45B67F /* LBImport.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 352653C4276B2B999855FBF3 /* LBImport.m */;
+		};
 		8AA2803D9B1A2747A6B16326 /* ODataIncrementalStore.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
@@ -550,9 +566,21 @@
 			isa = PBXBuildFile;
 			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
 		};
+		7C2F1A0B3D4E5F6071829312 /* LBRuleIssues.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */;
+		};
+		7C2F1A0B3D4E5F6071829313 /* LBRuleIssues.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */;
+		};
 		D133B5ACC3CED76663C79052 /* LBStockEditor.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 1A3310166FC5A264617FA591 /* LBStockEditor.m */;
+		};
+		7C2F1A0B3D4E5F6071829306 /* LBFieldIssues.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 7C2F1A0B3D4E5F6071829305 /* LBFieldIssues.m */;
 		};
 		D150CB72C0373BBF67E78758 /* main.m */ = {
 			isa = PBXBuildFile;
@@ -779,6 +807,12 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		016E3CDFD6B10734D786ACB4 /* LBImport.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBImport.h;
+			sourceTree = "<group>";
+		};
 		0198D35D1765628F70CB7962 /* LBPermissions.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -847,10 +881,34 @@
 			path = LBStockOrderWindowController.h;
 			sourceTree = "<group>";
 		};
+		7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBRuleIssues.m;
+			sourceTree = "<group>";
+		};
+		7C2F1A0B3D4E5F6071829310 /* LBRuleIssues.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBRuleIssues.h;
+			sourceTree = "<group>";
+		};
 		1A3310166FC5A264617FA591 /* LBStockEditor.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBStockEditor.m;
+			sourceTree = "<group>";
+		};
+		7C2F1A0B3D4E5F6071829305 /* LBFieldIssues.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBFieldIssues.m;
+			sourceTree = "<group>";
+		};
+		7C2F1A0B3D4E5F6071829304 /* LBFieldIssues.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBFieldIssues.h;
 			sourceTree = "<group>";
 		};
 		1AA616881FDF64023A455351 /* OTelKit.xcframework */ = {
@@ -981,6 +1039,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = LBWorkflow.h;
+			sourceTree = "<group>";
+		};
+		352653C4276B2B999855FBF3 /* LBImport.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBImport.m;
 			sourceTree = "<group>";
 		};
 		354385FB5717E232F0F7E8EE /* CostsByMonth.rdl */ = {
@@ -1215,6 +1279,18 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = LBPlanned.h;
+			sourceTree = "<group>";
+		};
+		79BD7E3003262AA6A6464465 /* ImportSummary.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = ImportSummary.xib;
+			sourceTree = "<group>";
+		};
+		6A1E0C3F9D2B4E57A8C1D2E4 /* InvenTreeConnect.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = InvenTreeConnect.xib;
 			sourceTree = "<group>";
 		};
 		7B58A3F22B5132525D3F4330 /* Parts.xib */ = {
@@ -1957,6 +2033,8 @@
 			children = (
 				2432BF71F62D11F0DCE041C6 /* CatalogSettings.xib */,
 				F8746362A46CB5E2C52D1A7E /* ConnectPanel.xib */,
+				79BD7E3003262AA6A6464465 /* ImportSummary.xib */,
+				6A1E0C3F9D2B4E57A8C1D2E4 /* InvenTreeConnect.xib */,
 				ABFDBC32D4665ABB05B1F819 /* Info.plist */,
 				1858D9209D5FE7B48B58866F /* LBAnswersController.h */,
 				7D121C7DECA61E76A9483A71 /* LBAnswersController.m */,
@@ -1988,6 +2066,8 @@
 				D754F8EB42F3ADAE0E299F79 /* LBSelfTest.m */,
 				B84277BF72A1805D5D8DB7FC /* LBStockCountWindowController.h */,
 				409C3F87EC54981EE98BFB26 /* LBStockCountWindowController.m */,
+				7C2F1A0B3D4E5F6071829304 /* LBFieldIssues.h */,
+				7C2F1A0B3D4E5F6071829305 /* LBFieldIssues.m */,
 				4DDC4EDEB5B9B0DABA7644A1 /* LBStockEditor.h */,
 				1A3310166FC5A264617FA591 /* LBStockEditor.m */,
 				2E035A472DE9048A40CC51E2 /* LBStockItemWindowController.h */,
@@ -2035,7 +2115,11 @@
 				81606360A961AF809407450F /* LBConflicts.h */,
 				690202E342F3343CCC4A45AF /* LBConflicts.m */,
 				D371E9DF0A4D53CA5C5BEBEF /* LBDisplay.h */,
+				7C2F1A0B3D4E5F6071829310 /* LBRuleIssues.h */,
+				7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */,
 				B7670FC7C874BC5F07604ED6 /* LBDisplay.m */,
+				016E3CDFD6B10734D786ACB4 /* LBImport.h */,
+				352653C4276B2B999855FBF3 /* LBImport.m */,
 				448CD2F507979C79B3D30B79 /* LBLocalActions.h */,
 				0573CF7D416C8F082B374C6E /* LBLocalActions.m */,
 				720CFEC4A9475E281A1CF956 /* LBLocalStore.h */,
@@ -2231,6 +2315,8 @@
 				C4EC79F8329D4E41803D8946 /* CatalogSettings.xib */,
 				72F298546B4BBA2B1AD0CAED /* Parts.xib */,
 				70729DFCD31B9162AEE7E120 /* TasksWindow.xib */,
+				1C4A264FCFA2C77B33A648D2 /* ImportSummary.xib */,
+				6A1E0C3F9D2B4E57A8C1D2E3 /* InvenTreeConnect.xib */,
 				B71574A70BF424AC03F6ED06 /* Logbook.png */,
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
@@ -2394,6 +2480,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C2F1A0B3D4E5F6071829313 /* LBRuleIssues.m */,
 				49FFF4D6C3A4AD8EF59C7DE1 /* LBRecordForm.m */,
 				C84DC34E113C7F7313C34038 /* LBStockControllers.m */,
 				649ED8F26B5FBF618A78A5F0 /* LBStockPhone.m */,
@@ -2403,6 +2490,7 @@
 				9702E8799FE21A6131A21C3D /* LBCalendar.m */,
 				3F41127A5339F1DA846D2D0A /* LBConflicts.m */,
 				E72A8983F4E6FF9801131FCA /* LBDisplay.m */,
+				3F7C532CB7E0493F83FB6C39 /* LBImport.m */,
 				F0AD21C68D0222A76B701F15 /* LBLocalActions.m */,
 				76BD0C0C6014EC946C220ED3 /* LBLocalStore.m */,
 				E73043F2D16EEE3508B1033E /* LBPlanned.m */,
@@ -2434,6 +2522,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C2F1A0B3D4E5F6071829312 /* LBRuleIssues.m */,
 				0A441C7DD4CE7A4FEEFA6A41 /* LBAnswersController.m */,
 				C3CE11FCB129BDCF4852DCA0 /* LBAppController.m */,
 				E63A728CF00EB704CEB4F90E /* LBCalendarController.m */,
@@ -2450,6 +2539,7 @@
 				DFBD0FF8323401C8CF5C5DF2 /* LBSelfTest.m */,
 				17A5EC43F70F3F6A0365515A /* LBStockCountWindowController.m */,
 				D133B5ACC3CED76663C79052 /* LBStockEditor.m */,
+				7C2F1A0B3D4E5F6071829306 /* LBFieldIssues.m */,
 				9FFA1CCB7AD055C596E55444 /* LBStockItemWindowController.m */,
 				C399DB33835639D25AA56269 /* LBStockOrderWindowController.m */,
 				4A7C39DF8D06BBC66581C911 /* LBStockWindowController.m */,
@@ -2462,6 +2552,7 @@
 				9B3FE38F441D5FFFA5161082 /* LBCalendar.m */,
 				E4BB8CF203F232AF1CA4BAFE /* LBConflicts.m */,
 				4585977F8EC64CE45902C9E3 /* LBDisplay.m */,
+				89A02AE57FC82B49FE45B67F /* LBImport.m */,
 				03DC87140492556BB818E764 /* LBLocalActions.m */,
 				A3EAE0A410A2F53727F78C99 /* LBLocalStore.m */,
 				5B672684CC818796AB007ED1 /* LBPlanned.m */,

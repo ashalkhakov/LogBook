@@ -16,6 +16,118 @@ build/logbook-server -StoreURL logbook.sqlite -Port 8080 -Localhost NO   # built
 keeps it in a database server instead of a SQLite file: FreeCoreData's
 stores, which the AppImage carries.
 
+## In Docker
+
+The server's image holds the server, `logbook-import`, what they read
+beside them (the model, its tables, the permissions, the processes, the
+forms' contracts), FreeCoreData's PostgreSQL and MySQL/MariaDB stores, and
+the libraries they all run on. It has no shell and no package manager
+(`Docker/server.Dockerfile`, built on the releases `.github/pins.env`
+names, as SimpleNotes' server image is). A release publishes it as
+`ghcr.io/ashalkhakov/logbook-server`, for amd64 and arm64.
+
+```sh
+docker run -p 8080:8080 -v logbook:/data ghcr.io/ashalkhakov/logbook-server
+docker build -f Docker/server.Dockerfile -t logbook-server .   # from the repository's root
+```
+
+It runs as an unprivileged user (10001), and by default keeps its SQLite
+store, and the processes' store beside it, in the `/data` volume. Configure
+it with environment variables, `LB_` and a setting's name:
+
+| Variable | Default | |
+|---|---|---|
+| `LB_STORE_TYPE` | `SQLite` | `SQLite`, `PostgreSQL` or `MySQL` |
+| `LB_STORE_URL` | `/data/logbook.sqlite` | a path for SQLite, else the database's URL (`postgresql://user:password@host:5432/logbook`) |
+| `LB_WORKFLOW` | `Workflow.sqlite` beside a SQLite store | the processes' store: give one (`/data/Workflow.sqlite`) with a database server |
+| `LB_SERVICE_ROOT` | `http://<container>:8080/odata/` | the public URL the service is reached at: set it behind a reverse proxy, as its links begin with it |
+| `LB_PORT` | `8080` | |
+| `LB_JWT_ISSUER`, `LB_ALLOW_ANONYMOUS` | | signing in (below) |
+| `LB_ACCESS_LOG` | `json` | JSON lines, for a log collector |
+| `LB_HEALTH_PATH` | `/health` | for the orchestrator or the proxy |
+
+With PostgreSQL:
+
+```sh
+docker run -p 8080:8080 -v logbook:/data \
+  -e LB_STORE_TYPE=PostgreSQL -e LB_STORE_URL=postgresql://logbook:secret@db:5432/logbook \
+  -e LB_WORKFLOW=/data/Workflow.sqlite \
+  ghcr.io/ashalkhakov/logbook-server
+```
+
+Behind a reverse proxy (Nginx Proxy Manager, Caddy, Traefik), forward a
+host to the container's port 8080, and give the address users reach as
+`LB_SERVICE_ROOT` (`https://logbook.example.com/odata/`).
+
+## Importing another app's data
+
+`logbook-import` puts another app's data into a user's logbook, as
+the desktop's File > Import… does: it syncs the user's logbook into a
+store of its own, enters each record through the model's form, and syncs
+them up, so the server keeps its rules and permissions as for any device.
+What the export says that Logbook has no place for is said first, and
+nothing is made unless `-LeaveOut YES` says to go ahead.
+
+```sh
+build/logbook-import -Server https://logbook.example.com/ Drivvo.csv
+build/logbook-import -Server https://logbook.example.com/ -Make Chevrolet -Year 2021 Drivvo.csv
+docker run --rm -v "$PWD":/in --entrypoint /app/logbook-import ghcr.io/ashalkhakov/logbook-server \
+  -Server https://logbook.example.com/ /in/Drivvo.csv
+```
+
+A server that asks for a sign-in is signed in to by its device flow (a
+code to type at a page) or a password; one that asks for none takes
+`-Email`.
+
+What it reads:
+
+- **Drivvo's CSV export** goes into your vehicle it is. It's found by its
+  licence plate (case, spaces and dashes aside), else its name, else its
+  model when only one of your vehicles has it; `-Vehicle` names one instead.
+  When none is, a vehicle is made of what the export says: its name (else
+  its model), model, plate, fuel and year. The export says no make, and 0
+  for an unknown year, so `-Make` (and `-Year`) say them. Its fill-ups and
+  services go in; its one fuel is taken as the vehicle's, its services as
+  Maintenance.
+- **MainTrack's store** (`Maintrack.sqlite`: on a Mac where MainTrack is
+  installed, in `~/Library/Group Containers/group.kiwiswift.mainTrack/`)
+  makes its own vehicles, so takes no `-Vehicle`: each bike a bicycle (of
+  its name, else its brand and model), each component one of the bike it
+  was first fitted to, each ride a trip (its readings added up from the
+  rides before it), each assignment a component change (retiring the part
+  taken off then), each invoice a service, its log entries the tasks. It
+  reads a copy of the store, so MainTrack may be running.
+
+```sh
+build/logbook-import -Server https://logbook.example.com/ \
+  ~/Library/Group\ Containers/group.kiwiswift.mainTrack/Maintrack.sqlite
+```
+
+- **An InvenTree instance** (`-InvenTree <its address>`) goes into one of
+  the user's catalogs, named by `-Catalog` (made if the user has none of
+  that name). It's read through InvenTree's API with a token that may
+  read: `LB_INVENTREE_TOKEN` in the environment, else `-Token`. It makes:
+  - its top stock locations as warehouses, the rest as locations in them;
+  - its part categories as categories;
+  - its suppliers as contacts and suppliers;
+  - its parts as items, with each one's manufacturer and MPN;
+  - its supplier parts as supplier items;
+  - each stock item with a serial as a unit;
+  - its purchase orders with their lines: Complete closed, Placed
+    confirmed, Pending a draft;
+  - receipts and moves by each stock item's tracking history, ending where
+    InvenTree has it now. Stock bought outside an order is an opening
+    adjustment, its price said in a note.
+
+  InvenTree's references (PO-0001, its part and stock numbers) are kept in
+  notes, so importing again passes over what's there and makes only
+  what's new.
+
+```sh
+LB_INVENTREE_TOKEN=inv-... build/logbook-import -Server https://logbook.example.com/ \
+  -InvenTree https://inventree.example.com -Catalog Home -LeaveOut YES
+```
+
 ## Signing in with Keycloak (or another OpenID Connect provider)
 
 As SimpleNotes does:

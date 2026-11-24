@@ -1,0 +1,31 @@
+{
+ "count": 4,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "pk": 1,
+   "name": "Home",
+   "parent": null,
+   "description": ""
+  },
+  {
+   "pk": 2,
+   "name": "Office",
+   "parent": 1,
+   "description": ""
+  },
+  {
+   "pk": 3,
+   "name": "Drawer",
+   "parent": 2,
+   "description": ""
+  },
+  {
+   "pk": 4,
+   "name": "Garage",
+   "parent": null,
+   "description": ""
+  }
+ ]
+}

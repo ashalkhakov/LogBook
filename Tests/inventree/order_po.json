@@ -1,0 +1,31 @@
+{
+ "count": 2,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "pk": 1,
+   "reference": "PO-0001",
+   "supplier": 1,
+   "status": 30,
+   "status_text": "Complete",
+   "issue_date": "2026-03-02",
+   "creation_date": "2026-03-01",
+   "supplier_reference": "PS-88412",
+   "description": "Office kit",
+   "order_currency": "USD"
+  },
+  {
+   "pk": 2,
+   "reference": "PO-0002",
+   "supplier": 3,
+   "status": 20,
+   "status_text": "Placed",
+   "issue_date": "2026-04-01",
+   "creation_date": "2026-04-01",
+   "supplier_reference": null,
+   "description": null,
+   "order_currency": "USD"
+  }
+ ]
+}

@@ -1,4 +1,5 @@
 #import "LBDisplay.h"
+#import "StockItem+CoreDataClass.h"
 #import "Event+CoreDataClass.h"
 #import "Document+CoreDataClass.h"
 #import "ExpenseKind+CoreDataClass.h"
@@ -90,6 +91,16 @@ static id LBUnitCoded(NSString *entity, NSString *code, NSManagedObjectContext *
 }
 @end
 
+@implementation StockUnit (LBDisplay)
+- (NSString *)lbTitle {
+    NSString *item = self.stockItem.itemName ?: @"";
+    return self.serialNumber.length ? [NSString stringWithFormat:@"%@ #%@", item, self.serialNumber] : item;
+}
++ (NSSet<NSString *> *)keyPathsForValuesAffectingLbTitle {
+    return [NSSet setWithObjects:NSStringFromSelector(@selector(serialNumber)), @"stockItem.itemName", nil];
+}
+@end
+
 @implementation TyreSet (LBDisplay)
 - (NSString *)lbTitle { return self.tyreSetName ?: @""; }
 + (NSSet<NSString *> *)keyPathsForValuesAffectingLbDate {
@@ -115,13 +126,13 @@ NSString * const LBAnyOf = @"Any of";
 @implementation Record (LBDisplay)
 
 + (NSArray<NSString *> *)lbKinds {
-    return @[ @"FillUp", @"Service", @"Expense", @"Trip", @"Income", @"TyreChange", @"TyreSet", @"Document", @"MeterReading",
-              @"Inspection" ];
+    return @[ @"FillUp", @"Service", @"Expense", @"Trip", @"Income", @"TyreChange", @"TyreSet", @"ComponentChange",
+              @"Document", @"MeterReading", @"Inspection" ];
 }
 
 + (NSString *)lbKindOfEntityNamed:(NSString *)name {
     NSDictionary *said = @{ @"FillUp": @"Fill-up", @"TyreChange": @"Tyre change", @"TyreSet": @"Tyre set",
-                            @"MeterReading": @"Meter reading" };
+                            @"ComponentChange": @"Component change", @"MeterReading": @"Meter reading" };
     return said[name] ?: name;
 }
 

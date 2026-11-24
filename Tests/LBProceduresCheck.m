@@ -35,6 +35,14 @@
 #import "Expense+CoreDataClass.h"
 #import "MeterReading+CoreDataClass.h"
 #import "CostKind+CoreDataClass.h"
+#import "FillUp+CoreDataClass.h"
+#import "VolumeUnit+CoreDataClass.h"
+#import "StockUnit+CoreDataClass.h"
+#import "StockItem+CoreDataClass.h"
+#import "Catalog+CoreDataClass.h"
+#import "Category+CoreDataClass.h"
+#import "Trip+CoreDataClass.h"
+#import "ComponentChange+CoreDataClass.h"
 
 static NSUInteger LBFailures;
 static NSManagedObjectModel *LBModel;
@@ -837,6 +845,151 @@ static void LBTimeZones(void) {
             nil);
 }
 
+/* What a vehicle is: a bicycle uses no fuel and is never filled up; a car,
+   or one stored before vehicles had kinds, uses one and was built in a
+   year. A component fitted does the work of the task named as its kind,
+   and wears from the reading it was fitted at. */
+static BOOL LBRefused(NSManagedObjectContext *context) {
+    NSError *error = nil;
+    BOOL saved = [context lb_completeRemindersOfChangedEvents:&error] && [context orm_prepareForSave:&error] && [context save:&error];
+    if (!saved) [context rollback];
+    return !saved;
+}
+
+static void LBKindsAndComponents(void) {
+    LBWorld *world = LBNewWorld();
+    Vehicle *bike = LBInsert([Vehicle class], world.context);
+    bike.id = LBID(2);
+    bike.vehicleName = @"Commuter";
+    bike.vehicleKind = @"Bicycle";
+    bike.make = @"Surly";
+    bike.carModel = @"Long Haul Trucker";
+    bike.owner = world.anna;
+    LBCheck(@"a bicycle: no fuel, no year", LBSave(world.context, @"a bicycle"), nil);
+    bike.fuel = @"Petrol";
+    LBCheck(@"a bicycle that uses a fuel: refused", LBRefused(world.context), nil);
+    Vehicle *car = LBVehicle(world, 3, @"Polo");
+    car.vehicleKind = @"Car";
+    car.fuel = nil;
+    LBCheck(@"a car that uses no fuel: refused", LBRefused(world.context), nil);
+    world.golf.fuel = nil;
+    LBCheck(@"one of no kind (stored before kinds) that uses no fuel: refused", LBRefused(world.context), nil);
+    FillUp *fill = LBInsert([FillUp class], world.context);
+    LBEvent(world, fill, bike, 5, @"2026-06-01 10:00");
+    fill.mileageQuantity = LBNumber(@"1000");
+    fill.mileageDistanceUnit = world.km;
+    fill.volumeQuantity = LBNumber(@"1");
+    fill.volumeVolumeUnit = LBFetchKey([VolumeUnit class], NSStringFromSelector(@selector(code)), @"L", world.context);
+    fill.fuel = @"Petrol";
+    fill.totalAmount = LBNumber(@"2");
+    fill.totalCurrency = @"EUR";
+    LBCheck(@"a bicycle filled up: refused", LBRefused(world.context), nil);
+
+    /* A bicycle with no meter: its readings worked out from its trips,
+       10 km and then 20 km on a trainer, its service between. */
+    [world.context rollback];
+    bike.hasNoMeter = YES;
+    Trip *first = LBInsert([Trip class], world.context);
+    LBEvent(world, first, bike, 6, @"2026-06-01 10:00");
+    first.moment = LBMoment(@"2026-06-01 11:00");
+    first.lengthQuantity = LBNumber(@"10");
+    first.lengthDistanceUnit = world.km;
+    Service *lubed = LBService(world, bike, 7, @"2026-06-02 10:00", @"999", @[ @"Lub Chain" ]);
+    Trip *zwift = LBInsert([Trip class], world.context);
+    LBEvent(world, zwift, bike, 8, @"2026-06-03 10:00");
+    zwift.moment = LBMoment(@"2026-06-03 11:00");
+    zwift.lengthQuantity = LBNumber(@"20");
+    zwift.lengthDistanceUnit = world.km;
+    zwift.isVirtual = YES;
+    BOOL saved = LBSave(world.context, @"a bicycle's trips");
+    LBCheck(@"no meter: its readings its trips' lengths added up: 0-10, the service at 10 (not the 999 said), 10-30",
+            saved && LBIs(first.mileageQuantity, @"0") && LBIs(first.distanceQuantity, @"10") && LBIs(lubed.mileageQuantity, @"10")
+                && LBIs(zwift.mileageQuantity, @"10") && LBIs(zwift.distanceQuantity, @"30"),
+            [NSString stringWithFormat:@"%@-%@, %@, %@-%@", first.mileageQuantity, first.distanceQuantity, lubed.mileageQuantity,
+                                       zwift.mileageQuantity, zwift.distanceQuantity]);
+
+    /* The chain every 3000 km; a chain, a wheel and a tyre, units of a
+       catalog's items. */
+    Schedule *chain = LBInsert([Schedule class], world.context);
+    chain.id = LBID(10);
+    chain.vehicle = bike;
+    chain.enteredBy = world.anna;
+    chain.task = @"Chain";
+    chain.intervalQuantity = LBNumber(@"3000");
+    chain.intervalDistanceUnit = world.km;
+    LBSave(world.context, @"the chain's schedule");
+    Reminder *due = [chain lb_startFrom:LBMoment(@"2026-05-01 10:00") mileage:LBNumber(@"0") unit:world.km by:world.anna
+                                     at:LBMoment(@"2026-05-01 18:00") error:NULL];
+    LBSave(world.context, @"started");
+    Catalog *parts = LBInsert([Catalog class], world.context);
+    parts.id = LBID(50);
+    parts.catalogName = @"Bike parts";
+    parts.catalogOwner = world.anna;
+    StockUnit * (^unitOf)(unsigned, NSString *, NSString *) = ^StockUnit *(unsigned n, NSString *name, NSString *kind) {
+        Category *category = LBInsert([Category class], world.context);
+        category.id = LBID(n + 1);
+        category.categoryName = kind;
+        category.catalog = parts;
+        StockItem *item = LBInsert([StockItem class], world.context);
+        item.id = LBID(n + 2);
+        item.itemName = name;
+        item.catalog = parts;
+        item.category = category;
+        item.created = [NSDate date];
+        item.sku = [NSString stringWithFormat:@"BP-%u", n];
+        StockUnit *unit = LBInsert([StockUnit class], world.context);
+        unit.id = LBID(n + 3);
+        unit.stockItem = item;
+        return unit;
+    };
+    StockUnit *kmc = unitOf(60, @"KMC X9", @"Chain"), *wheel = unitOf(70, @"Shimano WH-R500", @"Wheel Set");
+    StockUnit *tyre = unitOf(80, @"GravelKing+", @"Tyre"), *pads = unitOf(90, @"Shimano B01S", @"Brake pads");
+    LBSave(world.context, @"the parts");
+    ComponentChange * (^fit)(unsigned, NSString *, StockUnit *) = ^ComponentChange *(unsigned n, NSString *moment, StockUnit *unit) {
+        ComponentChange *change = LBInsert([ComponentChange class], world.context);
+        LBEvent(world, change, bike, n, moment);
+        change.mileageQuantity = LBNumber(@"0");
+        change.mileageDistanceUnit = world.km;
+        change.stockUnit = unit;
+        return change;
+    };
+    fit(100, @"2026-05-20 10:00", pads);
+    LBSave(world.context, @"brake pads fitted");
+    LBCheck(@"brake pads fitted close nothing of the chain's", due.lb_isOpen, nil);
+    ComponentChange *chainOn = fit(101, @"2026-05-21 10:00", kmc);
+    fit(102, @"2026-05-21 10:05", wheel).mountPosition = @"Rear";
+    ComponentChange *tyreOn = fit(103, @"2026-05-21 10:10", tyre);
+    tyreOn.host = wheel;
+    tyreOn.mountPosition = @"Rear";
+    tyreOn.skipsVirtualTrips = YES;
+    LBCheck(@"fitted: a chain, a wheel, a tyre into the wheel; their readings the bicycle's then (0)", LBSave(world.context, @"fitted")
+                && LBIs(chainOn.mileageQuantity, @"0") && [kmc lb_fittedTo] == bike && [tyre lb_fittedTo] == bike, chainOn.mileageQuantity);
+    Reminder *next = due.lb_nextReminder;
+    LBCheck(@"a chain fitted (a unit of a Chain) closes the chain's, the next due 3000 km on", due.event == chainOn && LBIs(next.dueMileageQuantity, @"3000"),
+            LBDue(next));
+    LBCheck(@"the chain wore 30 km (both trips); the tyre, on no virtual trip, 10", [[kmc lb_wornIn:world.km] isEqualToNumber:@30]
+                && [[tyre lb_wornIn:world.km] isEqualToNumber:@10],
+            [NSString stringWithFormat:@"%@, %@", [kmc lb_wornIn:world.km], [tyre lb_wornIn:world.km]]);
+    /* The wheel taken off, a new chain on: the tyre goes with its wheel. */
+    StockUnit *newer = unitOf(110, @"KMC X10", @"Chain");
+    ComponentChange *swap = fit(111, @"2026-06-04 10:00", newer);
+    swap.removedStockUnit = kmc;
+    ComponentChange *off = fit(112, @"2026-06-04 10:05", pads);
+    off.removedStockUnit = wheel;
+    Trip *later = LBInsert([Trip class], world.context);
+    LBEvent(world, later, bike, 113, @"2026-06-05 10:00");
+    later.moment = LBMoment(@"2026-06-05 11:00");
+    later.lengthQuantity = LBNumber(@"5");
+    later.lengthDistanceUnit = world.km;
+    LBCheck(@"removed, the old chain wears no more (30), off the bike; the tyre with its wheel (10); the new chain 5",
+            LBSave(world.context, @"swapped") && [[kmc lb_wornIn:world.km] isEqualToNumber:@30] && ![kmc lb_fittedTo]
+                && [[tyre lb_wornIn:world.km] isEqualToNumber:@10] && ![tyre lb_fittedTo] && [[newer lb_wornIn:world.km] isEqualToNumber:@5],
+            [NSString stringWithFormat:@"%@ %@ %@", [kmc lb_wornIn:world.km], [tyre lb_wornIn:world.km], [newer lb_wornIn:world.km]]);
+    ComponentChange *both = fit(120, @"2026-06-06 10:00", newer);
+    both.removedStockUnit = newer;
+    LBCheck(@"a change fitting and removing one unit: refused", LBRefused(world.context), nil);
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -865,6 +1018,7 @@ int main(int argc, const char *argv[]) {
         LBContinue();
         LBPlanning();
         LBTimeZones();
+        LBKindsAndComponents();
         printf("procedures: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;
