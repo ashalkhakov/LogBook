@@ -123,6 +123,20 @@ static void LBType(NSWindow *window, NSString *identifier, NSString *text) {
     LBSpin();
 }
 
+/* Typed into a field and left there, its editor still open, as a user
+   who clicks a button next: what the button does takes what was typed. */
+static void LBTypeStaying(NSWindow *window, NSString *identifier, NSString *text) {
+    NSTextField *field = (NSTextField *)LBControl(window.contentView, identifier);
+    LBCheck([NSString stringWithFormat:@"a field %@", identifier], field != nil, nil);
+    if (!field) return;
+    [window makeFirstResponder:field];
+    NSTextView *editor = (NSTextView *)[window fieldEditor:NO forObject:field];
+    [editor selectAll:nil];
+    [editor insertText:text replacementRange:NSMakeRange(NSNotFound, 0)];
+    LBSpin();
+    LBCheck([NSString stringWithFormat:@"%@ still being typed into", identifier], field.currentEditor != nil, window.firstResponder);
+}
+
 static void LBClick(NSWindow *window, NSString *identifier) {
     NSButton *button = (NSButton *)LBControl(window.contentView, identifier);
     LBCheck([NSString stringWithFormat:@"a button %@", identifier], button != nil && button.isEnabled, nil);
@@ -971,8 +985,8 @@ static LBStockItemWindowController *LBAddStockItem(LBStockWindowController *stoc
 static void LBMoveStock(LBStockItemWindowController *card, NSString *button, NSString *quantity, NSString *reason) {
     [card.cardTabs selectTabViewItemWithIdentifier:@"stock"];
     LBSpin();
-    LBType(card.window, @"stockQuantity", quantity);
     if (reason) LBChoose(card.window, @"stockReason", reason);
+    LBTypeStaying(card.window, @"stockQuantity", quantity);
     LBClick(card.window, button);
 }
 
@@ -1230,8 +1244,8 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBCheck(@"its task done with its form, submitted: Ship the goods", [names isEqualToArray:@[ @"Ship the goods" ]], names);
     [window makeKeyAndOrderFront:nil];
     LBChoose(window, @"moveAt", @"Garage / Shelf A");
-    LBType(window, @"moveQuantity", @"2");
     [sale.lineList setSelectedObjects:@[ line ]];
+    LBTypeStaying(window, @"moveQuantity", @"2");
     LBClick(window, @"moveLine");
     NSSet *shipping = [sale.shipForm valueForKey:@"moves"];
     LBCheck(@"Ship: its sheet, ShipGoods, a move of 2 of the line from Shelf A", window.attachedSheet == sale.shipPanel && shipping.count == 1
@@ -1344,8 +1358,8 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBCheck(@"and the order closed by it", [kept.orderState isEqualToString:@"Closed"], kept.orderState);
     LBChoose(window, @"returnReason", @"Damaged");
     LBChoose(window, @"moveAt", @"Main / Default");
-    LBType(window, @"moveQuantity", @"1");
     [purchase.lineList setSelectedObjects:@[ purchase.lines.firstObject ]];
+    LBTypeStaying(window, @"moveQuantity", @"1");
     LBClick(window, @"returnLine");
     LBCheck(@"Return Line: its sheet, RequestSupplierReturn, a damaged bracket", window.attachedSheet == purchase.returnAskPanel
                 && [purchase.returnAskForm.session.form.name isEqualToString:@"RequestSupplierReturn"]

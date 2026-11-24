@@ -441,6 +441,8 @@
 }
 
 - (IBAction)moveLine:(id)sender {
+    /* What is still being typed (the quantity), taken first. */
+    if (![self commitEdits]) return;
     NSManagedObject *line = _lineList.selectedObjects.count == 1 ? _lineList.selectedObjects[0] : nil;
     if (!line) return [self refuse:@"Choose a line."];
     NSDecimalNumber *quantity = [self typed:_moveQuantity];
@@ -457,6 +459,7 @@
 }
 
 - (IBAction)moveOutstanding:(id)sender {
+    if (![self commitEdits]) return;
     if (!_moveAt) return [self refuse:_sale ? @"Choose where from." : @"Choose where."];
     NSDictionary *held = _sale ? [self heldAtMoveAt] : nil;
     NSMutableArray *chosen = [NSMutableArray array], *quantities = [NSMutableArray array];
@@ -478,6 +481,7 @@
 }
 
 - (IBAction)returnLine:(id)sender {
+    if (![self commitEdits]) return;
     NSManagedObject *line = _lineList.selectedObjects.count == 1 ? _lineList.selectedObjects[0] : nil;
     if (!line) return [self refuse:@"Choose a line."];
     NSDecimalNumber *quantity = [self typed:_moveQuantity];

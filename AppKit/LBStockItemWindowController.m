@@ -191,6 +191,8 @@ static NSPredicate *LBOf(NSString *key, id object) {
 #pragma mark Stock
 
 - (IBAction)adjust:(id)sender {
+    /* What is still being typed (the quantity), taken first. */
+    if (![self commitEdits]) return;
     NSDecimalNumber *quantity = [self typed:_stockQuantity];
     if (!quantity) return;
     if (!_stockAt) return [self refuse:@"Choose where."];
@@ -198,6 +200,7 @@ static NSPredicate *LBOf(NSString *key, id object) {
 }
 
 - (IBAction)transfer:(id)sender {
+    if (![self commitEdits]) return;
     NSDecimalNumber *quantity = [self typed:_stockQuantity];
     if (!quantity) return;
     if (!_stockAt || !_stockTo) return [self refuse:@"Choose where from, and where to."];
@@ -262,6 +265,7 @@ static NSPredicate *LBOf(NSString *key, id object) {
 }
 
 - (void)assembling:(BOOL)apart {
+    if (![self commitEdits]) return;
     NSDecimalNumber *quantity = [self typed:_stockQuantity];
     if (!quantity) return;
     if (!_stockAt) return [self refuse:@"Choose where."];
