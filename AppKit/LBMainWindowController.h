@@ -92,6 +92,19 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The vehicle chosen, when one is.
 - (nullable Vehicle *)chosenVehicle;
+
+// File > Import…: another app's export (LBImport.h: Drivvo's CSV) into the
+// chosen vehicle, through the model's forms. What the export says that
+// Logbook has no place for is shown first (ImportSummary.xib), and nothing
+// is made unless the user says Import.
+- (IBAction)importRecords:(nullable id)sender;
+// The same of a file, with nothing asked when quiet (the self-test): the
+// left out taken. Made and passed over said; NO and why where refused.
+- (BOOL)importFile:(NSURL *)file intoVehicle:(Vehicle *)vehicle made:(NSUInteger *_Nullable)made skipped:(NSUInteger *_Nullable)skipped
+             error:(NSError **)error;
+// ImportSummary.xib's view and its list, the owner's while it is shown.
+@property (nonatomic, strong, nullable) IBOutlet NSView *importSummaryView;
+@property (nonatomic, strong, nullable) IBOutlet NSTextView *importSummaryText;
 // The signed-in user's unit of distance, else kilometres.
 - (nullable DistanceUnit *)distanceUnit;
 // What is being typed kept: NO when a field holds what cannot be.

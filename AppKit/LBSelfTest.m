@@ -345,6 +345,7 @@ static void LBAttachmentSteps(LBMainWindowController *controller, Vehicle *kept)
 }
 
 static NSArray *LBServerObjects(Class cls, NSPredicate *predicate);
+static void LBImportSteps(LBMainWindowController *controller);
 
 /* The user's currency set in the Preferences window, as a user does. */
 static void LBPreferenceSteps(LBMainWindowController *controller) {
@@ -2607,8 +2608,71 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
     LBKindSteps(controller);
     LBCalendarViewAlone();
     LBCalendarSteps(controller);
+    LBImportSteps(controller);
     LBQuantityFieldAlone();
     LBConnectSteps();
+}
+
+/* File > Import…: the menu's item, its summary's view (ImportSummary.xib)
+   loaded and connected, and an export of Drivvo's into a vehicle of its
+   own, as the menu does it without its panels: made, on the server, and
+   imported again, nothing made. */
+static void LBImportSteps(LBMainWindowController *controller) {
+    NSMenuItem *file = [NSApp.mainMenu itemWithTitle:@"File"];
+    NSMenuItem *item = [file.submenu itemWithTitle:@"Import…"];
+    LBCheck(@"File > Import…, its action the window's import", item && [NSStringFromSelector(item.action) isEqualToString:@"importRecords:"],
+            item ? NSStringFromSelector(item.action) : [file.submenu.itemArray valueForKey:@"title"]);
+    NSArray *objects = nil;
+    NSNib *nib = [[NSNib alloc] initWithNibNamed:@"ImportSummary" bundle:nil];
+    BOOL loaded = [nib instantiateWithOwner:controller topLevelObjects:&objects];
+    LBCheck(@"ImportSummary.xib loaded: its view and its list connected, the list in the view",
+            loaded && controller.importSummaryView && controller.importSummaryText
+                && [controller.importSummaryText isDescendantOf:controller.importSummaryView] && !controller.importSummaryText.isEditable,
+            [NSString stringWithFormat:@"%d %@ %@", loaded, controller.importSummaryView, controller.importSummaryText]);
+    controller.importSummaryView = nil;
+    controller.importSummaryText = nil;
+
+    NSManagedObjectContext *context = controller.context;
+    Vehicle *damas = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:context];
+    damas.id = [NSUUID UUID];
+    damas.vehicleName = @"Self-test Damas";
+    damas.make = @"Daewoo";
+    damas.carModel = @"Damas";
+    damas.manufactureYear = 2010;
+    damas.fuel = @"Petrol";
+    damas.owner = controller.store.user;
+    LBCheck(@"a vehicle to import into, saved", [controller saveChanges], controller.lastError);
+    NSString *export = @"##Vehicle\n\"Name\",\"Model\",\"License plate\",\"Fuel capacity(L)\",\"Year\",\"Notes\",\"Purchase price\",\"Sale price\"\n"
+                       @"\"\",\"Damas\",\"\",\"37.00\",\"0\",\"\",\"0.0\",\"0.0\"\n\n"
+                       @"##Refuelling\n\"Odometer (km)\",\"Date\",\"Fuel\",\"Price / L\",\"Total cost\",\"Volume\",\"Filled tank completely\","
+                       @"\"Petrol station\",\"Driver\",\"Payment method\",\"Reason\",\"Notes\",\"Discount\"\n"
+                       @"\"1200\",\"2025-05-02 10:34:47\",\"Gasoline\",\"2.00\",\"44.00\",\"22.00\",\"Yes\",\"Petrol Asia\",\"\",\"\",\"\",\"\",\"0.0\"\n"
+                       @"\"1000\",\"2025-04-29 04:47:18\",\"Gasoline\",\"2.00\",\"30.00\",\"15.00\",\"Yes\",\"Royal Petrol\",\"\",\"\",\"\",\"\",\"0.0\"\n\n"
+                       @"##Service\n\"Odometer (km)\",\"Date\",\"Total cost\",\"Type of service\",\"Service location\",\"Driver\",\"Payment method\","
+                       @"\"Notes\",\"Title\",\"Discount\",\"Instalments\",\"First instalment\"\n"
+                       @"\"1300\",\"2025-05-19 14:50:47\",\"30.00\",\"Fuel Filter\",\"\",\"\",\"Money\",\"Labour only.\",\"\",\"0.0\",\"\",\"\"\n";
+    NSURL *url = [NSURL fileURLWithPath:[NSTemporaryDirectory() stringByAppendingPathComponent:@"lb-self-test-drivvo.csv"]];
+    [export writeToURL:url atomically:YES encoding:NSUTF8StringEncoding error:NULL];
+    NSUInteger made = 0, skipped = 0;
+    NSError *error = nil;
+    BOOL done = [controller importFile:url intoVehicle:damas made:&made skipped:&skipped error:&error];
+    LBCheck(@"Drivvo's export imported: 3 made", done && made == 3 && skipped == 0,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)made, (unsigned long)skipped]);
+    if (LBAppStore.local) [LBAppStore syncAndWait:NULL];
+    Vehicle *there = LBVehicleNamed(@"Self-test Damas");
+    NSUInteger fills = 0, services = 0;
+    for (Record *record in there.records) {
+        [record.managedObjectContext refreshObject:record mergeChanges:NO];
+        if ([record isKindOfClass:[FillUp class]]) fills++;
+        if ([record isKindOfClass:[Service class]]) services++;
+    }
+    LBCheck(@"the server has them: two fill-ups, the service at no garage", fills == 2 && services == 1,
+            [NSString stringWithFormat:@"%lu fill-ups, %lu services; issues %@", (unsigned long)fills, (unsigned long)services,
+                                       [LBAppStore.local.issues valueForKey:@"message"]]);
+    done = [controller importFile:url intoVehicle:damas made:&made skipped:&skipped error:&error];
+    LBCheck(@"imported again: nothing made, 3 there", done && made == 0 && skipped == 3,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)made, (unsigned long)skipped]);
+    [[NSFileManager defaultManager] removeItemAtURL:url error:NULL];
 }
 
 static void LBSteps(LBMainWindowController *controller) {

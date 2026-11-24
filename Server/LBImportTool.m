@@ -167,14 +167,8 @@ int main(int argc, const char *argv[]) {
                 return LBFail(@"%@ owns no vehicle named %@ (%@). Add it in Logbook first: Drivvo's export says no make or year.", user.email,
                               named, names.count ? [names componentsJoinedByString:@", "] : @"none");
             }
-            NSMutableArray *kinds = [NSMutableArray array];
-            for (NSString *kind in [import.counts.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
-                NSUInteger n = import.counts[kind].unsignedIntegerValue;
-                /* "fill-ups" said of one: "fill-up". */
-                [kinds addObject:[NSString stringWithFormat:@"%lu %@", (unsigned long)n, n == 1 ? [kind substringToIndex:kind.length - 1] : kind]];
-            }
             printf("%s's export of %s: %s, into %s.\n", import.source.UTF8String, [import.vehicleNames componentsJoinedByString:@", "].UTF8String,
-                   [kinds componentsJoinedByString:@", "].UTF8String, vehicle.vehicleName.UTF8String);
+                   import.summary.UTF8String, vehicle.vehicleName.UTF8String);
             if (![import planForVehicle:vehicle by:user error:&error]) return LBFail(@"%@", error.localizedDescription);
             if (import.leftOut.count) {
                 printf("Logbook has no place for these, or takes them so:\n");

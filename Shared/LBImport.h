@@ -37,6 +37,8 @@ typedef BOOL (^LBImportSaving)(NSManagedObjectContext *context, NSError **error)
 @property (nonatomic, readonly, copy) NSArray<NSString *> *vehicleNames;
 /* How many records it has, of each kind ("fill-ups": 10). */
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, NSNumber *> *counts;
+/* Those counts said: "2 fill-ups, 1 service". */
+@property (nonatomic, readonly, copy) NSString *summary;
 
 /* Said once the import has been planned against the vehicle: each thing
    of the export Logbook has no place for ("Refuelling 3: its payment

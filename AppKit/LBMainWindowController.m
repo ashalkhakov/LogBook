@@ -11,6 +11,7 @@
 #import "Reminder+CoreDataClass.h"
 #import "Rescheduling+CoreDataClass.h"
 #import "LBProcedures.h"
+#import "LBImport.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
@@ -563,6 +564,78 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     }
     [self reportError:[self willPresentError:error]];
     return NO;
+}
+
+#pragma mark Import
+
+- (IBAction)importRecords:(id)sender {
+    Vehicle *vehicle = [self chosenVehicle];
+    if (!vehicle) {
+        return [self reportError:[NSError errorWithDomain:LBImportErrorDomain code:1
+                                                 userInfo:@{ NSLocalizedDescriptionKey : @"Choose the vehicle to import into first.",
+                                                             NSLocalizedRecoverySuggestionErrorKey :
+                                                                 @"An export goes into a vehicle already set up: Drivvo's says no make or year." }]];
+    }
+    if (![self commitEdits]) return;
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    panel.message = [NSString stringWithFormat:@"Choose an export to import into %@: Drivvo's CSV.", vehicle.vehicleName];
+    panel.allowedFileTypes = @[ @"csv" ];
+    [panel beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
+        if (response != NSModalResponseOK || !panel.URL) return;
+        /* After the panel has gone: the summary is a sheet of its own. */
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self askToImport:panel.URL intoVehicle:vehicle];
+        });
+    }];
+}
+
+/* What the export would make, and what it leaves out, said; imported once
+   the user says Import. */
+- (void)askToImport:(NSURL *)file intoVehicle:(Vehicle *)vehicle {
+    NSError *error = nil;
+    LBImport *import = [LBImport importOfFile:file error:&error];
+    if (!import || ![import planForVehicle:vehicle by:_store.user error:&error]) return [self reportError:error];
+    NSAlert *alert = [[NSAlert alloc] init];
+    alert.messageText = [NSString stringWithFormat:@"Import %@'s export into %@?", import.source, vehicle.vehicleName];
+    alert.informativeText = [NSString stringWithFormat:@"%@.%@", import.summary,
+                                                       import.leftOut.count ? @" Logbook has no place for these, or takes them so:" : @""];
+    [alert addButtonWithTitle:@"Import"];
+    [alert addButtonWithTitle:@"Cancel"];
+    if (import.leftOut.count) {
+        NSArray *objects = nil;
+        NSNib *nib = [[NSNib alloc] initWithNibNamed:@"ImportSummary" bundle:nil];
+        if ([nib instantiateWithOwner:self topLevelObjects:&objects] && _importSummaryView) {
+            [_importSummaryText setString:[@"• " stringByAppendingString:[import.leftOut componentsJoinedByString:@"\n• "]]];
+            alert.accessoryView = _importSummaryView;
+        }
+    }
+    [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
+        self.importSummaryView = nil;
+        self.importSummaryText = nil;
+        if (response != NSAlertFirstButtonReturn) return;
+        NSUInteger made = 0, skipped = 0;
+        NSError *failure = nil;
+        BOOL done = [self importFile:file intoVehicle:vehicle made:&made skipped:&skipped error:&failure];
+        if (!done) return [self reportError:failure];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSAlert *said = [[NSAlert alloc] init];
+            said.messageText = [NSString stringWithFormat:@"%lu made, %lu there already.", (unsigned long)made, (unsigned long)skipped];
+            said.informativeText = @"They are synced with the rest of your logbook.";
+            [said beginSheetModalForWindow:self.window completionHandler:nil];
+        });
+    }];
+}
+
+- (BOOL)importFile:(NSURL *)file intoVehicle:(Vehicle *)vehicle made:(NSUInteger *)made skipped:(NSUInteger *)skipped error:(NSError **)error {
+    if (![self commitEdits]) return NO;
+    LBImport *import = [LBImport importOfFile:file error:error];
+    if (!import) return NO;
+    LBStore *store = _store;
+    BOOL done = [import importIntoVehicle:vehicle by:store.user context:self.context
+                                  saving:^BOOL(NSManagedObjectContext *context, NSError **failure) { return [store save:failure]; }
+                                    made:made skipped:skipped error:error];
+    [self readAgain];
+    return done;
 }
 
 - (void)reportError:(NSError *)error {

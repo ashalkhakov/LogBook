@@ -59,7 +59,7 @@ LB_FORMS = $(foreach f,RecordFillUp RecordService RecordExpense RecordTrip Recor
 	RecordMeterReading RecordTyreChange RecordTyreSet EditPurchaseOrder ConfirmPurchaseOrder ReceiveGoods EditSaleOrder ConfirmSaleOrder ShipGoods CountStock ReviewStockCount RequestTransfer MoveStock RequestCustomerReturn ReceiveCustomerReturn RequestSupplierReturn SendSupplierReturn SetUpSchedule ChangeSchedule SetReminder RescheduleReminder CancelReminder MarkReminderDone,$(LB_MODEL)/Forms/$(f).ormform) \
 	$(patsubst Model/%.flow,$(LB_MODEL)/Forms/%.ormflow,$(wildcard Model/*.flow))
 Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib AppKit/Preferences.xib AppKit/Lists.xib AppKit/StockWindow.xib \
-	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib AppKit/Parts.xib AppKit/TasksWindow.xib AppKit/Logbook.png \
+	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib AppKit/Parts.xib AppKit/TasksWindow.xib AppKit/ImportSummary.xib AppKit/Logbook.png \
 	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl) $(LB_FORMS)
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 

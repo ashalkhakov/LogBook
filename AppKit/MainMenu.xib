@@ -87,6 +87,12 @@
                                     <action selector="revertChanges:" target="-1" id="revertItemAction"/>
                                 </connections>
                             </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separatorImport"/>
+                            <menuItem title="Import…" id="importItem">
+                                <connections>
+                                    <action selector="importRecords:" target="-1" id="importItemAction"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="separator4"/>
                             <menuItem title="Close" keyEquivalent="w" id="close">
                                 <connections>

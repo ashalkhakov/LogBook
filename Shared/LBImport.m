@@ -214,6 +214,16 @@ static NSString *LBUnitIn(NSString *column) {
     return YES;
 }
 
+- (NSString *)summary {
+    NSMutableArray *said = [NSMutableArray array];
+    for (NSString *kind in [_counts.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
+        NSUInteger n = _counts[kind].unsignedIntegerValue;
+        /* "fill-ups" said of one: "fill-up". */
+        [said addObject:[NSString stringWithFormat:@"%lu %@", (unsigned long)n, n == 1 ? [kind substringToIndex:kind.length - 1] : kind]];
+    }
+    return [said componentsJoinedByString:@", "];
+}
+
 - (ORMForm *)form:(NSString *)name error:(NSError **)error {
     return _formNamed ? _formNamed(name, error) : [ORMForm formNamed:name error:error];
 }
