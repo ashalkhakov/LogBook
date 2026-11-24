@@ -57,6 +57,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 @implementation LBMainWindowController {
     NSArray<NSString *> *_tyreSetTitles;
+    /* The window's title while InvenTree is read. */
+    NSString *_inventreeTitle;
     NSArray<NSString *> *_tripTitles;
     /* The chosen record as its model's form has it (Record<Kind>). */
     LBFormValues *_recordForm;
@@ -725,7 +727,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     alert.accessoryView = _inventreeConnectView;
     [alert addButtonWithTitle:@"Connect"];
     [alert addButtonWithTitle:@"Cancel"];
-    alert.window.initialFirstResponder = address.length ? _inventreeTokenField : _inventreeAddressField;
+    [(NSWindow *)alert.window setInitialFirstResponder:address.length ? _inventreeTokenField : _inventreeAddressField];
     [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
         NSCharacterSet *space = [NSCharacterSet whitespaceAndNewlineCharacterSet];
         NSString *typed = [self.inventreeAddressField.stringValue stringByTrimmingCharactersInSet:space];
@@ -747,18 +749,23 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (void)readInvenTree:(NSURL *)root token:(NSString *)token {
-    NSWindow *window = self.window;
-    NSString *title = window.title;
-    window.title = [NSString stringWithFormat:@"%@ — reading InvenTree…", title];
-    dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INITIATED, 0), ^{
+    _inventreeTitle = self.window.title;
+    self.window.title = [NSString stringWithFormat:@"%@ — reading InvenTree…", _inventreeTitle];
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSError *error = nil;
-        LBImport *import = [LBImport importOfInvenTree:root token:token fetch:nil error:&error];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            window.title = title;
-            if (!import) return [self reportError:error];
-            [self askToImportRecordsOf:import intoVehicle:nil];
-        });
+        LBImport *read = [LBImport importOfInvenTree:root token:token fetch:nil error:&error];
+        [self performSelectorOnMainThread:@selector(readInvenTreeGave:) withObject:read ?: (id)error ?: [NSNull null] waitUntilDone:NO];
     });
+}
+
+/* What reading InvenTree gave: its import, else why not. */
+- (void)readInvenTreeGave:(id)gave {
+    if (_inventreeTitle) self.window.title = _inventreeTitle;
+    _inventreeTitle = nil;
+    if ([gave isKindOfClass:[LBImport class]]) return [self askToImportRecordsOf:gave intoVehicle:nil];
+    [self reportError:[gave isKindOfClass:[NSError class]] ? gave
+                                                           : [NSError errorWithDomain:LBImportErrorDomain code:1
+                                                                             userInfo:@{ NSLocalizedDescriptionKey : @"InvenTree was not read." }]];
 }
 
 - (void)reportError:(NSError *)error {
