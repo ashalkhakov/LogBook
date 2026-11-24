@@ -26,6 +26,7 @@
 //   them; more than is held, and a used part reduced, refused.
 
 #import <Foundation/Foundation.h>
+#import "StockUnit+CoreDataClass.h"
 #import <CoreData/CoreData.h>
 #import "LogbookValidation.h"
 #import "LBStockProcedures.h"
@@ -1127,6 +1128,86 @@ static void LBTickedThroughABinding(void) {
     for (NSString *key in @[ @"lb_isCustomer", @"lb_isSupplier" ]) [contact removeObserver:watcher forKeyPath:key];
 }
 
+/* A unit of an item (StockUnit): where it is, where its latest move took
+   it; moved out, nowhere; a move of it one of it, of its item. */
+static void LBUnits(void) {
+    NSManagedObjectContext *context = LBNewStore();
+    LBStock stock = { context, nil, nil, nil, nil };
+    User *anna = LBInsert([User class], context);
+    anna.email = @"anna@example.org";
+    stock.anna = anna;
+    Catalog *catalog = LBInsert([Catalog class], context);
+    catalog.catalogName = @"Home";
+    catalog.catalogOwner = anna;
+    stock.catalog = catalog;
+    Warehouse *home = LBInsert([Warehouse class], context);
+    home.warehouseName = @"Home";
+    home.catalog = catalog;
+    stock.warehouse = home;
+    Location *basement = LBInsert([Location class], context);
+    basement.locationName = @"Basement";
+    basement.warehouse = home;
+    Location *room = LBInsert([Location class], context);
+    room.locationName = @"Living Room";
+    room.warehouse = home;
+    stock.shelf = basement;
+    StockItem *tv = LBItem(&stock, @"Apple TV 4K");
+    StockItem *router = LBItem(&stock, @"Router");
+    StockUnit *unit = LBInsert([StockUnit class], context);
+    unit.id = [NSUUID UUID];
+    unit.stockItem = tv;
+    unit.serialNumber = @"DHKWM657JD";
+    Move *in = LBAdjust(&stock, tv, @"1", @"Found");
+    in.stockUnit = unit;
+    in.moment = [NSDate dateWithTimeIntervalSinceNow:-3600];
+    NSString *why = nil;
+    LBCheck(@"a unit found in the basement: saved, there", LBSave(context, &why) && unit.location == basement, why ?: unit.location.locationName);
+    Holding *there = nil;
+    for (Holding *h in tv.holdings) if (h.location == room) there = h;
+    if (!there) {
+        there = LBInsert([Holding class], context);
+        there.stockItem = tv;
+        there.location = room;
+    }
+    Move *moved = LBInsert([Move class], context);
+    moved.stockItem = tv;
+    moved.moved = LBN(@"1");
+    moved.source = basement;
+    moved.destination = room;
+    moved.moment = [NSDate date];
+    moved.user = anna;
+    moved.stockUnit = unit;
+    LBCheck(@"moved to the living room: there now (its latest move's)", LBSave(context, &why) && unit.location == room,
+            why ?: unit.location.locationName);
+    StockUnit *other = LBInsert([StockUnit class], context);
+    other.id = [NSUUID UUID];
+    other.stockItem = tv;
+    other.serialNumber = @"K1VHK1JQN7";
+    Move *two = LBAdjust(&stock, tv, @"2", @"Found");
+    two.stockUnit = other;
+    LBCheck(@"two of one unit: refused", !LBSave(context, &why), nil);
+    [context rollback];
+    Move *wrong = LBAdjust(&stock, router, @"1", @"Found");
+    wrong.stockUnit = unit;
+    LBCheck(@"a unit moved as another item: refused", !LBSave(context, &why), nil);
+    [context rollback];
+    StockUnit *twin = LBInsert([StockUnit class], context);
+    twin.id = [NSUUID UUID];
+    twin.stockItem = tv;
+    twin.serialNumber = @"DHKWM657JD";
+    LBCheck(@"another unit of the item of the same serial: refused", !LBSave(context, &why), nil);
+    [context rollback];
+    Move *out = LBInsert([Move class], context);
+    out.stockItem = tv;
+    out.moved = LBN(@"1");
+    out.source = room;
+    out.moment = [NSDate dateWithTimeIntervalSinceNow:60];
+    out.user = anna;
+    out.adjustmentReason = @"Lost";
+    out.stockUnit = unit;
+    LBCheck(@"moved out (lost): nowhere", LBSave(context, &why) && unit.location == nil, why ?: unit.location.locationName);
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -1149,6 +1230,7 @@ int main(int argc, const char *argv[]) {
         LBPartsUsed();
         LBCountFromAWindow();
         LBTickedThroughABinding();
+        LBUnits();
         printf("stock: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;
