@@ -56,7 +56,7 @@ Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit -lGSUpdat
 # The model's forms' contracts (ormtool xforms): each record's, and the
 # stock's processes' steps.
 LB_FORMS = $(foreach f,RecordFillUp RecordService RecordExpense RecordTrip RecordIncome RecordDocument RecordInspection \
-	RecordMeterReading RecordTyreChange RecordTyreSet EditPurchaseOrder ConfirmPurchaseOrder ReceiveGoods EditSaleOrder ConfirmSaleOrder ShipGoods CountStock ReviewStockCount RequestTransfer MoveStock RequestCustomerReturn ReceiveCustomerReturn RequestSupplierReturn SendSupplierReturn SetUpSchedule ChangeSchedule SetReminder RescheduleReminder CancelReminder MarkReminderDone,$(LB_MODEL)/Forms/$(f).ormform) \
+	RecordMeterReading RecordTyreChange RecordTyreSet RecordVehicleComponent RecordComponentChange EditPurchaseOrder ConfirmPurchaseOrder ReceiveGoods EditSaleOrder ConfirmSaleOrder ShipGoods CountStock ReviewStockCount RequestTransfer MoveStock RequestCustomerReturn ReceiveCustomerReturn RequestSupplierReturn SendSupplierReturn SetUpSchedule ChangeSchedule SetReminder RescheduleReminder CancelReminder MarkReminderDone,$(LB_MODEL)/Forms/$(f).ormform) \
 	$(patsubst Model/%.flow,$(LB_MODEL)/Forms/%.ormflow,$(wildcard Model/*.flow))
 Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib AppKit/Preferences.xib AppKit/Lists.xib AppKit/StockWindow.xib \
 	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib AppKit/Parts.xib AppKit/TasksWindow.xib AppKit/ImportSummary.xib AppKit/Logbook.png \
@@ -214,6 +214,7 @@ obj/Logbook.wfdeployment: Model/Logbook.orm $(wildcard Model/*.flow) $(wildcard 
 check:: all
 	for f in Model/*.flow; do $(ORMTOOL) flow Model/Logbook.orm $$f || exit 1; done
 	python3 Tests/contract-check.py $(LB_MODEL)/Forms AppKit/MainWindow.xib AppKit/StockPurchase.xib AppKit/StockSale.xib AppKit/StockCount.xib AppKit/StockItem.xib
+	Tests/bundle-check.sh Logbook.app/Resources $(LB_MODEL)/Forms
 	obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
 	obj/lb-stock-check obj/Logbook.momd obj/Logbook.ormplans
 	Tests/form-check.sh obj/logbook-server obj/lb-form-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms

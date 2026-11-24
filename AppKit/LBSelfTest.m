@@ -10,6 +10,8 @@
 #import "Vehicle+CoreDataClass.h"
 #import "User+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
+#import "ComponentChange+CoreDataClass.h"
+#import "VehicleComponent+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "LBDisplay.h"
 #import "Answer+CoreDataClass.h"
@@ -346,6 +348,7 @@ static void LBAttachmentSteps(LBMainWindowController *controller, Vehicle *kept)
 
 static NSArray *LBServerObjects(Class cls, NSPredicate *predicate);
 static void LBImportSteps(LBMainWindowController *controller);
+static void LBBicycleSteps(LBMainWindowController *controller);
 
 /* The user's currency set in the Preferences window, as a user does. */
 static void LBPreferenceSteps(LBMainWindowController *controller) {
@@ -2609,6 +2612,7 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
     LBCalendarViewAlone();
     LBCalendarSteps(controller);
     LBImportSteps(controller);
+    LBBicycleSteps(controller);
     LBQuantityFieldAlone();
     LBConnectSteps();
 }
@@ -2673,6 +2677,70 @@ static void LBImportSteps(LBMainWindowController *controller) {
     LBCheck(@"imported again: nothing made, 3 there", done && made == 0 && skipped == 3,
             error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)made, (unsigned long)skipped]);
     [[NSFileManager defaultManager] removeItemAtURL:url error:NULL];
+}
+
+/* A bicycle, as a user adds one: its kind chosen, no fuel or year said,
+   saved; a fill-up of it refused in the model's words. A chain bought,
+   then fitted by a component change, its wear worked out from a reading
+   after it; the server has them. */
+static void LBBicycleSteps(LBMainWindowController *controller) {
+    NSWindow *window = controller.window;
+    NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
+    [tabs selectTabViewItemWithIdentifier:@"vehicle"];
+    LBSpin();
+    LBClick(window, @"addVehicle");
+    Vehicle *bike = controller.vehicles.selectedObjects.firstObject;
+    LBCheck(@"a new vehicle, a car until said otherwise", [bike.vehicleKind isEqualToString:@"Car"], bike.vehicleKind);
+    LBType(window, @"vehicleName", @"Self-test Bicycle");
+    LBType(window, @"make", @"Surly");
+    LBType(window, @"carModel", @"Long Haul Trucker");
+    LBChoose(window, @"vehicleKind", @"Bicycle");
+    LBCheck(@"its Kind chosen: a bicycle", [bike.vehicleKind isEqualToString:@"Bicycle"], bike.vehicleKind);
+    LBClick(window, @"save");
+    LBCheck(@"a bicycle saved with no fuel and no year", !controller.store.context.hasChanges && !controller.lastError,
+            controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
+    Vehicle *kept = LBVehicleNamed(@"Self-test Bicycle");
+    LBCheck(@"the server has it, a bicycle", [kept.vehicleKind isEqualToString:@"Bicycle"] && !kept.fuel, kept.vehicleKind);
+
+    [tabs selectTabViewItemWithIdentifier:@"records"];
+    LBSpin();
+    VehicleComponent *chain = (VehicleComponent *)LBAddRecord(controller, [VehicleComponent class]);
+    LBType(window, @"VehicleComponentName", @"KMC X9");
+    LBType(window, @"VehicleComponentKind", @"Chain");
+    VehicleComponent *keptChain = LBSaved(controller, chain, @"the chain saved");
+    LBCheck(@"the server has it, a chain", [keptChain.componentName isEqualToString:@"KMC X9"] && [keptChain.componentKind isEqualToString:@"Chain"],
+            keptChain);
+    LBChooseRecord(controller, chain);
+    LBCheck(@"not fitted yet, it says", [controller.componentWear hasPrefix:@"Not fitted"], controller.componentWear);
+    ComponentChange *fit = (ComponentChange *)LBAddRecord(controller, [ComponentChange class]);
+    fit.timestamp = [NSDate dateWithTimeIntervalSinceNow:-3600];
+    LBType(window, @"ComponentChangeMileageValue", @"1000");
+    LBChoose(window, @"ComponentChangeComponent", @"KMC X9 (Chain)");
+    ComponentChange *keptFit = LBSaved(controller, fit, @"the component change saved");
+    LBCheck(@"the server has it: the chain fitted at 1000", [keptFit.vehicleComponent.id isEqual:chain.id] && LBIs(keptFit.mileageQuantity, @"1000"),
+            keptFit);
+    MeterReading *read = (MeterReading *)LBAddRecord(controller, [MeterReading class]);
+    LBType(window, @"MeterReadingMileageValue", @"1450");
+    LBSaved(controller, read, @"a reading after it saved");
+    LBChooseRecord(controller, chain);
+    LBCheck(@"its wear worked out: 450 km since it was fitted", [controller.componentWear hasPrefix:@"450 "]
+                && [controller.componentWear hasSuffix:@"since it was fitted"],
+            controller.componentWear);
+    LBAddRecord(controller, [FillUp class]);
+    LBType(window, @"FillUpMileageValue", @"1500");
+    LBType(window, @"FillUpVolumeValue", @"1");
+    LBType(window, @"FillUpFuel", @"Petrol");
+    LBType(window, @"FillUpTotalValue", @"2");
+    BOOL quiet = controller.quiet;
+    controller.quiet = YES;
+    LBClick(window, @"save");
+    controller.quiet = quiet;
+    NSString *said = controller.lastError.localizedRecoverySuggestion ?: controller.lastError.localizedDescription ?: @"";
+    LBCheck(@"a fill-up of a bicycle refused, in the model's words", controller.store.context.hasChanges && controller.lastError
+                && [said rangeOfString:@"bicycle" options:NSCaseInsensitiveSearch].location != NSNotFound,
+            said);
+    [controller.store.context rollback];
+    [controller readAgain];
 }
 
 static void LBSteps(LBMainWindowController *controller) {

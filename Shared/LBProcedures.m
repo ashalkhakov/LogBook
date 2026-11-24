@@ -4,6 +4,8 @@
 #import "ServiceItem+CoreDataClass.h"
 #import "Expense+CoreDataClass.h"
 #import "Inspection+CoreDataClass.h"
+#import "ComponentChange+CoreDataClass.h"
+#import "VehicleComponent+CoreDataClass.h"
 #import "Attachment+CoreDataClass.h"
 #include <stdlib.h>
 #include <string.h>
@@ -181,10 +183,15 @@ static NSInteger LBIDOrder(id a, id b, void *context) {
 
 #pragma mark What a vehicle had done
 
-/* Whether the event does the work: a service with an item of the task, an
+/* Whether the event does the work: a service with an item of the task, a
+   component change fitting one of the kind the task is named as, an
    expense of the kind, an inspection through the checklist. */
 static BOOL LBDoesWork(Event *event, NSString *task, ExpenseKind *kind, Checklist *checklist) {
     if (task) {
+        /* A component fitted does the work of the task named as its kind:
+           "Chain" every 3000 km, done when a chain is fitted. */
+        if ([event isKindOfClass:[ComponentChange class]])
+            return [((ComponentChange *)event).vehicleComponent.componentKind isEqualToString:task];
         if (![event isKindOfClass:[Service class]]) return NO;
         for (ServiceItem *item in ((Service *)event).serviceItems) {
             if (!item.isDeleted && [item.task isEqualToString:task]) return YES;
@@ -935,6 +942,25 @@ static Event *LBFirstCloser(Reminder *reminder, NSArray<Event *> *events) {
 
 @end
 
+@implementation VehicleComponent (LBProcedures)
+
+- (NSDecimalNumber *)lb_wornIn:(DistanceUnit *)unit {
+    ComponentChange *fitted = self.componentChange;
+    if (!fitted.mileageQuantity || !fitted.mileageDistanceUnit.factor || !unit.factor) return nil;
+    ComponentChange *retired = self.wasRetiredByComponentChange;
+    Event *until = retired.mileageQuantity && retired.mileageDistanceUnit.factor ? retired : LBLatestMetered(fitted.vehicle, [NSDate date]);
+    if (!until) return nil;
+    NSDecimalNumber *from = [fitted.mileageQuantity decimalNumberByMultiplyingBy:fitted.mileageDistanceUnit.factor];
+    NSDecimalNumber *to = [until.mileageQuantity decimalNumberByMultiplyingBy:until.mileageDistanceUnit.factor];
+    NSDecimalNumber *km = [to decimalNumberBySubtracting:from];
+    if ([km compare:[NSDecimalNumber zero]] == NSOrderedAscending) km = [NSDecimalNumber zero];
+    NSDecimalNumberHandler *whole = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain scale:0 raiseOnExactness:NO
+                                                                                   raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO];
+    return [km decimalNumberByDividingBy:unit.factor withBehavior:whole];
+}
+
+@end
+
 @implementation Record (LBProcedures)
 
 - (BOOL)lb_discardKeepingNextReminders:(NSNumber *)keep error:(NSError **)error {
@@ -957,13 +983,15 @@ static Event *LBFirstCloser(Reminder *reminder, NSArray<Event *> *events) {
 #pragma mark Automatic completion
 
 /* Whether an event saved changes what it does: new, or changed in its
-   moment, vehicle, distance, kind, checklist or items. */
+   moment, vehicle, distance, kind, checklist, items or the component it
+   fitted. */
 static BOOL LBChangesWork(Event *event) {
     if (event.isInserted) return YES;
     NSSet<NSString *> *keys = [NSSet setWithObjects:NSStringFromSelector(@selector(timestamp)), NSStringFromSelector(@selector(vehicle)),
                                                     NSStringFromSelector(@selector(mileageQuantity)),
                                                     NSStringFromSelector(@selector(mileageDistanceUnit)), NSStringFromSelector(@selector(expenseKind)),
-                                                    NSStringFromSelector(@selector(checklist)), NSStringFromSelector(@selector(serviceItems)), nil];
+                                                    NSStringFromSelector(@selector(checklist)), NSStringFromSelector(@selector(serviceItems)),
+                                                    NSStringFromSelector(@selector(vehicleComponent)), nil];
     return [keys intersectsSet:[NSSet setWithArray:event.changedValues.allKeys]];
 }
 

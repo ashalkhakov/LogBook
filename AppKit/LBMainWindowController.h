@@ -92,6 +92,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The vehicle chosen, when one is.
 - (nullable Vehicle *)chosenVehicle;
+// What a vehicle may be (the model's VehicleKind): its Kind pop-up's.
+@property (nonatomic, readonly, copy) NSArray<NSString *> *vehicleKinds;
+// The chosen component's wear, said: "1200 km since it was fitted".
+@property (nonatomic, readonly, copy) NSString *componentWear;
 
 // File > Import…: another app's export (LBImport.h: Drivvo's CSV) into the
 // chosen vehicle, through the model's forms. What the export says that

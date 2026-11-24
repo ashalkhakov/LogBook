@@ -130,7 +130,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     /* A day of the model (bought on, issued, expires) is a UTC day: its
        field reads and says it so, whatever the zone here. */
     for (NSTabViewItem *form in _recordForms.tabViewItems) {
-        for (NSString *identifier in @[ @"TyreSetDate", @"DocumentDate", @"DocumentExpires" ]) {
+        for (NSString *identifier in @[ @"TyreSetDate", @"VehicleComponentDate", @"DocumentDate", @"DocumentExpires" ]) {
             NSTextField *field = (NSTextField *)[self controlOf:identifier in:form.view];
             ((NSDateFormatter *)field.formatter).timeZone = [NSTimeZone timeZoneForSecondsFromGMT:0];
         }
@@ -566,6 +566,29 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     return NO;
 }
 
+- (NSArray<NSString *> *)vehicleKinds {
+    return @[ @"Car", @"Motorcycle", @"Bicycle" ];
+}
+
+- (NSString *)componentWear {
+    id chosen = [_recordForm object];
+    VehicleComponent *component = [chosen isKindOfClass:[VehicleComponent class]] ? chosen : nil;
+    if (!component) return @"";
+    if (!component.componentChange) return @"Not fitted yet: a component change fits it.";
+    DistanceUnit *unit = [self distanceUnit];
+    NSDecimalNumber *worn = unit ? [component lb_wornIn:unit] : nil;
+    if (!worn) return @"Fitted at no reading.";
+    NSString *distance = [NSString stringWithFormat:@"%@ %@", [NSNumberFormatter localizedStringFromNumber:worn
+                                                                                                numberStyle:NSNumberFormatterDecimalStyle],
+                                                     unit.code];
+    return component.wasRetiredByComponentChange ? [NSString stringWithFormat:@"%@ until it was retired", distance]
+                                                 : [NSString stringWithFormat:@"%@ since it was fitted", distance];
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingComponentWear {
+    return [NSSet setWithObject:@"chosenRecords"];
+}
+
 #pragma mark Import
 
 - (IBAction)importRecords:(id)sender {
@@ -579,7 +602,6 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     if (![self commitEdits]) return;
     NSOpenPanel *panel = [NSOpenPanel openPanel];
     panel.message = [NSString stringWithFormat:@"Choose an export to import into %@: Drivvo's CSV.", vehicle.vehicleName];
-    panel.allowedFileTypes = @[ @"csv" ];
     [panel beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
         if (response != NSModalResponseOK || !panel.URL) return;
         /* After the panel has gone: the summary is a sheet of its own. */
@@ -800,6 +822,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 - (id)newObject {
     Vehicle *vehicle = [super newObject];
     vehicle.owner = _windowController.store.user;
+    /* A car, most likely: the user says otherwise. */
+    vehicle.vehicleKind = @"Car";
     return vehicle;
 }
 

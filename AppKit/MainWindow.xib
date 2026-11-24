@@ -206,6 +206,16 @@
                 <binding destination="-2" name="contentObject" keyPath="chosenRecords.TyreSet" id="TyreSetFormContent"/>
             </connections>
         </objectController>
+        <objectController objectClassName="VehicleComponent" userLabel="VehicleComponent Form" id="VehicleComponentForm">
+            <connections>
+                <binding destination="-2" name="contentObject" keyPath="chosenRecords.VehicleComponent" id="VehicleComponentFormContent"/>
+            </connections>
+        </objectController>
+        <objectController objectClassName="ComponentChange" userLabel="ComponentChange Form" id="ComponentChangeForm">
+            <connections>
+                <binding destination="-2" name="contentObject" keyPath="chosenRecords.ComponentChange" id="ComponentChangeFormContent"/>
+            </connections>
+        </objectController>
         <objectController objectClassName="Document" userLabel="Document Form" id="DocumentForm">
             <connections>
                 <binding destination="-2" name="contentObject" keyPath="chosenRecords.Document" id="DocumentFormContent"/>
@@ -521,8 +531,30 @@
                                                 </binding>
                                             </connections>
                                         </textField>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="vehicleKindLabel">
+                                            <rect key="frame" x="12" y="313" width="112" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Kind:" id="vehicleKindLabelCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <popUpButton verticalHuggingPriority="750" identifier="vehicleKind" id="vehicleKind">
+                                            <rect key="frame" x="129" y="306" width="200" height="26"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="vehicleKindCell">
+                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                                <menu key="menu" id="vehicleKindMenu"/>
+                                            </popUpButtonCell>
+                                            <connections>
+                                                <binding destination="-2" name="content" keyPath="vehicleKinds" id="vehicleKindContent"/>
+                                                <binding destination="vehicles" name="selectedValue" keyPath="selection.vehicleKind" previousBinding="vehicleKindContent" id="vehicleKindChosen"/>
+                                            </connections>
+                                        </popUpButton>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="driversLabel">
-                                            <rect key="frame" x="12" y="293" width="112" height="17"/>
+                                            <rect key="frame" x="12" y="261" width="112" height="17"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Shared with:" id="driversLabelCell">
                                                 <font key="font" metaFont="system"/>
@@ -531,7 +563,7 @@
                                             </textFieldCell>
                                         </textField>
                                         <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="driversTableScroll">
-                                            <rect key="frame" x="132" y="140" width="580" height="170"/>
+                                            <rect key="frame" x="132" y="140" width="580" height="138"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                             <clipView key="contentView" id="driversTableClip">
                                                 <rect key="frame" x="1" y="1" width="578" height="168"/>
@@ -2968,6 +3000,375 @@
                                                                     </binding>
                                                                 </connections>
                                                             </customView>
+                                                        </subviews>
+                                                    </view>
+                                                </tabViewItem>
+                                                <tabViewItem label="VehicleComponent" identifier="VehicleComponent" id="VehicleComponentItem">
+                                                    <view key="view" id="VehicleComponentItemView">
+                                                        <rect key="frame" x="0" y="0" width="732" height="382"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <subviews>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="VehicleComponentNameLabel">
+                                                                <rect key="frame" x="8" y="349" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Name:" id="VehicleComponentNameLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="VehicleComponentName" id="VehicleComponentName">
+                                                                <rect key="frame" x="128" y="346" width="230" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="VehicleComponentNameCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="VehicleComponentForm" name="value" keyPath="selection.componentName" id="VehicleComponentNameValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="VehicleComponentKindLabel">
+                                                                <rect key="frame" x="8" y="319" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Kind:" id="VehicleComponentKindLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="VehicleComponentKind" id="VehicleComponentKind">
+                                                                <rect key="frame" x="128" y="316" width="230" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="VehicleComponentKindCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="VehicleComponentForm" name="value" keyPath="selection.componentKind" id="VehicleComponentKindValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="VehicleComponentWornLabel">
+                                                                <rect key="frame" x="8" y="289" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Worn:" id="VehicleComponentWornLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="VehicleComponentWorn" id="VehicleComponentWorn">
+                                                                <rect key="frame" x="126" y="289" width="234" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="truncatingTail" title="Worn" id="VehicleComponentWornCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="-2" name="value" keyPath="componentWear" id="VehicleComponentWornValue"/>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="VehicleComponentDateLabel">
+                                                                <rect key="frame" x="374" y="349" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Bought:" id="VehicleComponentDateLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="VehicleComponentDate" id="VehicleComponentDate">
+                                                                <rect key="frame" x="494" y="346" width="230" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="VehicleComponentDateCell">
+                                                                    <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" timeStyle="none" id="VehicleComponentDateFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="VehicleComponentForm" name="value" keyPath="selection.date" id="VehicleComponentDateValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="VehicleComponentTotalLabel">
+                                                                <rect key="frame" x="374" y="319" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Cost:" id="VehicleComponentTotalLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <customView identifier="VehicleComponentTotal" id="VehicleComponentTotal" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="314" width="230" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
+                                                                <connections>
+                                                                    <outlet property="units" destination="currencies" id="VehicleComponentTotalUnits"/>
+                                                                    <binding destination="VehicleComponentForm" name="value" keyPath="selection.totalAmount" id="VehicleComponentTotalValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                    <binding destination="VehicleComponentForm" name="unit" keyPath="selection.totalCurrency" id="VehicleComponentTotalCurrencyValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </customView>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="VehicleComponentNoteLabel">
+                                                                <rect key="frame" x="374" y="289" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="VehicleComponentNoteLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="VehicleComponentNote" id="VehicleComponentNote">
+                                                                <rect key="frame" x="494" y="286" width="230" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="VehicleComponentNoteCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="VehicleComponentForm" name="value" keyPath="selection.note" id="VehicleComponentNoteValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                                                                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="VehicleComponentChargedLabel">
+                                                                <rect key="frame" x="374" y="259" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Charged:" id="VehicleComponentChargedLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <customView identifier="VehicleComponentCharged" id="VehicleComponentCharged" customClass="UDQuantityField">
+                                                                <rect key="frame" x="494" y="254" width="230" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="80"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
+                                                                <connections>
+                                                                    <outlet property="units" destination="currencies" id="VehicleComponentChargedUnits"/>
+                                                                    <binding destination="VehicleComponentForm" name="value" keyPath="selection.chargedAmount" id="VehicleComponentChargedValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                    <binding destination="VehicleComponentForm" name="unit" keyPath="selection.chargedCurrency" id="VehicleComponentChargedCurrencyValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </customView>
+                                                        </subviews>
+                                                    </view>
+                                                </tabViewItem>
+                                                <tabViewItem label="ComponentChange" identifier="ComponentChange" id="ComponentChangeItem">
+                                                    <view key="view" id="ComponentChangeItemView">
+                                                        <rect key="frame" x="0" y="0" width="732" height="382"/>
+                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                        <subviews>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ComponentChangeTimestampLabel">
+                                                                <rect key="frame" x="8" y="349" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Date:" id="ComponentChangeTimestampLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="ComponentChangeTimestamp" id="ComponentChangeTimestamp">
+                                                                <rect key="frame" x="128" y="346" width="230" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ComponentChangeTimestampCell">
+                                                                    <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="short" timeStyle="short" id="ComponentChangeTimestampFormatter"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ComponentChangeForm" name="value" keyPath="selection.timestamp" id="ComponentChangeTimestampValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ComponentChangeMileageLabel">
+                                                                <rect key="frame" x="8" y="319" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Odometer:" id="ComponentChangeMileageLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <customView identifier="ComponentChangeMileage" id="ComponentChangeMileage" customClass="UDQuantityField">
+                                                                <rect key="frame" x="128" y="314" width="232" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <userDefinedRuntimeAttributes>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="decimals">
+                                                                        <integer key="value" value="3"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                    <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                                                                        <real key="value" value="94"/>
+                                                                    </userDefinedRuntimeAttribute>
+                                                                </userDefinedRuntimeAttributes>
+                                                                <connections>
+                                                                    <outlet property="units" destination="distanceUnitsSource" id="ComponentChangeMileageUnits"/>
+                                                                    <binding destination="ComponentChangeForm" name="value" keyPath="selection.mileageQuantity" id="ComponentChangeMileageValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                    <binding destination="ComponentChangeForm" name="unit" keyPath="selection.mileageDistanceUnit" id="ComponentChangeMileageUnitChosen"/>
+                                                                </connections>
+                                                            </customView>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ComponentChangeComponentLabel">
+                                                                <rect key="frame" x="8" y="289" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Fitted:" id="ComponentChangeComponentLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="ComponentChangeComponent" id="ComponentChangeComponent">
+                                                                <rect key="frame" x="126" y="284" width="234" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="ComponentChangeComponentCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="ComponentChangeComponentMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="ComponentChangeForm" name="content" keyPath="selection.choices.vehicleComponent" id="ComponentChangeComponentContent"/>
+                                                                    <binding destination="ComponentChangeForm" name="contentValues" keyPath="selection.choices.vehicleComponent.lbTitle" previousBinding="ComponentChangeComponentContent" id="ComponentChangeComponentValues">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                    <binding destination="ComponentChangeForm" name="selectedObject" keyPath="selection.vehicleComponent" previousBinding="ComponentChangeComponentValues" id="ComponentChangeComponentChosen"/>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ComponentChangeRetiredLabel">
+                                                                <rect key="frame" x="8" y="259" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Retired:" id="ComponentChangeRetiredLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="ComponentChangeRetired" id="ComponentChangeRetired">
+                                                                <rect key="frame" x="128" y="254" width="230" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="ComponentChangeRetiredCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="ComponentChangeRetiredMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="ComponentChangeForm" name="content" keyPath="selection.choices.retiredVehicleComponent" id="ComponentChangeRetiredContent"/>
+                                                                    <binding destination="ComponentChangeForm" name="contentValues" keyPath="selection.choices.retiredVehicleComponent.lbTitle" previousBinding="ComponentChangeRetiredContent" id="ComponentChangeRetiredValues">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                    <binding destination="ComponentChangeForm" name="selectedObject" keyPath="selection.retiredVehicleComponent" previousBinding="ComponentChangeRetiredValues" id="ComponentChangeRetiredChosen"/>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ComponentChangeDriverLabel">
+                                                                <rect key="frame" x="374" y="319" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Driver:" id="ComponentChangeDriverLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <popUpButton verticalHuggingPriority="750" identifier="ComponentChangeDriver" id="ComponentChangeDriver">
+                                                                <rect key="frame" x="492" y="314" width="234" height="26"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="ComponentChangeDriverCell">
+                                                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <menu key="menu" id="ComponentChangeDriverMenu"/>
+                                                                </popUpButtonCell>
+                                                                <connections>
+                                                                    <binding destination="ComponentChangeForm" name="content" keyPath="selection.choices.driver" id="ComponentChangeDriverContent"/>
+                                                                    <binding destination="ComponentChangeForm" name="contentValues" keyPath="selection.choices.driver.lbTitle" previousBinding="ComponentChangeDriverContent" id="ComponentChangeDriverValues">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                                            <string key="NSNullPlaceholder">None</string>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                    <binding destination="ComponentChangeForm" name="selectedObject" keyPath="selection.driver" previousBinding="ComponentChangeDriverValues" id="ComponentChangeDriverChosen"/>
+                                                                </connections>
+                                                            </popUpButton>
+                                                            <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ComponentChangeNoteLabel">
+                                                                <rect key="frame" x="374" y="289" width="112" height="17"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="ComponentChangeNoteLabelCell">
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                            </textField>
+                                                            <textField verticalHuggingPriority="750" identifier="ComponentChangeNote" id="ComponentChangeNote">
+                                                                <rect key="frame" x="494" y="286" width="230" height="22"/>
+                                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                                <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" alignment="left" drawsBackground="YES" id="ComponentChangeNoteCell">
+                                                                    
+                                                                    <font key="font" metaFont="system"/>
+                                                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                                </textFieldCell>
+                                                                <connections>
+                                                                    <binding destination="ComponentChangeForm" name="value" keyPath="selection.note" id="ComponentChangeNoteValue">
+                                                                        <dictionary key="options">
+                                                                            <bool key="NSValidatesImmediately" value="YES"/>
+                                                                        </dictionary>
+                                                                    </binding>
+                                                                </connections>
+                                                            </textField>
                                                         </subviews>
                                                     </view>
                                                 </tabViewItem>
