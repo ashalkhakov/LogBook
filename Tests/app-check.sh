@@ -10,6 +10,9 @@ app=$2
 # A store of MainTrack's to import, as SQL (the self-test makes it a file).
 LB_MAINTRACK_SQL="$(cd "$(dirname "$0")" && pwd)/maintrack-store.sql"
 export LB_MAINTRACK_SQL
+# InvenTree's API answered from a folder of its JSON (made up).
+LB_INVENTREE_ANSWERS="$(cd "$(dirname "$0")" && pwd)/inventree"
+export LB_INVENTREE_ANSWERS
 port=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')
 log=$(mktemp)
 "$server" -StoreURL Temporary -Port "$port" -Localhost YES >"$log" 2>&1 &

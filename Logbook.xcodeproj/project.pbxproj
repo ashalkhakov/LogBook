@@ -81,6 +81,10 @@
 			isa = PBXBuildFile;
 			fileRef = 79BD7E3003262AA6A6464465 /* ImportSummary.xib */;
 		};
+		6A1E0C3F9D2B4E57A8C1D2E3 /* InvenTreeConnect.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = 6A1E0C3F9D2B4E57A8C1D2E4 /* InvenTreeConnect.xib */;
+		};
 		1DDAAAA209F502AABBD87A63 /* ODataKit.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 556E7EB7554160D265539612 /* ODataKit.xcframework */;
@@ -1247,6 +1251,12 @@
 			path = ImportSummary.xib;
 			sourceTree = "<group>";
 		};
+		6A1E0C3F9D2B4E57A8C1D2E4 /* InvenTreeConnect.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = InvenTreeConnect.xib;
+			sourceTree = "<group>";
+		};
 		7B58A3F22B5132525D3F4330 /* Parts.xib */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
@@ -1988,6 +1998,7 @@
 				2432BF71F62D11F0DCE041C6 /* CatalogSettings.xib */,
 				F8746362A46CB5E2C52D1A7E /* ConnectPanel.xib */,
 				79BD7E3003262AA6A6464465 /* ImportSummary.xib */,
+				6A1E0C3F9D2B4E57A8C1D2E4 /* InvenTreeConnect.xib */,
 				ABFDBC32D4665ABB05B1F819 /* Info.plist */,
 				1858D9209D5FE7B48B58866F /* LBAnswersController.h */,
 				7D121C7DECA61E76A9483A71 /* LBAnswersController.m */,
@@ -2265,6 +2276,7 @@
 				72F298546B4BBA2B1AD0CAED /* Parts.xib */,
 				70729DFCD31B9162AEE7E120 /* TasksWindow.xib */,
 				1C4A264FCFA2C77B33A648D2 /* ImportSummary.xib */,
+				6A1E0C3F9D2B4E57A8C1D2E3 /* InvenTreeConnect.xib */,
 				B71574A70BF424AC03F6ED06 /* Logbook.png */,
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,

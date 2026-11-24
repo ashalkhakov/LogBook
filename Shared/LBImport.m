@@ -1274,13 +1274,20 @@ static NSArray *const LBInvenTreeEndpoints(void) {
         __block NSInteger status = 0;
         __block NSError *sent = nil;
         __block BOOL done = NO;
+        dispatch_semaphore_t answered = dispatch_semaphore_create(0);
         [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData *d, NSURLResponse *r, NSError *e) {
             data = d;
             status = [(NSHTTPURLResponse *)r statusCode];
             sent = e;
             done = YES;
+            dispatch_semaphore_signal(answered);
         }] resume];
-        while (!done) [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+        /* On the main thread its run loop runs meanwhile; off it (the app
+           reads away from its window), it waits. */
+        if ([NSThread isMainThread])
+            while (!done) [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+        else
+            dispatch_semaphore_wait(answered, DISPATCH_TIME_FOREVER);
         if (sent || status != 200) {
             if (failure) *failure = sent ?: LBImportError(@"InvenTree answered %ld to %@%@", (long)status, url.absoluteString,
                                                            status == 401 || status == 403 ? @": is the token right, and may it read?" : @"");

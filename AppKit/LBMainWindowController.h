@@ -13,6 +13,8 @@
 
 @class LBPartsPanelController;
 
+@class LBImport;
+
 NS_ASSUME_NONNULL_BEGIN
 
 @interface LBMainWindowController : NSWindowController
@@ -110,11 +112,25 @@ NS_ASSUME_NONNULL_BEGIN
 // The same, MainTrack's parts into the catalog named (nil: "Bike parts").
 - (BOOL)importFile:(NSURL *)file intoVehicle:(nullable Vehicle *)vehicle catalogNamed:(nullable NSString *)catalog
               made:(NSUInteger *_Nullable)made skipped:(NSUInteger *_Nullable)skipped error:(NSError **)error;
+// File > Import from InvenTree…: its address and an API token asked
+// (InvenTreeConnect.xib; the address kept in the defaults, the token in
+// the system's secret store), its stock read, then as an export: what
+// Logbook has no place for shown, into the catalog the user names.
+- (IBAction)importFromInvenTree:(nullable id)sender;
+// An import read already (a file's, InvenTree's) into the vehicle (its
+// stock into the catalog named): made and passed over said.
+- (BOOL)importRecordsOf:(LBImport *)import intoVehicle:(nullable Vehicle *)vehicle catalogNamed:(nullable NSString *)catalog
+                   made:(NSUInteger *_Nullable)made skipped:(NSUInteger *_Nullable)skipped error:(NSError **)error;
+// InvenTreeConnect.xib's view and its fields, the owner's while shown.
+@property (nonatomic, strong, nullable) IBOutlet NSView *inventreeConnectView;
+@property (nonatomic, strong, nullable) IBOutlet NSTextField *inventreeAddressField;
+@property (nonatomic, strong, nullable) IBOutlet NSSecureTextField *inventreeTokenField;
 // ImportSummary.xib's view and its list, the owner's while it is shown.
 @property (nonatomic, strong, nullable) IBOutlet NSView *importSummaryView;
 @property (nonatomic, strong, nullable) IBOutlet NSTextView *importSummaryText;
-// Its catalog field: where MainTrack's parts go (a catalog of the user's,
-// or a new one's name); hidden for an export that makes no stock.
+// Its catalog field: where MainTrack's parts or InvenTree's stock go (a
+// catalog of the user's, or a new one's name); hidden for an export that
+// makes no stock.
 @property (nonatomic, strong, nullable) IBOutlet NSComboBox *importCatalogField;
 // The signed-in user's unit of distance, else kilometres.
 - (nullable DistanceUnit *)distanceUnit;

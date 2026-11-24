@@ -1,4 +1,5 @@
 #import "LBSelfTest.h"
+#import "LBImport.h"
 #import "LBConnectPanel.h"
 #import "LBMainWindowController.h"
 #import "LBStore.h"
@@ -357,6 +358,7 @@ static NSArray *LBServerObjects(Class cls, NSPredicate *predicate);
 static void LBImportSteps(LBMainWindowController *controller);
 static void LBBicycleSteps(LBMainWindowController *controller);
 static void LBMainTrackSteps(LBMainWindowController *controller);
+static void LBInvenTreeSteps(LBMainWindowController *controller);
 
 /* The user's currency set in the Preferences window, as a user does. */
 static void LBPreferenceSteps(LBMainWindowController *controller) {
@@ -2630,6 +2632,7 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
     LBImportSteps(controller);
     LBBicycleSteps(controller);
     LBMainTrackSteps(controller);
+    LBInvenTreeSteps(controller);
     LBQuantityFieldAlone();
     LBConnectSteps();
 }
@@ -2843,6 +2846,63 @@ static void LBMainTrackSteps(LBMainWindowController *controller) {
     LBCheck(@"imported again: nothing made, 27 there", done && count == 0 && skipped == 27,
             error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
     [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
+}
+
+/* File > Import from InvenTree…: its item, its connect view
+   (InvenTreeConnect.xib) loaded and connected; then InvenTree's API
+   answered from Tests/inventree (made up; app-check.sh names it in
+   LB_INVENTREE_ANSWERS), imported as the menu does without its sheets into
+   a catalog of the user's: 29 made, on the server; imported again, nothing
+   made. */
+static void LBInvenTreeSteps(LBMainWindowController *controller) {
+    NSMenuItem *file = [NSApp.mainMenu itemWithTitle:@"File"];
+    NSMenuItem *item = [file.submenu itemWithTitle:@"Import from InvenTree…"];
+    LBCheck(@"File > Import from InvenTree…, its action the window's", item && [NSStringFromSelector(item.action) isEqualToString:@"importFromInvenTree:"],
+            item ? NSStringFromSelector(item.action) : [file.submenu.itemArray valueForKey:@"title"]);
+    NSArray *objects = nil;
+    NSNib *nib = [[NSNib alloc] initWithNibNamed:@"InvenTreeConnect" bundle:nil];
+    BOOL loaded = [nib instantiateWithOwner:controller topLevelObjects:&objects];
+    LBCheck(@"InvenTreeConnect.xib loaded: its view, its address field and its token's (secure) connected, in the view",
+            loaded && controller.inventreeConnectView && [controller.inventreeAddressField isDescendantOf:controller.inventreeConnectView]
+                && [controller.inventreeTokenField isKindOfClass:[NSSecureTextField class]]
+                && [controller.inventreeTokenField isDescendantOf:controller.inventreeConnectView] && controller.inventreeAddressField.isEditable,
+            [NSString stringWithFormat:@"%d %@ %@ %@", loaded, controller.inventreeConnectView, controller.inventreeAddressField,
+                                       controller.inventreeTokenField]);
+    controller.inventreeConnectView = nil;
+    controller.inventreeAddressField = nil;
+    controller.inventreeTokenField = nil;
+
+    NSString *folder = [NSProcessInfo processInfo].environment[@"LB_INVENTREE_ANSWERS"];
+    LBCheck(@"InvenTree's answers to import (LB_INVENTREE_ANSWERS)", folder != nil, @"not given");
+    if (!folder) return;
+    LBImport * (^read)(void) = ^LBImport * {
+        return [LBImport importOfInvenTree:[NSURL URLWithString:@"https://inventree.example.org/"] token:@"none"
+                                     fetch:^NSData *(NSString *path, NSError **failure) {
+                                         if (![path containsString:@"offset=0"]) return [@"{\"count\":0,\"results\":[]}" dataUsingEncoding:NSUTF8StringEncoding];
+                                         NSString *endpoint = [path componentsSeparatedByString:@"/?"].firstObject;
+                                         NSString *name = [[endpoint stringByReplacingOccurrencesOfString:@"/" withString:@"_"] stringByAppendingPathExtension:@"json"];
+                                         return [NSData dataWithContentsOfFile:[folder stringByAppendingPathComponent:name]];
+                                     }
+                                     error:NULL];
+    };
+    NSString *catalog = @"Self-test InvenTree";
+    NSUInteger count = 0, skipped = 0;
+    NSError *error = nil;
+    LBImport *import = read();
+    BOOL done = import && [controller importRecordsOf:import intoVehicle:nil catalogNamed:catalog made:&count skipped:&skipped error:&error];
+    LBCheck(@"InvenTree's stock imported into a catalog of the user's: 29 made", done && count == 29,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
+    if (LBAppStore.local) [LBAppStore syncAndWait:NULL];
+    Catalog *there = nil;
+    for (Catalog *each in controller.store.user.ownedCatalogs) if ([each.catalogName isEqualToString:catalog]) there = each;
+    [there.managedObjectContext refreshObject:there mergeChanges:NO];
+    LBCheck(@"the server has its 3 items, 2 orders, its supplier parts", there.stockItems.count == 3 && there.purchaseOrders.count == 2
+                && [[there.stockItems valueForKeyPath:@"@sum.supplierItems.@count"] integerValue] == 3,
+            [NSString stringWithFormat:@"%lu items, %lu orders; issues %@", (unsigned long)there.stockItems.count,
+                                       (unsigned long)there.purchaseOrders.count, [LBAppStore.local.issues valueForKey:@"message"]]);
+    done = [controller importRecordsOf:read() intoVehicle:nil catalogNamed:catalog made:&count skipped:&skipped error:&error];
+    LBCheck(@"imported again: nothing made", done && count == 0 && skipped > 0,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
 }
 
 static void LBSteps(LBMainWindowController *controller) {

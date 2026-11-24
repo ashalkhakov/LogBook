@@ -93,6 +93,11 @@
                                     <action selector="importRecords:" target="-1" id="importItemAction"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Import from InvenTree…" id="importInvenTreeItem">
+                                <connections>
+                                    <action selector="importFromInvenTree:" target="-1" id="importInvenTreeItemAction"/>
+                                </connections>
+                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="separator4"/>
                             <menuItem title="Close" keyEquivalent="w" id="close">
                                 <connections>
