@@ -63,7 +63,17 @@ Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/Connec
 	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl) $(LB_FORMS)
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 
-TOOL_NAME = logbook-server lb-procedures-check lb-stock-check lb-sync-check
+TOOL_NAME = logbook-server logbook-import lb-procedures-check lb-stock-check lb-sync-check
+# logbook-import (Server/LBImportTool.m): another app's export into a
+# server's logbook, as the desktop's File > Import… does it; the forms'
+# contracts it enters records through beside it, in Forms.
+logbook-import_OBJC_FILES = Server/LBImportTool.m Shared/LBImport.m Shared/LBSignIn.m Shared/LBLocalStore.m Shared/LBConflicts.m \
+	Shared/LBVehicleSummary.m Shared/LBDisplay.m Shared/LBProcedures.m Shared/LBStockProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
+logbook-import_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
+logbook-import_COREDATA_CODEGEN = yes
+logbook-import_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
+logbook-import_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
+logbook-import_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Server/LBStockActions.m Server/LBWorkflow.m \
 	Shared/LBProcedures.m Shared/LBStockProcedures.m \
 	$(LB_MODEL)/Constraints/LogbookValidation.m
@@ -108,6 +118,14 @@ lb-form-check_COREDATA_CODEGEN = yes
 lb-form-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
 lb-form-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
 lb-form-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
+
+TOOL_NAME += lb-import-check
+lb-import-check_OBJC_FILES = Tests/LBImportCheck.m Shared/LBImport.m Shared/LBProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
+lb-import-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
+lb-import-check_COREDATA_CODEGEN = yes
+lb-import-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
+lb-import-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
+lb-import-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 
 # The offline store (the iOS app's) against a server: devices, signed in.
 lb-sync-check_OBJC_FILES = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m \
@@ -168,10 +186,11 @@ after-all::
 	cp $(LB_MODEL)/Constraints/Logbook.ormplans obj/
 	$(ODATAKIT_PERMISSIONS) check obj/Logbook.momd Server/Logbook.permissions.plist
 	cp Server/Logbook.permissions.plist obj/
+	rm -rf obj/Forms && mkdir -p obj/Forms && cp $(LB_MODEL)/Forms/*.ormform obj/Forms/
 
 # Installed, the server finds them beside itself too (logbook-server.exe
 # on Windows).
-LB_SERVER_FILES = Logbook.momd Logbook.ormplans Logbook.permissions.plist Logbook.wfdeployment
+LB_SERVER_FILES = Logbook.momd Logbook.ormplans Logbook.permissions.plist Logbook.wfdeployment Forms
 after-install::
 	@server=$$(find "$(GNUSTEP_TOOLS)" -type f \( -name logbook-server -o -name logbook-server.exe \) -perm -u+x | head -n 1); \
 	  [ -n "$$server" ] || { echo "install: no logbook-server under $(GNUSTEP_TOOLS)"; exit 1; }; \
@@ -198,6 +217,8 @@ check:: all
 	obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
 	obj/lb-stock-check obj/Logbook.momd obj/Logbook.ormplans
 	Tests/form-check.sh obj/logbook-server obj/lb-form-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms
+	obj/lb-import-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms Tests/drivvo-export.csv
+	Tests/import-check.sh obj/logbook-server obj/logbook-import Tests/drivvo-export.csv
 	python3 Tests/serve-and-check.py obj/logbook-server
 	python3 Tests/process-check.py obj/logbook-server
 	python3 Tests/roles-check.py obj/logbook-server

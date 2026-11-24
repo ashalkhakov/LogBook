@@ -5652,7 +5652,7 @@ before there were states has none: it was returned as it was recorded.</orm:Text
 			</orm:Fact>
 			<orm:Fact id="_0B707EE0-2E54-4EDA-A5FB-68228A45AA00" _Name="ServiceWasDoneByGarage">
 				<orm:FactRoles>
-					<orm:Role id="_39FF1A67-3EFE-4AAB-B69F-5694B6EB81C5" _IsMandatory="true" _Multiplicity="ZeroToMany" Name="">
+					<orm:Role id="_39FF1A67-3EFE-4AAB-B69F-5694B6EB81C5" _IsMandatory="false" _Multiplicity="ZeroToMany" Name="">
 						<orm:RolePlayer ref="_C8ABD2FD-EC16-4E20-8F07-F2CB6B76AA45" />
 					</orm:Role>
 					<orm:Role id="_D1C25B61-C479-41E7-8996-76208A45EF1B" _IsMandatory="false" _Multiplicity="ExactlyOne" Name="">
@@ -5677,7 +5677,6 @@ before there were states has none: it was returned as it was recorded.</orm:Text
 				</orm:ReadingOrders>
 				<orm:InternalConstraints>
 					<orm:UniquenessConstraint ref="_ABE14473-1CED-4083-B9A2-F1BE7313B261" />
-					<orm:MandatoryConstraint ref="_A818436F-F5A2-4823-8648-F38B733E804A" />
 				</orm:InternalConstraints>
 			</orm:Fact>
 			<orm:Fact id="_2905766A-F4B0-4CE4-AFA5-6C386D33E092" _Name="ServiceIsOfServiceKind">
@@ -21077,11 +21076,6 @@ was moved (docs/PROCESSES.md 6).</orm:Text>
 					<orm:Role id="_ADB0B83F-F51D-4109-936D-AD466F160828" ref="_39FF1A67-3EFE-4AAB-B69F-5694B6EB81C5" />
 				</orm:RoleSequence>
 			</orm:UniquenessConstraint>
-			<orm:MandatoryConstraint id="_A818436F-F5A2-4823-8648-F38B733E804A" Name="SimpleMandatoryConstraint54" IsSimple="true">
-				<orm:RoleSequence>
-					<orm:Role id="_4708BE5C-934A-48C6-8091-F9C77632299E" ref="_39FF1A67-3EFE-4AAB-B69F-5694B6EB81C5" />
-				</orm:RoleSequence>
-			</orm:MandatoryConstraint>
 			<orm:UniquenessConstraint id="_6A05F3C0-9460-483E-B0ED-41E166811BC0" Name="InternalUniquenessConstraint110" IsInternal="true">
 				<orm:RoleSequence>
 					<orm:Role id="_AF632231-7198-4740-B621-D074AD7620FB" ref="_08176891-075D-473E-B357-A6F844F0AE04" />

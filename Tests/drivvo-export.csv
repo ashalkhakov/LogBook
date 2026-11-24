@@ -1,0 +1,17 @@
+##Vehicle
+"Name","Model","License plate","Fuel capacity(L)","Year","Notes","Purchase price","Sale price"
+"","Golf","","50.00","0","","0.0","0.0"
+
+##Refuelling
+"Odometer (km)","Date","Fuel","Price / L","Total cost","Volume","Filled tank completely","Second fuel","Price / L","Total cost","Volume","Filled tank completely 2","Third fuel","Price / L","Total cost","Volume","Filled tank completely 3","Fuel efficiency","Charging type","Battery start (%)","Battery end (%)","Duration (min)","Petrol station","Driver","Payment method","Reason","Notes","Discount"
+"12900","2026-03-20 18:05:00","Gasoline","1.80","72.00","40.00","Yes","","0.00","0.00","0.00","No","","0.00","0.00","0.00","No","13.75 km/L","","","","","Aral","Ben Driver","Card","","","0.0"
+"12350","2026-03-10 08:30:00","Gasoline","1.75","70.00","40.00","Yes","","0.00","0.00","0.00","No","","0.00","0.00","0.00","No","0.00 km/L","","","","","Shell","","","","Before the trip, ""north""","0.0"
+"12620","2026-03-14 12:00:00","Gasoline","1.78","35.60","20.00","No","","0.00","0.00","0.00","No","","0.00","0.00","0.00","No","13.50 km/L","","","","","Shell","Anna Driver","","","","0.0"
+
+
+
+
+##Service
+"Odometer (km)","Date","Total cost","Type of service","Service location","Driver","Payment method","Notes","Title","Discount","Instalments","First instalment"
+"12700","2026-03-16 10:00:00","95.00","Oil change","Garage Krause","","Money","Filter: Mann W 712/95","Spring service","5.0","",""
+"12700","2026-03-16 10:00:00","165.00","Labour","Garage Krause","","Money","Filter: Mann W 712/95","Spring service","0.0","",""
