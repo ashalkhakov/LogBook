@@ -672,7 +672,7 @@ static NSString *LBDecimal(double value) {
         if ([files fileExistsAtPath:from]) [files copyItemAtPath:from toPath:[copy stringByAppendingString:suffix] error:NULL];
     }
     sqlite3 *db = NULL;
-    BOOL opened = sqlite3_open_v2(copy.fileSystemRepresentation, &db, SQLITE_OPEN_READWRITE, NULL) == SQLITE_OK;
+    BOOL opened = sqlite3_open_v2(copy.UTF8String, &db, SQLITE_OPEN_READWRITE, NULL) == SQLITE_OK;
     NSMutableDictionary *tables = [NSMutableDictionary dictionary];
     NSMutableDictionary *entities = [NSMutableDictionary dictionary];
     if (opened) {

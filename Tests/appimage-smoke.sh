@@ -6,6 +6,9 @@
 #   Tests/appimage-smoke.sh <Logbook AppImage>
 set -euo pipefail
 image=$1
+# A store of MainTrack's to import, as SQL (the self-test makes it a file).
+LB_MAINTRACK_SQL="$(cd "$(dirname "$0")" && pwd)/maintrack-store.sql"
+export LB_MAINTRACK_SQL
 "$image" --server -StoreURL Temporary -Port 18090 -Localhost YES > /tmp/server.log 2>&1 &
 for i in $(seq 1 60); do python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18090/odata/')" 2>/dev/null && break; sleep 1; done
 out=$(mktemp)

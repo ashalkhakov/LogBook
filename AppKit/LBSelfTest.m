@@ -2759,7 +2759,7 @@ static void LBMainTrackSteps(LBMainWindowController *controller) {
     [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
     sqlite3 *db = NULL;
     char *failed = NULL;
-    BOOL made = sqlite3_open(path.fileSystemRepresentation, &db) == SQLITE_OK && sqlite3_exec(db, sql.UTF8String, NULL, NULL, &failed) == SQLITE_OK;
+    BOOL made = sqlite3_open(path.UTF8String, &db) == SQLITE_OK && sqlite3_exec(db, sql.UTF8String, NULL, NULL, &failed) == SQLITE_OK;
     if (db) sqlite3_close(db);
     LBCheck(@"MainTrack's store made", made, failed ? @(failed) : nil);
     if (!made) return;

@@ -235,7 +235,7 @@ static void LBMainTrackSteps(NSString *sqlPath) {
                                                  [NSString stringWithFormat:@"Maintrack-%@.sqlite", [NSProcessInfo processInfo].globallyUniqueString]];
     sqlite3 *db = NULL;
     char *failed = NULL;
-    BOOL made = sql && sqlite3_open(path.fileSystemRepresentation, &db) == SQLITE_OK && sqlite3_exec(db, sql.UTF8String, NULL, NULL, &failed) == SQLITE_OK;
+    BOOL made = sql && sqlite3_open(path.UTF8String, &db) == SQLITE_OK && sqlite3_exec(db, sql.UTF8String, NULL, NULL, &failed) == SQLITE_OK;
     LBCheck(@"MainTrack's store made, from Tests/maintrack-store.sql", made, failed ? @(failed) : sqlPath);
     if (db) sqlite3_close(db);
     if (!made) return;
