@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="count-review-definitions" targetNamespace="https://github.com/ashalkhakov/LogBook">
+  <bpmn:import importType="http://schemas.neumont.edu/ORM/2006-04/ORMRoot" location="Logbook.orm" namespace="Logbook"/>
+  <bpmn:import importType="http://schemas.ormkit.org/2026-10/Flows" location="Counting.flow" namespace="Counting"/>
+  <bpmn:process id="countReview" name="Count review" isExecutable="true">
+    <bpmn:documentation>A count taken (docs/STOCK.md, Counts): a keeper's, saved as counted with what was found of each item where. Its variable stockCount is the count's id. A manager of its catalog reviews it with the Counting flow's Review (its ReviewStockCount form): posted, its differences adjusted, or rejected, to be counted again.</bpmn:documentation>
+    <bpmn:startEvent id="counted" name="Counted"/>
+    <bpmn:userTask id="review" name="Review the count" camunda:candidateGroups="=[&quot;manager:&quot; + catalog]" camunda:formKey="ormkit:flow:Counting.flow#Review"/>
+    <bpmn:endEvent id="reviewed" name="Reviewed"/>
+    <bpmn:sequenceFlow id="toReview" sourceRef="counted" targetRef="review"/>
+    <bpmn:sequenceFlow id="toReviewed" sourceRef="review" targetRef="reviewed"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="countReview_Diagram">
+    <bpmndi:BPMNPlane id="countReview_Plane" bpmnElement="countReview">
+      <bpmndi:BPMNShape id="counted_Shape" bpmnElement="counted">
+        <dc:Bounds x="152" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="review_Shape" bpmnElement="review">
+        <dc:Bounds x="240" y="80" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="reviewed_Shape" bpmnElement="reviewed">
+        <dc:Bounds x="392" y="102" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="toReview_Edge" bpmnElement="toReview">
+        <di:waypoint x="188" y="120"/>
+        <di:waypoint x="240" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="toReviewed_Edge" bpmnElement="toReviewed">
+        <di:waypoint x="340" y="120"/>
+        <di:waypoint x="392" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow:Flow xmlns:flow="http://schemas.ormkit.org/2026-10/Flows" Name="Records" Model="Logbook.orm">
+    <flow:Entry Name="Start" Screen="vehicles"></flow:Entry>
+    <flow:Screen id="vehicles" Query="_19702A0B-A694-469C-AF47-1305B1211F4A" Name="Vehicles" X="0" Y="0" Width="390" Height="844"></flow:Screen>
+    <flow:Screen id="fillUp" Form="_D82E99E7-32B4-4BBF-A1E9-1DA15731A80C" Name="RecordFillUp" X="480" Y="0" Width="390" Height="844"></flow:Screen>
+    <flow:Transition From="vehicles" On="RowChosen" To="fillUp">
+        <flow:Give Node="_B84190F4-08E6-4922-8724-35BBCC6D54F7" From="row"></flow:Give>
+    </flow:Transition>
+    <flow:Transition From="fillUp" On="SubmitDone" Kind="Back"></flow:Transition>
+    <flow:Transition From="fillUp" On="Cancel" Kind="Back"></flow:Transition>
+</flow:Flow>

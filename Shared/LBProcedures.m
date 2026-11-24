@@ -611,6 +611,10 @@ static void LBDoneBy(Reminder *reminder, Event *event) {
         self.dueMileageQuantity = mileage;
         self.dueMileageDistanceUnit = unit;
     }
+    /* And what it is due at now: where the move took it. */
+    move.toDate = self.dueDate;
+    move.toMileageQuantity = self.dueMileageQuantity;
+    move.toMileageDistanceUnit = self.dueMileageDistanceUnit;
     return move;
 }
 

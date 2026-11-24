@@ -1,11 +1,17 @@
 // An order's window (StockSale.xib, StockPurchase.xib; docs/STOCK.md,
 // Orders): a sale or a purchase, its lines, its shipments or receipts and
-// its returns; confirmed, closed, cancelled or reopened, and its lines
-// shipped or received, and returned, by the server's actions. It reads the order and what is of it.
+// its returns. A purchase's window is a view of the model's form
+// EditPurchaseOrder (its supplier, day, reference, note and lines, their
+// items of its catalog, as the form offers them), saved by the form; its
+// steps are sheets, each a view of its form: Confirm or Cancel,
+// ConfirmPurchaseOrder; Receive, ReceiveGoods (a receipt made of what is
+// outstanding, each line's quantity changed or taken away), submitted to
+// the order's process. A sale's is the order's own, its steps the server's
+// actions; Close and Reopen, and returns, are.
 
 #import "LBStockEditor.h"
 
-@class Location, StockItem;
+@class Location, StockItem, LBTask, LBTasks, LBFormValues, LBPendingSubmission, ORMFlowSession;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -13,6 +19,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 // The window of a SaleOrder or a PurchaseOrder.
 - (instancetype)initWithStore:(LBStore *)store order:(NSManagedObject *)order;
+// A return asked for (a CustomerReturn, a SupplierReturn), in its order's
+// window: its Receive (Send) the return task's (LBStockEditor's task), its
+// sheet shown as the window is.
+- (instancetype)initWithStore:(LBStore *)store returning:(NSManagedObject *)back;
+@property (nonatomic, readonly, strong, nullable) NSManagedObject *returning;
 @property (nonatomic, readonly, strong) NSManagedObject *order;
 // A sale (else a purchase).
 @property (nonatomic, readonly) BOOL sale;
@@ -24,6 +35,24 @@ NS_ASSUME_NONNULL_BEGIN
 // Its returns, the latest first.
 @property (nonatomic, readonly, copy) NSArray *returns;
 @property (nonatomic, strong) IBOutlet NSArrayController *lineList;
+// An order's forms, as its window and its sheets bind them
+// (LBFormValues.h): EditPurchaseOrder (EditSaleOrder), always;
+// ConfirmPurchaseOrder (ConfirmSaleOrder), ReceiveGoods and ShipGoods while
+// their sheet is shown.
+@property (nonatomic, readonly, strong, nullable) LBFormValues *orderForm;
+@property (nonatomic, readonly, strong, nullable) LBFormValues *confirmForm;
+@property (nonatomic, readonly, strong, nullable) LBFormValues *receiveForm;
+@property (nonatomic, readonly, strong, nullable) LBFormValues *shipForm;
+@property (nonatomic, strong) IBOutlet NSWindow *confirmPanel;
+@property (nonatomic, strong) IBOutlet NSWindow *receivePanel;
+@property (nonatomic, strong) IBOutlet NSWindow *shipPanel;
+// A return's forms, as their sheets bind them: RequestCustomerReturn
+// (RequestSupplierReturn) while Return Line's sheet is shown,
+// ReceiveCustomerReturn (SendSupplierReturn) while its task's is.
+@property (nonatomic, readonly, strong, nullable) LBFormValues *returnAskForm;
+@property (nonatomic, readonly, strong, nullable) LBFormValues *returnDoForm;
+@property (nonatomic, strong) IBOutlet NSWindow *returnAskPanel;
+@property (nonatomic, strong) IBOutlet NSWindow *returnDoPanel;
 @property (nonatomic, strong) IBOutlet NSTableView *linesTable;
 // What its form chooses from: the catalog's customers (suppliers), items,
 // locations.
@@ -37,7 +66,34 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSArray<NSString *> *returnReasons;
 @property (nonatomic, copy) NSString *returnReason;
 
-// The server's Confirm, Close, Cancel and Reopen.
+// A task done with a flow's entry (ormkit:flow:Purchasing.flow#Confirm,
+// LBStockEditor's task) opens its step's sheet as the window is shown.
+// An order's way through its forms (Model/Purchasing.flow, Selling.flow,
+// ORMRuntime's ORMFlowSession): the order's window its EditPurchaseOrder
+// (EditSaleOrder); its Confirm, Cancel and Receive (Ship) buttons the
+// flow's triggers, each sheet the screen they lead to, its Submit and
+// Cancel the ways back.
+@property (nonatomic, readonly, strong, nullable) ORMFlowSession *flow;
+
+// A purchase's step sheet's Submit: its form saved, then submitted to
+// the order's task of it; its Cancel (and Escape): nothing of it kept.
+- (IBAction)submitConfirm:(nullable id)sender;
+- (IBAction)submitReceive:(nullable id)sender;
+- (IBAction)submitShip:(nullable id)sender;
+// Return Line: a return asked for of the line chosen, so many
+// (moveQuantity), for returnReason, in its sheet; its Submit saves it,
+// requested (nothing moved yet: a keeper receives it, or sends it back,
+// Model/CustomerReturn.bpmn, SupplierReturn.bpmn). The return's task's
+// sheet's Submit: its form saved (returned, its moves made; or
+// cancelled), submitted to the task.
+- (IBAction)returnLine:(nullable id)sender;
+- (IBAction)submitReturnAsk:(nullable id)sender;
+- (IBAction)submitReturnDone:(nullable id)sender;
+- (IBAction)dismissForm:(nullable id)sender;
+// A purchase's Receive: its sheet, a move of each line outstanding.
+- (IBAction)receiveGoods:(nullable id)sender;
+// Confirm and Cancel: a purchase's sheet, its state chosen; a sale's, the
+// server's. Close and Reopen, the server's.
 - (IBAction)confirmOrder:(nullable id)sender;
 - (IBAction)closeOrder:(nullable id)sender;
 - (IBAction)cancelOrder:(nullable id)sender;

@@ -46,7 +46,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSString *shareEmail;
 
 // The chosen record under its entity's name (none when there is no one
-// record chosen): what each form's controller binds its content to.
+// record chosen): what each form's controller binds its content to. A
+// fill-up is there as the model's RecordFillUp form has it (LBFormValues:
+// its values, written through to the record; its choices; saved by the
+// form, a refusal said under the field it is about).
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, id> *chosenRecords;
 // What the pick lists are ordered by: their objects' titles.
 @property (nonatomic, readonly, copy) NSArray<NSSortDescriptor *> *byTitle;

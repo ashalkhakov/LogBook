@@ -1,11 +1,11 @@
 #import "LBMainWindowController.h"
 #import "LBStore.h"
+#import "LBLocalStore.h"
 #import "LBDisplay.h"
 #import "LBReportsController.h"
 #import "LBRemindersController.h"
 #import "LBAnswersController.h"
 #import "LBCalendarController.h"
-#import <ODataIncrementalStore/ODataOperationCall.h>
 #import <ODataKit/ODataError.h>
 #import "Schedule+CoreDataClass.h"
 #import "Reminder+CoreDataClass.h"
@@ -25,6 +25,20 @@
 #import "LBPartsPanelController.h"
 #import "LBStockEditor.h"
 #import "LBStockProcedures.h"
+#import "LBFormValues.h"
+#import <ORMRuntime/ORMForm.h>
+#import <ORMRuntime/ORMFormSession.h>
+
+/* Something being typed in the window, or in its sheet: a field's editor
+   open. Read again then, its row or field would be taken from under it. */
+static BOOL LBTyping(NSWindow *window) {
+    for (NSWindow *each in @[ window ?: [NSNull null], window.attachedSheet ?: [NSNull null] ]) {
+        if (![each isKindOfClass:[NSWindow class]]) continue;
+        id responder = each.firstResponder;
+        if ([responder isKindOfClass:[NSText class]] && [(NSText *)responder isFieldEditor]) return YES;
+    }
+    return NO;
+}
 
 static void *LBVehicleChosen = &LBVehicleChosen;
 static void *LBRecordChosen = &LBRecordChosen;
@@ -41,6 +55,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @implementation LBMainWindowController {
     NSArray<NSString *> *_tyreSetTitles;
     NSArray<NSString *> *_tripTitles;
+    /* The chosen record as its model's form has it (Record<Kind>). */
+    LBFormValues *_recordForm;
 }
 
 - (instancetype)initWithStore:(LBStore *)store {
@@ -56,6 +72,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
     if (!self.isWindowLoaded) return;
     NSString *selection = NSStringFromSelector(@selector(selectionIndexes));
     [_vehicles removeObserver:self forKeyPath:selection context:LBVehicleChosen];
@@ -67,8 +84,20 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     return _store.context;
 }
 
+/* Offline first: what a sync brought down (another device's), shown. */
+- (void)storeDidSync:(NSNotification *)note {
+    /* Not while the user types: once they are done. */
+    if (self.isWindowLoaded && LBTyping(self.window)) {
+        [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(storeDidSync:) object:nil];
+        return [self performSelector:@selector(storeDidSync:) withObject:nil afterDelay:1];
+    }
+    [self readAgain];
+}
+
 - (void)windowDidLoad {
     [super windowDidLoad];
+    if (_store.local) [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(storeDidSync:)
+                                                                   name:LBLocalStoreDidSyncNotification object:_store.local];
     self.window.title = [NSString stringWithFormat:@"Logbook — %@", _store.serviceRoot.host ?: @""];
     _vehicles.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(vehicleName)) ascending:YES
                                                                   selector:@selector(localizedCaseInsensitiveCompare:)] ];
@@ -155,12 +184,54 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_calendarController refresh];
 }
 
+/* A record as the model's form of its kind, Record<Kind> (ORMKit's
+   docs/FORMS.md): its inputs the vehicle and who entered it, read from the
+   store's context as it is now, what is typed written through to the
+   record (the list shows it as it is typed), its choices the form's, and
+   saved by the form (-saveChanges). What a save refused of a field is said
+   under it, and gone once the field changes. nil, and why, where the app
+   has no such form or it cannot read the record: its tab then shows none
+   of it, never the record bound past its form. */
+- (LBFormValues *)formOfRecord:(Record *)record error:(NSError **)error {
+    /* One no longer in the store (deleted, or read again without it). */
+    if (!record.managedObjectContext || !record.entity.name) return nil;
+    ORMForm *form = [ORMForm formNamed:[@"Record" stringByAppendingString:record.entity.name] error:error];
+    if (!form) return nil;
+    /* A new one is given its key now, and so is what is new of it (an
+       inspection's answers), as saving would: the form edits them by
+       their keys. */
+    [_store identifyInserted];
+    ORMFormSession *session = [[ORMFormSession alloc] initWithForm:form
+                                                             given:@{ @"vehicle" : (record.vehicle ?: [self chosenVehicle]).id.UUIDString ?: @"",
+                                                                      @"enteredBy" : record.enteredBy.email ?: _store.user.email ?: @"" }];
+    LBStore *store = _store;
+    [session useContext:self.context saving:^BOOL(NSManagedObjectContext *context, NSError **failure) {
+        return [store save:failure];
+    }];
+    session.key = record.id.UUIDString;
+    if (![session open:error]) return nil;
+    LBFormValues *values = [[LBFormValues alloc] initWithSession:session object:record];
+    __weak NSTabView *forms = _recordForms;
+    values.changedHandler = ^(NSString *element) {
+        [LBFormValues clearProblemAt:element under:forms];
+    };
+    return values;
+}
+
 /* The chosen record's form shown, given the record. */
 - (void)recordChosen {
     NSArray *chosen = _records.selectedObjects;
     Record *record = chosen.count == 1 ? chosen[0] : nil;
     NSString *kind = record.entity.name;
-    self.chosenRecords = kind ? @{ kind: record } : @{};
+    NSError *error = nil;
+    _recordForm = record ? [self formOfRecord:record error:&error] : nil;
+    if (record.managedObjectContext && !_recordForm) {
+        NSLog(@"Logbook: %@ not opened in its form: %@", kind, error.localizedDescription);
+        if (!_quiet) [self reportError:error ?: [NSError errorWithDomain:NSCocoaErrorDomain code:NSFileReadUnknownError
+                                                                userInfo:@{ NSLocalizedDescriptionKey : @"The record's form does not open." }]];
+    }
+    self.chosenRecords = kind && _recordForm ? @{ kind: _recordForm } : @{};
+    [_recordForm showErrors:@{} under:_recordForms];
     NSInteger form = [_recordForms indexOfTabViewItemWithIdentifier:kind ?: @"none"];
     [_recordForms selectTabViewItemAtIndex:form == NSNotFound ? 0 : form];
     [self answersChanged];
@@ -378,9 +449,13 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         if (error) *error = _lastError;
         return nil;
     }
-    ODataOperationCall *call = [ODataOperationCall callOfOperation:name onObject:object];
-    call.parameters = parameters;
-    id result = [call invoke:error];
+    /* Offline first, done here and saved here (then synced); online, the
+       server's. */
+    id result = [_store performAction:name on:object parameters:parameters error:error];
+    if (result && _store.local && ![_store save:error]) {
+        [self.context rollback];
+        result = nil;
+    }
     [self readAgain];
     if (result) _lastError = nil;
     return result;
@@ -403,8 +478,12 @@ static void *LBRecordsChanged = &LBRecordsChanged;
                                                            NSStringFromSelector(@selector(vehicle)), vehicle];
         if (![context executeFetchRequest:moves error:&error]) NSLog(@"Logbook: the moves not read again: %@", error.localizedDescription);
     }
-    for (NSManagedObject *object in context.registeredObjects.allObjects) {
-        if (!object.hasChanges) [context refreshObject:object mergeChanges:NO];
+    /* The server's objects read again; offline first, the context's are
+       the store's, and a sync has refreshed what it brought. */
+    if (!_store.local) {
+        for (NSManagedObject *object in context.registeredObjects.allObjects) {
+            if (!object.hasChanges) [context refreshObject:object mergeChanges:NO];
+        }
     }
     /* What shows the chosen vehicle's records asks for them again (the
        vehicle itself is not changed). */
@@ -428,6 +507,55 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     for (NSManagedObject *object in [self.context.insertedObjects setByAddingObjectsFromSet:self.context.updatedObjects]) {
         stock = stock || [object isKindOfClass:[SaleOrder class]] || [object isKindOfClass:[SaleLine class]];
     }
+    /* Each record changed of a kind the window shows (Record's lbKinds:
+       a schedule or a reminder is the reminders' screen's) is saved by its
+       form, all in one save, the rest with them: a refusal of the chosen one's fields said under them,
+       the rest as any save's. Each is opened as it is now: Save may have
+       completed it since it was chosen (its readings), or added it to its
+       vehicle. */
+    Record *chosen = (Record *)_recordForm.object;
+    NSMutableArray<Record *> *changed = [NSMutableArray array];
+    for (NSManagedObject *object in [self.context.insertedObjects setByAddingObjectsFromSet:self.context.updatedObjects]) {
+        if ([object isKindOfClass:[Record class]] && !object.isDeleted && [[Record lbKinds] containsObject:object.entity.name]) {
+            [changed addObject:(Record *)object];
+        }
+    }
+    if ([changed containsObject:chosen]) {
+        [changed removeObject:chosen];
+        [changed insertObject:chosen atIndex:0];
+    }
+    NSMutableArray<ORMForm *> *forms = [NSMutableArray array];
+    NSMutableArray<NSDictionary *> *instances = [NSMutableArray array];
+    for (Record *record in changed) {
+        LBFormValues *form = [self formOfRecord:record error:&error];
+        if (!form) {
+            [self reportError:[self willPresentError:error]];
+            return NO;
+        }
+        [forms addObject:form.session.form];
+        [instances addObject:form.session.values];
+    }
+    if (forms.count) {
+        NSDictionary<NSString *, NSString *> *errors = nil;
+        LBStore *store = _store;
+        NSArray *saved = [ORMForm saveForms:forms instances:instances inContext:self.context
+                                     saving:^BOOL(NSManagedObjectContext *context, NSError **failure) { return [store save:failure]; }
+                                     errors:&errors error:&error];
+        if (!saved) {
+            BOOL theirs = changed.firstObject == chosen && _recordForm;
+            NSArray<NSString *> *rest = errors.count ? (theirs ? [_recordForm showErrors:errors under:_recordForms] : errors.allValues) : @[];
+            if (!error && rest.count) {
+                error = [NSError errorWithDomain:NSCocoaErrorDomain code:NSValidationMultipleErrorsError
+                                        userInfo:@{ NSLocalizedDescriptionKey : @"The records were not saved.",
+                                                    NSLocalizedRecoverySuggestionErrorKey : [rest componentsJoinedByString:@"\n"] }];
+            }
+            if (error) [self reportError:[self willPresentError:error]];
+            else _lastError = [NSError errorWithDomain:NSCocoaErrorDomain code:NSValidationMultipleErrorsError
+                                              userInfo:@{ NSLocalizedDescriptionKey : @"The record was not saved: see under its fields." }];
+            return NO;
+        }
+        [_recordForm showErrors:@{} under:_recordForms];
+    }
     if ([_store save:&error]) {
         _lastError = nil;
         if (stock) [[NSNotificationCenter defaultCenter] postNotificationName:LBStockDidChangeNotification object:self];
@@ -438,6 +566,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (void)reportError:(NSError *)error {
+    error = [self willPresentError:error];
     _lastError = error;
     if (error && !_quiet) [self presentError:error];
 }
@@ -513,7 +642,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (IBAction)showParts:(id)sender {
-    Event *event = _chosenRecords[NSStringFromClass([Service class])] ?: _chosenRecords[NSStringFromClass([TyreChange class])];
+    LBFormValues *form = _chosenRecords[NSStringFromClass([Service class])] ?: _chosenRecords[NSStringFromClass([TyreChange class])];
+    Event *event = (Event *)form.object;
     if (!event.lb_usesParts) return;
     if (_partsPanel.event != event) {
         [_partsPanel close];
@@ -545,9 +675,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 /* A save's refusal, each violation said: Core Data's message names none. */
 - (NSError *)willPresentError:(NSError *)error {
-    NSArray *each = error.userInfo[NSDetailedErrorsKey];
-    if (!each.count) return error;
-    NSString *said = [[each valueForKey:NSStringFromSelector(@selector(localizedDescription))] componentsJoinedByString:@"\n"];
+    if (!error.userInfo[NSDetailedErrorsKey] && !error.userInfo[NSValidationKeyErrorKey]) return error;
+    NSString *said = [[LBLocalStore sentencesOfError:error] componentsJoinedByString:@"\n"];
     return [NSError errorWithDomain:error.domain code:error.code
                            userInfo:@{ NSLocalizedDescriptionKey: @"The changes break the logbook's rules",
                                        NSLocalizedRecoverySuggestionErrorKey: said }];
@@ -572,7 +701,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     if (answer == NSAlertThirdButtonReturn) return YES;
     NSError *error = nil;
     if ([_store save:&error]) return YES;
-    [self presentError:error];
+    [self presentError:[self willPresentError:error]];
     return NO;
 }
 
@@ -586,8 +715,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 - (id)newObject {
     ServiceItem *item = [super newObject];
-    Service *service = _windowController.chosenRecords[NSStringFromClass([Service class])];
-    item.costCurrency = service.currency;
+    LBFormValues *service = _windowController.chosenRecords[NSStringFromClass([Service class])];
+    item.costCurrency = [service valueForKey:@"currency"];
     return item;
 }
 

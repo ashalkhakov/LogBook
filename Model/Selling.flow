@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow:Flow xmlns:flow="http://schemas.ormkit.org/2026-10/Flows" Name="Selling" Model="Logbook.orm">
+    <flow:Entry Name="Order" Screen="order"></flow:Entry>
+    <flow:Entry Name="Confirm" Screen="confirm"></flow:Entry>
+    <flow:Entry Name="Ship" Screen="ship"></flow:Entry>
+    <flow:Screen id="order" Form="_9259D5E8-0E4B-41CE-BA40-301636808253" Name="EditSaleOrder" X="0" Y="0" Width="800" Height="600"></flow:Screen>
+    <flow:Screen id="confirm" Form="_DBD5EFAC-74A9-47B6-BD4F-2A09069D5380" Name="ConfirmSaleOrder" X="900" Y="0" Width="420" Height="240"></flow:Screen>
+    <flow:Screen id="ship" Form="_0E562206-39F7-4381-AB5F-109F99DA724F" Name="ShipGoods" X="900" Y="340" Width="640" Height="420"></flow:Screen>
+    <flow:Transition From="order" On="Trigger" Control="confirmOrder" To="confirm" Kind="Overlay">
+        <flow:Give Node="_1919D224-6A20-4228-9750-A302568EA48B" From="order._CC240294-9D60-43A8-8D34-7F776F16E55C"></flow:Give>
+    </flow:Transition>
+    <flow:Transition From="order" On="Trigger" Control="cancelOrder" To="confirm" Kind="Overlay">
+        <flow:Give Node="_1919D224-6A20-4228-9750-A302568EA48B" From="order._CC240294-9D60-43A8-8D34-7F776F16E55C"></flow:Give>
+    </flow:Transition>
+    <flow:Transition From="confirm" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="confirm" On="Cancel" Kind="Close"></flow:Transition>
+    <flow:Transition From="order" On="Trigger" Control="moveLine" To="ship" Kind="Overlay">
+        <flow:Give Node="_265A2F8A-918E-4AF8-B089-12910B988C46" From="order._CC240294-9D60-43A8-8D34-7F776F16E55C"></flow:Give>
+    </flow:Transition>
+    <flow:Transition From="order" On="Trigger" Control="moveOutstanding" To="ship" Kind="Overlay">
+        <flow:Give Node="_265A2F8A-918E-4AF8-B089-12910B988C46" From="order._CC240294-9D60-43A8-8D34-7F776F16E55C"></flow:Give>
+    </flow:Transition>
+    <flow:Transition From="ship" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="ship" On="Cancel" Kind="Close"></flow:Transition>
+    <flow:Entry Name="ReceiveReturn" Screen="returnDo"></flow:Entry>
+    <flow:Screen id="returnAsk" Form="_AF494D87-0765-4693-9629-C862C650EE21" Name="RequestCustomerReturn" X="900" Y="800" Width="420" Height="280"></flow:Screen>
+    <flow:Screen id="returnDo" Form="_17576D7F-DD21-46AC-8220-08B5742D54DD" Name="ReceiveCustomerReturn" X="1400" Y="800" Width="420" Height="320"></flow:Screen>
+    <flow:Transition From="order" On="Trigger" Control="returnLine" To="returnAsk" Kind="Overlay">
+        <flow:Give Node="_6ADA0D1F-2603-47D0-B516-FCD7983E97A0" From="order._CC240294-9D60-43A8-8D34-7F776F16E55C"></flow:Give>
+    </flow:Transition>
+    <flow:Transition From="returnAsk" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="returnAsk" On="Cancel" Kind="Close"></flow:Transition>
+    <flow:Transition From="returnDo" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="returnDo" On="Cancel" Kind="Close"></flow:Transition>
+</flow:Flow>

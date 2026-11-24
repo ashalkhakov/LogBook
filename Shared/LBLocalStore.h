@@ -35,6 +35,10 @@ NS_ASSUME_NONNULL_BEGIN
 // settled), the views read again. userInfo: "status" (text).
 FOUNDATION_EXPORT NSNotificationName const LBLocalStoreDidChangeNotification;
 
+// On the main thread: a sync done, what came down with it in the context
+// (refreshed): what lists objects fetches them again.
+FOUNDATION_EXPORT NSNotificationName const LBLocalStoreDidSyncNotification;
+
 @interface LBLocalStore : NSObject <ODataSyncDelegate>
 
 // Application Support/Logbook, made the first time.

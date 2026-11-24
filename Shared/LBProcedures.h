@@ -156,8 +156,8 @@ FOUNDATION_EXPORT NSDate *LBAddMonths(NSDate *day, NSInteger months);
 - (BOOL)lb_completeByEvent:(nullable Event *)event next:(Reminder *_Nullable *_Nullable)next error:(NSError **)error;
 
 // Moved (PROCESSES.md 6) to the day or the distance given (nil: as it is),
-// what it was due at before recorded with the move, made at now by the
-// user. Refused for one that is not open, or a move to where it is due
+// what it was due at before, and what it is due at after, recorded with the
+// move, made at now by the user. Refused for one that is not open, or a move to where it is due
 // already.
 - (nullable Rescheduling *)lb_rescheduleToDate:(nullable NSDate *)date
                                        mileage:(nullable NSDecimalNumber *)mileage

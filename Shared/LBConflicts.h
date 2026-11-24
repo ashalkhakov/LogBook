@@ -40,6 +40,24 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy, nullable) NSDate *when;
 @end
 
+// A step of a process's done here with its form and saved, not yet
+// submitted to its task at the server (it could not be reached): kept,
+// across launches, until it is (after a sync, or Submit in Window > Tasks),
+// or until the user starts the step again. One per form and object.
+@interface LBPendingSubmission : NSManagedObject
+// The form ("ConfirmPurchaseOrder"), and what its process is of (an
+// order's id).
+@property (nonatomic, copy, nullable) NSString *formName;
+@property (nonatomic, copy, nullable) NSString *businessKey;
+// Its task's name, where it was known ("Confirm the order").
+@property (nonatomic, copy, nullable) NSString *taskName;
+// The form's instance, as it is submitted (LBTasks).
+@property (nonatomic, copy, nullable) NSString *instance;
+@property (nonatomic, copy, nullable) NSDate *savedAt;
+// Why it was not submitted, the last time it was tried.
+@property (nonatomic, copy, nullable) NSString *lastError;
+@end
+
 @interface LBAppState : NSObject
 // The store at url, made the first time.
 - (nullable instancetype)initWithStoreURL:(NSURL *)url error:(NSError **)error NS_DESIGNATED_INITIALIZER;
@@ -56,6 +74,18 @@ NS_ASSUME_NONNULL_BEGIN
                    deletedHere:(BOOL)deletedHere;
 // Settled: forgotten.
 - (void)removeConflict:(LBPendingConflict *)conflict;
+
+// The steps waiting to be submitted, the oldest first.
+- (NSArray<LBPendingSubmission *> *)pendingSubmissions;
+// Kept, in the place of one of the same form and object; saved.
+- (LBPendingSubmission *)keepSubmissionOfForm:(NSString *)formName about:(NSString *)businessKey taskName:(nullable NSString *)taskName
+                                     instance:(NSString *)instance;
+// Why it is not submitted yet; saved.
+- (void)noteSubmission:(LBPendingSubmission *)submission failed:(NSString *)why;
+// Its task's name, learned; saved.
+- (void)noteSubmission:(LBPendingSubmission *)submission task:(NSString *)taskName;
+// Submitted, or started again: forgotten.
+- (void)removeSubmission:(LBPendingSubmission *)submission;
 @end
 
 // ODataSync's resolver for a both entity: the server's version stands

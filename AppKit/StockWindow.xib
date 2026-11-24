@@ -122,6 +122,11 @@
             </buttonCell>
             <connections>
               <action selector="showSettings:" target="-2" id="showSettingsAction"/>
+              <binding destination="-2" name="enabled" keyPath="catalog" id="showSettingsEnabled">
+                <dictionary key="options">
+                  <string key="NSValueTransformerName">NSIsNotNil</string>
+                </dictionary>
+              </binding>
             </connections>
           </button>
           <tabView identifier="stockTabs" id="stockTabs">
@@ -286,6 +291,11 @@
                       </buttonCell>
                       <connections>
                         <action selector="addItem:" target="-2" id="addItemAction"/>
+                        <binding destination="-2" name="enabled" keyPath="catalog" id="addItemEnabled">
+                          <dictionary key="options">
+                            <string key="NSValueTransformerName">NSIsNotNil</string>
+                          </dictionary>
+                        </binding>
                       </connections>
                     </button>
                     <button verticalHuggingPriority="750" identifier="openItem" id="openItem">
@@ -445,6 +455,11 @@
                       </buttonCell>
                       <connections>
                         <action selector="newSale:" target="-2" id="newSaleAction"/>
+                        <binding destination="-2" name="enabled" keyPath="catalog" id="newSaleEnabled">
+                          <dictionary key="options">
+                            <string key="NSValueTransformerName">NSIsNotNil</string>
+                          </dictionary>
+                        </binding>
                       </connections>
                     </button>
                     <button verticalHuggingPriority="750" identifier="openSale" id="openSale">
@@ -592,6 +607,11 @@
                       </buttonCell>
                       <connections>
                         <action selector="newPurchase:" target="-2" id="newPurchaseAction"/>
+                        <binding destination="-2" name="enabled" keyPath="catalog" id="newPurchaseEnabled">
+                          <dictionary key="options">
+                            <string key="NSValueTransformerName">NSIsNotNil</string>
+                          </dictionary>
+                        </binding>
                       </connections>
                     </button>
                     <button verticalHuggingPriority="750" identifier="openPurchase" id="openPurchase">
@@ -965,6 +985,11 @@
                       </buttonCell>
                       <connections>
                         <action selector="newCount:" target="-2" id="newCountAction"/>
+                        <binding destination="-2" name="enabled" keyPath="catalog" id="newCountEnabled">
+                          <dictionary key="options">
+                            <string key="NSValueTransformerName">NSIsNotNil</string>
+                          </dictionary>
+                        </binding>
                       </connections>
                     </button>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countMovesLabel">

@@ -26,6 +26,10 @@
 //                (HSApplication.h)
 //   AllowAnonymous  NO: a request that names no one is refused (default
 //                YES, for trying it out)
+//   Workflow     the processes' store (LBWorkflow.h; default Workflow.sqlite
+//                beside the logbook's; Temporary with a temporary one)
+//   Processes    the processes, as wf-build built them (default
+//                Logbook.wfdeployment beside the server)
 //   Permissions  who may see and change the stock, as relations (default
 //                Logbook.permissions.plist here; ODataKit's
 //                docs/permissions.md): read once a sign-in is set, and one
@@ -43,29 +47,41 @@
 // (automatic completion, LBProcedures.h), in the same save.
 
 #import <ODataService/ODataServer.h>
+#import <ODataKit/ODataError.h>
 #import <ODataSync/ODataSyncService.h>
 #import "LogbookValidation.h"
 #import "LBPermissions.h"
 #import "LBActions.h"
 #import "LBProcedures.h"
 #import "LBStockProcedures.h"
+#import "LBWorkflow.h"
 #include <dlfcn.h>
 #include <stdlib.h>
 
 @interface LBServerConfiguration : HSConfiguration
+/* Signed in, who is asking with their roles (LBWorkflow's): the server
+   sets it before the authenticator is made. */
+@property (nonatomic, strong, nullable) LBWorkflow *workflow;
 @end
 
 @implementation LBServerConfiguration
 + (NSString *)environmentPrefix { return @"LB_"; }
 + (NSArray<NSString *> *)knownSettings {
     return [[super knownSettings] arrayByAddingObjectsFromArray:@[ @"Model", @"Plans", @"StoreType", @"StoreURL", @"ServiceRoot",
-                                                                   @"AllowAnonymous", @"Permissions" ]];
+                                                                   @"AllowAnonymous", @"Permissions", @"Workflow", @"Processes" ]];
+}
+
+- (id<HSAuthenticator>)authenticatorWithError:(NSError **)error {
+    id<HSAuthenticator> authenticator = [super authenticatorWithError:error];
+    return authenticator && _workflow ? [_workflow rolesAuthenticatorOver:authenticator] : authenticator;
 }
 @end
 
 @interface LBServer : HSApplication
 @property (nonatomic, strong) ODataService *service;
 @property (nonatomic, strong) ODataSyncService *histories;
+@property (nonatomic, strong) LBWorkflow *workflow;
+@property (nonatomic, strong) ODataService *workflowService;
 @end
 
 @implementation LBServer
@@ -206,6 +222,15 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
         ?: [NSURL URLWithString:[NSString stringWithFormat:@"http://%@:%lu/odata/", c.bindToLocalhost ? @"127.0.0.1" : [NSProcessInfo processInfo].hostName,
                                                             (unsigned long)c.port]];
     _service = [[ODataService alloc] initWithPersistentStoreCoordinator:coordinator serviceRoot:root];
+    /* The processes (LBWorkflow.h), beside the store; their API beside the
+       logbook's, at workflow/. */
+    _workflow = [[LBWorkflow alloc] initWithConfiguration:c coordinator:coordinator
+                                           temporaryStore:LBTemporaryStore != nil || [[c setting:@"Workflow"] isEqual:@"Temporary"]
+                                                    error:error];
+    if (!_workflow) return NO;
+    _workflowService = [_workflow serviceAtRoot:[root URLByAppendingPathComponent:@"../workflow/"].absoluteURL.standardizedURL
+                                       signedIn:[c setting:@"TrustedUserHeader"] || [c setting:@"JWTIssuer"]
+                                                || [c setting:@"IntrospectionEndpoint"]];
     _service.allowsAnonymousRequests = [c flag:@"AllowAnonymous" otherwise:YES];
     _service.allowsAnonymousMetadata = YES;
     /* Before each save of what clients write: the reminders the events in
@@ -213,8 +238,14 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
        whichever device sent them; then the model's rules. */
     _service.willSave = ^BOOL(NSManagedObjectContext *context, NSError **refused) {
         NSError *why = nil;
-        if (![context lb_completeRemindersOfChangedEvents:&why] || ![context lb_shipPartsOfChangedEvents:&why]) {
-            if (refused) *refused = why;
+        if (![context lb_completeRemindersOfChangedEvents:&why] || ![context lb_shipPartsOfChangedEvents:&why]
+            || ![context lb_confirmChangedOrders:&why] || ![context lb_completeShippedMoves:&why] || ![context lb_postChangedCounts:&why] || ![context lb_moveChangedTransfers:&why] || ![context lb_returnChangedReturns:&why] || ![context lb_holdMovedItems:&why]) {
+            /* A procedure's refusal, as its action answers it: the
+               client's to change (400), in its words. */
+            if (refused) {
+                *refused = [why.domain isEqualToString:LBProceduresErrorDomain] ? ODataServiceError(400, why.localizedDescription ?: @"Refused")
+                                                                                : why;
+            }
             return NO;
         }
         if ([context orm_prepareForSave:&why]) return YES;
@@ -255,12 +286,16 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
 
 - (BOOL)prepare:(NSError **)error {
     if (!_service && ![self makeService:error]) return NO;
+    /* Signed in: who is asking, with their roles as the logbook's
+       permissions make them, for the processes' tasks (LBWorkflow.h). */
+    ((LBServerConfiguration *)self.configuration).workflow = _workflow;
     return [super prepare:error];
 }
 
 - (void)configureModules:(NSMutableArray<id<HSModule>> *)modules {
     [super configureModules:modules];
     [modules addObject:[[ODataServiceModule alloc] initWithService:_service]];
+    [modules addObject:[[ODataServiceModule alloc] initWithService:_workflowService]];
 }
 
 @end

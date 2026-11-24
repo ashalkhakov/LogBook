@@ -8,6 +8,8 @@
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockItemWindowController">
       <connections>
         <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="requestPanel" destination="requestPanel" id="requestPanelOutlet"/>
+        <outlet property="movePanel" destination="movePanel" id="movePanelOutlet"/>
         <outlet property="cardTabs" destination="cardTabs" id="cardTabsOutlet"/>
         <outlet property="kitLineList" destination="kitLineList" id="kitLineListOutlet"/>
         <outlet property="supplierItemList" destination="supplierItemList" id="supplierItemListOutlet"/>
@@ -20,6 +22,319 @@
     </customObject>
     <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
     <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+    <objectController objectClassName="StockTransfer" userLabel="Transfer Form" id="RequestTransferForm">
+      <connections>
+        <binding destination="-2" name="contentObject" keyPath="requestForm" id="RequestTransferFormContent"/>
+      </connections>
+    </objectController>
+    <objectController objectClassName="StockTransfer" userLabel="Move Form" id="MoveStockForm">
+      <connections>
+        <binding destination="-2" name="contentObject" keyPath="moveForm" id="MoveStockFormContent"/>
+      </connections>
+    </objectController>
+    <window title="Transfer" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="requestPanel" customClass="NSPanel">
+      <windowStyleMask key="styleMask" titled="YES"/>
+      <rect key="contentRect" x="200" y="200" width="420" height="210"/>
+      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
+      <view key="contentView" id="requestPanelContent">
+        <rect key="frame" x="0" y="0" width="420" height="210"/>
+        <autoresizingMask key="autoresizingMask"/>
+        <subviews>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestQuantityLabel">
+            <rect key="frame" x="14" y="176" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many" id="requestQuantityLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="requestQuantity" id="requestQuantity">
+            <rect key="frame" x="110" y="173" width="100" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" alignment="left" id="requestQuantityCell">
+              <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="requestQuantityFormatter"/>
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="RequestTransferForm" name="value" keyPath="selection.transferQuantity" id="requestQuantityValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestFromLabel">
+            <rect key="frame" x="14" y="146" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From" id="requestFromLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="requestFrom" id="requestFrom">
+            <rect key="frame" x="108" y="140" width="296" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="requestFromCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="requestFromMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="RequestTransferForm" name="content" keyPath="selection.choices.transferFrom" id="requestFromContent"/>
+              <binding destination="RequestTransferForm" name="contentValues" keyPath="selection.choices.transferFrom.lbTitle" previousBinding="requestFromContent" id="requestFromValues"/>
+              <binding destination="RequestTransferForm" name="selectedObject" keyPath="selection.transferFrom" previousBinding="requestFromValues" id="requestFromChosen"/>
+            </connections>
+          </popUpButton>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestToLabel">
+            <rect key="frame" x="14" y="116" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To" id="requestToLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="requestTo" id="requestTo">
+            <rect key="frame" x="108" y="110" width="296" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="requestToCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="requestToMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="RequestTransferForm" name="content" keyPath="selection.choices.transferTo" id="requestToContent"/>
+              <binding destination="RequestTransferForm" name="contentValues" keyPath="selection.choices.transferTo.lbTitle" previousBinding="requestToContent" id="requestToValues"/>
+              <binding destination="RequestTransferForm" name="selectedObject" keyPath="selection.transferTo" previousBinding="requestToValues" id="requestToChosen"/>
+            </connections>
+          </popUpButton>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestNoteLabel">
+            <rect key="frame" x="14" y="86" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="requestNoteLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="requestNote" id="requestNote">
+            <rect key="frame" x="110" y="83" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" alignment="left" id="requestNoteCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="RequestTransferForm" name="value" keyPath="selection.note" id="requestNoteValue"/>
+            </connections>
+          </textField>
+          <button verticalHuggingPriority="750" identifier="dismissRequest" id="dismissRequest">
+            <rect key="frame" x="220" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissRequestCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="dismissForm:" target="-2" id="dismissRequestAction"/>
+            </connections>
+          </button>
+          <button verticalHuggingPriority="750" identifier="submitRequest" id="submitRequest">
+            <rect key="frame" x="315" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitRequestCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="submitRequest:" target="-2" id="submitRequestAction"/>
+            </connections>
+          </button>
+        </subviews>
+      </view>
+    </window>
+    <window title="Move the stock" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="movePanel" customClass="NSPanel">
+      <windowStyleMask key="styleMask" titled="YES"/>
+      <rect key="contentRect" x="200" y="200" width="420" height="300"/>
+      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
+      <view key="contentView" id="movePanelContent">
+        <rect key="frame" x="0" y="0" width="420" height="300"/>
+        <autoresizingMask key="autoresizingMask"/>
+        <subviews>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveItemLabel">
+            <rect key="frame" x="14" y="266" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item" id="moveItemLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="moveItem" id="moveItem">
+            <rect key="frame" x="110" y="263" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="moveItemCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="MoveStockForm" name="value" keyPath="selection.stockItem.lbTitle" id="moveItemValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveQuantityLabel">
+            <rect key="frame" x="14" y="236" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many" id="moveQuantityLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="moveQuantity" id="moveQuantity">
+            <rect key="frame" x="110" y="233" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="moveQuantityCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="MoveStockForm" name="value" keyPath="selection.transferQuantity" id="moveQuantityValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveFromLabel">
+            <rect key="frame" x="14" y="206" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From" id="moveFromLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="moveFrom" id="moveFrom">
+            <rect key="frame" x="110" y="203" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="moveFromCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="MoveStockForm" name="value" keyPath="selection.transferFrom.lbTitle" id="moveFromValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveToLabel">
+            <rect key="frame" x="14" y="176" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To" id="moveToLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="moveTo" id="moveTo">
+            <rect key="frame" x="110" y="173" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="moveToCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="MoveStockForm" name="value" keyPath="selection.transferTo.lbTitle" id="moveToValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveAskedByLabel">
+            <rect key="frame" x="14" y="146" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Asked by" id="moveAskedByLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="moveAskedBy" id="moveAskedBy">
+            <rect key="frame" x="110" y="143" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="moveAskedByCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="MoveStockForm" name="value" keyPath="selection.askedBy.lbTitle" id="moveAskedByValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveNoteLabel">
+            <rect key="frame" x="14" y="116" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="moveNoteLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <textField verticalHuggingPriority="750" identifier="moveNote" id="moveNote">
+            <rect key="frame" x="110" y="113" width="296" height="22"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" id="moveNoteCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+            <connections>
+              <binding destination="MoveStockForm" name="value" keyPath="selection.note" id="moveNoteValue"/>
+            </connections>
+          </textField>
+          <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveStateLabel">
+            <rect key="frame" x="14" y="86" width="90" height="17"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Moved" id="moveStateLabelCell">
+              <font key="font" metaFont="system"/>
+              <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+            </textFieldCell>
+          </textField>
+          <popUpButton verticalHuggingPriority="750" identifier="moveState" id="moveState">
+            <rect key="frame" x="108" y="80" width="296" height="26"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="moveStateCell">
+              <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+              <menu key="menu" id="moveStateMenu"/>
+            </popUpButtonCell>
+            <connections>
+              <binding destination="MoveStockForm" name="content" keyPath="selection.items.transferState" id="moveStateContent"/>
+              <binding destination="MoveStockForm" name="selectedObject" keyPath="selection.transferState" previousBinding="moveStateContent" id="moveStateChosen"/>
+            </connections>
+          </popUpButton>
+          <button verticalHuggingPriority="750" identifier="dismissMove" id="dismissMove">
+            <rect key="frame" x="220" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissMoveCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="dismissForm:" target="-2" id="dismissMoveAction"/>
+            </connections>
+          </button>
+          <button verticalHuggingPriority="750" identifier="submitMove" id="submitMove">
+            <rect key="frame" x="315" y="12" width="95" height="32"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitMoveCell">
+              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+              <font key="font" metaFont="system"/>
+            </buttonCell>
+            <connections>
+              <action selector="submitMove:" target="-2" id="submitMoveAction"/>
+            </connections>
+          </button>
+        </subviews>
+      </view>
+    </window>
     <arrayController editable="YES" userLabel="Holdings" id="holdingList">
       <connections>
         <binding destination="-2" name="contentArray" keyPath="holdings" id="holdingListContent"/>

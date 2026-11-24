@@ -16,12 +16,17 @@
     [self waiting:NO said:@"Its address, as whoever runs it gave it to you."];
 }
 
-- (void)showWithServer:(NSString *)address {
+- (void)showWithServer:(NSString *)address connecting:(BOOL)connecting {
     [self window];
     _serverField.stringValue = address ?: [[NSUserDefaults standardUserDefaults] stringForKey:@"LBServer"] ?: @"";
     [self showWindow:nil];
     [self.window center];
-    if (_serverField.stringValue.length) [self connect:nil];
+    if (connecting && _serverField.stringValue.length) [self connect:nil];
+}
+
++ (void)signOut:(ODataSignIn *)signIn {
+    [signIn signOut];
+    if (signIn.kind == ODataSignInNone) LBSetDefault(@"LBUser", nil);
 }
 
 /* Asking the server (or for the code), or waiting for the user. */

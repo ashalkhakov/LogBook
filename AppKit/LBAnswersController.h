@@ -1,43 +1,27 @@
 // An inspection's answers, in the Records tab's Inspection form
-// (MainWindow.xib): a row for each question of the checklist it went
-// through, in order; a yes-or-no question answered Yes or No, an any-of one
-// by the options chosen, either with a note. An Answer is made when a
-// question is first answered, as the phone makes one; one to a question of
-// another checklist is deleted when the inspection's checklist changes
-// (the model allows none).
+// (MainWindow.xib): RecordInspection's repeat of them, a view of the form
+// like the rest of the tab (LBFormValues.h). What it keeps is the model's:
+// an inspection being entered, or whose checklist changes, has an answer
+// for each question of its checklist, its rows in the questions' order; the
+// answers to another checklist's questions are deleted (the model allows
+// none). A yes-or-no question's answer says Yes or No (the form's list), an
+// any-of one chooses its question's options (the form's choices for the
+// row), either with a note.
 
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
 
-@class LBMainWindowController, Inspection, Question, Option;
+@class LBMainWindowController, Inspection;
 
 NS_ASSUME_NONNULL_BEGIN
 
-// An option of an any-of question, chosen or not in its answer.
-@interface LBOptionChoice : NSObject
-@property (nonatomic, readonly) Option *option;
-@property (nonatomic, readonly) NSString *optionText;
-@property (nonatomic) BOOL chosen;
-@end
-
-// A question of the inspection's checklist, and its answer.
-@interface LBAnswerRow : NSObject
-@property (nonatomic, readonly) Question *question;
-@property (nonatomic, readonly) NSString *questionText;
-// The answer said: "Yes", "No", the options chosen; "" before.
-@property (nonatomic, readonly) NSString *answerText;
-// A yes-or-no question's answer: "Yes", "No", or "" for none yet.
-@property (nonatomic, copy) NSString *yesNo;
-@property (nonatomic, copy, nullable) NSString *note;
-@property (nonatomic, readonly) BOOL takesOptions;
-@property (nonatomic, readonly) BOOL isYesOrNo;
-@property (nonatomic, readonly, copy) NSArray<LBOptionChoice *> *choices;
-@end
-
 @interface LBAnswersController : NSObject
 @property (nonatomic, weak) IBOutlet LBMainWindowController *windowController;
-// The rows the form's table shows; none when no inspection is chosen.
-@property (nonatomic, readonly, copy) NSArray<LBAnswerRow *> *rows;
+// The form's rows of answers, as the tab's table shows them.
+@property (nonatomic, weak) IBOutlet NSArrayController *answers;
+// The chosen answer's question's options, the form's choices for its row:
+// those selected, its options.
+@property (nonatomic, weak) IBOutlet NSArrayController *answerOptions;
 // The inspection chosen (nil when the record chosen is none), or what the
 // server has of it read again.
 - (void)showInspection:(nullable Inspection *)inspection;

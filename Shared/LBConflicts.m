@@ -76,6 +76,10 @@ static NSDictionary *LBUnarchivedValues(NSData *data) {
 }
 @end
 
+@implementation LBPendingSubmission
+@dynamic formName, businessKey, taskName, instance, savedAt, lastError;
+@end
+
 static NSAttributeDescription *LBAttribute(SEL name, NSAttributeType type, BOOL optional) {
     NSAttributeDescription *attribute = [[NSAttributeDescription alloc] init];
     attribute.name = NSStringFromSelector(name);
@@ -101,8 +105,17 @@ static NSManagedObjectModel *LBAppStateModel(void) {
                              LBAttribute(@selector(propertyNames), NSStringAttributeType, YES),
                              deletedThere, deletedHere,
                              LBAttribute(@selector(when), NSDateAttributeType, YES) ];
+    NSEntityDescription *submission = [[NSEntityDescription alloc] init];
+    submission.name = NSStringFromClass([LBPendingSubmission class]);
+    submission.managedObjectClassName = NSStringFromClass([LBPendingSubmission class]);
+    submission.properties = @[ LBAttribute(@selector(formName), NSStringAttributeType, NO),
+                               LBAttribute(@selector(businessKey), NSStringAttributeType, NO),
+                               LBAttribute(@selector(taskName), NSStringAttributeType, YES),
+                               LBAttribute(@selector(instance), NSStringAttributeType, NO),
+                               LBAttribute(@selector(savedAt), NSDateAttributeType, YES),
+                               LBAttribute(@selector(lastError), NSStringAttributeType, YES) ];
     NSManagedObjectModel *model = [[NSManagedObjectModel alloc] init];
-    model.entities = @[ conflict ];
+    model.entities = @[ conflict, submission ];
     return model;
 }
 
@@ -124,6 +137,52 @@ static NSManagedObjectModel *LBAppStateModel(void) {
     _context.persistentStoreCoordinator = _coordinator;
     _context.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy;
     return self;
+}
+
+- (NSArray<LBPendingSubmission *> *)pendingSubmissions {
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([LBPendingSubmission class])];
+    fetch.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(savedAt)) ascending:YES] ];
+    return [_context executeFetchRequest:fetch error:NULL] ?: @[];
+}
+
+- (void)saveSubmissions {
+    NSError *error = nil;
+    if (_context.hasChanges && ![_context save:&error]) NSLog(@"Logbook: the steps waiting to be submitted not kept: %@", error);
+}
+
+- (LBPendingSubmission *)keepSubmissionOfForm:(NSString *)formName about:(NSString *)businessKey taskName:(NSString *)taskName
+                                     instance:(NSString *)instance {
+    LBPendingSubmission *submission = nil;
+    for (LBPendingSubmission *each in [self pendingSubmissions]) {
+        if ([each.formName isEqualToString:formName] && [each.businessKey isEqualToString:businessKey]) submission = each;
+    }
+    if (!submission) {
+        submission = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([LBPendingSubmission class])
+                                                   inManagedObjectContext:_context];
+    }
+    submission.formName = formName;
+    submission.businessKey = businessKey;
+    submission.taskName = taskName ?: submission.taskName;
+    submission.instance = instance;
+    submission.savedAt = [NSDate date];
+    submission.lastError = nil;
+    [self saveSubmissions];
+    return submission;
+}
+
+- (void)noteSubmission:(LBPendingSubmission *)submission failed:(NSString *)why {
+    submission.lastError = why;
+    [self saveSubmissions];
+}
+
+- (void)noteSubmission:(LBPendingSubmission *)submission task:(NSString *)taskName {
+    submission.taskName = taskName;
+    [self saveSubmissions];
+}
+
+- (void)removeSubmission:(LBPendingSubmission *)submission {
+    if (submission.managedObjectContext) [_context deleteObject:submission];
+    [self saveSubmissions];
 }
 
 - (NSArray<LBPendingConflict *> *)pendingConflicts {

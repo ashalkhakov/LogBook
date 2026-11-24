@@ -22,7 +22,11 @@
 // catalog's items, contacts, warehouses and staff; a manager of any of
 // its warehouses its orders, of a warehouse its locations and reorder
 // rules; a keeper of a warehouse what moves stock there, which a manager
-// there changes or removes.
+// there changes or removes. A transfer is asked for by a keeper of either
+// end, and moved by a keeper of where it goes from: its move theirs to
+// make, wherever it goes. A return is asked for by a keeper of its
+// order's catalog, and received or sent back by a keeper of where it
+// comes back to or goes from.
 //
 // A relation's terms are joined with or; all = ( ... ) is and (a move
 // kept at both its ends; a parts sale, by a keeper where it ships from).
@@ -263,6 +267,7 @@
     // change's parts sale, and its lines: a keeper's where it ships from.
     SaleOrder = {
       manager = ( { relation = manager; from = catalog; } );
+      keeper  = ( { relation = keeper; from = catalog; } );
       parts   = ( { all = ( { where = "serviceAsPartsSale != nil OR tyreChangeAsPartsSale != nil"; },
                             { relation = keeper; from = shipsFrom; } ); } );
       read    = ( { relation = read; from = catalog; } );
@@ -287,6 +292,7 @@
     };
     PurchaseOrder = {
       manager = ( { relation = manager; from = catalog; } );
+      keeper  = ( { relation = keeper; from = catalog; } );
       read    = ( { relation = read; from = catalog; } );
       insert  = ( { relation = manager; } );
       update  = ( { relation = manager; } );
@@ -321,7 +327,8 @@
       read   = ( { relation = read; from = stockItem; } );
       insert = ( { all = ( { relation = keeper; from = source; }, { relation = keeper; from = destination; } ); },
                  { all = ( { where = "source == nil"; }, { relation = keeper; from = destination; } ); },
-                 { all = ( { where = "destination == nil"; }, { relation = keeper; from = source; } ); } );
+                 { all = ( { where = "destination == nil"; }, { relation = keeper; from = source; } ); },
+                 { all = ( { where = "stockTransfer != nil"; }, { relation = keeper; from = source; } ); } );
       update = ( { all = ( { relation = manager; from = source; }, { relation = manager; from = destination; } ); },
                  { all = ( { where = "source == nil"; }, { relation = manager; from = destination; } ); },
                  { all = ( { where = "destination == nil"; }, { relation = manager; from = source; } ); } );
@@ -342,16 +349,40 @@
       delete = ( { relation = manager; from = receivedAt; } );
     };
     CustomerReturn = {
+      keeper  = ( { relation = keeper; from = saleOrder; } );
+      manager = ( { relation = manager; from = saleOrder; } );
       read   = ( { relation = read; from = saleOrder; } );
-      insert = ( { relation = keeper; from = returnedTo; } );
-      update = ( { relation = manager; from = returnedTo; } );
-      delete = ( { relation = manager; from = returnedTo; } );
+      insert = ( { relation = keeper; from = returnedTo; },
+                 { all = ( { where = "returnState == 'Requested'"; }, { relation = keeper; from = saleOrder; } ); } );
+      update = ( { relation = manager; from = returnedTo; },
+                 { all = ( { where = "returnState == 'Requested'"; }, { relation = keeper; from = saleOrder; } ); },
+                 { all = ( { where = "returnState == 'Returned' OR returnState == 'Cancelled'"; }, { relation = keeper; from = returnedTo; } ); },
+                 { all = ( { where = "returnState == 'Cancelled' AND returnedTo == nil"; }, { relation = keeper; from = saleOrder; } ); } );
+      delete = ( { relation = manager; from = returnedTo; }, { all = ( { where = "returnedTo == nil"; }, { relation = manager; } ); } );
     };
     SupplierReturn = {
+      keeper  = ( { relation = keeper; from = purchaseOrder; } );
+      manager = ( { relation = manager; from = purchaseOrder; } );
       read   = ( { relation = read; from = purchaseOrder; } );
-      insert = ( { relation = keeper; from = returnedFrom; } );
-      update = ( { relation = manager; from = returnedFrom; } );
-      delete = ( { relation = manager; from = returnedFrom; } );
+      insert = ( { relation = keeper; from = returnedFrom; },
+                 { all = ( { where = "returnState == 'Requested'"; }, { relation = keeper; from = purchaseOrder; } ); } );
+      update = ( { relation = manager; from = returnedFrom; },
+                 { all = ( { where = "returnState == 'Requested'"; }, { relation = keeper; from = purchaseOrder; } ); },
+                 { all = ( { where = "returnState == 'Returned' OR returnState == 'Cancelled'"; }, { relation = keeper; from = returnedFrom; } ); },
+                 { all = ( { where = "returnState == 'Cancelled' AND returnedFrom == nil"; }, { relation = keeper; from = purchaseOrder; } ); } );
+      delete = ( { relation = manager; from = returnedFrom; }, { all = ( { where = "returnedFrom == nil"; }, { relation = manager; } ); } );
+    };
+    CustomerReturnLine = {
+      read   = ( { relation = read; from = customerReturn; } );
+      insert = ( { relation = keeper; from = customerReturn; } );
+      update = ( { relation = manager; from = customerReturn; } );
+      delete = ( { relation = manager; from = customerReturn; } );
+    };
+    SupplierReturnLine = {
+      read   = ( { relation = read; from = supplierReturn; } );
+      insert = ( { relation = keeper; from = supplierReturn; } );
+      update = ( { relation = manager; from = supplierReturn; } );
+      delete = ( { relation = manager; from = supplierReturn; } );
     };
     Assembly = {
       read   = ( { relation = read; from = assembled; } );
@@ -360,10 +391,24 @@
       delete = ( { relation = manager; from = assembledAt; } );
     };
     StockCount = {
+      manager = ( { relation = manager; from = warehouse; } );
+      keeper  = ( { relation = keeper; from = warehouse; } );
       read   = ( { relation = read; from = warehouse; } );
       insert = ( { relation = keeper; from = warehouse; } );
       update = ( { relation = manager; from = warehouse; } );
       delete = ( { relation = manager; from = warehouse; } );
+    };
+    StockTransfer = {
+      read   = ( { relation = read; from = stockItem; } );
+      insert = ( { relation = keeper; from = transferTo; }, { relation = keeper; from = transferFrom; } );
+      update = ( { relation = keeper; from = transferFrom; }, { relation = manager; from = transferTo; } );
+      delete = ( { relation = manager; from = transferFrom; } );
+    };
+    CountLine = {
+      read   = ( { relation = read; from = stockCount; } );
+      insert = ( { relation = keeper; from = stockCount; } );
+      update = ( { relation = manager; from = stockCount; } );
+      delete = ( { relation = manager; from = stockCount; } );
     };
   };
 }

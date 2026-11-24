@@ -148,6 +148,11 @@
                                     <action selector="showStock:" target="appController" id="stockItemAction"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Tasks" keyEquivalent="3" id="tasksItem">
+                                <connections>
+                                    <action selector="showTasks:" target="appController" id="tasksItemAction"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>

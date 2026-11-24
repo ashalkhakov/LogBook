@@ -19,7 +19,9 @@
 # The model is Model/Logbook.orm, and nothing else: ormtool generates from
 # it, into obj/Model, the Core Data model (Logbook.xcdatamodeld, which
 # coredata-model.make compiles and generates the classes of), the code and
-# tables that keep its rules (Constraints/) and its listing (Logbook.forml).
+# tables that keep its rules (Constraints/), its listing (Logbook.forml) and
+# its forms' contracts (Forms/<Form>.ormform, ORMKit's docs/FORMS.md: the
+# fill-up's tab runs RecordFillUp's).
 #
 # In docker, on ORMKit's image: .tools/gnustep.sh make check
 # macOS: Makefile.apple.
@@ -37,6 +39,8 @@ OBJC = clang
 # installed with its libraries.
 LB_MODEL = $(GNUSTEP_OBJ_DIR)/Model
 ORMTOOL ?= ormtool
+# WorkflowKit's wf-build: the model's processes built (Server/LBWorkflow.h).
+WFBUILD ?= wf-build
 
 ifneq ($(LB_SERVER_ONLY),yes)
 APP_NAME = Logbook
@@ -49,13 +53,18 @@ Logbook_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared -IAppKit -IUDCalendar 
 Logbook_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
 # GSUpdater, the stack's: the app's updates (AppKit/LBUpdater-GNUstep.m).
 Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit -lGSUpdater
+# The model's forms' contracts (ormtool xforms): each record's, and the
+# stock's processes' steps.
+LB_FORMS = $(foreach f,RecordFillUp RecordService RecordExpense RecordTrip RecordIncome RecordDocument RecordInspection \
+	RecordMeterReading RecordTyreChange RecordTyreSet EditPurchaseOrder ConfirmPurchaseOrder ReceiveGoods EditSaleOrder ConfirmSaleOrder ShipGoods CountStock ReviewStockCount RequestTransfer MoveStock RequestCustomerReturn ReceiveCustomerReturn RequestSupplierReturn SendSupplierReturn SetUpSchedule ChangeSchedule SetReminder RescheduleReminder CancelReminder MarkReminderDone,$(LB_MODEL)/Forms/$(f).ormform) \
+	$(patsubst Model/%.flow,$(LB_MODEL)/Forms/%.ormflow,$(wildcard Model/*.flow))
 Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib AppKit/Preferences.xib AppKit/Lists.xib AppKit/StockWindow.xib \
-	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib AppKit/Parts.xib AppKit/Logbook.png \
-	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl)
+	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib AppKit/Parts.xib AppKit/TasksWindow.xib AppKit/Logbook.png \
+	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl) $(LB_FORMS)
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 
 TOOL_NAME = logbook-server lb-procedures-check lb-stock-check lb-sync-check
-logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Server/LBStockActions.m \
+logbook-server_OBJC_FILES = Server/LBServer.m Server/LBPermissions.m Server/LBActions.m Server/LBStockActions.m Server/LBWorkflow.m \
 	Shared/LBProcedures.m Shared/LBStockProcedures.m \
 	$(LB_MODEL)/Constraints/LogbookValidation.m
 logbook-server_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
@@ -64,7 +73,7 @@ logbook-server_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 logbook-server_COREDATA_CODEGEN = yes
 logbook-server_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared $(ODATASYNC_INCLUDE_DIRS)
 logbook-server_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
-logbook-server_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
+logbook-server_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lWorkflowKitOData -lWorkflowKit
 # The server opens FreeCoreData's SQL stores with dlopen: dlfcn-win32 on
 # Windows, which names their DLLs its own way.
 ifneq ($(filter mingw% windows%,$(GNUSTEP_TARGET_OS)),)
@@ -89,6 +98,16 @@ lb-stock-check_COREDATA_CODEGEN = yes
 lb-stock-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
 lb-stock-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
 lb-stock-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
+
+# The model's fill-up form run against a store of its own and a server
+# (ORMKit's ORMFormSession), as the app's fill-up tab runs it.
+TOOL_NAME += lb-form-check
+lb-form-check_OBJC_FILES = Tests/LBFormCheck.m Shared/LBProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
+lb-form-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
+lb-form-check_COREDATA_CODEGEN = yes
+lb-form-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
+lb-form-check_OBJCFLAGS = $(logbook-server_OBJCFLAGS)
+lb-form-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 
 # The offline store (the iOS app's) against a server: devices, signed in.
 lb-sync-check_OBJC_FILES = Tests/LBSyncCheck.m Shared/LBLocalStore.m Shared/LBConflicts.m Shared/LBVehicleSummary.m \
@@ -115,19 +134,21 @@ include $(GNUSTEP_MAKEFILES)/tool.make
 .PHONY: lb-model
 lb-model:
 	@ormtool=$$(command -v $(ORMTOOL)) || { echo "no ormtool: ORMKit's release, installed (.github/pins.env)"; exit 1; }; \
-	if [ ! -e $(LB_MODEL)/.made ] || [ Model/Logbook.orm -nt $(LB_MODEL)/.made ] || [ $$ormtool -nt $(LB_MODEL)/.made ]; then \
+	if [ ! -e $(LB_MODEL)/.made ] || [ Model/Logbook.orm -nt $(LB_MODEL)/.made ] || [ -n "$$(find Model -name '*.flow' -newer $(LB_MODEL)/.made)" ] || [ $$ormtool -nt $(LB_MODEL)/.made ]; then \
 	  echo "Generating $(LB_MODEL) from Model/Logbook.orm"; \
 	  rm -rf $(LB_MODEL) && mkdir -p $(LB_MODEL) && \
 	  $(ORMTOOL) coredata Model/Logbook.orm \
 	    $(LB_MODEL)/Logbook.xcdatamodeld Logbook --validation $(LB_MODEL)/Constraints >$(LB_MODEL)/mapping.txt && \
 	  $(ORMTOOL) forml Model/Logbook.orm \
 	    $(LB_MODEL)/Logbook.forml && \
+	  $(ORMTOOL) xforms Model/Logbook.orm \
+	    $(LB_MODEL)/Forms/ $(foreach f,$(wildcard Model/*.flow),--flow $(f)) >$(LB_MODEL)/forms.txt && \
 	  touch $(LB_MODEL)/.made; \
 	fi
 # Generated by the make run first; the targets' own makes, which gnustep-make
 # runs inside it, find them made.
 LB_GENERATED = $(LB_MODEL)/Logbook.xcdatamodeld $(LB_MODEL)/Constraints/LogbookValidation.m \
-	$(LB_MODEL)/Constraints/Logbook.ormplans
+	$(LB_MODEL)/Constraints/Logbook.ormplans $(LB_FORMS)
 ifeq ($(MAKELEVEL),0)
 $(LB_GENERATED): lb-model
 	@:
@@ -150,7 +171,7 @@ after-all::
 
 # Installed, the server finds them beside itself too (logbook-server.exe
 # on Windows).
-LB_SERVER_FILES = Logbook.momd Logbook.ormplans Logbook.permissions.plist
+LB_SERVER_FILES = Logbook.momd Logbook.ormplans Logbook.permissions.plist Logbook.wfdeployment
 after-install::
 	@server=$$(find "$(GNUSTEP_TOOLS)" -type f \( -name logbook-server -o -name logbook-server.exe \) -perm -u+x | head -n 1); \
 	  [ -n "$$server" ] || { echo "install: no logbook-server under $(GNUSTEP_TOOLS)"; exit 1; }; \
@@ -161,10 +182,25 @@ after-install::
 # The app, under X: xvfb-run where there is no display.
 XVFB = $(if $(DISPLAY),,$(shell command -v xvfb-run >/dev/null 2>&1 && echo xvfb-run -a))
 
+# The model's processes (Model/*.bpmn), with the model and the flow they
+# import, whose entries their tasks are done with (ormkit:flow:, WorkflowKit's
+# WFModelForms; the app's views show the screens), built and checked as the
+# server deploys them: Logbook.wfdeployment beside it.
+after-all:: obj/Logbook.wfdeployment
+obj/Logbook.wfdeployment: Model/Logbook.orm $(wildcard Model/*.flow) $(wildcard Model/*.bpmn)
+	rm -rf obj/processes $@ && mkdir -p obj/processes
+	cp Model/Logbook.orm Model/*.bpmn Model/*.flow obj/processes/
+	$(WFBUILD) -name Logbook -o $@ obj/processes
+
 check:: all
+	for f in Model/*.flow; do $(ORMTOOL) flow Model/Logbook.orm $$f || exit 1; done
+	python3 Tests/contract-check.py $(LB_MODEL)/Forms AppKit/MainWindow.xib AppKit/StockPurchase.xib AppKit/StockSale.xib AppKit/StockCount.xib AppKit/StockItem.xib
 	obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
 	obj/lb-stock-check obj/Logbook.momd obj/Logbook.ormplans
+	Tests/form-check.sh obj/logbook-server obj/lb-form-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms
 	python3 Tests/serve-and-check.py obj/logbook-server
+	python3 Tests/process-check.py obj/logbook-server
+	python3 Tests/roles-check.py obj/logbook-server
 	Tests/sync-check.sh obj/logbook-server obj/lb-sync-check obj/Logbook.momd obj/Logbook.ormplans
 ifneq ($(LB_SERVER_ONLY),yes)
 	$(XVFB) Tests/app-check.sh obj/logbook-server Logbook.app/Logbook

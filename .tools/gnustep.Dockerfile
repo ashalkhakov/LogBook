@@ -1,6 +1,7 @@
 # Logbook's GNUstep box: Ubuntu 22.04 with what Logbook builds on, by the
 # releases .github/pins.env names -- the GNUstep stack, FreeCoreData (and the
-# parts pins.env names of it), GCDWebServer, ODataKit, ORMKit and RDLKit --
+# parts pins.env names of it), GCDWebServer, ODataKit, ORMKit, DiagramKit,
+# WorkflowKit and RDLKit --
 # each an archive unpacked at /, as gnustep-release-actions' scripts/deps.sh
 # unpacks them for CI; the packages the stack lists, and Xvfb for the app's
 # check.
@@ -22,7 +23,7 @@ RUN sed -i 's#http://\(ports\|archive\|security\)\.ubuntu\.com#https://\1.ubuntu
 COPY .github/pins.env /tmp/pins.env
 RUN set -e; \
     apt-get update; apt-get install -y --no-install-recommends curl xz-utils; \
-    for name in GNUSTEP_PATCHES FREECOREDATA GCDWEBSERVER ODATAKIT ORMKIT RDLKIT; do \
+    for name in GNUSTEP_PATCHES FREECOREDATA GCDWEBSERVER ODATAKIT ORMKIT DIAGRAMKIT WORKFLOWKIT RDLKIT; do \
       version=$(sed -n "s/^${name}_VERSION=//p" /tmp/pins.env); \
       repo=$(echo "$name" | tr 'A-Z_' 'a-z-'); \
       parts=$(sed -n "s/^${name}_PARTS=\"*\([^\"]*\)\"*$/\1/p" /tmp/pins.env); \

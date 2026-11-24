@@ -6,7 +6,7 @@
 #import "LBStockEditor.h"
 
 @class StockItem, Holding, Move, KitLine, SupplierItem, ItemCode, ReorderRule, Category, Supplier, Location, Warehouse,
-    WeightUnit, SizeUnit;
+    WeightUnit, SizeUnit, StockTransfer, ORMFlowSession;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,6 +16,18 @@ NS_ASSUME_NONNULL_BEGIN
 // "New Item" to be typed over) for none.
 - (instancetype)initWithStore:(LBStore *)store item:(nullable StockItem *)item catalog:(Catalog *)catalog;
 @property (nonatomic, readonly, strong) StockItem *item;
+// A transfer asked for, of its item: its Move the stock task's
+// (LBStockEditor's task), its MoveStock sheet shown as the window is.
+- (instancetype)initWithStore:(LBStore *)store transfer:(StockTransfer *)transfer;
+@property (nonatomic, readonly, strong, nullable) StockTransfer *transfer;
+// Its transfers' forms (Model/Transferring.flow, ORMRuntime's
+// ORMFlowSession), as their sheets bind them (LBFormValues.h):
+// RequestTransfer, MoveStock while its sheet is shown.
+@property (nonatomic, readonly, strong, nullable) ORMFlowSession *flow;
+@property (nonatomic, readonly, strong, nullable) LBFormValues *requestForm;
+@property (nonatomic, readonly, strong, nullable) LBFormValues *moveForm;
+@property (nonatomic, strong) IBOutlet NSWindow *requestPanel;
+@property (nonatomic, strong) IBOutlet NSWindow *movePanel;
 @property (nonatomic, strong) IBOutlet NSTabView *cardTabs;
 
 // What is of it: its holdings, its moves newest first, its recipe, its
@@ -57,11 +69,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) Location *stockTo;
 @property (nonatomic, copy, nullable) NSString *stockReason;
 
-// Its stock adjusted at stockAt by stockQuantity for stockReason; moved
-// from stockAt to stockTo; so many batches assembled, or taken apart, at
-// stockAt. Each the server's action.
+// Its stock adjusted at stockAt by stockQuantity for stockReason; so many
+// batches assembled, or taken apart, at stockAt: each the server's action.
+// Transfer: a transfer of stockQuantity from stockAt to stockTo asked
+// for, in RequestTransfer's sheet; its Submit saves it, requested (nothing
+// moved yet: a keeper of where it goes from moves it, Model/TransferStock.bpmn).
+// MoveStock's Submit: its form saved (moved, or cancelled), submitted to
+// its task. Cancel (and Escape): nothing of it kept.
 - (IBAction)adjust:(nullable id)sender;
 - (IBAction)transfer:(nullable id)sender;
+- (IBAction)submitRequest:(nullable id)sender;
+- (IBAction)submitMove:(nullable id)sender;
+- (IBAction)dismissForm:(nullable id)sender;
 - (IBAction)assemble:(nullable id)sender;
 - (IBAction)disassemble:(nullable id)sender;
 // Its tables: a recipe line of a component, one of it; a supplier item

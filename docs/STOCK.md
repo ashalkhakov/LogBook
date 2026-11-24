@@ -95,6 +95,14 @@ and orders, counts and the warehouse's locations; a keeper receives, ships,
 moves, counts and assembles at their warehouses. Nobody else sees the
 catalog. ([Who may](#who-may) has the table.)
 
+The processes' tasks go to the same people: a purchase's Confirm the order
+to the catalog's managers (its owner, a manager of one of its warehouses),
+Receive the goods to its keepers (and its managers). The server works out
+each signed-in user's roles from the staff, as the permissions do, and
+the process names its catalog's (`manager:<catalog>`, `keeper:<catalog>`,
+Model/ProcureToReceipt.bpmn); no group of the identity provider's is
+needed. With no sign-in, anyone works every task.
+
 ## Items
 
 **The item list** (KiWi's Items): each item's name, its category path, how
@@ -256,11 +264,22 @@ stock's.
   damaged, or waits to be checked, is kept there and is not for sale. On
   hand counts only what is not set aside; from there it is adjusted away
   as damaged, or moved back once checked.
-- **Where:** the order's window has Reason and Return Line (to or from the
-  location chosen for shipping or receiving), and lists its returns; the
-  server's `Return` action on a sale or a purchase order
-  (`Server/LBStockActions.h`). Who may: the staff of the warehouse the
-  goods come back to, or go from.
+- **Asked for, then returned.** The order's window has Reason and Return
+  Line: the model's form RequestCustomerReturn (RequestSupplierReturn), a
+  sheet over the order, asks for so many of the line chosen
+  (`CustomerReturnLine`, `SupplierReturnLine`), saved **requested**,
+  nothing moved yet. Its process, **customer return** (**supplier
+  return**: `Model/CustomerReturn.bpmn`, `SupplierReturn.bpmn`), gives the
+  catalog's keepers Receive the return (Send the return), the flow
+  Selling's ReceiveReturn (Purchasing's SendReturn: ReceiveCustomerReturn,
+  SendSupplierReturn), opened from Window > Tasks in the order's window:
+  the day, and where it comes back to (goes from), **returned**, its moves
+  made as it saves, as `Return` makes them; or **cancelled**. The order's
+  window lists its returns. The server's `Return` action on a sale or a
+  purchase order (`Server/LBStockActions.h`) still returns at once (a
+  return of before, with no state, was returned so). Who may: a keeper of
+  the order's catalog asks for one; the staff of the warehouse the goods
+  come back to, or go from, return it.
 
 ## Holdings
 
@@ -274,6 +293,16 @@ holdings; neither edits a quantity.
 
 **A transfer** moves so many of an item from one location to another (a
 shelf to another, a warehouse to another): `Transfer`, one move with both.
+In the app it is asked for first: the item's window's Transfer opens the
+model's form RequestTransfer, saved as a `StockTransfer` **requested**
+(the item, how many, from where, to where, who asked, when), nothing moved
+yet. Its process, **transfer stock** (`Model/TransferStock.bpmn`), gives
+the keepers of where it goes from (`keeperAt:<warehouse>`) Move the stock
+(the flow Transferring's Move, MoveStock, a sheet over the item's window,
+opened from Window > Tasks): **moved**, its move made as it saves, as
+`Transfer` makes it (refused where less is held), made by who moved it;
+or **cancelled**. A keeper of where it goes from makes its move, wherever
+it goes.
 
 **An adjustment** adds or takes away outside any order, with a reason:
 opening (the stock an item starts with), found, damaged, lost, expired,
@@ -297,6 +326,19 @@ A count is an object of its own in the model, as a shipment is:
 `StockCount` (of a location, on a day, by a user), grouping its
 adjustments ([Changes to the model](#changes-to-the-model)).
 
+**Counted, then reviewed.** In the app a count is taken with the model's
+form CountStock (the count's window, `AppKit/StockCount.xib`): a line
+(`CountLine`) for each item at each place, what was found, what the place
+holds shown if the counter asks; submitted, it is saved as **counted**,
+and nothing is adjusted yet. Its process, **count review**
+(`Model/CountReview.bpmn`), gives a manager of its catalog Review the
+count (the flow Counting's Review, ReviewStockCount, a sheet over the
+count, opened from Window > Tasks): **posted**, its differences adjusted
+as it saves, against what is held then (what is held where it counts
+and no line found, none); or **rejected**, to be counted again. A count
+reviewed stays as it was. The server's `Count` action still counts and
+posts at once (a count of before, with no state, was posted so).
+
 ## Assembly
 
 `Assemble` makes so many batches of an assembled kit at a location: a move
@@ -313,6 +355,54 @@ overview lists those due, and `Reorder` makes draft purchase orders, one
 per supplier, of a line each for the level less what is available and
 incoming. Nothing is ordered until a person confirms the drafts. ("Due" is
 a derived fact type: [Changes](#changes-to-the-model).)
+
+## Processes
+
+The orders' steps are also processes, run by WorkflowKit's engine in the
+server (`Server/LBWorkflow.h`), their tasks the people's who do them:
+**procure to receipt** (`Model/ProcureToReceipt.bpmn`) and **order to
+cash** (`Model/OrderToCash.bpmn`), a sale's as the other is a purchase's. Every purchase order
+saved as a draft (Reorder's, or one entered) starts it once it is saved.
+A manager confirms it, or cancels it, with the model's form
+ConfirmPurchaseOrder (the order's `Confirm` or `Cancel`); a keeper receives
+its goods with ReceiveGoods (the order's `Receive`), as often as they come;
+once nothing is outstanding the process closes the order. The way through
+them is the model's flow **Purchasing** (`Model/Purchasing.flow`, ORMKit's
+docs/FORMS.md, Flows): the order's window is its EditPurchaseOrder screen;
+`Confirm`, `Cancel` and `Receive` are its triggers, each opening its form's
+sheet over the order (on the order, or given it), and the sheet's Submit
+and Cancel close it back to the order. Its entries Confirm and Receive are
+what the tasks are done with (`ormkit:flow:Purchasing.flow#Confirm`): a
+task opened from Window > Tasks opens its order's window with its step's
+sheet at once. `make check` checks that the window's views have each
+screen's form and each trigger (`Tests/contract-check.py`). Each step is
+done with its form: what the form enters is saved as the logbook's facts
+(the order's state; a receipt, numbered the order's next, recorded by who
+received it and when, and its moves, each move's item, place, moment and
+maker worked out by the model as it is saved), then the form's instance is
+submitted to the task (WorkflowKit's `SubmitForm`), which completes it, its
+elements the process's variables (`orderState`). The facts alone complete
+no task. The forms and the flow are the model's (ORMKit's docs/FORMS.md):
+the process imports the model and the flow, deployed beside it, and what a
+task is done with is checked as the processes are built (`wf-build`).
+
+A sale goes the same way, with the flow **Selling** (`Model/Selling.flow`):
+every sale order saved as a draft starts order to cash (not a service's
+sale of its parts, shipped as it is saved); a manager confirms it or
+cancels it with ConfirmSaleOrder; a keeper ships its goods with ShipGoods
+(the order's `Ship` and `Ship Outstanding`, from the place chosen), as
+often as they go; once nothing is outstanding the process closes it. An
+order a form confirms is confirmed as `Confirm` does it, wherever it is
+saved: refused with no lines, a sale's phantom kits expanded. A shipment's
+moves are worked out as it is saved: each of its line's item, from where it
+went, made by who recorded it, when.
+**Window > Tasks** lists the open tasks, the oldest first, each with its
+order; Open shows the order in its own window, titled with the task, where
+its step is done. Its API is the server's
+`workflow/` (WorkflowKit's `WFODataService.h`); with no one signed in, a
+trial user may work every task. `Tests/process-check.py` runs it over
+HTTP. Stock counts, and picking and packing, are to follow: what a count
+found, and picks and packages, are not facts of the model yet.
 
 ## Overview and history
 

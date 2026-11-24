@@ -56,6 +56,10 @@
 #import "ItemCode+CoreDataClass.h"
 #import "CustomerReturn+CoreDataClass.h"
 #import "SupplierReturn+CoreDataClass.h"
+#import "CountLine+CoreDataClass.h"
+#import "StockTransfer+CoreDataClass.h"
+#import "CustomerReturnLine+CoreDataClass.h"
+#import "SupplierReturnLine+CoreDataClass.h"
 #import "Event+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
 #import "TyreChange+CoreDataClass.h"
@@ -113,6 +117,60 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 // context is about to save, shipped (-lb_shipParts:); refused as the first
 // refuses. The server's and the phone's, as automatic completion is.
 - (BOOL)lb_shipPartsOfChangedEvents:(NSError **)error;
+// Before a save: each move made has its item's holding where it comes from
+// and where it goes (one made by a form: a receipt's, of its line's item, to
+// where the receipt came in, as the model works them out).
+- (BOOL)lb_holdMovedItems:(NSError **)error;
+// Before a save: each order a form confirmed (its state from Draft to
+// Confirmed, ConfirmPurchaseOrder's, ConfirmSaleOrder's) as Confirm does
+// it: refused for an order of nothing, a sale's phantom kits expanded.
+- (BOOL)lb_confirmChangedOrders:(NSError **)error;
+// Before a save: each move a form made of a shipment (ShipGoods) as Ship
+// makes it: of its line's item, from where the shipment went, made by who
+// recorded it and when; the shipment to where its order ships.
+- (BOOL)lb_completeShippedMoves:(NSError **)error;
+// Before a save: each count a review posted (its state from Counted to
+// Posted, ReviewStockCount's) posted (-[StockCount lb_post:]); refused for
+// one reviewed already, changed again.
+- (BOOL)lb_postChangedCounts:(NSError **)error;
+// Before a save: each transfer a keeper moved (its state from Requested to
+// Moved, MoveStock's) moved as Transfer moves it, its move part of it, made
+// by who moved it, then; refused for one moved or cancelled, changed again.
+- (BOOL)lb_moveChangedTransfers:(NSError **)error;
+// Before a save: each return a keeper returned (its state from Requested
+// to Returned: ReceiveCustomerReturn's, SendSupplierReturn's) received
+// back, or sent back, as Return does it: of what its lines ask for;
+// refused for one returned or cancelled, changed again.
+- (BOOL)lb_returnChangedReturns:(NSError **)error;
+@end
+
+@interface CustomerReturn (LBStock)
+// So many of each of its order's lines (by id) received back where it came
+// back to, a move of each into it, made by the user then: refused for an
+// order not confirmed or closed, a line not of it, a phantom kit's, or
+// more than went out and has not come back; or with no place or day.
+- (BOOL)lb_receive:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities by:(nullable User *)user at:(NSDate *)now error:(NSError **)error;
+// What its lines ask for, received so, by who recorded it, when.
+- (BOOL)lb_receiveAsked:(NSError **)error;
+@end
+
+@interface SupplierReturn (LBStock)
+// So many of each of its order's lines sent back from where it went from,
+// a move of each out of it: refused as Return refuses it, or where less
+// is held there.
+- (BOOL)lb_send:(NSDictionary<NSUUID *, NSDecimalNumber *> *)quantities by:(nullable User *)user at:(NSDate *)now error:(NSError **)error;
+- (BOOL)lb_sendAsked:(NSError **)error;
+@end
+
+@interface StockCount (LBStock)
+// Its differences adjusted: each line's item at its location against what
+// is held there now, what is held where it counts and no line says found
+// none; each difference an adjustment of reason Count, part of it, made by
+// its counter; the warehouse's last counted day set, where all of it was
+// counted. Refused for a line of a place it does not cover, or less than
+// none found.
+- (BOOL)lb_post:(NSError **)error;
+- (BOOL)lb_postFound:(NSArray<LBCounted *> *)found at:(NSDate *)now error:(NSError **)error;
 @end
 
 // A service's or a tyre change's parts: the lines of a sale of them to the

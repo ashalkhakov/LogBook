@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<flow:Flow xmlns:flow="http://schemas.ormkit.org/2026-10/Flows" Name="Transferring" Model="Logbook.orm">
+    <flow:Entry Name="Request" Screen="request"></flow:Entry>
+    <flow:Entry Name="Move" Screen="move"></flow:Entry>
+    <flow:Screen id="request" Form="_691A409F-DD55-42B8-BB1F-D0B185B214E9" Name="RequestTransfer" X="0" Y="0" Width="420" Height="260"></flow:Screen>
+    <flow:Screen id="move" Form="_708A1417-A9E5-4588-8BF5-E7FF9E40DF39" Name="MoveStock" X="520" Y="0" Width="420" Height="260"></flow:Screen>
+    <flow:Transition From="request" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="request" On="Cancel" Kind="Close"></flow:Transition>
+    <flow:Transition From="move" On="SubmitDone" Kind="Close"></flow:Transition>
+    <flow:Transition From="move" On="Cancel" Kind="Close"></flow:Transition>
+</flow:Flow>
