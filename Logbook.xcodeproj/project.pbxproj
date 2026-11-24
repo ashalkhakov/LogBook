@@ -566,6 +566,14 @@
 			isa = PBXBuildFile;
 			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
 		};
+		7C2F1A0B3D4E5F6071829312 /* LBRuleIssues.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */;
+		};
+		7C2F1A0B3D4E5F6071829313 /* LBRuleIssues.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */;
+		};
 		D133B5ACC3CED76663C79052 /* LBStockEditor.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 1A3310166FC5A264617FA591 /* LBStockEditor.m */;
@@ -871,6 +879,18 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = LBStockOrderWindowController.h;
+			sourceTree = "<group>";
+		};
+		7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBRuleIssues.m;
+			sourceTree = "<group>";
+		};
+		7C2F1A0B3D4E5F6071829310 /* LBRuleIssues.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBRuleIssues.h;
 			sourceTree = "<group>";
 		};
 		1A3310166FC5A264617FA591 /* LBStockEditor.m */ = {
@@ -2095,6 +2115,8 @@
 				81606360A961AF809407450F /* LBConflicts.h */,
 				690202E342F3343CCC4A45AF /* LBConflicts.m */,
 				D371E9DF0A4D53CA5C5BEBEF /* LBDisplay.h */,
+				7C2F1A0B3D4E5F6071829310 /* LBRuleIssues.h */,
+				7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */,
 				B7670FC7C874BC5F07604ED6 /* LBDisplay.m */,
 				016E3CDFD6B10734D786ACB4 /* LBImport.h */,
 				352653C4276B2B999855FBF3 /* LBImport.m */,
@@ -2458,6 +2480,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C2F1A0B3D4E5F6071829313 /* LBRuleIssues.m */,
 				49FFF4D6C3A4AD8EF59C7DE1 /* LBRecordForm.m */,
 				C84DC34E113C7F7313C34038 /* LBStockControllers.m */,
 				649ED8F26B5FBF618A78A5F0 /* LBStockPhone.m */,
@@ -2499,6 +2522,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7C2F1A0B3D4E5F6071829312 /* LBRuleIssues.m */,
 				0A441C7DD4CE7A4FEEFA6A41 /* LBAnswersController.m */,
 				C3CE11FCB129BDCF4852DCA0 /* LBAppController.m */,
 				E63A728CF00EB704CEB4F90E /* LBCalendarController.m */,

@@ -4,6 +4,7 @@
 
 #import "LBiOSControllers.h"
 #import "LBDisplay.h"
+#import "LBRuleIssues.h"
 #import "LBProcedures.h"
 #import "Event+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
@@ -140,6 +141,11 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
     LBPhone *_phone;
     NSArray<LBField *> *_fields;
     BOOL _isNew;
+    /* The rules the object breaks as filled in, by key; and the fields
+       section's rows: a field's index, or (-1 - index) the note under it
+       saying what it breaks, as XFormsKit's UIKit forms do. */
+    NSDictionary<NSString *, NSArray<NSString *> *> *_issues;
+    NSArray<NSNumber *> *_rows;
 }
 
 + (NSManagedObject *)newRecordOfKind:(NSString *)entityName phone:(LBPhone *)phone {
@@ -195,6 +201,8 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
         _warnings = @[];
         _problems = @[];
         _fields = [self fieldsOf:object];
+        _issues = [LBRuleIssues issuesOf:object];
+        _rows = [self rowsFor:_issues];
         self.title = [object isKindOfClass:[Record class]] ? ((Record *)object).lbKind
                    : [object isKindOfClass:[Vehicle class]] ? (_isNew ? @"New Vehicle" : @"Vehicle") : object.entity.name;
     }
@@ -297,6 +305,87 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
 - (void)setValue:(id)value ofField:(LBField *)field {
     [_object setValue:value forKey:field.key];
     if (field.unitKey) [_object setValue:value ? field.unit : nil forKey:field.unitKey];
+    [self issuesChanged];
+}
+
+#pragma mark Rules broken, at the fields
+
+/* What a field's rules say: its own key's, else its unit's. */
+- (NSArray<NSString *> *)issuesOf:(LBField *)field in:(NSDictionary *)issues {
+    NSArray *said = issues[field.key];
+    if (!said.count && field.unitKey) said = issues[field.unitKey];
+    return said ?: @[];
+}
+
+- (NSArray<NSNumber *> *)rowsFor:(NSDictionary *)issues {
+    NSMutableArray *rows = [NSMutableArray array];
+    for (NSUInteger i = 0; i < _fields.count; i++) {
+        [rows addObject:@(i)];
+        if ([self issuesOf:_fields[i] in:issues].count) [rows addObject:@(-1 - (NSInteger)i)];
+    }
+    return rows;
+}
+
+- (NSArray<NSString *> *)issuesOfField:(NSString *)title {
+    LBField *field = [self fieldTitled:title];
+    return field ? [self issuesOf:field in:_issues] : @[];
+}
+
+- (NSString *)shownTitleOf:(NSString *)title {
+    LBField *field = [self fieldTitled:title];
+    if (!field) return nil;
+    return [LBRuleIssues isRequired:field.key of:_object issues:_issues] ? [field.title stringByAppendingString:@" *"] : field.title;
+}
+
+/* Checked again as a value is entered: the notes under the fields put in
+   and taken out where they changed, no row else reloaded (a field being
+   typed into keeps its keyboard), the titles said again. */
+- (void)issuesChanged {
+    NSDictionary *issues = [LBRuleIssues issuesOf:_object];
+    NSArray<NSNumber *> *rows = [self rowsFor:issues];
+    NSDictionary *was = _issues;
+    _issues = issues;
+    _rows = rows;
+    if (![self isViewLoaded] || !self.tableView.window) {
+        if ([self isViewLoaded]) [self.tableView reloadData];
+        return;
+    }
+    NSMutableArray *gone = [NSMutableArray array], *added = [NSMutableArray array], *changed = [NSMutableArray array];
+    NSInteger oldRow = 0, newRow = 0;
+    for (NSUInteger i = 0; i < _fields.count; i++) {
+        oldRow++;
+        newRow++;
+        NSArray *before = [self issuesOf:_fields[i] in:was], *now = [self issuesOf:_fields[i] in:issues];
+        if (before.count && now.count) {
+            if (![before isEqualToArray:now]) [changed addObject:[NSIndexPath indexPathForRow:newRow inSection:LBSectionFields]];
+            oldRow++;
+            newRow++;
+        } else if (before.count) {
+            [gone addObject:[NSIndexPath indexPathForRow:oldRow++ inSection:LBSectionFields]];
+        } else if (now.count) {
+            [added addObject:[NSIndexPath indexPathForRow:newRow++ inSection:LBSectionFields]];
+        }
+    }
+    if (gone.count || added.count) {
+        [self.tableView beginUpdates];
+        [self.tableView deleteRowsAtIndexPaths:gone withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView insertRowsAtIndexPaths:added withRowAnimation:UITableViewRowAnimationFade];
+        [self.tableView endUpdates];
+    }
+    /* A note's words changed: that row only (a note has no field). */
+    if (changed.count) [self.tableView reloadRowsAtIndexPaths:changed withRowAnimation:UITableViewRowAnimationNone];
+    for (UITableViewCell *cell in self.tableView.visibleCells) {
+        NSIndexPath *at = [self.tableView indexPathForCell:cell];
+        if (at.section != LBSectionFields || (NSUInteger)at.row >= _rows.count) continue;
+        NSInteger entry = _rows[(NSUInteger)at.row].integerValue;
+        if (entry >= 0) [self styleTitleOf:cell field:_fields[(NSUInteger)entry]];
+    }
+}
+
+- (void)styleTitleOf:(UITableViewCell *)cell field:(LBField *)field {
+    BOOL broken = [self issuesOf:field in:_issues].count > 0;
+    cell.textLabel.text = [LBRuleIssues isRequired:field.key of:_object issues:_issues] ? [field.title stringByAppendingString:@" *"] : field.title;
+    cell.textLabel.textColor = broken ? [UIColor systemRedColor] : [UIColor labelColor];
 }
 
 - (BOOL)enter:(id)value intoField:(NSString *)title {
@@ -650,7 +739,7 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    if (section == LBSectionFields) return (NSInteger)_fields.count;
+    if (section == LBSectionFields) return (NSInteger)_rows.count;
     if (section == LBSectionItems) {
         if (self.service) return (NSInteger)[self items].count + 1;
         if (self.inspection) return (NSInteger)[self questions].count;
@@ -714,8 +803,19 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
     NSInteger row = indexPath.row;
     if (indexPath.section == LBSectionFields) {
+        NSInteger entry = _rows[(NSUInteger)row].integerValue;
+        if (entry < 0) {
+            /* The note under a field: what it breaks, in red, its width. */
+            LBField *of = _fields[(NSUInteger)(-1 - entry)];
+            cell.textLabel.text = [[self issuesOf:of in:_issues] componentsJoinedByString:@"\n"];
+            cell.textLabel.numberOfLines = 0;
+            cell.textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+            cell.textLabel.textColor = [UIColor systemRedColor];
+            return cell;
+        }
+        row = entry;
         LBField *field = _fields[(NSUInteger)row];
-        cell.textLabel.text = field.title;
+        [self styleTitleOf:cell field:field];
         id value = [_object valueForKey:field.key];
         switch (field.kind) {
             case LBFieldText:
@@ -809,7 +909,8 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     if (indexPath.section == LBSectionFields) {
-        LBField *field = _fields[(NSUInteger)indexPath.row];
+        NSInteger entry = _rows[(NSUInteger)indexPath.row].integerValue;
+        LBField *field = entry >= 0 ? _fields[(NSUInteger)entry] : nil;
         if (field.kind == LBFieldChoice) [self choose:field from:[tableView cellForRowAtIndexPath:indexPath]];
     } else if (indexPath.section == LBSectionItems && self.service && (NSUInteger)indexPath.row == [self items].count) {
         [self askForItem];

@@ -314,6 +314,14 @@ static UIImage *LBReceiptPhoto(void) {
     [form enter:@"Volkswagen" intoField:@"Make"];
     [form enter:@"Golf VII" intoField:@"Model"];
     [form enter:@"2016" intoField:@"Year"];
+    /* A car of no fuel: the rule it breaks under its field, its title
+       "Fuel *" (LBRuleIssues, as XFormsKit's UIKit forms say it). */
+    [form enter:@"" intoField:@"Fuel"];
+    LBSay([form issuesOfField:@"Fuel"].count > 0 && [[form shownTitleOf:@"Fuel"] isEqualToString:@"Fuel *"],
+          [NSString stringWithFormat:@"no fuel: said under Fuel, its title Fuel * (%@, %@)", [form shownTitleOf:@"Fuel"],
+                                     [form issuesOfField:@"Fuel"]]);
+    [form enter:@"Petrol" intoField:@"Fuel"];
+    LBSay([form issuesOfField:@"Fuel"].count == 0 && [[form shownTitleOf:@"Fuel"] isEqualToString:@"Fuel"], @"given a fuel: nothing said");
     [form save:nil];
     LBSpin(1);
     Vehicle *golf = app.phone.vehicle;

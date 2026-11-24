@@ -1,6 +1,6 @@
 #import "LBFieldIssues.h"
 #import "LBFormValues.h"
-#import <ORMRuntime/ORMValidator.h>
+#import "LBRuleIssues.h"
 #import <objc/runtime.h>
 
 /* A field: the control, the object its controller's selection is (a
@@ -17,24 +17,6 @@
 static NSColor *LBInvalidColor(void) {
     if ([[NSColor class] respondsToSelector:@selector(systemRedColor)]) return [[NSColor class] performSelector:@selector(systemRedColor)];
     return [NSColor redColor];
-}
-
-/* Each sentence an error says, with the keys it names (none: the object's). */
-static void LBIssuesOf(NSError *error, NSMutableArray<NSError *> *into) {
-    NSArray *detailed = error.userInfo[NSDetailedErrorsKey];
-    if ([detailed isKindOfClass:[NSArray class]] && detailed.count) {
-        for (id each in detailed)
-            if ([each isKindOfClass:[NSError class]]) LBIssuesOf(each, into);
-        return;
-    }
-    [into addObject:error];
-}
-
-static NSArray<NSString *> *LBKeysOf(NSError *error) {
-    NSArray *keys = error.userInfo[@"ORMKeys"];
-    if ([keys isKindOfClass:[NSArray class]] && keys.count) return keys;
-    NSString *key = error.userInfo[NSValidationKeyErrorKey];
-    return [key isKindOfClass:[NSString class]] ? @[ key ] : @[];
 }
 
 static char LBLabelWas, LBBadge;
@@ -184,28 +166,6 @@ static void LBChosenTabs(NSView *view, NSMutableArray *into) {
 
 #pragma mark Checking
 
-/* The object's rules it breaks, each with the keys it names. */
-- (NSArray<NSError *> *)brokenBy:(NSManagedObject *)object {
-    NSMutableArray<NSError *> *found = [NSMutableArray array];
-    NSError *error = nil;
-    BOOL valid = object.isInserted ? [object validateForInsert:&error] : [object validateForUpdate:&error];
-    if (!valid && error) LBIssuesOf(error, found);
-    ORMValidator *validator = [ORMValidator validatorNamed:@"Logbook" error:NULL];
-    for (NSError *each in [validator violationsOf:object deontic:NO] ?: @[]) LBIssuesOf(each, found);
-    return found;
-}
-
-/* Whether the property must have a value: Core Data's, or the model's
-   (a to-one ORMKit marks mandatory, which Core Data's sync lets be nil). */
-static BOOL LBMandatory(NSPropertyDescription *property) {
-    return !property.isOptional || [property.userInfo[@"ormkit.mandatory"] isEqual:@"YES"];
-}
-
-static BOOL LBEmpty(id value) {
-    return value == nil || value == [NSNull null] || ([value isKindOfClass:[NSString class]] && ![value length])
-           || ([value isKindOfClass:[NSSet class]] && ![value count]);
-}
-
 - (void)refresh {
     NSView *root = _root;
     if (!root) return;
@@ -216,17 +176,10 @@ static BOOL LBEmpty(id value) {
     NSMutableDictionary *issues = [NSMutableDictionary dictionary];
     for (LBIssueField *field in fields) {
         if ([byObject objectForKey:field.object]) continue;
-        NSMutableDictionary<NSString *, NSMutableOrderedSet *> *said = [NSMutableDictionary dictionary];
-        for (NSError *error in [self brokenBy:field.object]) {
-            NSString *sentence = error.localizedDescription;
-            for (NSString *key in LBKeysOf(error)) {
-                if (!said[key]) said[key] = [NSMutableOrderedSet orderedSet];
-                [said[key] addObject:sentence];
-            }
-        }
+        NSDictionary *said = [LBRuleIssues issuesOf:field.object];
         [byObject setObject:said forKey:field.object];
         for (NSString *key in said)
-            issues[[NSString stringWithFormat:@"%@.%@", field.object.entity.name, key]] = said[key].array;
+            issues[[NSString stringWithFormat:@"%@.%@", field.object.entity.name, key]] = said[key];
     }
     _issues = issues;
 
@@ -245,9 +198,9 @@ static BOOL LBEmpty(id value) {
     for (LBIssueField *field in fields) {
         NSView *view = field.view;
         if (!view) continue;
-        NSArray *sentences = [[byObject objectForKey:field.object][field.key] array];
-        id value = [field.object valueForKey:field.key];
-        BOOL required = LBMandatory(field.object.entity.propertiesByName[field.key]) || (sentences.count && LBEmpty(value));
+        NSDictionary *said = [byObject objectForKey:field.object];
+        NSArray *sentences = said[field.key];
+        BOOL required = [LBRuleIssues isRequired:field.key of:field.object issues:said];
         NSTextField *label = [self labelOf:view];
         if (label) {
             NSString *text = LBWasOf(label)[0];
