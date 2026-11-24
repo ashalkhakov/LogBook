@@ -25,7 +25,11 @@
 // Exits 0 when every record is made or was there already and the server
 // took them; 1 otherwise, saying why.
 #import <Foundation/Foundation.h>
+#ifdef _WIN32
+#include <conio.h>
+#else
 #include <unistd.h>
+#endif
 #import <CoreData/CoreData.h>
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMTables.h>
@@ -82,6 +86,32 @@ static NSURL *LBBeside(NSString *setting, NSString *name) {
 }
 @end
 
+/* A password typed, not shown: getpass where there is one; on Windows,
+   key by key from the console (Return ends it, Backspace takes one back). */
+static NSString *LBTypedPassword(void) {
+#ifdef _WIN32
+    fputs("Password: ", stderr);
+    fflush(stderr);
+    NSMutableString *typed = [NSMutableString string];
+    for (;;) {
+        int c = _getwch();
+        if (c == '\r' || c == '\n' || c == WEOF) break;
+        if (c == 3) return nil;
+        if (c == '\b') {
+            if (typed.length) [typed deleteCharactersInRange:NSMakeRange(typed.length - 1, 1)];
+            continue;
+        }
+        unichar u = (unichar)c;
+        [typed appendString:[NSString stringWithCharacters:&u length:1]];
+    }
+    fputs("\n", stderr);
+    return typed;
+#else
+    char *typed = getpass("Password: ");
+    return typed ? @(typed) : nil;
+#endif
+}
+
 static void LBWaitFor(BOOL (^done)(void)) {
     while (!done()) [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
 }
@@ -131,8 +161,9 @@ int main(int argc, const char *argv[]) {
         NSString *email = [settings stringForKey:@"Email"];
         if (signIn.kind == ODataSignInPassword && !signIn.isSignedIn) {
             if (!email.length) return LBFail(@"%@ asks for a user and password: say who you are (-Email).", root);
-            char *typed = getpass("Password: ");
-            [signIn signInWithUser:email password:typed ? @(typed) : @""];
+            NSString *typed = LBTypedPassword();
+            if (!typed) return LBFail(@"no password typed.");
+            [signIn signInWithUser:email password:typed];
             LBWaitFor(^BOOL { return signing.done; });
             if (signing.failure || !signIn.isSignedIn) return LBFail(@"not signed in: %@", signing.failure.localizedDescription ?: @"");
         } else if (signIn.kind != ODataSignInNone && !signIn.isSignedIn) {
