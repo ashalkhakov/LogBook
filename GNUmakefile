@@ -218,7 +218,7 @@ check:: all
 	obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
 	obj/lb-stock-check obj/Logbook.momd obj/Logbook.ormplans
 	Tests/form-check.sh obj/logbook-server obj/lb-form-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms
-	obj/lb-import-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms Tests/drivvo-export.csv Tests/maintrack-store.sql
+	obj/lb-import-check obj/Logbook.momd obj/Logbook.ormplans $(LB_MODEL)/Forms Tests/drivvo-export.csv Tests/maintrack-store.sql Tests/inventree 29
 	Tests/import-check.sh obj/logbook-server obj/logbook-import Tests/drivvo-export.csv
 	python3 Tests/serve-and-check.py obj/logbook-server
 	python3 Tests/process-check.py obj/logbook-server

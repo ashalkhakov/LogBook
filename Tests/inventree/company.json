@@ -1,0 +1,43 @@
+{
+ "count": 3,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "pk": 1,
+   "name": "Parts Shop",
+   "is_supplier": true,
+   "is_manufacturer": false,
+   "is_customer": false,
+   "email": "orders@parts-shop.example",
+   "phone": "+1 555 0100",
+   "website": "https://parts-shop.example",
+   "description": "",
+   "image": null
+  },
+  {
+   "pk": 2,
+   "name": "Acme Networks",
+   "is_supplier": false,
+   "is_manufacturer": true,
+   "is_customer": false,
+   "email": null,
+   "phone": null,
+   "website": "https://acme.example",
+   "description": "",
+   "image": null
+  },
+  {
+   "pk": 3,
+   "name": "Big Market",
+   "is_supplier": true,
+   "is_manufacturer": false,
+   "is_customer": false,
+   "email": null,
+   "phone": null,
+   "website": "https://big-market.example",
+   "description": "Marketplace",
+   "image": null
+  }
+ ]
+}

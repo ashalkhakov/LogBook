@@ -216,7 +216,7 @@ check: all
 	$(BUILD)/lb-procedures-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	$(BUILD)/lb-stock-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans
 	Tests/form-check.sh $(BUILD)/logbook-server $(BUILD)/lb-form-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms
-	$(BUILD)/lb-import-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms Tests/drivvo-export.csv Tests/maintrack-store.sql
+	$(BUILD)/lb-import-check $(BUILD)/Logbook.momd $(BUILD)/Logbook.ormplans $(MODEL)/Forms Tests/drivvo-export.csv Tests/maintrack-store.sql Tests/inventree 29
 	Tests/import-check.sh $(BUILD)/logbook-server $(BUILD)/logbook-import Tests/drivvo-export.csv
 	python3 Tests/serve-and-check.py $(BUILD)/logbook-server
 	python3 Tests/process-check.py $(BUILD)/logbook-server

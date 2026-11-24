@@ -2605,14 +2605,15 @@ found.</orm:Text>
 					<orm:Note id="_54A7AF46-9CD1-4E66-94DB-5F11C509BE62">
 						<orm:Text>An item's SKU: the catalog's own number for it, on its labels, its
 orders and its history; kept whoever supplies it. Given (the catalog's
-prefix and a running number) where a person gives none.</orm:Text>
+prefix and a running number) where a person gives none. A supplier's SKU
+of it may be its product's long name (a marketplace's slug): room for it.</orm:Text>
 					</orm:Note>
 				</orm:Notes>
 				<orm:PlayedRoles>
 					<orm:Role ref="_CA7F678F-FF6A-4D61-83F3-86463D2D41E0" />
 					<orm:Role ref="_6D059B0B-64F2-44AE-BDA9-5EF784FAF531" />
 				</orm:PlayedRoles>
-				<orm:ConceptualDataType id="_34B83D4D-4F62-4FBD-951E-7DCEE39E0F58" ref="_380AB1C0-186E-4409-B484-09338C079516" Scale="0" Length="40" />
+				<orm:ConceptualDataType id="_34B83D4D-4F62-4FBD-951E-7DCEE39E0F58" ref="_380AB1C0-186E-4409-B484-09338C079516" Scale="0" Length="120" />
 			</orm:ValueType>
 			<orm:ValueType id="_E0335EFF-4982-41D2-89E3-C186BCE77EBA" Name="LeadDays">
 				<orm:PlayedRoles>

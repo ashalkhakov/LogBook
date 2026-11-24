@@ -307,6 +307,13 @@ remove one and put it away at a location. Fitted from stock, it moves out
 (`Removed`). So a spare part on a shelf and the part on the bicycle are
 one thing, wherever it is.
 
+**Imported from InvenTree** ([SERVER.md](SERVER.md#importing-another-apps-data),
+or the desktop's File > Import from InvenTree…): its parts are items (a
+manufacturer part's maker and MPN on its item), its supplier parts
+supplier items, its stock items with serials units, and its tracking
+history moves. A supplier's SKU may be a marketplace's long product slug,
+so SKUs have room for 120 characters.
+
 ## Moves: transfers and adjustments
 
 **A transfer** moves so many of an item from one location to another (a

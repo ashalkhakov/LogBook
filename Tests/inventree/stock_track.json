@@ -1,0 +1,46 @@
+{
+ "count": 4,
+ "next": null,
+ "previous": null,
+ "results": [
+  {
+   "pk": 1,
+   "item": 1,
+   "date": "2026-03-05T12:00:00Z",
+   "label": "Received items",
+   "deltas": {
+    "location": 2,
+    "quantity": 1
+   }
+  },
+  {
+   "pk": 2,
+   "item": 1,
+   "date": "2026-03-08T09:30:00Z",
+   "label": "Location changed",
+   "deltas": {
+    "location": 3
+   }
+  },
+  {
+   "pk": 3,
+   "item": 2,
+   "date": "2026-03-05T12:00:00Z",
+   "label": "Received items",
+   "deltas": {
+    "location": 2,
+    "quantity": 3
+   }
+  },
+  {
+   "pk": 4,
+   "item": 3,
+   "date": "2026-01-15T10:00:00Z",
+   "label": "Stock item created",
+   "deltas": {
+    "location": 1,
+    "quantity": 1
+   }
+  }
+ ]
+}

@@ -61,7 +61,7 @@ host to the container's port 8080, and give the address users reach as
 
 ## Importing another app's data
 
-`logbook-import` puts another app's export into a vehicle of a user's, as
+`logbook-import` puts another app's data into a user's logbook, as
 the desktop's File > Import… does: it syncs the user's logbook into a
 store of its own, enters each record through the model's form, and syncs
 them up, so the server keeps its rules and permissions as for any device.
@@ -95,6 +95,31 @@ What it reads:
 ```sh
 build/logbook-import -Server https://logbook.example.com/ \
   ~/Library/Group\ Containers/group.kiwiswift.mainTrack/Maintrack.sqlite
+```
+
+- **An InvenTree instance** (`-InvenTree <its address>`) goes into one of
+  the user's catalogs, named by `-Catalog` (made if the user has none of
+  that name). It's read through InvenTree's API with a token that may
+  read: `LB_INVENTREE_TOKEN` in the environment, else `-Token`. It makes:
+  - its top stock locations as warehouses, the rest as locations in them;
+  - its part categories as categories;
+  - its suppliers as contacts and suppliers;
+  - its parts as items, with each one's manufacturer and MPN;
+  - its supplier parts as supplier items;
+  - each stock item with a serial as a unit;
+  - its purchase orders with their lines: Complete closed, Placed
+    confirmed, Pending a draft;
+  - receipts and moves by each stock item's tracking history, ending where
+    InvenTree has it now. Stock bought outside an order is an opening
+    adjustment, its price said in a note.
+
+  InvenTree's references (PO-0001, its part and stock numbers) are kept in
+  notes, so importing again passes over what's there and makes only
+  what's new.
+
+```sh
+LB_INVENTREE_TOKEN=inv-... build/logbook-import -Server https://logbook.example.com/ \
+  -InvenTree https://inventree.example.com -Catalog Home -LeaveOut YES
 ```
 
 ## Signing in with Keycloak (or another OpenID Connect provider)

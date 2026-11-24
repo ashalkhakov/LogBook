@@ -34,6 +34,22 @@ typedef BOOL (^LBImportSaving)(NSManagedObjectContext *context, NSError **error)
    given is not used. */
 @interface LBImport : NSObject
 
+/* An InvenTree instance's stock, read over its REST API (api/): its
+   categories, locations, companies, parts, supplier and manufacturer
+   parts, stock items, purchase orders and their lines, and its stock
+   tracking. It goes into a catalog (catalogName), its structure (the top
+   locations warehouses, the rest locations in them), its parts items, its
+   serialed stock items units, its orders purchase orders (complete:
+   closed; placed: confirmed), each item received as InvenTree tracked it
+   (where and when) by a receipt of its order, moved after as it was, and
+   one bought outside an order found (an opening adjustment) where it first
+   was. fetch, where given, answers each request instead of the network (a
+   check's fixtures): the path asked (part/?limit=100&offset=0), its JSON. */
++ (nullable instancetype)importOfInvenTree:(NSURL *)root
+                                     token:(NSString *)token
+                                     fetch:(nullable NSData *_Nullable (^)(NSString *path, NSError **error))fetch
+                                     error:(NSError **)error;
+
 /* The export at the URL, read; nil and why where it is none Logbook
    reads. */
 + (nullable instancetype)importOfFile:(NSURL *)file error:(NSError **)error;
@@ -56,9 +72,11 @@ typedef BOOL (^LBImportSaving)(NSManagedObjectContext *context, NSError **error)
    method 'Card'"). */
 @property (nonatomic, readonly, copy) NSArray<NSString *> *leftOut;
 
-/* MainTrack's: the catalog its components go into as units of its items
-   (the user's of that name, made where they have none): "Bike parts" where
-   none is named. */
+/* It brings stock into a catalog (InvenTree's, MainTrack's parts). */
+@property (nonatomic, readonly) BOOL makesStock;
+/* The catalog stock goes into (the user's of that name, made where they
+   have none): MainTrack's parts "Bike parts" where none is named; an
+   InvenTree's must be named. */
 @property (nonatomic, copy, nullable) NSString *catalogName;
 
 /* The forms the records are entered through, by name (ORMForm

@@ -2,7 +2,8 @@
 // store of the model's own, through the model's forms as the app enters
 // them. Each check a line, "ok" or "FAIL"; 1 when one failed.
 //
-//   lb-import-check build/Logbook.momd build/Logbook.ormplans build/Model/Forms Tests/drivvo-export.csv Tests/maintrack-store.sql
+//   lb-import-check build/Logbook.momd build/Logbook.ormplans build/Model/Forms Tests/drivvo-export.csv Tests/maintrack-store.sql \
+//     Tests/inventree 29
 //
 // - Drivvo's CSV read: its sections, the vehicle it is of, how many of
 //   each; a quoted field with commas and quotes in it;
@@ -19,6 +20,14 @@
 //   record the store's rules refuse (a cost below nothing). The rules the
 //   server checks where a record is submitted (a reading lower than an
 //   earlier one) it checks when the import is synced, as of one typed.
+//
+// InvenTree's API answered from a folder of its JSON (Tests/inventree, made
+// up; or a copy of a real one's, with no count after it): no catalog named,
+// refused; imported into Home, so many made; each order line of the item
+// its supplier part is of (a line's part is a supplier part's number, not
+// a part's); with the fixtures, each part, supplier part, location, order
+// and unit as InvenTree has it, a price bought outside an order said;
+// imported again, nothing made.
 #import <Foundation/Foundation.h>
 #import <CoreData/CoreData.h>
 #import <ORMRuntime/ORMForm.h>
@@ -37,7 +46,15 @@
 #import "Catalog+CoreDataClass.h"
 #import "Category+CoreDataClass.h"
 #import "ComponentChange+CoreDataClass.h"
+#import "PurchaseOrder+CoreDataClass.h"
+#import "PurchaseLine+CoreDataClass.h"
+#import "SupplierItem+CoreDataClass.h"
+#import "Supplier+CoreDataClass.h"
+#import "Contact+CoreDataClass.h"
+#import "Warehouse+CoreDataClass.h"
+#import "Location+CoreDataClass.h"
 #import "LBProcedures.h"
+#import "LBStockProcedures.h"
 #include <sqlite3.h>
 #import "VehicleDriver+CoreDataClass.h"
 #import "DistanceUnit+CoreDataClass.h"
@@ -338,6 +355,132 @@ static void LBMainTrackSteps(NSString *sqlPath) {
     [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
 }
 
+/* InvenTree's API, answered from a folder of its answers (Tests/inventree,
+   made up: each endpoint's JSON, part/category as part_category.json). */
+static NSData *LBInvenTreeAnswer(NSString *folder, NSString *path) {
+    NSString *endpoint = [path componentsSeparatedByString:@"/?"].firstObject;
+    NSString *file = [[endpoint stringByReplacingOccurrencesOfString:@"/" withString:@"_"] stringByAppendingPathExtension:@"json"];
+    /* One page, all of it: a second page's offset answers none. */
+    if (![path containsString:@"offset=0"]) return [@"{\"count\":0,\"results\":[]}" dataUsingEncoding:NSUTF8StringEncoding];
+    return [NSData dataWithContentsOfFile:[folder stringByAppendingPathComponent:file]] ?: [@"[]" dataUsingEncoding:NSUTF8StringEncoding];
+}
+
+static NSArray *LBInvenTreeRows(NSString *folder, NSString *file) {
+    NSData *data = [NSData dataWithContentsOfFile:[folder stringByAppendingPathComponent:file]];
+    return data ? [NSJSONSerialization JSONObjectWithData:data options:0 error:NULL][@"results"] : @[];
+}
+
+static LBImport *LBInvenTree(NSString *folder, NSError **error) {
+    LBImport *import = [LBImport importOfInvenTree:[NSURL URLWithString:@"https://inventree.example.org/"] token:@"none"
+                                              fetch:^NSData *(NSString *path, NSError **failure) { return LBInvenTreeAnswer(folder, path); }
+                                              error:error];
+    import.catalogName = @"Home";
+    return import;
+}
+
+static PurchaseOrder *LBOrderMarked(Catalog *catalog, NSString *reference) {
+    for (PurchaseOrder *each in catalog.purchaseOrders) if ([each.note hasPrefix:[@"InvenTree " stringByAppendingString:reference]]) return each;
+    return nil;
+}
+
+/* Into a catalog of the user's, Home: with the fixtures (made == 28), each
+   thing as InvenTree has it; with any folder, each order line of the item
+   InvenTree's line names (its supplier part's part, never the part of
+   that number); imported again, nothing made. */
+static void LBInvenTreeSteps(NSString *folder, NSUInteger expected) {
+    NSManagedObjectContext *context = LBNewStore();
+    User *anna = LBUser(@"anna@example.org", @"Anna Driver", context);
+    anna.currency = @"USD";
+    NSError *error = nil;
+    if (![context orm_prepareForSave:&error] || ![context save:&error]) {
+        LBCheck(@"the user saved", NO, error);
+        return;
+    }
+    /* As a device saves: the procedures, then holdings, then the rules. */
+    LBImportSaving saving = ^BOOL(NSManagedObjectContext *c, NSError **failure) {
+        return [c lb_completeRemindersOfChangedEvents:failure] && [c lb_holdMovedItems:failure] && [c orm_prepareForSave:failure] && [c save:failure];
+    };
+    LBImport *import = LBInvenTree(folder, &error);
+    LBCheck(@"InvenTree read, its answers from the folder", import && [import.source isEqualToString:@"InvenTree"] && import.makesStock,
+            error ?: folder);
+    import.catalogName = nil;
+    LBCheck(@"no catalog named: refused, said", ![import planForVehicle:nil by:anna error:&error] && [error.localizedDescription containsString:@"catalog"],
+            error);
+    import.catalogName = @"Home";
+    NSUInteger made = 0, skipped = 0;
+    error = nil;
+    BOOL done = [import importIntoVehicle:nil by:anna context:context saving:saving made:&made skipped:&skipped error:&error];
+    LBCheck(@"imported into Home", done && made > 0 && (!expected || made == expected),
+            error ?: [NSString stringWithFormat:@"%lu made, %lu expected", (unsigned long)made, (unsigned long)expected]);
+    Catalog *home = nil;
+    for (Catalog *each in anna.ownedCatalogs) if ([each.catalogName isEqualToString:@"Home"]) home = each;
+
+    /* Each line of the item InvenTree's line is of. */
+    NSMutableDictionary *partOfOffer = [NSMutableDictionary dictionary], *nameOfPart = [NSMutableDictionary dictionary],
+                        *referenceOf = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in LBInvenTreeRows(folder, @"company_part.json")) partOfOffer[row[@"pk"]] = row[@"part"];
+    for (NSDictionary *row in LBInvenTreeRows(folder, @"part.json")) nameOfPart[row[@"pk"]] = row[@"name"];
+    for (NSDictionary *row in LBInvenTreeRows(folder, @"order_po.json")) referenceOf[row[@"pk"]] = row[@"reference"];
+    NSMutableArray *wrong = [NSMutableArray array];
+    for (NSDictionary *line in LBInvenTreeRows(folder, @"order_po-line.json")) {
+        id part = line[@"internal_part"] != [NSNull null] ? line[@"internal_part"] : partOfOffer[line[@"part"]];
+        PurchaseOrder *order = LBOrderMarked(home, referenceOf[line[@"order"]]);
+        if (!order) continue;
+        if (![[order.purchaseLines valueForKeyPath:@"stockItem.itemName"] containsObject:nameOfPart[part]])
+            [wrong addObject:[NSString stringWithFormat:@"%@: no line of %@ (%@)", referenceOf[line[@"order"]], nameOfPart[part],
+                                                        [[order.purchaseLines valueForKeyPath:@"stockItem.itemName"] allObjects]]];
+    }
+    LBCheck(@"each order line of the item InvenTree's supplier part is of", wrong.count == 0, wrong);
+
+    if (expected) {
+        NSMutableDictionary *items = [NSMutableDictionary dictionary];
+        for (StockItem *each in home.stockItems) items[each.itemName] = each;
+        StockItem *router = items[@"Router X1"], *pc = items[@"Mini PC N100"], *cable = items[@"USB-C cable 1m"];
+        LBCheck(@"its parts items: the IPN the SKU, the manufacturer part's maker and MPN, the category within its parent",
+                home.stockItems.count == 3 && [router.sku isEqualToString:@"RX1"] && [router.manufacturer isEqualToString:@"Acme Networks"]
+                    && [router.mpn isEqualToString:@"AX1-EU"] && [cable.category.categoryName isEqualToString:@"Cables"]
+                    && [cable.category.parent.categoryName isEqualToString:@"Computers"] && [pc.note containsString:@"For the office"],
+                [home.stockItems valueForKey:@"itemName"]);
+        SupplierItem *pack = cable.supplierItems.anyObject;
+        LBCheck(@"its supplier parts: both of one supplier's, its pack", [[home.suppliers valueForKeyPath:@"contact.contactName"] isEqual:
+                                                                          [NSSet setWithObjects:@"Parts Shop", @"Big Market", nil]]
+                    && pc.supplierItems.count == 1 && pc.supplierItems.anyObject.supplier == pack.supplier
+                    && [pack.supplierSKU isEqualToString:@"PS-USBC1"] && [pack.packSize isEqual:@3],
+                [home.suppliers valueForKeyPath:@"contact.contactName"]);
+        LBCheck(@"its top locations warehouses (beside the catalog's own Main), the rest within them",
+                [[home.warehouses valueForKey:@"warehouseName"] isEqual:[NSSet setWithObjects:@"Main", @"Home", @"Garage", nil]],
+                [home.warehouses valueForKey:@"warehouseName"]);
+        PurchaseOrder *first = LBOrderMarked(home, @"PO-0001"), *second = LBOrderMarked(home, @"PO-0002");
+        PurchaseLine *cables = nil;
+        for (PurchaseLine *each in first.purchaseLines) if (each.stockItem == cable) cables = each;
+        LBCheck(@"its orders: Complete closed, Placed confirmed; a line of no price at what its stock cost",
+                [first.orderState isEqualToString:@"Closed"] && [second.orderState isEqualToString:@"Confirmed"]
+                    && [first.supplierReference isEqualToString:@"PS-88412"] && first.purchaseLines.count == 2
+                    && [cables.quantity isEqual:@3] && [cables.lineUnitCostAmount isEqual:@4] && first.receipts.count == 1
+                    && second.receipts.count == 0,
+                [NSString stringWithFormat:@"%@ %@ %@ %@", first.orderState, second.orderState, cables.quantity, cables.lineUnitCostAmount]);
+        NSMutableDictionary<NSString *, Location *> *places = [NSMutableDictionary dictionary];
+        for (Warehouse *each in home.warehouses)
+            for (Location *location in each.locations) places[location.locationName] = location;
+        NSMutableDictionary *where = [NSMutableDictionary dictionary];
+        for (StockItem *item in home.stockItems)
+            for (StockUnit *unit in item.stockUnits) where[unit.serialNumber] = unit.location.locationName ?: @"(nowhere)";
+        LBCheck(@"its stock where InvenTree has it: received, then moved; bought outside an order, at its price (a unit, so many)",
+                [where isEqual:(@{ @"N100-0001": @"Drawer", @"RX-77": @"Garage" })]
+                    && [router.stockUnits.anyObject.note containsString:@"Bought for 60 USD"]
+                    && [[cable.moves valueForKey:@"note"] containsObject:@"InvenTree stock item 4\nBought for 2.5 USD"]
+                    && [[places[@"Office"] lb_heldOf:cable] isEqual:@3] && [[places[@"Garage"] lb_heldOf:cable] isEqual:@5],
+                @[ where, router.stockUnits.anyObject.note ?: @"(no note)", [cable.moves valueForKey:@"note"] ]);
+    }
+
+    NSUInteger first = made;
+    import = LBInvenTree(folder, &error);
+    done = [import importIntoVehicle:nil by:anna context:context saving:saving made:&made skipped:&skipped error:&error];
+    LBCheck(@"imported again: nothing made", done && made == 0 && skipped > 0,
+            error ?: [NSString stringWithFormat:@"%lu made, %lu passed over (%lu the first time)", (unsigned long)made, (unsigned long)skipped,
+                                                (unsigned long)first]);
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 5) {
@@ -359,6 +502,7 @@ int main(int argc, const char *argv[]) {
         [ORMTables registerTables:tables named:@"Logbook"];
         LBDrivvoSteps(export);
         if (argc > 5) LBMainTrackSteps(@(argv[5]));
+        if (argc > 6) LBInvenTreeSteps(@(argv[6]), argc > 7 ? (NSUInteger)atol(argv[7]) : 0);
         printf("import: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

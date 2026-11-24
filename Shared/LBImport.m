@@ -14,6 +14,15 @@
 #import "StockItem+CoreDataClass.h"
 #import "Catalog+CoreDataClass.h"
 #import "Category+CoreDataClass.h"
+#import "Warehouse+CoreDataClass.h"
+#import "Location+CoreDataClass.h"
+#import "Contact+CoreDataClass.h"
+#import "Supplier+CoreDataClass.h"
+#import "SupplierItem+CoreDataClass.h"
+#import "PurchaseOrder+CoreDataClass.h"
+#import "PurchaseLine+CoreDataClass.h"
+#import "Receipt+CoreDataClass.h"
+#import "Move+CoreDataClass.h"
 #import "LBStockProcedures.h"
 #import "Trip+CoreDataClass.h"
 #import "ComponentChange+CoreDataClass.h"
@@ -225,6 +234,9 @@ static NSString *LBUnitIn(NSString *column) {
     NSDictionary<NSString *, NSNumber *> *_entities;
     NSArray<LBBike *> *_bikes;
     NSArray<LBPart *> *_parts;
+    /* InvenTree's tables, read whole: by endpoint, its rows; its root. */
+    NSDictionary<NSString *, NSArray<NSDictionary *> *> *_inventree;
+    NSURL *_inventreeRoot;
 }
 
 static BOOL LBIsSQLite(NSData *data) {
@@ -350,6 +362,7 @@ static BOOL LBIsSQLite(NSData *data) {
 }
 
 - (BOOL)planForVehicle:(Vehicle *)vehicle by:(User *)user error:(NSError **)error {
+    if ([_source isEqualToString:@"InvenTree"]) return [self planInvenTreeBy:user error:error];
     if (self.makesVehicles) return [self planMainTrackBy:user error:error];
     if (!vehicle) {
         if (error) *error = LBImportError(@"%@'s export goes into a vehicle already set up: choose it first.", _source);
@@ -570,6 +583,7 @@ static BOOL LBIsSQLite(NSData *data) {
                     error:(NSError **)error {
     if (made) *made = 0;
     if (skipped) *skipped = 0;
+    if ([_source isEqualToString:@"InvenTree"]) return [self importInvenTreeBy:user context:context saving:saving made:made skipped:skipped error:error];
     if (self.makesVehicles) return [self importMainTrackBy:user context:context saving:saving made:made skipped:skipped error:error];
     if (![self planForVehicle:vehicle by:user error:error]) return NO;
     NSMutableDictionary<NSString *, ORMForm *> *forms = [NSMutableDictionary dictionary];
@@ -1238,6 +1252,613 @@ static NSString *LBDecimal(double value) {
         if (made) (*made)++;
     }
     return YES;
+}
+
+
+#pragma mark InvenTree's API
+
+static NSArray *const LBInvenTreeEndpoints(void) {
+    return @[ @"part/category", @"part", @"stock/location", @"stock", @"company", @"company/part", @"company/part/manufacturer",
+              @"order/po", @"order/po-line", @"stock/track" ];
+}
+
++ (instancetype)importOfInvenTree:(NSURL *)root token:(NSString *)token
+                            fetch:(NSData * (^)(NSString *, NSError **))fetch error:(NSError **)error {
+    NSURL *api = [root.absoluteString hasSuffix:@"/api/"] ? root : [NSURL URLWithString:@"api/" relativeToURL:root];
+    NSData * (^get)(NSString *, NSError **) = fetch ?: ^NSData *(NSString *path, NSError **failure) {
+        NSURL *url = [NSURL URLWithString:path relativeToURL:api];
+        NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+        [request setValue:[@"Token " stringByAppendingString:token ?: @""] forHTTPHeaderField:@"Authorization"];
+        [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
+        __block NSData *data = nil;
+        __block NSInteger status = 0;
+        __block NSError *sent = nil;
+        __block BOOL done = NO;
+        [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData *d, NSURLResponse *r, NSError *e) {
+            data = d;
+            status = [(NSHTTPURLResponse *)r statusCode];
+            sent = e;
+            done = YES;
+        }] resume];
+        while (!done) [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.05]];
+        if (sent || status != 200) {
+            if (failure) *failure = sent ?: LBImportError(@"InvenTree answered %ld to %@%@", (long)status, url.absoluteString,
+                                                           status == 401 || status == 403 ? @": is the token right, and may it read?" : @"");
+            return nil;
+        }
+        return data;
+    };
+    NSMutableDictionary *tables = [NSMutableDictionary dictionary];
+    for (NSString *endpoint in LBInvenTreeEndpoints()) {
+        NSMutableArray *rows = [NSMutableArray array];
+        for (NSUInteger offset = 0;;) {
+            NSData *data = get([NSString stringWithFormat:@"%@/?limit=100&offset=%lu", endpoint, (unsigned long)offset], error);
+            if (!data) return nil;
+            id json = [NSJSONSerialization JSONObjectWithData:data options:0 error:NULL];
+            NSArray *page = [json isKindOfClass:[NSDictionary class]] ? json[@"results"] : json;
+            if (![page isKindOfClass:[NSArray class]]) {
+                if (error) *error = LBImportError(@"InvenTree's %@ is no list of its records", endpoint);
+                return nil;
+            }
+            [rows addObjectsFromArray:page];
+            NSNumber *count = [json isKindOfClass:[NSDictionary class]] ? json[@"count"] : nil;
+            offset += page.count;
+            if (!page.count || ![count isKindOfClass:[NSNumber class]] || offset >= count.unsignedIntegerValue) break;
+        }
+        tables[endpoint] = rows;
+    }
+    LBImport *import = [[self alloc] init];
+    import.source = @"InvenTree";
+    import->_inventree = tables;
+    import->_inventreeRoot = root;
+    NSMutableSet *orders = [NSMutableSet set];
+    for (NSDictionary *order in tables[@"order/po"]) [orders addObject:order[@"pk"] ?: @0];
+    import.vehicleNames = @[];
+    import.counts = @{ @"parts" : @([tables[@"part"] count]), @"stock items" : @([tables[@"stock"] count]),
+                       @"locations" : @([tables[@"stock/location"] count]), @"purchase orders" : @(orders.count),
+                       @"companies" : @([tables[@"company"] count]) };
+    import.leftOut = @[];
+    return import;
+}
+
+- (BOOL)makesStock {
+    return [_source isEqualToString:@"InvenTree"] || [_source isEqualToString:@"MainTrack"];
+}
+
+static id LBNull(id value) {
+    return value == [NSNull null] ? nil : value;
+}
+
+static NSString *LBField(NSDictionary *row, NSString *key) {
+    id value = LBNull(row[key]);
+    NSString *text = [value isKindOfClass:[NSString class]] ? value : [value isKindOfClass:[NSNumber class]] ? [value stringValue] : nil;
+    text = [text stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    return text.length ? text : nil;
+}
+
+/* "2025-11-29", "2025-11-22 17:59", "2025-11-22T17:59:00Z": a moment, in the
+   user's time zone where it says none. */
+static NSDate *LBInvenTreeMoment(NSString *text, NSTimeZone *zone) {
+    if (!text.length) return nil;
+    NSISO8601DateFormatter *iso = [[NSISO8601DateFormatter alloc] init];
+    NSDate *date = [iso dateFromString:text];
+    if (date) return date;
+    NSDateFormatter *read = [[NSDateFormatter alloc] init];
+    read.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    read.timeZone = zone;
+    for (NSString *format in @[ @"yyyy-MM-dd HH:mm:ss", @"yyyy-MM-dd HH:mm", @"yyyy-MM-dd'T'HH:mm:ss.SSSSSS", @"yyyy-MM-dd'T'HH:mm:ss", @"yyyy-MM-dd" ]) {
+        read.dateFormat = format;
+        date = [read dateFromString:text];
+        if (date) return date;
+    }
+    return nil;
+}
+
+static NSDecimalNumber *LBAmount(id value) {
+    value = LBNull(value);
+    if ([value isKindOfClass:[NSNumber class]]) {
+        NSDecimalNumber *n = [NSDecimalNumber decimalNumberWithDecimal:[value decimalValue]];
+        return [n compare:[NSDecimalNumber zero]] == NSOrderedDescending ? n : nil;
+    }
+    if ([value isKindOfClass:[NSString class]]) return LBAmount(@([value doubleValue]));
+    return nil;
+}
+
+/* What InvenTree has that Logbook's stock has no place for, said before
+   anything is made. */
+- (BOOL)planInvenTreeBy:(User *)user error:(NSError **)error {
+    if (!_catalogName.length) {
+        if (error) *error = LBImportError(@"Say the catalog InvenTree's stock goes into (yours of that name, or a new one).");
+        return NO;
+    }
+    if (!user.currency.length) {
+        if (error) *error = LBImportError(@"Say your currency in Preferences first: what InvenTree's amounts of none are taken in.");
+        return NO;
+    }
+    NSMutableArray *leftOut = [NSMutableArray array];
+    NSDictionary *t = _inventree;
+    NSUInteger manufacturersOnly = 0, links = 0, images = 0, inactive = 0, keywords = 0;
+    for (NSDictionary *company in t[@"company"]) {
+        if ([LBNull(company[@"is_customer"]) boolValue]) [leftOut addObject:[NSString stringWithFormat:@"Company %@: a customer (Logbook's sales are not imported)", LBField(company, @"name")]];
+        if (![LBNull(company[@"is_supplier"]) boolValue] && [LBNull(company[@"is_manufacturer"]) boolValue]) manufacturersOnly++;
+        if (LBField(company, @"image")) images++;
+    }
+    if (manufacturersOnly) [leftOut addObject:[NSString stringWithFormat:@"%lu manufacturers are no contacts: each part's is said on its item (its manufacturer, its MPN)", (unsigned long)manufacturersOnly]];
+    for (NSDictionary *part in t[@"part"]) {
+        if (LBField(part, @"link")) links++;
+        if (LBField(part, @"image")) images++;
+        if (LBField(part, @"keywords")) keywords++;
+        if (![LBNull(part[@"active"]) boolValue]) inactive++;
+        if ([LBNull(part[@"assembly"]) boolValue] || [LBNull(part[@"is_template"]) boolValue] || LBNull(part[@"variant_of"]))
+            [leftOut addObject:[NSString stringWithFormat:@"Part %@: an assembly, a template or a variant: an item as any", LBField(part, @"name")]];
+    }
+    for (NSDictionary *each in t[@"company/part"]) if (LBField(each, @"link")) links++;
+    if (links) [leftOut addObject:[NSString stringWithFormat:@"%lu links of parts and supplier parts", (unsigned long)links]];
+    if (images) [leftOut addObject:[NSString stringWithFormat:@"%lu pictures", (unsigned long)images]];
+    if (keywords) [leftOut addObject:[NSString stringWithFormat:@"%lu parts' keywords", (unsigned long)keywords]];
+    if (inactive) [leftOut addObject:[NSString stringWithFormat:@"%lu parts not active: items as any", (unsigned long)inactive]];
+    for (NSDictionary *item in t[@"stock"]) {
+        if ([LBNull(item[@"status"]) integerValue] != 10)
+            [leftOut addObject:[NSString stringWithFormat:@"Stock item %@: of status %@ (Logbook keeps stock set aside by its location)", item[@"pk"],
+                                                         LBField(item, @"status_text") ?: LBField(item, @"status")]];
+        if (LBField(item, @"batch")) [leftOut addObject:[NSString stringWithFormat:@"Stock item %@: its batch %@ (Logbook has no lots yet)", item[@"pk"], LBField(item, @"batch")]];
+        if (LBField(item, @"expiry_date")) [leftOut addObject:[NSString stringWithFormat:@"Stock item %@: its expiry %@", item[@"pk"], LBField(item, @"expiry_date")]];
+        if (LBNull(item[@"belongs_to"]) || LBNull(item[@"customer"]))
+            [leftOut addObject:[NSString stringWithFormat:@"Stock item %@: installed in another, or a customer's", item[@"pk"]]];
+    }
+    for (NSDictionary *order in t[@"order/po"]) {
+        NSString *state = LBField(order, @"status_text") ?: @"";
+        if (![@[ @"Complete", @"Placed", @"Pending", @"Cancelled" ] containsObject:state])
+            [leftOut addObject:[NSString stringWithFormat:@"Order %@: %@, taken as placed", LBField(order, @"reference"), state]];
+    }
+    [leftOut addObject:[NSString stringWithFormat:@"InvenTree's references (PO-0019, its part and stock numbers) are kept in notes: the import knows them again"]];
+    self.leftOut = leftOut;
+    return YES;
+}
+
+/* InvenTree's, made Logbook's: what the catalog has already (by name; an
+   order by its InvenTree reference, a unit by its serial) is taken, the
+   rest made; saved a part at a time, so what comes after sees it. */
+- (BOOL)importInvenTreeBy:(User *)user context:(NSManagedObjectContext *)context saving:(LBImportSaving)saving
+                     made:(NSUInteger *)made skipped:(NSUInteger *)skipped error:(NSError **)error {
+    if (![self planInvenTreeBy:user error:error]) return NO;
+    NSDictionary *t = _inventree;
+    NSTimeZone *zone = user.timeZone.length ? [NSTimeZone timeZoneWithName:user.timeZone] : [NSTimeZone localTimeZone];
+    /* A part saved; refused, why kept (the block keeps no out-parameter). */
+    __block NSError *refusal = nil;
+    BOOL (^save)(NSString *) = ^BOOL(NSString *what) {
+        NSError *failure = nil;
+        if (saving(context, &failure)) return YES;
+        [context rollback];
+        refusal = LBImportError(@"InvenTree's %@ refused: %@", what, failure ? LBRefusal(failure) : @"not saved");
+        return NO;
+    };
+    void (^count)(BOOL) = ^(BOOL new) {
+        if (new && made) (*made)++;
+        if (!new && skipped) (*skipped)++;
+    };
+    id (^insert)(Class) = ^id(Class cls) {
+        NSManagedObject *object = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass(cls) inManagedObjectContext:context];
+        if ([object.entity.attributesByName objectForKey:@"id"]) [object setValue:[NSUUID UUID] forKey:@"id"];
+        return object;
+    };
+
+    /* The catalog. */
+    Catalog *catalog = nil;
+    for (Catalog *each in user.ownedCatalogs) if ([each.catalogName isEqualToString:_catalogName] && !each.isDeleted) catalog = each;
+    BOOL newCatalog = !catalog;
+    if (!catalog) {
+        catalog = [Catalog lb_newCatalogNamed:_catalogName owner:user inContext:context];
+        catalog.currency = user.currency;
+    }
+    count(newCatalog);
+
+    /* Its locations: InvenTree's top ones warehouses, the rest locations in
+       them, each within its parent; a warehouse that holds stock itself, a
+       location of its name in it. */
+    NSMutableDictionary<NSNumber *, NSDictionary *> *places = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in t[@"stock/location"]) places[row[@"pk"]] = row;
+    NSMutableSet *holding = [NSMutableSet set];
+    for (NSDictionary *item in t[@"stock"]) if (LBNull(item[@"location"])) [holding addObject:item[@"location"]];
+    for (NSDictionary *track in t[@"stock/track"]) {
+        id at = LBNull([LBNull(track[@"deltas"]) isKindOfClass:[NSDictionary class]] ? track[@"deltas"][@"location"] : nil);
+        if (at) [holding addObject:at];
+    }
+    NSDictionary * (^topOf)(NSNumber *) = ^NSDictionary *(NSNumber *pk) {
+        NSDictionary *row = places[pk];
+        for (int i = 0; i < 16 && LBNull(row[@"parent"]); i++) row = places[row[@"parent"]];
+        return row;
+    };
+    NSMutableDictionary<NSNumber *, Warehouse *> *warehouses = [NSMutableDictionary dictionary];
+    NSMutableDictionary<NSNumber *, Location *> *locations = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in t[@"stock/location"]) {
+        if (!LBNull(row[@"parent"])) {
+            NSString *name = LBField(row, @"name");
+            Warehouse *warehouse = nil;
+            for (Warehouse *each in catalog.warehouses) if ([each.warehouseName isEqualToString:name] && !each.isDeleted) warehouse = each;
+            count(!warehouse);
+            if (!warehouse) {
+                warehouse = insert([Warehouse class]);
+                warehouse.warehouseName = name;
+                warehouse.catalog = catalog;
+            }
+            warehouses[row[@"pk"]] = warehouse;
+        }
+    }
+    __block Location * (^locationOf)(NSNumber *);
+    Location * (^locate)(NSNumber *) = ^Location *(NSNumber *pk) {
+        if (!pk || !places[pk]) return nil;
+        if (locations[pk]) return locations[pk];
+        NSDictionary *row = places[pk];
+        Warehouse *warehouse = warehouses[topOf(pk)[@"pk"]];
+        Location *container = LBNull(row[@"parent"]) && LBNull(places[row[@"parent"]][@"parent"]) ? locationOf(row[@"parent"]) : nil;
+        /* The top one itself: a location of its name in its warehouse. */
+        NSString *name = LBField(row, @"name");
+        Location *location = nil;
+        for (Location *each in warehouse.locations) {
+            if ([each.locationName isEqualToString:name] && each.container == container && !each.isDeleted) location = each;
+        }
+        count(!location);
+        if (!location) {
+            location = insert([Location class]);
+            location.locationName = name;
+            location.warehouse = warehouse;
+            location.container = container;
+        }
+        locations[pk] = location;
+        return location;
+    };
+    locationOf = locate;
+    for (NSDictionary *row in t[@"stock/location"]) {
+        if (!LBNull(row[@"parent"]) && ![holding containsObject:row[@"pk"]]) continue;
+        locate(row[@"pk"]);
+    }
+
+    /* Its categories, each within its parent. */
+    NSMutableDictionary<NSNumber *, NSDictionary *> *kinds = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in t[@"part/category"]) kinds[row[@"pk"]] = row;
+    NSMutableDictionary<NSNumber *, Category *> *categories = [NSMutableDictionary dictionary];
+    __block Category * (^categoryOf)(NSNumber *);
+    Category * (^categorize)(NSNumber *) = ^Category *(NSNumber *pk) {
+        if (!pk || !kinds[pk]) return nil;
+        if (categories[pk]) return categories[pk];
+        NSDictionary *row = kinds[pk];
+        Category *parent = LBNull(row[@"parent"]) ? categoryOf(row[@"parent"]) : nil;
+        Category *category = nil;
+        for (Category *each in catalog.categories) {
+            if ([each.categoryName isEqualToString:LBField(row, @"name")] && each.parent == parent && !each.isDeleted) category = each;
+        }
+        count(!category);
+        if (!category) {
+            category = insert([Category class]);
+            category.categoryName = LBField(row, @"name");
+            category.catalog = catalog;
+            category.parent = parent;
+        }
+        categories[pk] = category;
+        return category;
+    };
+    categoryOf = categorize;
+    for (NSDictionary *row in t[@"part/category"]) categorize(row[@"pk"]);
+
+    /* Its suppliers, contacts of the catalog's. */
+    NSMutableDictionary<NSNumber *, Supplier *> *suppliers = [NSMutableDictionary dictionary];
+    NSMutableDictionary<NSNumber *, NSDictionary *> *companies = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in t[@"company"]) {
+        companies[row[@"pk"]] = row;
+        if (![LBNull(row[@"is_supplier"]) boolValue]) continue;
+        NSString *name = LBField(row, @"name");
+        Contact *contact = nil;
+        for (Contact *each in catalog.contacts) if ([each.contactName isEqualToString:name] && !each.isDeleted) contact = each;
+        count(!contact);
+        if (!contact) {
+            contact = insert([Contact class]);
+            contact.contactName = name;
+            contact.catalog = catalog;
+            contact.isACompany = YES;
+            contact.emailAddress = LBField(row, @"email");
+            contact.phoneNumber = LBField(row, @"phone");
+            NSMutableArray *note = [NSMutableArray array];
+            if (LBField(row, @"website")) [note addObject:LBField(row, @"website")];
+            if (LBField(row, @"description")) [note addObject:LBField(row, @"description")];
+            if (note.count) contact.note = [note componentsJoinedByString:@"\n"];
+        }
+        /* Its supplier, by the catalog's: the contact's own inverse may not
+           be read in yet, after a sync. */
+        Supplier *supplier = nil;
+        for (Supplier *each in catalog.suppliers) if (each.contact == contact && !each.isDeleted) supplier = each;
+        if (!supplier) supplier = contact.supplier;
+        if (!supplier) {
+            supplier = insert([Supplier class]);
+            supplier.contact = contact;
+            supplier.catalog = catalog;
+        }
+        suppliers[row[@"pk"]] = supplier;
+    }
+    if (!save(@"locations, categories and suppliers")) { if (error) *error = refusal; return NO; }
+
+    /* Its parts, items: of its category, made by its manufacturer part's. */
+    NSMutableDictionary<NSNumber *, NSDictionary *> *makers = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in t[@"company/part/manufacturer"]) if (!makers[row[@"part"]]) makers[row[@"part"]] = row;
+    NSMutableDictionary<NSNumber *, StockItem *> *items = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in t[@"part"]) {
+        NSString *name = LBField(row, @"name");
+        StockItem *item = nil;
+        for (StockItem *each in catalog.stockItems) if ([each.itemName isEqualToString:name] && !each.isDeleted) item = each;
+        count(!item);
+        if (!item) {
+            item = insert([StockItem class]);
+            item.itemName = name;
+            item.catalog = catalog;
+            item.created = LBInvenTreeMoment(LBField(row, @"creation_date"), zone) ?: [NSDate date];
+            item.sku = LBField(row, @"IPN") ?: [catalog lb_nextSKU];
+            item.descriptionValue = LBField(row, @"description");
+            item.category = categories[LBNull(row[@"category"])];
+            NSMutableArray *note = [NSMutableArray arrayWithObject:[NSString stringWithFormat:@"InvenTree part %@", row[@"pk"]]];
+            if (LBField(row, @"notes")) [note addObject:LBField(row, @"notes")];
+            item.note = [note componentsJoinedByString:@"\n"];
+            NSDictionary *maker = makers[row[@"pk"]];
+            NSString *manufacturer = LBField(companies[LBNull(maker[@"manufacturer"])], @"name");
+            if (manufacturer) {
+                item.manufacturer = manufacturer;
+                item.mpn = LBField(maker, @"MPN");
+            }
+        }
+        items[row[@"pk"]] = item;
+    }
+    /* What it is bought as from each supplier. */
+    for (NSDictionary *row in t[@"company/part"]) {
+        StockItem *item = items[LBNull(row[@"part"])];
+        Supplier *supplier = suppliers[LBNull(row[@"supplier"])];
+        if (!item || !supplier) continue;
+        SupplierItem *had = nil;
+        for (SupplierItem *each in supplier.supplierItems) {
+            if (each.stockItem == item && !each.isDeleted) had = each;
+        }
+        for (SupplierItem *each in item.supplierItems) if (each.supplier == supplier && !each.isDeleted) had = had ?: each;
+        count(!had);
+        if (had) continue;
+        SupplierItem *offer = insert([SupplierItem class]);
+        offer.stockItem = item;
+        offer.supplier = supplier;
+        offer.supplierSKU = LBField(row, @"SKU");
+        offer.supplierDescription = LBField(row, @"description");
+        NSDecimalNumber *pack = LBAmount(row[@"pack_quantity_native"]) ?: LBAmount(row[@"pack_quantity"]);
+        if (pack) offer.packSize = pack;
+    }
+    if (!save(@"parts")) { if (error) *error = refusal; return NO; }
+
+    /* Its serialed stock items, units: by serial, the item's had kept. */
+    NSMutableDictionary<NSNumber *, StockUnit *> *units = [NSMutableDictionary dictionary];
+    NSMutableSet<NSNumber *> *unitsNew = [NSMutableSet set];
+    for (NSDictionary *row in t[@"stock"]) {
+        StockItem *item = items[LBNull(row[@"part"])];
+        NSString *serial = LBField(row, @"serial");
+        if (!item || !serial) continue;
+        StockUnit *unit = nil;
+        for (StockUnit *each in item.stockUnits) if ([each.serialNumber isEqualToString:serial]) unit = each;
+        count(!unit);
+        if (!unit) {
+            unit = insert([StockUnit class]);
+            unit.stockItem = item;
+            unit.serialNumber = serial;
+            NSMutableArray *note = [NSMutableArray arrayWithObject:[NSString stringWithFormat:@"InvenTree stock item %@", row[@"pk"]]];
+            /* Its price: an order's line has it; bought outside one, said here. */
+            NSDecimalNumber *price = LBAmount(row[@"purchase_price"]);
+            if (price && !LBNull(row[@"purchase_order"]))
+                [note addObject:[NSString stringWithFormat:@"Bought for %@ %@", price, LBField(row, @"purchase_price_currency") ?: user.currency]];
+            if (LBField(row, @"notes")) [note addObject:LBField(row, @"notes")];
+            unit.note = [note componentsJoinedByString:@"\n"];
+            [unitsNew addObject:row[@"pk"]];
+        }
+        units[row[@"pk"]] = unit;
+    }
+    if (!save(@"stock items' units")) { if (error) *error = refusal; return NO; }
+
+    /* Its purchase orders: each by its InvenTree reference, in its note. */
+    NSMutableDictionary<NSNumber *, PurchaseOrder *> *orders = [NSMutableDictionary dictionary];
+    NSMutableSet<NSNumber *> *ordersNew = [NSMutableSet set];
+    NSMutableDictionary<NSNumber *, NSMutableArray<NSDictionary *> *> *linesOf = [NSMutableDictionary dictionary];
+    for (NSDictionary *line in t[@"order/po-line"]) {
+        if (!linesOf[line[@"order"]]) linesOf[line[@"order"]] = [NSMutableArray array];
+        [linesOf[line[@"order"]] addObject:line];
+    }
+    NSMutableDictionary<NSNumber *, NSMutableArray<NSDictionary *> *> *stockOf = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in t[@"stock"]) {
+        id order = LBNull(row[@"purchase_order"]);
+        if (!order) continue;
+        if (!stockOf[order]) stockOf[order] = [NSMutableArray array];
+        [stockOf[order] addObject:row];
+    }
+    NSMutableDictionary<NSNumber *, PurchaseLine *> *lineOfStock = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in [t[@"order/po"] sortedArrayUsingComparator:^NSComparisonResult(NSDictionary *a, NSDictionary *b) {
+             return [a[@"pk"] compare:b[@"pk"]];
+         }]) {
+        NSString *reference = LBField(row, @"reference") ?: [NSString stringWithFormat:@"%@", row[@"pk"]];
+        NSString *mark = [@"InvenTree " stringByAppendingString:reference];
+        Supplier *supplier = suppliers[LBNull(row[@"supplier"])];
+        if (!supplier) {
+            [self noteLeftOut:[NSString stringWithFormat:@"Order %@: of no supplier Logbook has", reference]];
+            continue;
+        }
+        PurchaseOrder *order = nil;
+        for (PurchaseOrder *each in catalog.purchaseOrders) if ([each.note hasPrefix:mark]) order = each;
+        count(!order);
+        NSString *state = LBField(row, @"status_text") ?: @"";
+        if (!order) {
+            order = insert([PurchaseOrder class]);
+            order.catalog = catalog;
+            order.supplier = supplier;
+            order.runningNumber = [catalog lb_nextNumberOf:catalog.purchaseOrders];
+            NSDate *ordered = LBInvenTreeMoment(LBField(row, @"issue_date") ?: LBField(row, @"creation_date"), zone) ?: [NSDate date];
+            order.ordered = LBDay(ordered);
+            order.supplierReference = LBField(row, @"supplier_reference");
+            order.orderState = [state isEqualToString:@"Complete"] ? @"Closed" : [state isEqualToString:@"Cancelled"] ? @"Cancelled"
+                             : [state isEqualToString:@"Pending"] ? @"Draft" : @"Confirmed";
+            NSMutableArray *note = [NSMutableArray arrayWithObject:mark];
+            if (LBField(row, @"description")) [note addObject:LBField(row, @"description")];
+            order.note = [note componentsJoinedByString:@"\n"];
+            NSString *currency = LBField(row, @"order_currency") ?: user.currency;
+            for (NSDictionary *line in linesOf[row[@"pk"]]) {
+                /* A line's part is a supplier part's (its internal part, the
+                   part): never a part's own number. */
+                NSNumber *partOfLine = LBNull(line[@"internal_part"]);
+                if (!partOfLine) {
+                    for (NSDictionary *offer in t[@"company/part"]) if ([offer[@"pk"] isEqual:line[@"part"]]) partOfLine = LBNull(offer[@"part"]);
+                }
+                StockItem *item = partOfLine ? items[partOfLine] : nil;
+                if (!item) {
+                    [self noteLeftOut:[NSString stringWithFormat:@"Order %@: a line of a supplier part InvenTree did not say", reference]];
+                    continue;
+                }
+                PurchaseLine *had = nil;
+                for (PurchaseLine *each in order.purchaseLines) if (each.stockItem == item) had = each;
+                PurchaseLine *bought = had ?: insert([PurchaseLine class]);
+                bought.purchaseOrder = order;
+                bought.stockItem = item;
+                NSDecimalNumber *quantity = LBAmount(line[@"quantity"]) ?: [NSDecimalNumber one];
+                bought.quantity = had ? [had.quantity decimalNumberByAdding:quantity] : quantity;
+                /* Its price, else what what came of it cost. */
+                NSDecimalNumber *price = LBAmount(line[@"purchase_price"]);
+                NSString *lineCurrency = LBField(line, @"purchase_price_currency") ?: currency;
+                if (!price) {
+                    for (NSDictionary *stock in stockOf[row[@"pk"]]) {
+                        if ([LBNull(stock[@"part"]) isEqual:partOfLine] && LBAmount(stock[@"purchase_price"])) {
+                            price = LBAmount(stock[@"purchase_price"]);
+                            lineCurrency = LBField(stock, @"purchase_price_currency") ?: lineCurrency;
+                        }
+                    }
+                    if (price) [self noteLeftOut:[NSString stringWithFormat:@"Order %@: a line of no price, taken at what its stock cost, %@ %@", reference, price, lineCurrency]];
+                }
+                if (!price) {
+                    [self noteLeftOut:[NSString stringWithFormat:@"Order %@: a line of %@ of no price at all, at 1 %@ (say its cost)", reference, item.itemName, lineCurrency]];
+                    price = [NSDecimalNumber one];
+                }
+                bought.lineUnitCostAmount = price;
+                bought.lineUnitCostCurrency = lineCurrency;
+            }
+            [ordersNew addObject:row[@"pk"]];
+        }
+        orders[row[@"pk"]] = order;
+        for (NSDictionary *stock in stockOf[row[@"pk"]]) {
+            for (PurchaseLine *line in order.purchaseLines) if (line.stockItem == items[LBNull(stock[@"part"])]) lineOfStock[stock[@"pk"]] = line;
+        }
+    }
+    if (!save(@"purchase orders")) { if (error) *error = refusal; return NO; }
+
+    /* What came of them, where and when InvenTree tracked it: a receipt of
+       the order a day and a location, a move of each unit (or so many); and
+       what was bought outside an order, found where it first was; then
+       each move it tracked after. In time's order. */
+    NSMutableDictionary<NSNumber *, NSMutableArray<NSDictionary *> *> *tracked = [NSMutableDictionary dictionary];
+    for (NSDictionary *track in t[@"stock/track"]) {
+        if (!tracked[track[@"item"]]) tracked[track[@"item"]] = [NSMutableArray array];
+        [tracked[track[@"item"]] addObject:track];
+    }
+    for (NSMutableArray *list in tracked.allValues) {
+        [list sortUsingComparator:^NSComparisonResult(NSDictionary *a, NSDictionary *b) { return [LBField(a, @"date") ?: @"" compare:LBField(b, @"date") ?: @""]; }];
+    }
+    NSMutableDictionary<NSString *, Receipt *> *receipts = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in t[@"stock"]) {
+        NSNumber *pk = row[@"pk"];
+        StockItem *item = items[LBNull(row[@"part"])];
+        StockUnit *unit = units[pk];
+        if (!item) continue;
+        /* Had already (a unit known, its moves made): passed over. */
+        if (unit && ![unitsNew containsObject:pk]) continue;
+        NSString *mark = [NSString stringWithFormat:@"InvenTree stock item %@", pk];
+        BOOL moved = NO;
+        for (Move *each in item.moves) if ([[each.note componentsSeparatedByString:@"\n"].firstObject isEqualToString:mark]) moved = YES;
+        if (!unit && moved) continue;
+        NSDecimalNumber *quantity = LBAmount(row[@"quantity"]) ?: [NSDecimalNumber one];
+        NSArray *history = tracked[pk] ?: @[];
+        NSDictionary *first = history.firstObject;
+        NSNumber *firstAt = LBNull([LBNull(first[@"deltas"]) isKindOfClass:[NSDictionary class]] ? first[@"deltas"][@"location"] : nil) ?: LBNull(row[@"location"]);
+        NSDate *firstWhen = LBInvenTreeMoment(LBField(first, @"date"), zone) ?: LBInvenTreeMoment(LBField(row, @"updated"), zone) ?: [NSDate date];
+        Location *at = locationOf(firstAt);
+        if (!at) {
+            [self noteLeftOut:[NSString stringWithFormat:@"Stock item %@ of %@: at no location", pk, item.itemName]];
+            continue;
+        }
+        PurchaseLine *line = lineOfStock[pk];
+        Move *move = insert([Move class]);
+        move.moved = unit ? [NSDecimalNumber one] : quantity;
+        move.stockUnit = unit;
+        move.note = mark;
+        if (line && [ordersNew containsObject:LBNull(row[@"purchase_order"])]) {
+            NSString *key = [NSString stringWithFormat:@"%@ %@ %@", row[@"purchase_order"], LBDay(firstWhen), firstAt];
+            Receipt *receipt = receipts[key];
+            if (!receipt) {
+                receipt = insert([Receipt class]);
+                receipt.purchaseOrder = line.purchaseOrder;
+                receipt.runningNumber = [catalog lb_nextNumberOf:line.purchaseOrder.receipts];
+                receipt.received = LBDay(firstWhen);
+                receipt.receivedAt = at;
+                receipt.recordedBy = user;
+                receipt.recorded = firstWhen;
+                receipts[key] = receipt;
+                count(YES);
+            }
+            move.receipt = receipt;
+            move.purchaseLine = line;
+            move.stockItem = item;
+            move.destination = at;
+            move.moment = firstWhen;
+            move.user = user;
+        } else {
+            move.stockItem = item;
+            move.destination = at;
+            move.adjustmentReason = @"Opening";
+            move.moment = firstWhen;
+            move.user = user;
+            /* Bought outside an order: its price said (a unit's is on the unit). */
+            NSDecimalNumber *price = LBAmount(row[@"purchase_price"]);
+            if (price && !unit)
+                move.note = [move.note stringByAppendingFormat:@"\nBought for %@ %@", price, LBField(row, @"purchase_price_currency") ?: user.currency];
+        }
+        count(YES);
+        Location *now = at;
+        NSUInteger step = 0;
+        for (NSDictionary *track in history) {
+            step++;
+            if (step == 1) continue;
+            NSNumber *to = LBNull([LBNull(track[@"deltas"]) isKindOfClass:[NSDictionary class]] ? track[@"deltas"][@"location"] : nil);
+            Location *there = locationOf(to);
+            if (!there || there == now) continue;
+            Move *moved = insert([Move class]);
+            moved.stockItem = item;
+            moved.stockUnit = unit;
+            moved.moved = move.moved;
+            moved.source = now;
+            moved.destination = there;
+            moved.moment = LBInvenTreeMoment(LBField(track, @"date"), zone) ?: firstWhen;
+            moved.user = user;
+            moved.note = [NSString stringWithFormat:@"InvenTree: %@", LBField(track, @"label") ?: @"moved"];
+            now = there;
+            count(YES);
+        }
+        /* Where InvenTree has it now, if the history ends elsewhere. */
+        Location *current = locationOf(LBNull(row[@"location"]));
+        if (current && current != now) {
+            Move *moved = insert([Move class]);
+            moved.stockItem = item;
+            moved.stockUnit = unit;
+            moved.moved = move.moved;
+            moved.source = now;
+            moved.destination = current;
+            moved.moment = [LBInvenTreeMoment(LBField(row, @"updated"), zone) ?: [NSDate date] laterDate:[move.moment dateByAddingTimeInterval:1]];
+            moved.user = user;
+            moved.note = @"InvenTree: where it is now";
+            count(YES);
+        }
+    }
+    if (save(@"receipts and moves")) return YES;
+    if (error) *error = refusal;
+    return NO;
+}
+
+- (void)noteLeftOut:(NSString *)said {
+    self.leftOut = [self.leftOut arrayByAddingObject:said];
 }
 
 @end

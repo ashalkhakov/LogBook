@@ -18,8 +18,12 @@
 //   Vehicle   the vehicle (its name) the records go into: one the user
 //             owns, set up already (Drivvo's export has no make or year);
 //             none for MainTrack's store, whose bikes are made vehicles
-//   Catalog   MainTrack's: the catalog its components go into, as units
-//             of its items (yours of that name, else made; "Bike parts")
+//   Catalog   the catalog stock goes into (yours of that name, else
+//             made): MainTrack's components, as units of its items ("Bike
+//             parts" where none is said); InvenTree's stock (say one)
+//   InvenTree an InvenTree instance's address: its stock read over its API,
+//             with the token in LB_INVENTREE_TOKEN (or -Token: seen by
+//             anyone who lists the processes)
 //   LeaveOut  YES: import even though the export says things Logbook has
 //             no place for (each is said first; NO, the default, stops)
 //   Model, Plans, Forms   the compiled model, its tables, the forms'
@@ -138,14 +142,29 @@ int main(int argc, const char *argv[]) {
         }
         NSURL *root = LBServiceRootOf([settings stringForKey:@"Server"] ?: @"");
         NSString *named = [settings stringForKey:@"Vehicle"];
-        if (!file || !root) {
-            fprintf(stderr, "usage: logbook-import -Server address [-Email you@example.org] [-Vehicle name] [-LeaveOut YES] export.csv|Maintrack.sqlite\n");
+        NSString *inventree = [settings stringForKey:@"InvenTree"];
+        if ((!file && !inventree) || !root) {
+            fprintf(stderr, "usage: logbook-import -Server address [-Email you@example.org] [-Vehicle name] [-Catalog name] [-LeaveOut YES] export.csv|Maintrack.sqlite\n"
+                            "       logbook-import -Server address [-Email you@example.org] -InvenTree address -Catalog name [-LeaveOut YES]\n"
+                            "         (the InvenTree token in LB_INVENTREE_TOKEN, or -Token)\n");
             return 2;
         }
         NSError *error = nil;
-        LBImport *import = [LBImport importOfFile:[NSURL fileURLWithPath:file] error:&error];
+        LBImport *import = nil;
+        if (inventree) {
+            NSString *token = [NSProcessInfo processInfo].environment[@"LB_INVENTREE_TOKEN"] ?: [settings stringForKey:@"Token"];
+            if (!token.length) return LBFail(@"no InvenTree token: put it in LB_INVENTREE_TOKEN (or -Token).");
+            NSURL *instance = [NSURL URLWithString:[inventree hasSuffix:@"/"] ? inventree : [inventree stringByAppendingString:@"/"]];
+            printf("Reading InvenTree at %s…\n", instance.absoluteString.UTF8String);
+            import = [LBImport importOfInvenTree:instance token:token fetch:nil error:&error];
+        } else {
+            import = [LBImport importOfFile:[NSURL fileURLWithPath:file] error:&error];
+        }
         if (!import) return LBFail(@"%@", error.localizedDescription);
-        if (!import.makesVehicles && !named.length) return LBFail(@"%@'s export goes into a vehicle already set up: say which (-Vehicle).", import.source);
+        /* Drivvo's export goes into a vehicle; MainTrack's and InvenTree's
+           need none. */
+        BOOL intoAVehicle = !import.makesVehicles && !import.makesStock;
+        if (intoAVehicle && !named.length) return LBFail(@"%@'s export goes into a vehicle already set up: say which (-Vehicle).", import.source);
         import.catalogName = [settings stringForKey:@"Catalog"];
         NSURL *forms = LBBeside(@"Forms", @"Forms");
         import.formNamed = ^ORMForm *(NSString *name, NSError **failure) {
@@ -202,12 +221,14 @@ int main(int argc, const char *argv[]) {
             for (Vehicle *each in user.ownedVehicles) {
                 if ([each.vehicleName isEqualToString:named]) vehicle = each;
             }
-            if (!vehicle && !import.makesVehicles) {
+            if (!vehicle && intoAVehicle) {
                 NSArray *names = [[user.ownedVehicles valueForKey:@"vehicleName"] allObjects];
                 return LBFail(@"%@ owns no vehicle named %@ (%@). Add it in Logbook first: Drivvo's export says no make or year.", user.email,
                               named, names.count ? [names componentsJoinedByString:@", "] : @"none");
             }
-            if (import.makesVehicles)
+            if ([import.source isEqualToString:@"InvenTree"])
+                printf("InvenTree's %s, into your catalog %s.\n", import.summary.UTF8String, import.catalogName.UTF8String ?: "(none named)");
+            else if (import.makesVehicles)
                 printf("%s's %s (%s), each a vehicle of yours.\n", import.source.UTF8String, import.summary.UTF8String,
                        [import.vehicleNames componentsJoinedByString:@", "].UTF8String);
             else
@@ -229,7 +250,9 @@ int main(int argc, const char *argv[]) {
                 return LBFail(@"not synced up: %@. Run it again: what reached the server is passed over, the rest made again.", error.localizedDescription);
             NSArray *refused = store.issues;
             if (refused.count) {
-                for (ODataSyncIssue *issue in refused) fprintf(stderr, "  refused by the server: %s\n", issue.message.UTF8String);
+                for (ODataSyncIssue *issue in refused)
+                    fprintf(stderr, "  refused by the server: %s %s: %s\n", issue.entityName.UTF8String ?: "", issue.key.description.UTF8String ?: "",
+                            issue.message.UTF8String);
                 return LBFail(@"the server refused %lu of them.", (unsigned long)refused.count);
             }
             if (!status) printf("Synced: on the server now.\n");
