@@ -1,4 +1,5 @@
 #import "LBMainWindowController.h"
+#import "LBTiming.h"
 #import "LBStore.h"
 #import "LBLocalStore.h"
 #import "LBDisplay.h"
@@ -57,6 +58,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @end
 
 @implementation LBMainWindowController {
+    /* LB_TIMING: when the change being timed began. */
+    NSDate *_timingSince;
     NSArray<NSString *> *_tyreSetTitles;
     /* The window's title while InvenTree is read. */
     NSString *_inventreeTitle;
@@ -97,6 +100,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     LBLocalStore *local = _store.local;
     [_syncStatusField setHidden:local == nil];
     if (!local) return;
+    if (![_syncStatusField.stringValue isEqualToString:local.status ?: @""]) LBTimingNote(@"sync: %@", local.status ?: @"");
     _syncStatusField.stringValue = local.status ?: @"";
     _syncStatusField.toolTip = local.lastSyncError.localizedDescription;
     BOOL failed = local.lastSyncError && !local.isSyncing;
@@ -112,7 +116,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(storeDidSync:) object:nil];
         return [self performSelector:@selector(storeDidSync:) withObject:nil afterDelay:1];
     }
-    [self readAgain];
+    if (LBTimingOn()) _timingSince = [NSDate date];
+    LBTimed(@"after a sync, read again", ^{ [self readAgain]; });
+    [self timeDrawing];
 }
 
 - (void)windowDidLoad {
@@ -172,8 +178,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if (context == LBVehicleChosen) [self vehicleChosen];
-    else if (context == LBRecordChosen) [self recordChosen];
-    else if (context == LBRecordsChanged) [self recordsChanged];
+    else if (context == LBRecordChosen) LBTimed(@"record chosen", ^{ [self recordChosen]; });
+    else if (context == LBRecordsChanged) LBTimed(@"records listed", ^{ [self recordsChanged]; });
     else [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
@@ -199,16 +205,49 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (void)vehicleChosen {
+    if (LBTimingOn() && !_timingSince) _timingSince = [NSDate date];
+    LBTimed(@"vehicle chosen, in all", ^{ [self vehicleChosenParts]; });
+    [self timeDrawing];
+}
+
+/* LB_TIMING: once what a change set off is done (the record list, the
+   record chosen, the fields' issues) and the window drawn, how long after
+   the change began. */
+- (void)timeDrawing {
+    if (!LBTimingOn()) return;
+    if (!_timingSince) _timingSince = [NSDate date];
+    [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(drawTimed) object:nil];
+    [self performSelector:@selector(drawTimed) withObject:nil afterDelay:0];
+}
+
+- (void)drawTimed {
+    [self.window displayIfNeeded];
+    LBTimingNote(@"window up to date, %.1f ms after the change began", -[_timingSince timeIntervalSinceNow] * 1000);
+    _timingSince = nil;
+}
+
+/* LB_TIMING: a click on the vehicle list, as it asks to change the
+   selection and as it has (the list's delegate, MainWindow.xib). */
+- (BOOL)selectionShouldChangeInTableView:(NSTableView *)tableView {
+    LBTimingNote(@"click asks to change the vehicles' selection (row %ld clicked)", (long)tableView.clickedRow);
+    return YES;
+}
+
+- (void)tableViewSelectionDidChange:(NSNotification *)note {
+    LBTimingNote(@"the vehicles' selection changed: row %ld", (long)[note.object selectedRow]);
+}
+
+- (void)vehicleChosenParts {
     Vehicle *vehicle = [self chosenVehicle];
     NSMutableArray<User *> *drivers = [NSMutableArray array];
     if (vehicle.owner) [drivers addObject:vehicle.owner];
     for (VehicleDriver *shared in vehicle.vehicleDrivers) {
         if (shared.user && !shared.isDeleted && ![drivers containsObject:shared.user]) [drivers addObject:shared.user];
     }
-    self.drivers = [drivers sortedArrayUsingDescriptors:[self byTitle]];
-    [_reports vehicleChosen];
-    [_remindersController refresh];
-    [_calendarController refresh];
+    LBTimed(@"vehicle chosen: drivers", ^{ self.drivers = [drivers sortedArrayUsingDescriptors:[self byTitle]]; });
+    LBTimed(@"vehicle chosen: reports", ^{ [self->_reports vehicleChosen]; });
+    LBTimed(@"vehicle chosen: reminders", ^{ [self->_remindersController refresh]; });
+    LBTimed(@"vehicle chosen: calendar", ^{ [self->_calendarController refresh]; });
 }
 
 /* A record as the model's form of its kind, Record<Kind> (ORMKit's

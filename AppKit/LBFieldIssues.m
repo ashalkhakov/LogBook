@@ -1,4 +1,5 @@
 #import "LBFieldIssues.h"
+#import "LBTiming.h"
 #import "LBFormValues.h"
 #import "LBRuleIssues.h"
 #import <objc/runtime.h>
@@ -167,6 +168,10 @@ static void LBChosenTabs(NSView *view, NSMutableArray *into) {
 #pragma mark Checking
 
 - (void)refresh {
+    LBTimed(@"fields' issues", ^{ [self refreshIssues]; });
+}
+
+- (void)refreshIssues {
     NSView *root = _root;
     if (!root) return;
     NSMutableArray<LBIssueField *> *fields = [NSMutableArray array];

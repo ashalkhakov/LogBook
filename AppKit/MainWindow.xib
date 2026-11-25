@@ -295,6 +295,9 @@
                         </connections>
                     </tableColumn>
                                     </tableColumns>
+                                    <connections>
+                                        <outlet property="delegate" destination="-2" id="vehiclesTableDelegate"/>
+                                    </connections>
                                 </tableView>
                             </subviews>
                         </clipView>

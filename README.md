@@ -122,12 +122,24 @@ flowchart LR
 
 ## Limitations
 
-- **The desktop app needs the server**: it does not work offline (the
-  phone does).
-- **No Windows build yet**, and no Android app.
+- **No Android app.**
 - **iOS**: unsigned, no App Store or TestFlight build; the icon is a
   placeholder. Managing and reporting stay with the desktop app.
 - Early days: the data model is settled, the apps are still growing.
+
+## When it is slow
+
+Start the desktop app with `LB_TIMING=1` and it writes where the time
+goes to the terminal, a line each, with the time of day to the
+millisecond: a click on the vehicle list (as it asks to change the
+selection, and as it has), choosing a vehicle and each part of it, a
+record, the window drawing the change, a sync and what it reads again.
+
+```sh
+LB_TIMING=1 ./Logbook-*.AppImage 2> timing.txt
+```
+
+`AppKit/LBTiming.h` says what each line is.
 
 ## More
 

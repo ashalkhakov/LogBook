@@ -58,6 +58,7 @@
 #import "LBTasks.h"
 #import "LBStockCountWindowController.h"
 #import "LBCatalogSettingsWindowController.h"
+#import "LBTiming.h"
 #import "LBPartsPanelController.h"
 #import "LBStockDisplay.h"
 #import "LBFormValues.h"
@@ -3012,8 +3013,38 @@ static void LBInvenTreeSteps(LBMainWindowController *controller) {
     [card close];
 }
 
+/* LB_STEPS=timing (with LB_TIMING=1): MainTrack's bicycles imported, then
+   each vehicle chosen in the list as a click selects it, twice over, and
+   how long each took to the window settled, as LBTiming.h writes it. */
+static void LBTimingSteps(LBMainWindowController *controller) {
+    LBMainTrackSteps(controller);
+    LBSpin();
+    NSTableView *table = (NSTableView *)LBControl(controller.window.contentView, @"vehiclesTable");
+    LBTimingNote(@"vehicles: %ld", (long)table.numberOfRows);
+    for (int pass = 0; pass < 2; pass++) {
+        for (NSInteger row = 0; row < table.numberOfRows; row++) {
+            LBTimingNote(@"--- choose row %ld, %@", (long)row,
+                         [[controller.vehicles.arrangedObjects objectAtIndex:(NSUInteger)row] valueForKey:@"vehicleName"]);
+            LBTimed(@"chosen, drawn and settled", ^{
+                [table selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
+                [controller.window displayIfNeeded];
+                [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+            });
+        }
+    }
+}
+
 static void LBSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
+    NSTableView *vehiclesTable = (NSTableView *)LBControl(window.contentView, @"vehiclesTable");
+    LBCheck(@"the vehicle list's delegate the window's controller (MainWindow.xib), for LB_TIMING's clicks",
+            vehiclesTable.delegate == (id)controller, vehiclesTable.delegate);
+    if ([[NSProcessInfo processInfo].environment[@"LB_STEPS"] isEqualToString:@"timing"]) {
+        controller.quiet = YES;
+        [window makeKeyAndOrderFront:nil];
+        LBTimingSteps(controller);
+        return;
+    }
     controller.quiet = YES;
     [NSApp activateIgnoringOtherApps:YES];
     [window makeKeyAndOrderFront:nil];
