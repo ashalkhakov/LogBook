@@ -169,6 +169,52 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
     return [beside URLByAppendingPathComponent:name];
 }
 
+/* The engine's store, by the settings (LBWorkflow.h): a SQLite file, or a
+   database server's -- the logbook's own when nothing names another, in a
+   schema of its own (in MySQL, a database of its own) so that neither
+   model's tables meet the other's. */
+static WFStore *LBWorkflowStore(HSConfiguration *c, NSPersistentStore *logbook, NSURL *beside, NSError **error) {
+    id where = [c setting:@"Workflow"];
+    BOOL named = [where isKindOfClass:[NSString class]] && [where length];
+    BOOL server = named && [where containsString:@"://"] && ![where hasPrefix:@"file:"];
+    NSString *typeName = [c setting:@"WorkflowStoreType"];
+    /* Its kind: the setting's; a URL's, by its scheme; a file's, SQLite;
+       given neither, the logbook's. */
+    NSDictionary *schemes = @{ @"postgresql": @"PostgreSQL", @"postgres": @"PostgreSQL", @"mysql": @"MySQL", @"mariadb": @"MySQL" };
+    NSString *type;
+    if (typeName) type = LBStoreType(typeName);
+    else if (server) type = LBStoreType(schemes[[NSURL URLWithString:where].scheme.lowercaseString] ?: @"");
+    else type = named ? NSSQLiteStoreType : logbook.type;
+    if (!type.length) {
+        if (error) *error = LBWorkflowError([NSString stringWithFormat:@"The processes' store %@ (-Workflow) is a database's URL "
+                                                                       @"of no kind known; -WorkflowStoreType names it.", where]);
+        return nil;
+    }
+    if ([type isEqual:NSSQLiteStoreType]) {
+        if (server) {
+            if (error) *error = LBWorkflowError([NSString stringWithFormat:@"The processes' store %@ (-Workflow) is a database's URL, "
+                                                                           @"not a SQLite file.", where]);
+            return nil;
+        }
+        return [WFStore SQLiteStoreAtURL:LBWorkflowURL(c, @"Workflow", beside, @"Workflow.sqlite") error:error];
+    }
+    NSURL *url = named ? [NSURL URLWithString:where] : ([type isEqual:logbook.type] ? logbook.URL : nil);
+    if (!url.scheme || url.isFileURL) {
+        if (error) *error = LBWorkflowError(@"The processes' store on a database server needs the database's URL (-Workflow).");
+        return nil;
+    }
+    id schema = [c setting:@"WorkflowSchema"];
+    NSDictionary *options = @{ @"CDSQLStoreMigrateSchema": @YES, NSIgnorePersistentStoreVersioningOption: @YES,
+                               @"CDSQLStoreSchemaName": [schema length] ? schema : @"workflow" };
+    NSError *failure = nil;
+    WFStore *store = [[WFStore alloc] initWithStoreType:type URL:url options:options error:&failure];
+    if (!store && error) {
+        *error = LBWorkflowError([NSString stringWithFormat:@"The processes' %@ store (schema %@) does not open: %@", type,
+                                                            options[@"CDSQLStoreSchemaName"], failure.localizedDescription ?: @"no reason given"]);
+    }
+    return store;
+}
+
 - (instancetype)initWithConfiguration:(HSConfiguration *)c
                           coordinator:(NSPersistentStoreCoordinator *)coordinator
                        temporaryStore:(BOOL)temporary
@@ -181,8 +227,7 @@ static NSURL *LBWorkflowURL(HSConfiguration *c, NSString *setting, NSURL *beside
     NSURL *beside = storeURL.isFileURL ? [storeURL URLByDeletingLastPathComponent]
                                        : [NSURL fileURLWithPath:[NSFileManager defaultManager].currentDirectoryPath];
     BOOL inMemory = temporary || [[c setting:@"Workflow"] isEqual:@"Temporary"];
-    WFStore *store = inMemory ? [WFStore inMemoryStore:error]
-                              : [WFStore SQLiteStoreAtURL:LBWorkflowURL(c, @"Workflow", beside, @"Workflow.sqlite") error:error];
+    WFStore *store = inMemory ? [WFStore inMemoryStore:error] : LBWorkflowStore(c, logbook, beside, error);
     if (!store) return nil;
     _engine = [[WFProcessEngine alloc] initWithStore:store];
     [self registerTasks];
