@@ -15,7 +15,10 @@ LB_INVENTREE_ANSWERS="$(cd "$(dirname "$0")" && pwd)/inventree"
 export LB_INVENTREE_ANSWERS
 port=$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')
 log=$(mktemp)
-"$server" -StoreURL Temporary -Port "$port" -Localhost YES >"$log" 2>&1 &
+# LB_SERVER_ARGS: more of the server's settings (signed-in-check.sh's
+# sign-in: -JWTIssuer, -JWTAudience, -AllowAnonymous NO).
+# shellcheck disable=SC2086
+"$server" -StoreURL Temporary -Port "$port" -Localhost YES ${LB_SERVER_ARGS:-} >"$log" 2>&1 &
 pid=$!
 trap 'kill $pid 2>/dev/null; rm -f "$log"' EXIT
 # Up to a minute: a CI runner can be slow to start it.

@@ -307,7 +307,9 @@ static BOOL LBRefusedSignIn(NSError *error, NSUInteger depth) {
 /* The email the logbook knows the user by: the sign-in's, else the one
    given (a server that asks for no one). */
 - (NSString *)userEmail {
-    NSString *named = _signIn.isSignedIn ? _signIn.userName : nil;
+    /* By the token's email, as the server knows the user (its
+       preferred_username is not always an email). */
+    NSString *named = _signIn.isSignedIn ? (_signIn.email ?: _signIn.userName) : nil;
     return named.length ? named : _email;
 }
 

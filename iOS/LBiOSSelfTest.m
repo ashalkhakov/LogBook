@@ -594,6 +594,34 @@ static BOOL LBSame(id number, NSString *value) {
     LBSay([figures containsObject:@"Items: 1"] && [figures containsObject:@"On hand: 16"] && [figures containsObject:@"Value at price: 8 USD"],
           [NSString stringWithFormat:@"the overview (%@)", [figures componentsJoinedByString:@"; "]]);
 
+    /* The item's Held at and Moves open what they are: Shelf A's moves
+       (the 5 in, the two shipments out); a shipment its sale; the
+       transfer itself. */
+    LBSpin(0.5);
+    NSUInteger shelfRow = NSNotFound;
+    NSArray *held = [card holdingRows];
+    for (NSUInteger i = 0; i < held.count; i++) if ([held[i] hasPrefix:@"Main / Shelf A:"]) shelfRow = i;
+    LBStockHoldingViewController *there = shelfRow == NSNotFound ? nil : (LBStockHoldingViewController *)[card openHoldingAt:shelfRow];
+    LBSay([there isKindOfClass:[LBStockHoldingViewController class]] && there.moves.count == 3,
+          [NSString stringWithFormat:@"Held at Shelf A opens its moves: the transfer in, two shipments out (%lu: %@)", (unsigned long)there.moves.count,
+                                     [[there.moves valueForKey:@"lbWhat"] componentsJoinedByString:@"; "]]);
+    Move *shipped = nil, *moved = nil;
+    for (Move *each in there.moves) {
+        if (each.shipment) shipped = each;
+        if ([each.lbWhat isEqualToString:@"Transfer"]) moved = each;
+    }
+    UIViewController *ofShipment = shipped ? LBStockScreenOfMove(shipped, app.stockController.phone) : nil;
+    LBSay([ofShipment isKindOfClass:[LBStockOrderViewController class]] && [(LBStockOrderViewController *)ofShipment order] == sale,
+          [NSString stringWithFormat:@"a shipment's move opens its sale (%@)", ofShipment]);
+    LBStockMoveDetailViewController *ofTransfer = moved ? (LBStockMoveDetailViewController *)LBStockScreenOfMove(moved, app.stockController.phone) : nil;
+    NSArray *said = [ofTransfer isKindOfClass:[LBStockMoveDetailViewController class]] ? [ofTransfer detailRows] : @[];
+    LBSay([said containsObject:@"What: Transfer"] && [said containsObject:@"Moved: 5"] && [said containsObject:@"From: Main / Default"]
+              && [said containsObject:@"To: Main / Shelf A"] && !ofTransfer.order,
+          [NSString stringWithFormat:@"the transfer's move opens itself: what, how many, from, to (%@)", [said componentsJoinedByString:@"; "]]);
+    NSUInteger moveRow = [[card moveRows] count] ? 0 : NSNotFound;
+    UIViewController *firstMove = moveRow == NSNotFound ? nil : [card openMoveAt:moveRow];
+    LBSay(firstMove != nil, @"a row of the item's Moves opens a screen");
+
     LBSync(store, @"stock synced");
     NSDictionary *boltThere = LBServerHas([NSString stringWithFormat:@"StockItems(%@)", LBKey(bolt.id)]);
     NSDictionary *shipments = LBServerHas([NSString stringWithFormat:@"SaleOrders(%@)/Shipments", LBKey(sale.id)]);

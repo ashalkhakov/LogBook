@@ -26,6 +26,14 @@ static UITableViewCell *LBActionCell(UIViewController *controller, NSString *tit
     return cell;
 }
 
+/* A row that opens a screen of its own: a chevron, and highlighted as
+   tapped. */
+static UITableViewCell *LBOpeningCell(UITableViewCell *cell) {
+    cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
+    cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+    return cell;
+}
+
 /* A quantity as typed: a decimal number; nil for anything else. */
 static NSDecimalNumber *LBTyped(NSString *text) {
     NSDecimalNumber *number = text.length ? [NSDecimalNumber decimalNumberWithString:text locale:[NSLocale currentLocale]] : nil;
@@ -364,11 +372,11 @@ static NSArray<NSArray *> *LBItemFields(void) {
             return LBActionCell(self, row == 0 ? @"Adjust…" : @"Transfer…");
         case LBItemSectionHoldings: {
             Holding *holding = _holdings[row];
-            return LBValueCell(holding.lbLocationTitle, LBNumber(holding.quantity));
+            return LBOpeningCell(LBValueCell(holding.lbLocationTitle, LBNumber(holding.quantity)));
         }
         case LBItemSectionMoves: {
             Move *move = _moves[row];
-            UITableViewCell *cell = LBValueCell(move.lbWhat, LBNumber(move.moved));
+            UITableViewCell *cell = LBOpeningCell(LBValueCell(move.lbWhat, LBNumber(move.moved)));
             cell.textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
             return cell;
         }
@@ -387,13 +395,153 @@ static NSArray<NSArray *> *LBItemFields(void) {
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    NSUInteger row = (NSUInteger)indexPath.row;
+    if (indexPath.section == LBItemSectionHoldings) {
+        [self openHoldingAt:row];
+        return;
+    }
+    if (indexPath.section == LBItemSectionMoves) {
+        [self openMoveAt:row];
+        return;
+    }
     if (indexPath.section != LBItemSectionStock) return;
     LBStockMoveViewController *move = [[LBStockMoveViewController alloc] initWithItemController:self transfer:indexPath.row == 1];
     [self presentViewController:[[UINavigationController alloc] initWithRootViewController:move] animated:YES completion:nil];
 }
 
+- (UIViewController *)openHoldingAt:(NSUInteger)row {
+    if (row >= _holdings.count) return nil;
+    UIViewController *screen = [[LBStockHoldingViewController alloc] initWithHolding:_holdings[row] phone:_phone];
+    [self.navigationController pushViewController:screen animated:YES];
+    return screen;
+}
+
+- (UIViewController *)openMoveAt:(NSUInteger)row {
+    if (row >= _moves.count) return nil;
+    UIViewController *screen = LBStockScreenOfMove(_moves[row], _phone);
+    [self.navigationController pushViewController:screen animated:YES];
+    return screen;
+}
+
 - (LBStockPhone *)phone {
     return _phone;
+}
+
+@end
+
+#pragma mark - A holding, and a move
+
+/* The order a move is of: its receipt's or line's purchase, its
+   shipment's or line's sale. */
+static NSManagedObject *LBOrderOfMove(Move *move) {
+    return move.receipt.purchaseOrder ?: move.purchaseLine.purchaseOrder ?: move.shipment.saleOrder ?: move.saleLine.saleOrder;
+}
+
+UIViewController *LBStockScreenOfMove(Move *move, LBStockPhone *phone) {
+    NSManagedObject *order = LBOrderOfMove(move);
+    if (order) return [[LBStockOrderViewController alloc] initWithOrder:order phone:phone];
+    return [[LBStockMoveDetailViewController alloc] initWithMove:move phone:phone];
+}
+
+@implementation LBStockHoldingViewController {
+    LBStockPhone *_phone;
+}
+
+- (instancetype)initWithHolding:(Holding *)holding phone:(LBStockPhone *)phone {
+    if ((self = [super initWithStyle:UITableViewStyleInsetGrouped])) {
+        _holding = holding;
+        _phone = phone;
+        self.title = holding.lbLocationTitle;
+        NSMutableArray *there = [NSMutableArray array];
+        for (Move *move in [phone movesOf:holding.stockItem]) {
+            if (move.source == holding.location || move.destination == holding.location) [there addObject:move];
+        }
+        _moves = [there copy];
+    }
+    return self;
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 2;
+}
+
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    return section == 0 ? _holding.stockItem.lbTitle : @"Moves";
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return section == 0 ? 1 : (NSInteger)_moves.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 0) return LBValueCell(@"Held here", LBNumber(_holding.quantity));
+    Move *move = _moves[(NSUInteger)indexPath.row];
+    BOOL in = move.destination == _holding.location;
+    NSString *detail = [NSString stringWithFormat:@"%@%@", in ? @"+" : @"−", LBNumber(move.moved)];
+    UITableViewCell *cell = LBOpeningCell(LBValueCell(move.lbWhat, detail));
+    cell.textLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    if (indexPath.section != 1) return;
+    [self.navigationController pushViewController:LBStockScreenOfMove(_moves[(NSUInteger)indexPath.row], _phone) animated:YES];
+}
+
+@end
+
+@implementation LBStockMoveDetailViewController {
+    LBStockPhone *_phone;
+}
+
+- (instancetype)initWithMove:(Move *)move phone:(LBStockPhone *)phone {
+    if ((self = [super initWithStyle:UITableViewStyleInsetGrouped])) {
+        _move = move;
+        _phone = phone;
+        _order = LBOrderOfMove(move);
+        self.title = move.lbWhat;
+    }
+    return self;
+}
+
+- (NSArray<NSString *> *)detailRows {
+    Move *move = _move;
+    NSMutableArray *rows = [NSMutableArray arrayWithObject:[NSString stringWithFormat:@"What: %@", move.lbWhat]];
+    if (move.moment) {
+        [rows addObject:[NSString stringWithFormat:@"When: %@", [NSDateFormatter localizedStringFromDate:move.moment dateStyle:NSDateFormatterMediumStyle
+                                                                                               timeStyle:NSDateFormatterShortStyle]]];
+    }
+    [rows addObject:[NSString stringWithFormat:@"Moved: %@", LBNumber(move.moved)]];
+    if (move.source) [rows addObject:[NSString stringWithFormat:@"From: %@", move.source.lbTitle]];
+    if (move.destination) [rows addObject:[NSString stringWithFormat:@"To: %@", move.destination.lbTitle]];
+    if (move.stockUnit.serialNumber.length) [rows addObject:[NSString stringWithFormat:@"Unit: %@", move.stockUnit.serialNumber]];
+    if (move.stockTransfer.transferState.length) [rows addObject:[NSString stringWithFormat:@"Transfer: %@", move.stockTransfer.transferState]];
+    NSString *who = move.user.personName.length ? move.user.personName : move.user.email;
+    if (who.length) [rows addObject:[NSString stringWithFormat:@"By: %@", who]];
+    if (move.note.length) [rows addObject:[NSString stringWithFormat:@"Note: %@", move.note]];
+    return rows;
+}
+
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return _order ? 2 : 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+    return section == 0 ? (NSInteger)[self detailRows].count : 1;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    if (indexPath.section == 1) return LBOpeningCell(LBValueCell(@"Its order", [_order valueForKey:@"lb_number"] ?: @""));
+    NSString *row = [self detailRows][(NSUInteger)indexPath.row];
+    NSRange colon = [row rangeOfString:@": "];
+    return LBValueCell([row substringToIndex:colon.location], [row substringFromIndex:NSMaxRange(colon)]);
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    if (indexPath.section != 1 || !_order) return;
+    [self.navigationController pushViewController:[[LBStockOrderViewController alloc] initWithOrder:_order phone:_phone] animated:YES];
 }
 
 @end

@@ -64,24 +64,34 @@ static NSError *LBTasksError(NSString *message, NSInteger status) {
     return self;
 }
 
-/* The request sent, signed in where the store is, and its answer awaited. */
+/* The request sent, signed in where the store is (the sign-in's access
+   token as a bearer: refreshed, and sent again, once the server refuses
+   it), and its answer awaited. ODataSignIn's -send: is its own way to the
+   identity provider, and signs nothing. */
 - (NSData *)send:(NSMutableURLRequest *)request status:(NSInteger *)status error:(NSError **)error {
     [request setValue:@"application/json" forHTTPHeaderField:@"Accept"];
     __block NSData *data = nil;
     __block NSHTTPURLResponse *response = nil;
     __block NSError *failure = nil;
     __block BOOL done = NO;
-    void (^finish)(NSData *, NSURLResponse *, NSError *) = ^(NSData *d, NSURLResponse *r, NSError *e) {
-        data = d;
-        response = (NSHTTPURLResponse *)r;
-        failure = e;
+    ODataSignIn *signIn = _signIn.isSignedIn && _signIn.kind == ODataSignInOpenID ? _signIn : nil;
+    /* Off the main thread: a refresh asks the identity provider, waited for. */
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        for (int attempt = 0; attempt < 2; attempt++) {
+            NSString *token = signIn ? [signIn accessTokenForAuthorization:nil refresh:attempt > 0] : nil;
+            if (token.length) [request setValue:[@"Bearer " stringByAppendingString:token] forHTTPHeaderField:@"Authorization"];
+            dispatch_semaphore_t answered = dispatch_semaphore_create(0);
+            [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData *d, NSURLResponse *r, NSError *e) {
+                data = d;
+                response = [r isKindOfClass:[NSHTTPURLResponse class]] ? (NSHTTPURLResponse *)r : nil;
+                failure = e;
+                dispatch_semaphore_signal(answered);
+            }] resume];
+            dispatch_semaphore_wait(answered, DISPATCH_TIME_FOREVER);
+            if (!signIn || response.statusCode != 401) break;
+        }
         done = YES;
-    };
-    if (_signIn) {
-        [_signIn send:request done:^(NSData *d, NSHTTPURLResponse *r, NSError *e) { finish(d, r, e); }];
-    } else {
-        [[[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:finish] resume];
-    }
+    });
     while (!done) [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.02]];
     *status = response.statusCode;
     if (failure || response.statusCode >= 400) {

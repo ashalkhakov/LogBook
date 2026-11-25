@@ -169,7 +169,8 @@ static NSManagedObjectContext *LBServerContext(void) {
     if (LBAppStore.local && ![LBAppStore syncAndWait:&error]) NSLog(@"self-test: not synced: %@", error.localizedDescription);
     for (ODataSyncIssue *issue in LBAppStore.local.issues) NSLog(@"self-test: set aside: %@ %@ %ld %@", issue.entityName, issue.key, (long)issue.status, issue.message);
     if (!LBServerSide) {
-        LBServerSide = [[LBStore alloc] initWithServiceRoot:LBSelfTestRoot signIn:nil];
+        /* As the app is signed in, where the server asks for a sign-in. */
+        LBServerSide = [[LBStore alloc] initWithServiceRoot:LBSelfTestRoot signIn:LBAppStore.signIn];
         if (![LBServerSide open:NULL]) LBServerSide = nil;
     }
     return LBServerSide.context;
@@ -2117,13 +2118,19 @@ static void LBKindSteps(LBMainWindowController *controller) {
                                                        [object isKindOfClass:[Answer class]] ? [NSString stringWithFormat:@" of %@", ((Answer *)object).inspection.entity.name] : @""]];
     }
     LBClick(window, @"save");
-    LBCheck(@"a record removed, on the server too; its file left, an orphan", !controller.lastError
+    /* Signed in, the permissions apply: a file is read through its record
+       (Logbook.permissions.plist), so the orphan is no longer the user's
+       to see; with no sign-in, it is there. */
+    BOOL signedIn = [NSProcessInfo processInfo].environment[@"LB_SIGN_IN_TOKENS"].length > 0;
+    NSUInteger orphans = [LBServerObjects([Attachment class], [NSPredicate predicateWithFormat:@"%K == %@ AND %K == nil",
+                                                                            NSStringFromSelector(@selector(fileName)), @"odometer.txt",
+                                                                            NSStringFromSelector(@selector(record))]) count];
+    LBCheck(signedIn ? @"a record removed, on the server too; its file, an orphan, no longer the user's to see"
+                     : @"a record removed, on the server too; its file left, an orphan", !controller.lastError
                 && [LBServerObjects([MeterReading class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)),
                                                                          readingID]) count] == 0
-                && [LBServerObjects([Attachment class], [NSPredicate predicateWithFormat:@"%K == %@ AND %K == nil",
-                                                                      NSStringFromSelector(@selector(fileName)), @"odometer.txt",
-                                                                      NSStringFromSelector(@selector(record))]) count] == 1,
-            [NSString stringWithFormat:@"%@ deleting %@", controller.lastError.localizedDescription, deleting]);
+                && orphans == (signedIn ? 0 : 1),
+            [NSString stringWithFormat:@"%@ deleting %@, %lu orphans seen", controller.lastError.localizedDescription, deleting, (unsigned long)orphans]);
 }
 
 /* The view drawn into a bitmap, as it is now. */
@@ -2506,6 +2513,15 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
    the user is forgotten, and the panel shown again waits to be told to
    connect. */
 static void LBConnectSteps(void) {
+    /* Signed in through an identity provider (Tests/signed-in-check.sh):
+       the user is the token's, by its email; a server that asks no one is
+       not this one. */
+    if ([NSProcessInfo processInfo].environment[@"LB_SIGN_IN_TOKENS"].length) {
+        LBCheck(@"signed in through the identity provider, the user its token's email",
+                LBAppStore.signIn.isSignedIn && [LBAppStore.user.email isEqualToString:LBAppStore.signIn.email ?: @"-"],
+                [NSString stringWithFormat:@"%@ / %@", LBAppStore.user.email, LBAppStore.signIn.email]);
+        return;
+    }
     LBSetDefault(@"LBUser", @"");
     LBConnectPanel *panel = [[LBConnectPanel alloc] init];
     LBConnected *connected = [[LBConnected alloc] init];
@@ -2920,7 +2936,7 @@ static void LBInvenTreeSteps(LBMainWindowController *controller) {
        saying it synced, in no alarm. */
     if (LBAppStore.local) {
         NSTextField *line = controller.syncStatusField;
-        LBCheck(@"the window's sync line: connected, \"Synced …\", not red", line && !line.hidden && [line.stringValue hasPrefix:@"Synced"]
+        LBCheck(@"the window's sync line: connected, \"Synced …\", not red", line && ![line isHidden] && [line.stringValue hasPrefix:@"Synced"]
                     && [line isDescendantOf:controller.window.contentView] && !LBAppStore.local.signInRefused,
                 line ? line.stringValue : @"not connected");
     }

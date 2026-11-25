@@ -95,7 +95,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
    A store online (no device copy) says nothing. */
 - (void)showSyncStatus {
     LBLocalStore *local = _store.local;
-    _syncStatusField.hidden = local == nil;
+    [_syncStatusField setHidden:local == nil];
     if (!local) return;
     _syncStatusField.stringValue = local.status ?: @"";
     _syncStatusField.toolTip = local.lastSyncError.localizedDescription;
