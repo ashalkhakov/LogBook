@@ -105,7 +105,11 @@ static NSError *LBTasksError(NSString *message, NSInteger status) {
 }
 
 - (NSArray<LBTask *> *)openTasks:(NSError **)error {
-    NSURL *url = [NSURL URLWithString:@"Tasks?$expand=Form($select=FormKey),ProcessInstance($select=BusinessKey)&$orderby=CreatedAt"
+    /* Each task's BusinessKey (which order it is of) is its own property
+       (WorkflowKit's, its process instance's): under Tasks.Work, the scope
+       a signed-in user has. Tasks expanded to their ProcessInstance read
+       the instances, an operator's (Operations.Read), and were refused. */
+    NSURL *url = [NSURL URLWithString:@"Tasks?$select=TaskId,Name,CreatedAt,BusinessKey&$expand=Form($select=FormKey)&$orderby=CreatedAt"
                         relativeToURL:_workflowRoot];
     NSInteger status = 0;
     NSData *data = [self send:[NSMutableURLRequest requestWithURL:url] status:&status error:error];
@@ -118,10 +122,9 @@ static NSError *LBTasksError(NSString *message, NSInteger status) {
         LBTask *task = [[LBTask alloc] init];
         task.taskId = [row[@"TaskId"] description];
         task.name = [row[@"Name"] description] ?: @"";
-        id form = row[@"Form"], instance = row[@"ProcessInstance"];
+        id form = row[@"Form"];
         task.formKey = [form isKindOfClass:[NSDictionary class]] && [form[@"FormKey"] isKindOfClass:[NSString class]] ? form[@"FormKey"] : nil;
-        task.businessKey = [instance isKindOfClass:[NSDictionary class]] && [instance[@"BusinessKey"] isKindOfClass:[NSString class]]
-            ? instance[@"BusinessKey"] : nil;
+        task.businessKey = [row[@"BusinessKey"] isKindOfClass:[NSString class]] ? row[@"BusinessKey"] : nil;
         NSString *created = [row[@"CreatedAt"] isKindOfClass:[NSString class]] ? row[@"CreatedAt"] : nil;
         task.createdAt = created ? ([dates dateFromString:created] ?: [[NSISO8601DateFormatter new] dateFromString:created]) : nil;
         [tasks addObject:task];
