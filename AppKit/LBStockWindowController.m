@@ -303,9 +303,12 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
 
 - (IBAction)search:(id)sender {
     NSString *text = _itemSearch.stringValue;
+    /* By name, SKU or description; and by a code scanned (or typed): one
+       of the item's barcodes, or a unit's serial number. */
     _itemList.filterPredicate = text.length ? [NSPredicate predicateWithFormat:@"itemName CONTAINS[cd] %@ OR sku CONTAINS[cd] %@ "
-                                                                               @"OR descriptionValue CONTAINS[cd] %@",
-                                                                               text, text, text]
+                                                                               @"OR descriptionValue CONTAINS[cd] %@ "
+                                                                               @"OR ANY itemCodes.codeText ==[c] %@ OR ANY stockUnits.serialNumber ==[c] %@",
+                                                                               text, text, text, text, text]
                                             : nil;
 }
 

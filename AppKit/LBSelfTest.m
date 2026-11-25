@@ -2915,6 +2915,15 @@ static void LBInvenTreeSteps(LBMainWindowController *controller) {
     LBCheck(@"InvenTree's stock imported into a catalog of the user's: 29 made", done && count == 29,
             error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
     if (LBAppStore.local) [LBAppStore syncAndWait:NULL];
+    LBSpin();
+    /* The sync's line under the forms (MainWindow.xib): connected, and
+       saying it synced, in no alarm. */
+    if (LBAppStore.local) {
+        NSTextField *line = controller.syncStatusField;
+        LBCheck(@"the window's sync line: connected, \"Synced …\", not red", line && !line.hidden && [line.stringValue hasPrefix:@"Synced"]
+                    && [line isDescendantOf:controller.window.contentView] && !LBAppStore.local.signInRefused,
+                line ? line.stringValue : @"not connected");
+    }
     Catalog *there = nil;
     for (Catalog *each in controller.store.user.ownedCatalogs) if ([each.catalogName isEqualToString:catalog]) there = each;
     [there.managedObjectContext refreshObject:there mergeChanges:NO];
@@ -2925,6 +2934,66 @@ static void LBInvenTreeSteps(LBMainWindowController *controller) {
     done = [controller importRecordsOf:read() intoVehicle:nil catalogNamed:catalog made:&count skipped:&skipped error:&error];
     LBCheck(@"imported again: nothing made", done && count == 0 && skipped > 0,
             error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
+
+    /* What it was bought for: the unit cost of each item, and of its
+       supplier's, from InvenTree's stock items' purchase prices. */
+    StockItem *mini = nil, *cable = nil;
+    for (StockItem *each in there.stockItems) {
+        if ([each.itemName isEqualToString:@"Mini PC N100"]) mini = each;
+        if ([each.itemName isEqualToString:@"USB-C cable 1m"]) cable = each;
+    }
+    LBCheck(@"unit costs from what InvenTree's stock was bought for: the Mini PC 250, the cables' average 3.25; its supplier's the same",
+            LBIs(mini.unitCostAmount, @"250") && LBIs(cable.unitCostAmount, @"3.25")
+                && LBIs([mini.supplierItems.anyObject supplierCostAmount], @"250"),
+            [NSString stringWithFormat:@"%@ %@ %@", mini.unitCostAmount, cable.unitCostAmount, [mini.supplierItems.anyObject supplierCostAmount]]);
+
+    /* A place added for it first, as the user did: Kitchen, under the
+       warehouse it is kept at, in the catalog's settings, saved. */
+    Location *held = [(Holding *)[LBServerObjects([Holding class], [NSPredicate predicateWithFormat:@"stockItem.id == %@", mini.id]) firstObject] location];
+    LBCatalogSettingsWindowController *places = [[LBCatalogSettingsWindowController alloc] initWithStore:LBAppStore catalog:there];
+    places.quiet = YES;
+    [places showWindow:nil];
+    LBSpin();
+    for (Warehouse *each in places.warehouseList.arrangedObjects) {
+        if ([each.id isEqual:held.warehouse.id]) [places.warehouseList setSelectedObjects:@[ each ]];
+    }
+    LBSpin();
+    LBClick(places.window, @"addLocation");
+    LBTypeInRow(places.window, @"the new place's name", @"Kitchen");
+    LBSavedIn(places, @"Kitchen added under the item's warehouse");
+    [places close];
+
+    /* Its unit, in the item's window: the Units tab lists it by its
+       serial; the stock window finds the item by it, as a scanner types
+       it. Then moved, as a user moves it: 1 from where it is to another
+       place, by Transfer and its sheet. */
+    LBStockItemWindowController *card = [[LBStockItemWindowController alloc] initWithStore:LBAppStore item:mini catalog:there];
+    card.quiet = YES;
+    [card showWindow:nil];
+    LBSpin();
+    [card.cardTabs selectTabViewItemWithIdentifier:@"units"];
+    LBSpin();
+    LBCheck(@"the Units tab: the Mini PC's unit, N100-0001", [[card.stockUnits valueForKey:@"serialNumber"] isEqualToArray:@[ @"N100-0001" ]]
+                && card.stockUnitsTable.numberOfRows == 1,
+            [card.stockUnits valueForKey:@"serialNumber"]);
+    NSString *from = [card.holdings.firstObject lbLocationTitle];
+    NSPopUpButton *to = (NSPopUpButton *)LBControl(card.window.contentView, @"stockTo");
+    NSString *elsewhere = nil;
+    for (NSString *title in to.itemTitles) if ([title hasSuffix:@"/ Kitchen"]) elsewhere = title;
+    LBChoose(card.window, @"stockAt", from);
+    LBChoose(card.window, @"stockTo", elsewhere);
+    LBMoveStock(card, @"transfer", @"1", nil);
+    /* The app syncs now and then: one while the sheet is open, the
+       transfer it asks for not saved yet. */
+    if (LBAppStore.local) [LBAppStore.local syncAndWait:NULL];
+    LBSpin();
+    LBClick(card.requestPanel, @"submitRequest");
+    NSArray *asked = LBServerObjects([StockTransfer class], [NSPredicate predicateWithFormat:@"stockItem.id == %@", mini.id]);
+    LBCheck(@"an imported unit's transfer asked for: requested, the sheet gone, nothing refused",
+            asked.count == 1 && [[asked.firstObject transferState] isEqualToString:@"Requested"] && !card.window.attachedSheet,
+            [NSString stringWithFormat:@"from %@ to %@: %@ %@", from, elsewhere, card.lastError.localizedDescription ?: @"", asked]);
+    if (card.window.attachedSheet) [card dismissForm:nil];
+    [card close];
 }
 
 static void LBSteps(LBMainWindowController *controller) {

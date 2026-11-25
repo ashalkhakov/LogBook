@@ -91,6 +91,21 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 /* Offline first: what a sync brought down (another device's), shown. */
+/* The sync's state, as the store says it; red while the last one failed.
+   A store online (no device copy) says nothing. */
+- (void)showSyncStatus {
+    LBLocalStore *local = _store.local;
+    _syncStatusField.hidden = local == nil;
+    if (!local) return;
+    _syncStatusField.stringValue = local.status ?: @"";
+    _syncStatusField.toolTip = local.lastSyncError.localizedDescription;
+    BOOL failed = local.lastSyncError && !local.isSyncing;
+    /* GNUstep has neither named colour. */
+    SEL named = failed ? @selector(systemRedColor) : @selector(secondaryLabelColor);
+    _syncStatusField.textColor = [[NSColor class] respondsToSelector:named] ? [[NSColor class] performSelector:named]
+                                 : failed ? [NSColor redColor] : [NSColor disabledControlTextColor];
+}
+
 - (void)storeDidSync:(NSNotification *)note {
     /* Not while the user types: once they are done. */
     if (self.isWindowLoaded && LBTyping(self.window)) {
@@ -104,6 +119,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [super windowDidLoad];
     if (_store.local) [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(storeDidSync:)
                                                                    name:LBLocalStoreDidSyncNotification object:_store.local];
+    if (_store.local) [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showSyncStatus)
+                                                                   name:LBLocalStoreDidChangeNotification object:_store.local];
+    [self showSyncStatus];
     self.window.title = [NSString stringWithFormat:@"Logbook — %@", _store.serviceRoot.host ?: @""];
     _vehicles.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(vehicleName)) ascending:YES
                                                                   selector:@selector(localizedCaseInsensitiveCompare:)] ];

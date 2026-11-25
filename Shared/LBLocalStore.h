@@ -39,6 +39,10 @@ FOUNDATION_EXPORT NSNotificationName const LBLocalStoreDidChangeNotification;
 // (refreshed): what lists objects fetches them again.
 FOUNDATION_EXPORT NSNotificationName const LBLocalStoreDidSyncNotification;
 
+// On the main thread: a sync failed, lastSyncError why (signInRefused: the
+// server refused who is signed in).
+FOUNDATION_EXPORT NSNotificationName const LBLocalStoreSyncDidFailNotification;
+
 @interface LBLocalStore : NSObject <ODataSyncDelegate>
 
 // Application Support/Logbook, made the first time.
@@ -87,6 +91,11 @@ FOUNDATION_EXPORT NSNotificationName const LBLocalStoreDidSyncNotification;
 - (void)syncNow;
 // Why the last sync failed; nil: it did not (or none has run).
 @property (nonatomic, readonly, nullable) NSError *lastSyncError;
+// The last sync failed as the server refused the sign-in (401: a token it
+// does not take -- for another audience, from another issuer, run out --
+// or none, where it asks for one): nothing syncs until the user signs in
+// again.
+@property (nonatomic, readonly) BOOL signInRefused;
 // What signing out would lose, as it deletes this device's logbook: the
 // changes not sent yet (those the server refused among them), and the
 // pending conflicts, what this device changed that the server's version

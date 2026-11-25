@@ -5,7 +5,7 @@
 
 #import "LBStockEditor.h"
 
-@class StockItem, Holding, Move, KitLine, SupplierItem, ItemCode, ReorderRule, Category, Supplier, Location, Warehouse,
+@class StockItem, Holding, Move, KitLine, SupplierItem, ItemCode, StockUnit, ReorderRule, Category, Supplier, Location, Warehouse,
     WeightUnit, SizeUnit, StockTransfer, ORMFlowSession;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -37,13 +37,18 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSArray<KitLine *> *kitLines;
 @property (nonatomic, readonly, copy) NSArray<SupplierItem *> *supplierItems;
 @property (nonatomic, readonly, copy) NSArray<ItemCode *> *itemCodes;
+// Its units, each one of it by its serial number (the code on it: a
+// barcode or the maker's serial), where it is and a note.
+@property (nonatomic, readonly, copy) NSArray<StockUnit *> *stockUnits;
 @property (nonatomic, readonly, copy) NSArray<ReorderRule *> *reorderRules;
 @property (nonatomic, strong) IBOutlet NSArrayController *kitLineList;
 @property (nonatomic, strong) IBOutlet NSArrayController *supplierItemList;
 @property (nonatomic, strong) IBOutlet NSArrayController *itemCodeList;
+@property (nonatomic, strong) IBOutlet NSArrayController *stockUnitList;
 @property (nonatomic, strong) IBOutlet NSArrayController *reorderRuleList;
 @property (nonatomic, strong) IBOutlet NSTableView *supplierItemsTable;
 @property (nonatomic, strong) IBOutlet NSTableView *itemCodesTable;
+@property (nonatomic, strong) IBOutlet NSTableView *stockUnitsTable;
 @property (nonatomic, strong) IBOutlet NSTableView *reorderRulesTable;
 
 // What its forms choose from: the catalog's categories, suppliers,

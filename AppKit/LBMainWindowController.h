@@ -23,6 +23,9 @@ NS_ASSUME_NONNULL_BEGIN
 // What the XIB's controllers bind to.
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;
 @property (nonatomic, strong) IBOutlet NSArrayController *vehicles;
+// The sync's state, under the forms: when it last synced, what waits, and
+// why it did not ("Not synced: The token is not for this service"), red.
+@property (nonatomic, strong, nullable) IBOutlet NSTextField *syncStatusField;
 // The chosen vehicle's records.
 @property (nonatomic, strong) IBOutlet NSArrayController *records;
 // A form for each kind of record, each tab's identifier its entity's name

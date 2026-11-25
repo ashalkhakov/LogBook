@@ -1502,6 +1502,24 @@ static NSDecimalNumber *LBAmount(id value) {
     return nil;
 }
 
+/* What was paid ({amount, currency, pk} each, InvenTree's stock items'):
+   the average, where it was all in one currency; else the latest's (the
+   highest pk). */
+static NSDictionary *LBCostOf(NSArray<NSDictionary *> *paid) {
+    NSSet *currencies = [NSSet setWithArray:[paid valueForKey:@"currency"]];
+    if (currencies.count > 1) {
+        NSDictionary *latest = nil;
+        for (NSDictionary *each in paid) if (!latest || [each[@"pk"] compare:latest[@"pk"]] == NSOrderedDescending) latest = each;
+        return latest;
+    }
+    NSDecimalNumber *sum = [NSDecimalNumber zero];
+    for (NSDictionary *each in paid) sum = [sum decimalNumberByAdding:each[@"amount"]];
+    NSDecimalNumberHandler *cents = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain scale:2 raiseOnExactness:NO
+                                                                                 raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO];
+    NSDecimalNumber *count = [NSDecimalNumber decimalNumberWithMantissa:paid.count exponent:0 isNegative:NO];
+    return @{ @"amount": [sum decimalNumberByDividingBy:count withBehavior:cents], @"currency": currencies.anyObject ?: @"" };
+}
+
 /* What InvenTree has that Logbook's stock has no place for, said before
    anything is made. */
 - (BOOL)planInvenTreeBy:(User *)user error:(NSError **)error {
@@ -1744,7 +1762,9 @@ static NSDecimalNumber *LBAmount(id value) {
         }
         items[row[@"pk"]] = item;
     }
-    /* What it is bought as from each supplier. */
+    /* What it is bought as from each supplier, by InvenTree's supplier
+       part. */
+    NSMutableDictionary<NSNumber *, SupplierItem *> *offers = [NSMutableDictionary dictionary];
     for (NSDictionary *row in t[@"company/part"]) {
         StockItem *item = items[LBNull(row[@"part"])];
         Supplier *supplier = suppliers[LBNull(row[@"supplier"])];
@@ -1755,8 +1775,12 @@ static NSDecimalNumber *LBAmount(id value) {
         }
         for (SupplierItem *each in item.supplierItems) if (each.supplier == supplier && !each.isDeleted) had = had ?: each;
         count(!had);
-        if (had) continue;
+        if (had) {
+            if (LBNull(row[@"pk"])) offers[row[@"pk"]] = had;
+            continue;
+        }
         SupplierItem *offer = insert([SupplierItem class]);
+        if (LBNull(row[@"pk"])) offers[row[@"pk"]] = offer;
         offer.stockItem = item;
         offer.supplier = supplier;
         offer.supplierSKU = LBField(row, @"SKU");
@@ -1791,6 +1815,35 @@ static NSDecimalNumber *LBAmount(id value) {
         }
         units[row[@"pk"]] = unit;
     }
+    /* What each was bought for, as InvenTree's stock items say it: the
+       item's unit cost, and its supplier's cost, where neither is said yet
+       -- the average of what its units were bought for, in one currency;
+       bought in more than one, what the latest was. */
+    NSMutableDictionary<NSNumber *, NSMutableArray<NSDictionary *> *> *paidForItem = [NSMutableDictionary dictionary];
+    NSMutableDictionary<NSNumber *, NSMutableArray<NSDictionary *> *> *paidForOffer = [NSMutableDictionary dictionary];
+    for (NSDictionary *row in t[@"stock"]) {
+        NSDecimalNumber *price = LBAmount(row[@"purchase_price"]);
+        if (!price || [price compare:[NSDecimalNumber zero]] != NSOrderedDescending) continue;
+        NSDictionary *paid = @{ @"amount": price, @"currency": LBField(row, @"purchase_price_currency") ?: user.currency ?: @"",
+                                @"pk": LBNull(row[@"pk"]) ?: @0 };
+        NSNumber *part = LBNull(row[@"part"]), *supplierPart = LBNull(row[@"supplier_part"]);
+        if (part) [(paidForItem[part] = paidForItem[part] ?: [NSMutableArray array]) addObject:paid];
+        if (supplierPart) [(paidForOffer[supplierPart] = paidForOffer[supplierPart] ?: [NSMutableArray array]) addObject:paid];
+    }
+    [paidForItem enumerateKeysAndObjectsUsingBlock:^(NSNumber *part, NSMutableArray<NSDictionary *> *paid, BOOL *stop) {
+        StockItem *item = items[part];
+        if (!item || item.unitCostAmount) return;
+        NSDictionary *cost = LBCostOf(paid);
+        item.unitCostAmount = cost[@"amount"];
+        item.unitCostCurrency = [cost[@"currency"] length] ? cost[@"currency"] : nil;
+    }];
+    [paidForOffer enumerateKeysAndObjectsUsingBlock:^(NSNumber *supplierPart, NSMutableArray<NSDictionary *> *paid, BOOL *stop) {
+        SupplierItem *offer = offers[supplierPart];
+        if (!offer || offer.supplierCostAmount) return;
+        NSDictionary *cost = LBCostOf(paid);
+        offer.supplierCostAmount = cost[@"amount"];
+        offer.supplierCostCurrency = [cost[@"currency"] length] ? cost[@"currency"] : nil;
+    }];
     if (!save(@"stock items' units")) { if (error) *error = refusal; return NO; }
 
     /* Its purchase orders: each by its InvenTree reference, in its note. */
