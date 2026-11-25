@@ -1100,10 +1100,21 @@ static BOOL LBLive(NSSet<NSManagedObject *> *objects) {
     NSMutableArray *moved = [NSMutableArray array];
     for (NSManagedObject *object in self.updatedObjects) {
         if (![object isKindOfClass:[StockTransfer class]]) continue;
-        NSString *was = [object committedValuesForKeys:@[ @"transferState" ]][@"transferState"];
+        id was = [object committedValuesForKeys:@[ @"transferState" ]][@"transferState"];
+        if (was == [NSNull null]) was = nil;
         NSString *now = ((StockTransfer *)object).transferState;
         if (was == now || [was isEqual:now]) continue;
-        if (![was isEqual:@"Requested"]) return LBRefuse(error, @"A transfer moved or cancelled stays as it was: ask for another.");
+        /* One not stored yet is new, whatever this context thought of it
+           before (a window's, its save into the main one not yet kept):
+           asked for, or moved at once. */
+        if (!was && !LBStored(object)) {
+            if ([now isEqual:@"Moved"]) [moved addObject:object];
+            continue;
+        }
+        if (![was isEqual:@"Requested"]) {
+            return LBRefuse(error, [NSString stringWithFormat:@"A transfer moved or cancelled stays as it was: ask for another (it was %@, now %@).",
+                                                              was ?: @"stored with no state", now ?: @"none"]);
+        }
         if ([now isEqual:@"Moved"]) [moved addObject:object];
     }
     for (StockTransfer *transfer in [moved sortedArrayUsingFunction:LBByID context:NULL]) {
@@ -1123,10 +1134,19 @@ static BOOL LBLive(NSSet<NSManagedObject *> *objects) {
     NSMutableArray *returned = [NSMutableArray array];
     for (NSManagedObject *object in self.updatedObjects) {
         if (![object isKindOfClass:[CustomerReturn class]] && ![object isKindOfClass:[SupplierReturn class]]) continue;
-        NSString *was = [object committedValuesForKeys:@[ @"returnState" ]][@"returnState"];
+        id was = [object committedValuesForKeys:@[ @"returnState" ]][@"returnState"];
+        if (was == [NSNull null]) was = nil;
         NSString *now = [object valueForKey:@"returnState"];
         if (was == now || [was isEqual:now]) continue;
-        if (![was isEqual:@"Requested"]) return LBRefuse(error, @"A return returned or cancelled stays as it was: ask for another.");
+        /* One not stored yet is new (as a transfer is, above). */
+        if (!was && !LBStored(object)) {
+            if ([now isEqual:@"Returned"]) [returned addObject:object];
+            continue;
+        }
+        if (![was isEqual:@"Requested"]) {
+            return LBRefuse(error, [NSString stringWithFormat:@"A return returned or cancelled stays as it was: ask for another (it was %@, now %@).",
+                                                              was ?: @"stored with no state", now ?: @"none"]);
+        }
         if ([now isEqual:@"Returned"]) [returned addObject:object];
     }
     for (NSManagedObject *back in [returned sortedArrayUsingFunction:LBByID context:NULL]) {
