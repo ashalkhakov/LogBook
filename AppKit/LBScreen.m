@@ -5,9 +5,23 @@ NSNotificationName const LBScreenWillCloseNotification = @"LBScreenWillCloseNoti
 
 @implementation LBScreen
 
+static void *LBScreenTitleChanged = &LBScreenTitleChanged;
+
 - (void)dealloc {
-    /* A title bound to its own (an item's name). */
-    [self unbind:@"title"];
+    if (_titleKeyPath) [self removeObserver:self forKeyPath:_titleKeyPath context:LBScreenTitleChanged];
+}
+
+- (void)setTitleKeyPath:(NSString *)keyPath {
+    if (_titleKeyPath) [self removeObserver:self forKeyPath:_titleKeyPath context:LBScreenTitleChanged];
+    _titleKeyPath = [keyPath copy];
+    if (_titleKeyPath) [self addObserver:self forKeyPath:_titleKeyPath options:NSKeyValueObservingOptionInitial context:LBScreenTitleChanged];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+    if (context != LBScreenTitleChanged) return [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+    id value = [self valueForKeyPath:_titleKeyPath];
+    NSString *title = [value isKindOfClass:[NSString class]] ? value : [value description];
+    if (![self.title isEqual:title] && (title || self.title)) self.title = title;
 }
 
 - (void)viewDidLoad {

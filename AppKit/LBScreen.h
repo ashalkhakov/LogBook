@@ -41,6 +41,10 @@ FOUNDATION_EXPORT NSNotificationName const LBScreenWillCloseNotification;
 // sheet, its lists read again).
 - (void)screenDidShow;
 
+// Its title kept as a key path of it says (an item's name): observed, so
+// on GNUstep too, whose bindings bind no title.
+@property (nonatomic, copy, nullable) NSString *titleKeyPath;
+
 // The size its view was drawn at in its XIB: the least the main pane
 // gives it.
 @property (nonatomic, readonly) NSSize drawnSize;

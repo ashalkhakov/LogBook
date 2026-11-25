@@ -29,6 +29,9 @@ NS_ASSUME_NONNULL_BEGIN
 // The logbook's page shown at the chosen vehicle's Vehicle tab (a new
 // vehicle's details to fill in).
 - (void)showVehicleTab;
+// The record (of any context) shown: its vehicle chosen, the logbook's
+// page at Records, the record chosen. NO where it is no vehicle's here.
+- (BOOL)showRecord:(Record *)record;
 // The sync's state, in the toolbar: when it last synced, what waits, and
 // why it did not ("Not synced: The token is not for this service"), red.
 @property (nonatomic, strong, nullable) IBOutlet NSTextField *syncStatusField;
@@ -147,6 +150,9 @@ NS_ASSUME_NONNULL_BEGIN
 // is the export's), what the export says not; hidden otherwise.
 @property (nonatomic, strong, nullable) IBOutlet NSTextField *importMakeField;
 @property (nonatomic, strong, nullable) IBOutlet NSTextField *importYearField;
+// Its currency: what the export's amounts are in, where it says none (a
+// Drivvo export, MainTrack's store); the user's at first.
+@property (nonatomic, strong, nullable) IBOutlet NSPopUpButton *importCurrencyField;
 // The signed-in user's unit of distance, else kilometres.
 - (nullable DistanceUnit *)distanceUnit;
 // What is being typed kept: NO when a field holds what cannot be.

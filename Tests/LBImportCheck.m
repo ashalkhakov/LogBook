@@ -427,6 +427,26 @@ static void LBMainTrackSteps(NSString *sqlPath) {
     LBCheck(@"imported again: nothing made, the 27 passed over", done && madeCount == 0 && skipped == 27 && anna.ownedVehicles.count == 2
                 && catalog.stockItems.count == 6,
             error ?: [NSString stringWithFormat:@"%lu made, %lu passed over", (unsigned long)madeCount, (unsigned long)skipped]);
+
+    /* Its amounts in hryvnias, as they were (MainTrack keeps no currency):
+       imported again in UAH, what was made in the user's EUR is in UAH
+       now, nothing made. */
+    import = [LBImport importOfFile:[NSURL fileURLWithPath:path] error:&error];
+    import.formNamed = ^ORMForm *(NSString *name, NSError **failure) {
+        NSData *data = [NSData dataWithContentsOfFile:[LBForms stringByAppendingPathComponent:[name stringByAppendingPathExtension:@"ormform"]]];
+        id list = data ? [NSPropertyListSerialization propertyListWithData:data options:0 format:NULL error:failure] : nil;
+        return list ? [ORMForm formWithPropertyList:list error:failure] : nil;
+    };
+    LBCheck(@"MainTrack's store takes a currency: it says none", import.takesACurrency, nil);
+    import.currency = @"UAH";
+    done = [import importIntoVehicle:nil by:anna context:context saving:saving made:&madeCount skipped:&skipped error:&error];
+    LBCheck(@"imported again in UAH: nothing made; the bike's price, the WH-R500's cost and the BB's 1360 in UAH now, saved",
+            done && madeCount == 0 && skipped == 27 && import.recurrenced >= 3 && !context.hasChanges
+                && [commuter.purchasePriceCurrency isEqualToString:@"UAH"] && LBIs(commuter.purchasePriceAmount, @"1200")
+                && [wheels.unitCostCurrency isEqualToString:@"UAH"] && [shopItems[1].costCurrency isEqualToString:@"UAH"]
+                && LBIs(shopItems[1].costAmount, @"1360"),
+            error ?: [NSString stringWithFormat:@"%lu changed: %@ %@ %@", (unsigned long)import.recurrenced, commuter.purchasePriceCurrency,
+                                                wheels.unitCostCurrency, shopItems[1].costCurrency]);
     [[NSFileManager defaultManager] removeItemAtPath:path error:NULL];
 }
 

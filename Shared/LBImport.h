@@ -74,6 +74,17 @@ typedef BOOL (^LBImportSaving)(NSManagedObjectContext *context, NSError **error)
 
 /* It brings stock into a catalog (InvenTree's, MainTrack's parts). */
 @property (nonatomic, readonly) BOOL makesStock;
+/* What its amounts are in, where the export says none of its own (Drivvo's
+   export, MainTrack's store: their apps keep the currency in their
+   settings): asked as it is imported, the user's at first; nil, the
+   user's. Imported again in another, what it made before is said in it
+   (an amount there already of the export's, its currency changed). */
+@property (nonatomic, copy, nullable) NSString *currency;
+// Whether it asks for that: its amounts in no currency of their own.
+@property (nonatomic, readonly) BOOL takesACurrency;
+// What the last import changed to that currency: records, bikes and parts
+// it made before in another.
+@property (nonatomic, readonly) NSUInteger recurrenced;
 /* The catalog stock goes into (the user's of that name, made where they
    have none): MainTrack's parts "Bike parts" where none is named; an
    InvenTree's must be named. */

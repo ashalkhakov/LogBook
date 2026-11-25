@@ -15,6 +15,11 @@ NS_ASSUME_NONNULL_BEGIN
 // The item's window; a new item of the catalog's (its SKU the next, named
 // "New Item" to be typed over) for none.
 - (instancetype)initWithStore:(LBStore *)store item:(nullable StockItem *)item catalog:(Catalog *)catalog;
+// Its moves, and what made the one chosen opened (Open, a double click):
+// its order, its count, the record it was fitted by.
+@property (nonatomic, strong) IBOutlet NSArrayController *moveList;
+@property (nonatomic, strong) IBOutlet NSTableView *movesTable;
+- (IBAction)openMove:(nullable id)sender;
 @property (nonatomic, readonly, strong) StockItem *item;
 // A transfer asked for, of its item: its Move the stock task's
 // (LBStockEditor's task), its MoveStock sheet shown as the window is.

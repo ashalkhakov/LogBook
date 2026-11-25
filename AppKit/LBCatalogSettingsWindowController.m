@@ -39,7 +39,7 @@ static void *LBWarehouseChosen = &LBWarehouseChosen;
 - (void)viewDidLoad {
     [_warehouseList addObserver:self forKeyPath:@"selectionIndexes" options:0 context:LBWarehouseChosen];
     [super viewDidLoad];
-    [self bind:@"title" toObject:self withKeyPath:@"catalog.catalogName" options:nil];
+    self.titleKeyPath = @"catalog.catalogName";
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {

@@ -14,7 +14,7 @@
 #import <CoreData/CoreData.h>
 #import "LBScreen.h"
 
-@class LBStore, Catalog, User, LBTask, LBTasks, LBFormValues, LBPendingSubmission;
+@class LBStore, Catalog, User, LBTask, LBTasks, LBFormValues, LBPendingSubmission, Move;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -96,6 +96,13 @@ extern NSString *const LBStockCatalogKey;
 - (BOOL)submitForm:(LBFormValues *)values sheet:(NSWindow *)sheet;
 - (BOOL)wait:(NSString *)formName about:(NSString *)about instance:(NSString *)instance task:(nullable NSString *)taskName;
 - (void)stepDone:(NSString *)form;
+
+// What made the move shown, in its screen: its purchase or sale (a
+// receipt's, a shipment's, a line's, a return's), its count; a part fitted
+// or taken off, its record on the vehicle's page. NO, and a beep, where
+// nothing else made it (an adjustment, a transfer, an assembly: the item's
+// own).
+- (BOOL)openSourceOfMove:(nullable Move *)move;
 
 - (IBAction)save:(nullable id)sender;
 - (IBAction)revertChanges:(nullable id)sender;

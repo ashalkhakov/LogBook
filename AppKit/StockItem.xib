@@ -18,12 +18,15 @@
         <outlet property="stockUnitsTable" destination="stockUnitsTable" id="stockUnitsTableOutlet"/>
         <outlet property="reorderRuleList" destination="reorderRuleList" id="reorderRuleListOutlet"/>
         <outlet property="supplierItemsTable" destination="supplierItemsTable" id="supplierItemsTableOutlet"/>
+        <outlet property="moveList" destination="moveList" id="moveListOutlet"/>
+        <outlet property="movesTable" destination="movesTable" id="movesTableOutlet"/>
         <outlet property="itemCodesTable" destination="itemCodesTable" id="itemCodesTableOutlet"/>
         <outlet property="reorderRulesTable" destination="reorderRulesTable" id="reorderRulesTableOutlet"/>
       </connections>
     </customObject>
     <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
     <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+    <customObject id="currencies" userLabel="Currencies" customClass="LBCurrencies"/>
     <objectController objectClassName="StockTransfer" userLabel="Transfer Form" id="RequestTransferForm">
       <connections>
         <binding destination="-2" name="contentObject" keyPath="requestForm" id="RequestTransferFormContent"/>
@@ -525,19 +528,20 @@
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
-          <textField verticalHuggingPriority="750" identifier="itemPrice" id="itemPrice">
-            <rect key="frame" x="98" y="496" width="220" height="22"/>
+          <customView identifier="itemPrice" id="itemPrice" customClass="UDQuantityField">
+            <rect key="frame" x="98" y="494" width="220" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemPriceCell">
-              <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemPriceFormatter"/>
-              <font key="font" metaFont="system"/>
-              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-            </textFieldCell>
+            <userDefinedRuntimeAttributes>
+              <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                <real key="value" value="80"/>
+              </userDefinedRuntimeAttribute>
+            </userDefinedRuntimeAttributes>
             <connections>
+              <outlet property="units" destination="currencies" id="itemPriceUnits"/>
               <binding destination="-2" name="value" keyPath="item.priceAmount" id="itemPriceValue"/>
+              <binding destination="-2" name="unit" keyPath="item.priceCurrency" id="itemPriceCurrencyValue"/>
             </connections>
-          </textField>
+          </customView>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemUnitCostLabel">
             <rect key="frame" x="330" y="499" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
@@ -547,19 +551,20 @@
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
-          <textField verticalHuggingPriority="750" identifier="itemUnitCost" id="itemUnitCost">
-            <rect key="frame" x="414" y="496" width="232" height="22"/>
+          <customView identifier="itemUnitCost" id="itemUnitCost" customClass="UDQuantityField">
+            <rect key="frame" x="414" y="494" width="232" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemUnitCostCell">
-              <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemUnitCostFormatter"/>
-              <font key="font" metaFont="system"/>
-              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-            </textFieldCell>
+            <userDefinedRuntimeAttributes>
+              <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                <real key="value" value="80"/>
+              </userDefinedRuntimeAttribute>
+            </userDefinedRuntimeAttributes>
             <connections>
+              <outlet property="units" destination="currencies" id="itemUnitCostUnits"/>
               <binding destination="-2" name="value" keyPath="item.unitCostAmount" id="itemUnitCostValue"/>
+              <binding destination="-2" name="unit" keyPath="item.unitCostCurrency" id="itemUnitCostCurrencyValue"/>
             </connections>
-          </textField>
+          </customView>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemNoteLabel">
             <rect key="frame" x="14" y="469" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
@@ -724,7 +729,7 @@
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="holdingsTableScroll">
-                      <rect key="frame" x="10" y="84" width="240" height="190"/>
+                      <rect key="frame" x="10" y="112" width="240" height="162"/>
                       <autoresizingMask key="autoresizingMask" heightSizable="YES" flexibleMaxX="YES"/>
                       <clipView key="contentView" id="holdingsTableClip">
                         <rect key="frame" x="1" y="1" width="238" height="188"/>
@@ -783,8 +788,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
+                    <button toolTip="Open what made the move chosen: its order, its count, its record" verticalHuggingPriority="750" identifier="openMove" id="openMove">
+                      <rect key="frame" x="256" y="82" width="90" height="28"/>
+                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                      <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="openMoveCell">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                      </buttonCell>
+                      <connections>
+                        <action selector="openMove:" target="-2" id="openMoveAction"/>
+                      </connections>
+                    </button>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="movesTableScroll">
-                      <rect key="frame" x="260" y="84" width="344" height="190"/>
+                      <rect key="frame" x="260" y="112" width="344" height="162"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="movesTableClip">
                         <rect key="frame" x="1" y="1" width="342" height="188"/>
@@ -1244,6 +1260,21 @@
                                 </textFieldCell>
                                 <connections>
                                   <binding destination="supplierItemList" name="value" keyPath="arrangedObjects.supplierCostAmount" id="supplierItemsTableCostValue"/>
+                                </connections>
+                              </tableColumn>
+                              <tableColumn identifier="costCurrency" width="65" minWidth="30" maxWidth="1000" id="supplierItemsTableCurrencyColumn">
+                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Currency">
+                                  <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                </tableHeaderCell>
+                                <comboBoxCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" alignment="left" completes="YES" numberOfVisibleItems="8" id="supplierItemsTableCurrencyCell">
+                                  <font key="font" metaFont="system"/>
+                                  <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </comboBoxCell>
+                                <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                <connections>
+                                  <binding destination="supplierItemList" name="value" keyPath="arrangedObjects.supplierCostCurrency" id="supplierItemsTableCurrencyValue"/>
                                 </connections>
                               </tableColumn>
                               <tableColumn identifier="packSize" width="45" minWidth="30" maxWidth="1000" id="supplierItemsTablePackSizeColumn">

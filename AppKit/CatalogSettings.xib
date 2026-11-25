@@ -74,18 +74,18 @@
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
-          <textField verticalHuggingPriority="750" identifier="catalogCurrency" id="catalogCurrency">
-            <rect key="frame" x="85" y="536" width="70" height="22"/>
+          <comboBox verticalHuggingPriority="750" identifier="catalogCurrency" id="catalogCurrency">
+            <rect key="frame" x="85" y="533" width="76" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="catalogCurrencyCell">
+            <comboBoxCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" drawsBackground="YES" completes="YES" numberOfVisibleItems="8" id="catalogCurrencyCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-            </textFieldCell>
+            </comboBoxCell>
             <connections>
               <binding destination="-2" name="value" keyPath="catalog.currency" id="catalogCurrencyValue"/>
             </connections>
-          </textField>
+          </comboBox>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="catalogPrefixLabel">
             <rect key="frame" x="160" y="539" width="45" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>

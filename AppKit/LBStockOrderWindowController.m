@@ -103,7 +103,7 @@
     /* Its lines, its form's rows: in the order the window lists them. */
     _lineList.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"lbLineOrder" ascending:YES
                                                                   selector:@selector(localizedCaseInsensitiveCompare:)] ];
-    [self bind:@"title" toObject:self withKeyPath:@"windowTitle" options:nil];
+    self.titleKeyPath = @"windowTitle";
 }
 
 - (NSArray<NSArrayController *> *)editedControllers {

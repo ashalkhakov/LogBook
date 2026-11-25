@@ -69,6 +69,8 @@
     _purchasesTable.target = self;
     _openOrdersTable.doubleAction = @selector(showOrder:);
     _openOrdersTable.target = self;
+    _changesTable.doubleAction = @selector(openChange:);
+    _changesTable.target = self;
     [super viewDidLoad];
 }
 
@@ -376,6 +378,14 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
 
 - (IBAction)showOrder:(id)sender {
     [self openOrder:_openList.selectedObjects.firstObject];
+}
+
+/* What made the change chosen, shown. */
+- (IBAction)openChange:(id)sender {
+    NSInteger row = sender == _changesTable ? _changesTable.clickedRow : -1;
+    LBChange *change = row >= 0 && row < (NSInteger)[self.changeList.arrangedObjects count] ? self.changeList.arrangedObjects[(NSUInteger)row]
+                                                                                         : self.changeList.selectedObjects.firstObject;
+    if (change) [self openSourceOfMove:change.move];
 }
 
 @end

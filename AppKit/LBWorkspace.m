@@ -406,6 +406,7 @@ static void *LBScreenTitled = &LBScreenTitled;
    sidebar's place (nil: none of its), kept, and recorded for Back. */
 - (BOOL)present:(LBScreen *)screen place:(NSString *)place recording:(BOOL)recording asking:(BOOL)asking {
     if (asking && ![self mayLeaveFor:screen]) return NO;
+    [self notePlaceLeft];
     if (screen != _shownScreen) {
         if (_shownScreen) {
             [_shownScreen removeObserver:self forKeyPath:@"title" context:LBScreenTitled];
@@ -440,6 +441,15 @@ static void *LBScreenTitled = &LBScreenTitled;
     [self.window makeFirstResponder:nil];
     [screen screenDidShow];
     return YES;
+}
+
+/* The place being left as it is now, for Back: the stock's tab, the
+   lists' (chosen there, not only in the sidebar). */
+- (void)notePlaceLeft {
+    if (_at < 0 || _at >= (NSInteger)_history.count || _history[(NSUInteger)_at][0] != (id)_shownScreen || !_shownScreen) return;
+    NSString *now = _shownScreen == _stock ? [self placeOfStock]
+                    : _shownScreen == _lists ? [@"list " stringByAppendingString:_lists.tabs.selectedTabViewItem.identifier ?: @""] : nil;
+    if (now) _history[(NSUInteger)_at] = @[ _shownScreen, now ];
 }
 
 /* The window no smaller than the screen shown was drawn, with the sides

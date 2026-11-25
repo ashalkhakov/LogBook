@@ -1049,8 +1049,8 @@ static void LBStockCardSteps(LBStockItemWindowController *card) {
     [card.supplierItemList setSelectedObjects:bought ? @[ bought ] : @[]];
     LBTypeInCell(window, @"supplierItemsTable", 1, @"PL-778");
     LBTypeInCell(window, @"supplierItemsTable", 3, @"0.2");
-    LBTypeInCell(window, @"supplierItemsTable", 4, @"50");
-    LBTypeInCell(window, @"supplierItemsTable", 5, @"100");
+    LBTypeInCell(window, @"supplierItemsTable", 5, @"50");
+    LBTypeInCell(window, @"supplierItemsTable", 6, @"100");
     LBSavedIn(card, @"its supplier item saved");
     NSPredicate *ofBolt = [NSPredicate predicateWithFormat:@"stockItem.id == %@", bolt.id];
     SupplierItem *keptBought = [LBServerObjects([SupplierItem class], ofBolt) firstObject];
@@ -1525,6 +1525,20 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
     LBCheck(@"and by Shipment: the sale's two", shown.count == 2 && [[NSSet setWithArray:[shown valueForKeyPath:@"move.lbKind"]] isEqualToSet:
                                                                          [NSSet setWithObject:@"Shipment"]],
             [shown valueForKeyPath:@"move.lbWhat"]);
+    /* Open: what made the shipment, its sale, shown in the main pane;
+       Back to the changelog. */
+    [stock.changeList setSelectionIndex:0];
+    LBClick(window, @"openChange");
+    LBScreen *opened = [LBWorkspace current].shownScreen;
+    NSManagedObject *shippedFor = ((LBChange *)shown.firstObject).move.shipment.saleOrder;
+    LBCheck(@"Open: the shipment's sale, in its screen", [opened isKindOfClass:[LBStockOrderWindowController class]] && shippedFor
+                && [((LBStockOrderWindowController *)opened).order.objectID isEqual:shippedFor.objectID],
+            opened.title);
+    [[LBWorkspace current] goBack:nil];
+    LBSpin();
+    LBCheck(@"Back: the changelog again", stock.isShown && [stock.tabs.selectedTabViewItem.identifier isEqual:@"changes"],
+            [LBWorkspace current].shownScreen.title);
+    if (opened != stock) [opened close];
     LBChoose(window, @"changeKind", @"Transfer");
     LBChange *transfer = [stock.changeList.arrangedObjects firstObject];
     LBCheck(@"the transfer, before and after at each end", [transfer.fromTitle isEqualToString:@"Main / Default: 20 → 15"]
@@ -1721,11 +1735,15 @@ static void LBStockSteps(LBMainWindowController *controller) {
     LBStockItemWindowController *card = LBAddStockItem(stock, @"Bolt");
     StockItem *bolt = card.item;
     NSWindow *boltWindow = card.window;
-    LBType(boltWindow, @"itemPrice", @"0.5");
+    LBType(boltWindow, @"itemPriceValue", @"0.5");
     LBChoose(boltWindow, @"itemCategory", @"Fasteners");
     LBChoose(boltWindow, @"itemSupplier", @"Parts Ltd");
     LBSavedIn(card, @"its price, category and supplier saved");
     StockItem *keptBolt = LBServerOf(bolt);
+    UDQuantityField *price = (UDQuantityField *)LBControl(boltWindow.contentView, @"itemPrice");
+    LBCheck(@"its price's currency beside it, to choose from: the catalog's USD, saved", [price isKindOfClass:[UDQuantityField class]]
+                && [price.unitBox.stringValue isEqualToString:@"USD"] && price.unitBox.numberOfItems > 1,
+            price.unitBox.stringValue);
     LBCheck(@"its price kept, in the catalog's currency; its category; its SKU given, GAR-00001", LBIs(keptBolt.priceAmount, @"0.5")
                 && [keptBolt.priceCurrency isEqualToString:@"USD"] && [keptBolt.category.categoryName isEqualToString:@"Fasteners"]
                 && [keptBolt.sku isEqualToString:@"GAR-00001"],

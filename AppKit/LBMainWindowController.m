@@ -1,6 +1,7 @@
 #import "LBMainWindowController.h"
 #import "LBTiming.h"
 #import "LBWorkspace.h"
+#import "LBCurrencies.h"
 #import "LBStore.h"
 #import "LBLocalStore.h"
 #import "LBDisplay.h"
@@ -179,6 +180,18 @@ static void *LBRecordsChanged = &LBRecordsChanged;
    worked out as it is shown. */
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)item {
     if ([item.identifier isEqual:@"reports"]) LBTimed(@"reports shown", ^{ [self->_reports tabShown]; });
+}
+
+- (BOOL)showRecord:(Record *)record {
+    Record *mine = record.objectID ? (Record *)[self.context existingObjectWithID:record.objectID error:NULL] : nil;
+    Vehicle *vehicle = mine.vehicle;
+    if (!vehicle || ![_vehicles.arrangedObjects containsObject:vehicle]) return NO;
+    _vehicles.selectedObjects = @[ vehicle ];
+    if (![_workspace showLogbook]) return NO;
+    NSTabView *tabs = (NSTabView *)[self controlOf:@"tabs" in:_workspace.logbookPage];
+    [tabs selectTabViewItemWithIdentifier:@"records"];
+    _records.selectedObjects = @[ mine ];
+    return [_records.selectedObjects containsObject:mine];
 }
 
 - (void)showVehicleTab {
@@ -714,7 +727,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         alert.informativeText = [alert.informativeText stringByAppendingString:@" Logbook has no place for these, or takes them so:"];
     [alert addButtonWithTitle:@"Import"];
     [alert addButtonWithTitle:@"Cancel"];
-    if (import.leftOut.count || import.makesStock || import.makesItsVehicle) {
+    if (import.leftOut.count || import.makesStock || import.makesItsVehicle || import.takesACurrency) {
         NSArray *objects = nil;
         NSNib *nib = [[NSNib alloc] initWithNibNamed:@"ImportSummary" bundle:nil];
         if ([nib instantiateWithOwner:self topLevelObjects:&objects] && _importSummaryView) {
@@ -735,7 +748,27 @@ static void *LBRecordsChanged = &LBRecordsChanged;
                 view.hidden = !import.makesItsVehicle || import.exportYear > 0;
         }
     }
+    /* Its amounts' currency, which the export says not: asked, the user's
+       at first (MainTrack's of 2019 in UAH, the user's KZT now). */
+    if (_importCurrencyField && import.takesACurrency) {
+        NSString *mine = _store.user.currency;
+        NSMutableArray<NSString *> *codes = [[[LBCurrencies alloc] init].codes mutableCopy];
+        if (mine.length && ![codes containsObject:mine]) [codes insertObject:mine atIndex:0];
+        [_importCurrencyField removeAllItems];
+        for (NSString *code in codes) {
+            [_importCurrencyField addItemWithTitle:[LBCurrencies nameOfCode:code]];
+            _importCurrencyField.lastItem.representedObject = code;
+        }
+        NSInteger at = mine.length ? [_importCurrencyField indexOfItemWithRepresentedObject:mine] : -1;
+        if (at >= 0) [_importCurrencyField selectItemAtIndex:at];
+        for (NSView *view in _importCurrencyField.superview.subviews) {
+            if (view == _importCurrencyField || [view.identifier isEqualToString:@"importCurrencyLabel"]) view.hidden = NO;
+        }
+        alert.informativeText = [alert.informativeText stringByAppendingString:@" The export says no currency: say the one its amounts are in."];
+    }
     [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
+        if (import.takesACurrency) import.currency = self.importCurrencyField.selectedItem.representedObject;
+        self.importCurrencyField = nil;
         NSString *catalog = [self.importCatalogField.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         if (import.makesItsVehicle) {
             import.madeVehicleMake = self.importMakeField.stringValue;
@@ -755,6 +788,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         dispatch_async(dispatch_get_main_queue(), ^{
             NSAlert *said = [[NSAlert alloc] init];
             said.messageText = [NSString stringWithFormat:@"%lu made, %lu there already.", (unsigned long)made, (unsigned long)skipped];
+            if (import.recurrenced)
+                said.messageText = [said.messageText stringByAppendingFormat:@" %lu of those in %@ now.", (unsigned long)import.recurrenced, import.currency];
             said.informativeText = @"They are synced with the rest of your logbook.";
             [said beginSheetModalForWindow:self.window completionHandler:nil];
         });

@@ -954,16 +954,16 @@
                         <binding destination="lineList" name="value" keyPath="arrangedObjects.lineUnitCostAmount" id="linesTablePriceValue"/>
                       </connections>
                     </tableColumn>
-                    <tableColumn identifier="priceCurrency" width="50" minWidth="30" maxWidth="1000" id="linesTableCurrencyColumn">
-                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="">
+                    <tableColumn identifier="priceCurrency" width="70" minWidth="30" maxWidth="1000" id="linesTableCurrencyColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Currency">
                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                       </tableHeaderCell>
-                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="linesTableCurrencyCell">
+                      <comboBoxCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" alignment="left" completes="YES" numberOfVisibleItems="8" id="linesTableCurrencyCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
+                      </comboBoxCell>
                       <connections>
                         <binding destination="lineList" name="value" keyPath="arrangedObjects.lineUnitCostCurrency" id="linesTableCurrencyValue"/>
                       </connections>

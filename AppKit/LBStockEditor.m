@@ -6,6 +6,11 @@
 #import "LBTasks.h"
 #import "LBConflicts.h"
 #import "LBFormValues.h"
+#import "LBCurrencies.h"
+#import "LBWorkspace.h"
+#import "LBMainWindowController.h"
+#import "LBStockOrderWindowController.h"
+#import "LBStockCountWindowController.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 
@@ -50,6 +55,44 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     /* The rules what is edited breaks, at its fields. */
     _fieldIssues = [[LBFieldIssues alloc] initWithView:self.view];
     [_fieldIssues setNeedsRefresh];
+    [self offerCurrenciesUnder:self.view];
+}
+
+/* The currencies a money field picks from (LBCurrencies'): its catalog's
+   and the user's first. */
+- (NSArray<NSString *> *)currencyCodes {
+    NSMutableArray<NSString *> *codes = [[[LBCurrencies alloc] init].codes mutableCopy];
+    for (NSString *own in @[ self.user.currency ?: @"", _catalog.currency ?: @"" ]) {
+        if (!own.length) continue;
+        [codes removeObject:own];
+        [codes insertObject:own atIndex:0];
+    }
+    return codes;
+}
+
+/* Each currency's combo box (its identifier ...Currency), and each table's
+   currency column (its combo box cells), offered the currencies. */
+- (void)offerCurrenciesUnder:(NSView *)view {
+    NSArray<NSString *> *codes = nil;
+    if ([view isKindOfClass:[NSComboBox class]] && [view.identifier hasSuffix:@"Currency"]) {
+        NSComboBox *box = (NSComboBox *)view;
+        [box removeAllItems];
+        [box addItemsWithObjectValues:codes = [self currencyCodes]];
+    }
+    if ([view isKindOfClass:[NSTableView class]]) {
+        for (NSTableColumn *column in ((NSTableView *)view).tableColumns) {
+            if (![column.identifier hasSuffix:@"Currency"] || ![column.dataCell isKindOfClass:[NSComboBoxCell class]]) continue;
+            NSComboBoxCell *cell = column.dataCell;
+            [cell removeAllItems];
+            [cell addItemsWithObjectValues:codes ?: (codes = [self currencyCodes])];
+        }
+    }
+    for (NSView *each in view.subviews) [self offerCurrenciesUnder:each];
+    if ([view isKindOfClass:[NSTabView class]]) {
+        for (NSTabViewItem *item in ((NSTabView *)view).tabViewItems) {
+            if (item.view.superview != view) [self offerCurrenciesUnder:item.view];
+        }
+    }
 }
 
 - (User *)user {
@@ -211,6 +254,34 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
         return nil;
     }
     return quantity;
+}
+
+- (BOOL)openSourceOfMove:(Move *)move {
+    NSManagedObject *order = move.receipt.purchaseOrder ?: move.purchaseLine.purchaseOrder ?: move.returnedPurchaseLine.purchaseOrder
+                             ?: move.supplierReturn.purchaseOrder ?: move.shipment.saleOrder ?: move.saleLine.saleOrder
+                             ?: move.returnedSaleLine.saleOrder ?: move.customerReturn.saleOrder;
+    NSManagedObject *of = order ?: move.stockCount;
+    LBWorkspace *workspace = [LBWorkspace current];
+    if (of) {
+        /* Its screen open already: shown again. */
+        for (LBScreen *screen in workspace.keptScreens) {
+            NSManagedObject *shown = [screen isKindOfClass:[LBStockOrderWindowController class]] ? ((LBStockOrderWindowController *)screen).order
+                                     : [screen isKindOfClass:[LBStockCountWindowController class]] ? ((LBStockCountWindowController *)screen).stockCount
+                                                                                                  : nil;
+            if ([shown.objectID isEqual:of.objectID]) {
+                [screen showWindow:self];
+                return YES;
+            }
+        }
+        LBStockEditor *screen = order ? [[LBStockOrderWindowController alloc] initWithStore:self.store order:order]
+                                      : [[LBStockCountWindowController alloc] initWithStore:self.store count:move.stockCount];
+        screen.quiet = self.quiet;
+        [screen showWindow:self];
+        return YES;
+    }
+    if (move.componentChange && [workspace.windowController showRecord:move.componentChange]) return YES;
+    NSBeep();
+    return NO;
 }
 
 - (IBAction)save:(id)sender {

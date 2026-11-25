@@ -9,6 +9,7 @@
 #import "Event+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "Service+CoreDataClass.h"
+#import "ServiceItem+CoreDataClass.h"
 #import "DistanceUnit+CoreDataClass.h"
 #import "StockUnit+CoreDataClass.h"
 #import "StockItem+CoreDataClass.h"
@@ -444,9 +445,9 @@ static NSString *LBPlate(NSString *plate) {
     }
     NSMutableArray *leftOut = [NSMutableArray array];
     NSMutableArray<LBEntry *> *entries = [NSMutableArray array];
-    NSString *currency = user.currency;
+    NSString *currency = [self currencyOf:user];
     if (!currency.length) {
-        if (error) *error = LBImportError(@"Drivvo's export says no currency: say yours in Preferences first, and it is taken as the export's.");
+        if (error) *error = LBImportError(@"Drivvo's export says no currency: say the one its amounts are in.");
         return NO;
     }
     NSTimeZone *zone = user.timeZone.length ? [NSTimeZone timeZoneWithName:user.timeZone] : [NSTimeZone localTimeZone];
@@ -650,15 +651,19 @@ static NSString *LBPlate(NSString *plate) {
 /* The same, of a component change: one that fits that component (two fitted
    at once, chainrings, are two). */
 - (BOOL)vehicle:(Vehicle *)vehicle has:(LBEntry *)entry fitting:(NSString *)component {
+    return [self recordOf:vehicle as:entry fitting:component] != nil;
+}
+
+- (Record *)recordOf:(Vehicle *)vehicle as:(LBEntry *)entry fitting:(NSString *)component {
     for (Record *record in vehicle.records) {
         if (![record isKindOfClass:entry.kind] || record.isDeleted) continue;
         if (component && [record isKindOfClass:[ComponentChange class]]
             && ![((ComponentChange *)record).stockUnit.id.UUIDString isEqualToString:component]) continue;
         Event *event = (Event *)record;
         if (fabs(event.timestamp.timeIntervalSinceReferenceDate - entry.moment.timeIntervalSinceReferenceDate) < 1
-            && (!entry.mileage || [event.mileageQuantity compare:entry.mileage] == NSOrderedSame)) return YES;
+            && (!entry.mileage || [event.mileageQuantity compare:entry.mileage] == NSOrderedSame)) return record;
     }
-    return NO;
+    return nil;
 }
 
 - (BOOL)importIntoVehicle:(Vehicle *)vehicle
@@ -671,7 +676,10 @@ static NSString *LBPlate(NSString *plate) {
     if (made) *made = 0;
     if (skipped) *skipped = 0;
     if ([_source isEqualToString:@"InvenTree"]) return [self importInvenTreeBy:user context:context saving:saving made:made skipped:skipped error:error];
-    if (self.makesVehicles) return [self importMainTrackBy:user context:context saving:saving made:made skipped:skipped error:error];
+    if (self.makesVehicles) {
+        return [self importMainTrackBy:user context:context saving:saving made:made skipped:skipped error:error]
+               && [self saveRecurrencedIn:context saving:saving error:error];
+    }
     if (![self planForVehicle:vehicle by:user error:error]) return NO;
     vehicle = vehicle ?: _matchedVehicle;
     if (!vehicle) {
@@ -680,8 +688,11 @@ static NSString *LBPlate(NSString *plate) {
         if (made) (*made)++;
     }
     NSMutableDictionary<NSString *, ORMForm *> *forms = [NSMutableDictionary dictionary];
+    _recurrenced = 0;
     for (LBEntry *entry in _entries) {
-        if ([self vehicle:vehicle has:entry]) {
+        Record *had = [self recordOf:vehicle as:entry fitting:nil];
+        if (had) {
+            if ([self recurrence:had as:entry]) _recurrenced++;
             if (skipped) (*skipped)++;
             continue;
         }
@@ -723,7 +734,18 @@ static NSString *LBPlate(NSString *plate) {
         }
         if (made) (*made)++;
     }
-    return YES;
+    return [self saveRecurrencedIn:context saving:saving error:error];
+}
+
+/* What was made before in another currency, saved in the export's. */
+- (BOOL)saveRecurrencedIn:(NSManagedObjectContext *)context saving:(LBImportSaving)saving error:(NSError **)error {
+    if (!_recurrenced || !context.hasChanges) return YES;
+    NSError *failure = nil;
+    if (saving(context, &failure)) return YES;
+    [context rollback];
+    if (error) *error = LBImportError(@"What was imported before, in %@ now, refused: %@", _currency ?: @"its currency",
+                                      failure ? LBRefusal(failure) : @"not saved");
+    return NO;
 }
 
 
@@ -877,14 +899,55 @@ static NSString *LBDecimal(double value) {
     return [_source isEqualToString:@"MainTrack"];
 }
 
+- (BOOL)takesACurrency {
+    return [_source isEqualToString:@"MainTrack"] || [_source isEqualToString:@"Drivvo"];
+}
+
+/* What the export's amounts are in: the one said, else the user's. */
+- (NSString *)currencyOf:(User *)user {
+    return _currency.length ? _currency : user.currency;
+}
+
+/* A record made before of the entry, its amounts in another currency than
+   the export's (imported in the user's, the export's another): each
+   amount the entry gives a currency, and its items', in the export's.
+   YES, changed. */
+- (BOOL)recurrence:(Record *)record as:(LBEntry *)entry {
+    NSString *currency = nil;
+    NSMutableArray<NSString *> *keys = [NSMutableArray array];
+    for (NSString *key in entry.values) {
+        if (![key hasSuffix:@"Currency"] && ![key isEqualToString:@"currency"]) continue;
+        if (![entry.values[key] isKindOfClass:[NSString class]]) continue;
+        currency = entry.values[key];
+        [keys addObject:key];
+    }
+    if (!currency.length) return NO;
+    BOOL changed = NO;
+    NSDictionary *attributes = record.entity.attributesByName;
+    for (NSString *key in keys) {
+        if (!attributes[key] || [[record valueForKey:key] isEqual:currency]) continue;
+        [record setValue:currency forKey:key];
+        changed = YES;
+    }
+    if ([record isKindOfClass:[Service class]]) {
+        for (ServiceItem *item in ((Service *)record).serviceItems) {
+            if (item.costAmount && ![item.costCurrency isEqualToString:currency]) {
+                item.costCurrency = currency;
+                changed = YES;
+            }
+        }
+    }
+    return changed;
+}
+
 /* MainTrack's as Logbook's: each bike a bicycle, each component one of the
    bike it was first fitted to, each ride a trip, each assignment a
    component change, each invoice a service; the readings worked out from
    the rides (the bike's distance at a moment: what it had ridden before). */
 - (BOOL)planMainTrackBy:(User *)user error:(NSError **)error {
-    NSString *currency = user.currency;
+    NSString *currency = [self currencyOf:user];
     if (!currency.length) {
-        if (error) *error = LBImportError(@"MainTrack's store says no currency: say yours in Preferences first, and it is taken as its.");
+        if (error) *error = LBImportError(@"MainTrack's store says no currency: say the one its amounts are in.");
         return NO;
     }
     NSMutableArray *leftOut = [NSMutableArray array];
@@ -1187,7 +1250,15 @@ static NSString *LBDecimal(double value) {
                       made:(BOOL *)made error:(NSError **)error {
     *made = NO;
     for (Vehicle *each in user.ownedVehicles) {
-        if ([each.vehicleName isEqualToString:bike.name] && !each.isDeleted) return each;
+        if ([each.vehicleName isEqualToString:bike.name] && !each.isDeleted) {
+            /* Made before: its price, the bike's, in the export's currency. */
+            NSString *currency = [self currencyOf:user];
+            if (bike.price && [each.purchasePriceAmount compare:bike.price] == NSOrderedSame && ![each.purchasePriceCurrency isEqualToString:currency]) {
+                each.purchasePriceCurrency = currency;
+                _recurrenced++;
+            }
+            return each;
+        }
     }
     Vehicle *vehicle = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:context];
     vehicle.id = [NSUUID UUID];
@@ -1207,7 +1278,7 @@ static NSString *LBDecimal(double value) {
     if (bike.bought) vehicle.purchaseDate = bike.bought;
     if (bike.price) {
         vehicle.purchasePriceAmount = bike.price;
-        vehicle.purchasePriceCurrency = user.currency;
+        vehicle.purchasePriceCurrency = [self currencyOf:user];
     }
     vehicle.owner = user;
     NSError *failure = nil;
@@ -1234,7 +1305,7 @@ static NSString *LBDecimal(double value) {
     }
     if (!catalog) {
         catalog = [Catalog lb_newCatalogNamed:name owner:user inContext:context];
-        catalog.currency = user.currency;
+        catalog.currency = [self currencyOf:user];
         if (made) (*made)++;
     }
     NSMutableDictionary<NSString *, Category *> *categories = [NSMutableDictionary dictionary];
@@ -1275,13 +1346,21 @@ static NSString *LBDecimal(double value) {
             for (LBPart *part in group) {
                 if (part.cost && !item.unitCostAmount) {
                     item.unitCostAmount = part.cost;
-                    item.unitCostCurrency = user.currency;
+                    item.unitCostCurrency = [self currencyOf:user];
                 }
                 if (part.bought && !item.purchased) item.purchased = part.bought;
             }
             if (made) (*made)++;
-        } else if (skipped) {
-            (*skipped)++;
+        } else {
+            /* Made before: its cost, the part's, in the export's currency. */
+            NSString *currency = [self currencyOf:user];
+            for (LBPart *part in group) {
+                if (part.cost && [item.unitCostAmount compare:part.cost] == NSOrderedSame && ![item.unitCostCurrency isEqualToString:currency]) {
+                    item.unitCostCurrency = currency;
+                    _recurrenced++;
+                }
+            }
+            if (skipped) (*skipped)++;
         }
         NSArray<StockUnit *> *had = [item.stockUnits.allObjects sortedArrayUsingComparator:^NSComparisonResult(StockUnit *a, StockUnit *b) {
             return [a.id.UUIDString compare:b.id.UUIDString];
@@ -1317,6 +1396,7 @@ static NSString *LBDecimal(double value) {
 - (BOOL)importMainTrackBy:(User *)user context:(NSManagedObjectContext *)context saving:(LBImportSaving)saving
                      made:(NSUInteger *)made skipped:(NSUInteger *)skipped error:(NSError **)error {
     if (![self planMainTrackBy:user error:error]) return NO;
+    _recurrenced = 0;
     NSMutableDictionary<NSNumber *, Vehicle *> *vehicles = [NSMutableDictionary dictionary];
     for (LBBike *bike in _bikes) {
         BOOL new = NO;
@@ -1340,7 +1420,9 @@ static NSString *LBDecimal(double value) {
             else missing = YES;
         }
         if (missing) continue;
-        if ([self vehicle:vehicle has:entry fitting:values[@"stockUnit"]]) {
+        Record *had = [self recordOf:vehicle as:entry fitting:values[@"stockUnit"]];
+        if (had) {
+            if ([self recurrence:had as:entry]) _recurrenced++;
             if (skipped) (*skipped)++;
             continue;
         }

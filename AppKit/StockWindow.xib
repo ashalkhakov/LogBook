@@ -7,6 +7,7 @@
   <objects>
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockWindowController">
       <connections>
+        <outlet property="changesTable" destination="changesTable" id="changesTableOutlet"/>
         <outlet property="view" destination="content" id="windowOutlet"/>
         <outlet property="tabs" destination="stockTabs" id="tabsOutlet"/>
         <outlet property="itemList" destination="itemList" id="itemListOutlet"/>
@@ -680,8 +681,19 @@
                         <binding destination="-2" name="value" keyPath="changeSince" id="changeSinceValue"/>
                       </connections>
                     </textField>
+                    <button toolTip="Open what made the move chosen: its order, its count, its record" verticalHuggingPriority="750" identifier="openChange" id="openChange">
+                      <rect key="frame" x="6" y="6" width="90" height="28"/>
+                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                      <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="openChangeCell">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                      </buttonCell>
+                      <connections>
+                        <action selector="openChange:" target="-2" id="openChangeAction"/>
+                      </connections>
+                    </button>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="changesTableScroll">
-                      <rect key="frame" x="10" y="10" width="934" height="484"/>
+                      <rect key="frame" x="10" y="40" width="934" height="454"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="changesTableClip">
                         <rect key="frame" x="1" y="1" width="932" height="482"/>

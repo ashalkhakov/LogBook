@@ -12,14 +12,33 @@
         <outlet property="importCatalogField" destination="importCatalog" id="importCatalogOutlet"/>
         <outlet property="importMakeField" destination="importMake" id="importMakeOutlet"/>
         <outlet property="importYearField" destination="importYear" id="importYearOutlet"/>
+        <outlet property="importCurrencyField" destination="importCurrency" id="importCurrencyOutlet"/>
       </connections>
     </customObject>
     <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
     <customObject id="-3" userLabel="Application" customClass="NSObject"/>
     <customView identifier="importSummary" id="importSummaryView" userLabel="Import Summary">
-      <rect key="frame" x="0.0" y="0.0" width="440" height="182"/>
+      <rect key="frame" x="0.0" y="0.0" width="440" height="214"/>
       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
       <subviews>
+        <textField hidden="YES" horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="importCurrencyLabel" id="importCurrencyLabel">
+          <rect key="frame" x="0.0" y="192" width="140" height="17"/>
+          <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+          <textFieldCell key="cell" lineBreakMode="clipping" title="Its amounts are in:" id="importCurrencyLabelCell">
+            <font key="font" metaFont="system"/>
+            <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+          </textFieldCell>
+        </textField>
+        <popUpButton hidden="YES" verticalHuggingPriority="750" identifier="importCurrency" id="importCurrency">
+          <rect key="frame" x="143" y="186" width="300" height="26"/>
+          <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+          <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="importCurrencyCell">
+            <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+            <font key="font" metaFont="system"/>
+            <menu key="menu" id="importCurrencyMenu"/>
+          </popUpButtonCell>
+        </popUpButton>
         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="importCatalogLabel" id="importCatalogLabel">
           <rect key="frame" x="0.0" y="160" width="140" height="17"/>
           <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>

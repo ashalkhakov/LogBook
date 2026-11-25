@@ -103,7 +103,9 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    [self bind:@"title" toObject:self withKeyPath:@"item.itemName" options:nil];
+    self.titleKeyPath = @"item.itemName";
+    _movesTable.target = self;
+    _movesTable.doubleAction = @selector(openMove:);
 }
 
 #pragma mark Reading
@@ -387,6 +389,14 @@ static NSPredicate *LBOf(NSString *key, id object) {
 
 - (IBAction)removeReorderRule:(id)sender {
     [self remove:_reorderRuleList list:@"reorderRules"];
+}
+
+/* What made the move chosen, shown. */
+- (IBAction)openMove:(id)sender {
+    NSInteger row = sender == _movesTable ? _movesTable.clickedRow : -1;
+    Move *move = row >= 0 && row < (NSInteger)[_moveList.arrangedObjects count] ? _moveList.arrangedObjects[(NSUInteger)row]
+                                                                              : _moveList.selectedObjects.firstObject;
+    if (move) [self openSourceOfMove:move];
 }
 
 @end
