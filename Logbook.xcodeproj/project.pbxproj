@@ -106,6 +106,10 @@
 			fileRef = 563C3FC39964597407DB858B /* ODataIncrementalStore.xcframework */;
 			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
 		};
+		21BD9F1495B3FB6AD6DD933B /* LBScreen.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 2BD1112FC8A77EA76CFC4A1B /* LBScreen.m */;
+		};
 		231C5DA685A4BEF1681D0474 /* LBProcedures.m */ = {
 			isa = PBXBuildFile;
 			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
@@ -451,6 +455,10 @@
 			isa = PBXBuildFile;
 			fileRef = 2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */;
 		};
+		A3F9A68618A035B090B017EA /* Assets.xcassets */ = {
+			isa = PBXBuildFile;
+			fileRef = 4A4CE36DDC251FAA65859DD2 /* Assets.xcassets */;
+		};
 		A705F49C2CAF45185E70DA82 /* HTTPServerKit.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = 7702BA6BAA271DD442048BC6 /* HTTPServerKit.xcframework */;
@@ -622,6 +630,10 @@
 			isa = PBXBuildFile;
 			fileRef = B29454D488C4F49E273C15A0 /* Foundation.framework */;
 		};
+		E06DC11CB2123E4490D076A1 /* LBWorkspace.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 52EAAB5943E40BE68F2AB101 /* LBWorkspace.m */;
+		};
 		E20C1F5F53018FE5F3B4A0E1 /* ODataSync.xcframework */ = {
 			isa = PBXBuildFile;
 			fileRef = A9CDAEE04C05AAE17704B10B /* ODataSync.xcframework */;
@@ -692,6 +704,10 @@
 		F07E09309E4B0B9E7693AC49 /* Assets.xcassets */ = {
 			isa = PBXBuildFile;
 			fileRef = DA6375B01FB8DD843C3B2050 /* Assets.xcassets */;
+		};
+		F0856B43A30A6B5C226AE89D /* UDPaneSplitController.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 4EEBD032F810D2D0F20DFB37 /* UDPaneSplitController.m */;
 		};
 		F0AD21C68D0222A76B701F15 /* LBLocalActions.m */ = {
 			isa = PBXBuildFile;
@@ -952,6 +968,12 @@
 			path = LBVehicleSummary.h;
 			sourceTree = "<group>";
 		};
+		28B91CF6E1B70CF2E99FFAC6 /* LBWorkspace.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBWorkspace.h;
+			sourceTree = "<group>";
+		};
 		2A4AC50D32AD7276B2F3CB30 /* LBLocalStore.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -969,6 +991,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = net.daringfireball.markdown;
 			path = docs/STOCK.md;
+			sourceTree = "<group>";
+		};
+		2BD1112FC8A77EA76CFC4A1B /* LBScreen.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBScreen.m;
 			sourceTree = "<group>";
 		};
 		2BF486C62A308B2388CCDA61 /* LBiOSControllers.h */ = {
@@ -1105,6 +1133,12 @@
 			path = LBConnectPanel.m;
 			sourceTree = "<group>";
 		};
+		4A4CE36DDC251FAA65859DD2 /* Assets.xcassets */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder.assetcatalog;
+			path = Assets.xcassets;
+			sourceTree = "<group>";
+		};
 		4DDC4EDEB5B9B0DABA7644A1 /* LBStockEditor.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1123,6 +1157,12 @@
 			path = LBTiming.m;
 			sourceTree = "<group>";
 		};
+		4EEBD032F810D2D0F20DFB37 /* UDPaneSplitController.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = UDPaneSplitController.m;
+			sourceTree = "<group>";
+		};
 		4FE96229781E69B34DF214C9 /* MainMenu.xib */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
@@ -1139,6 +1179,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBTasksWindowController.m;
+			sourceTree = "<group>";
+		};
+		52EAAB5943E40BE68F2AB101 /* LBWorkspace.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBWorkspace.m;
 			sourceTree = "<group>";
 		};
 		5495040375CD673C4E4A74CE /* LBServer.m */ = {
@@ -1444,6 +1490,12 @@
 			path = "logbook-server";
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		A7F01558353D8EA091BF515C /* LBScreen.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBScreen.h;
+			sourceTree = "<group>";
+		};
 		A95A50DBF58ADE2AB8422970 /* LBTasks.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -1560,6 +1612,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBMainWindowController.m;
+			sourceTree = "<group>";
+		};
+		BEDA06DA0F9BE35B5BC734F5 /* UDPaneSplitController.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = UDPaneSplitController.h;
 			sourceTree = "<group>";
 		};
 		BF538D42C29FF06E7EC61648 /* IOS.md */ = {
@@ -1905,6 +1963,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		246C69358B4826A0B7E30B27 /* UDWorkbench */ = {
+			isa = PBXGroup;
+			children = (
+				BEDA06DA0F9BE35B5BC734F5 /* UDPaneSplitController.h */,
+				4EEBD032F810D2D0F20DFB37 /* UDPaneSplitController.m */,
+			);
+			path = UDWorkbench;
+			sourceTree = "<group>";
+		};
 		2AC8BA37DAC32D5437812408 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -1983,6 +2050,7 @@
 				3184AC997C8F88876EF76A8C /* Tests */,
 				57D815989F1AB5B538C55DF3 /* UDCalendar */,
 				5E14CDF31B3C8DCE0631102F /* UDQuantity */,
+				246C69358B4826A0B7E30B27 /* UDWorkbench */,
 				2B6F7E2DBE1E88B5D1B95BA6 /* Xcode */,
 				4BB4DDA056F6DB57003A27FE /* iOS */,
 				5A559843A90E30B141C300FB /* Frameworks */,
@@ -2047,6 +2115,7 @@
 		90051324002C9E91549A10E3 /* AppKit */ = {
 			isa = PBXGroup;
 			children = (
+				4A4CE36DDC251FAA65859DD2 /* Assets.xcassets */,
 				2432BF71F62D11F0DCE041C6 /* CatalogSettings.xib */,
 				F8746362A46CB5E2C52D1A7E /* ConnectPanel.xib */,
 				79BD7E3003262AA6A6464465 /* ImportSummary.xib */,
@@ -2080,6 +2149,8 @@
 				97554471CF37E140DE30D80A /* LBRemindersController.m */,
 				0A6433DEAA58B45842DD06D1 /* LBReportsController.h */,
 				AA1BB6F3704843F4C100FA9B /* LBReportsController.m */,
+				A7F01558353D8EA091BF515C /* LBScreen.h */,
+				2BD1112FC8A77EA76CFC4A1B /* LBScreen.m */,
 				13623D0A57E5BB10F9182DD5 /* LBSelfTest.h */,
 				D754F8EB42F3ADAE0E299F79 /* LBSelfTest.m */,
 				B84277BF72A1805D5D8DB7FC /* LBStockCountWindowController.h */,
@@ -2100,6 +2171,8 @@
 				4EC3D6008DF36665D482D905 /* LBTiming.m */,
 				54D9B95BA710144DC1887114 /* LBUpdater.h */,
 				63F76DCE6702DEFBD71EE19B /* LBUpdater-Apple.m */,
+				28B91CF6E1B70CF2E99FFAC6 /* LBWorkspace.h */,
+				52EAAB5943E40BE68F2AB101 /* LBWorkspace.m */,
 				694E25C06D350F4886223FAB /* Lists.xib */,
 				C7FB66AC7ED503D0CE991724 /* Logbook.png */,
 				4FE96229781E69B34DF214C9 /* MainMenu.xib */,
@@ -2339,6 +2412,7 @@
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
 				528729F595FA1EDB414383AA /* Logbook.rdl */,
+				A3F9A68618A035B090B017EA /* Assets.xcassets */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2554,6 +2628,7 @@
 				8ECBB7BC40A4F45ACBFC0E2F /* LBPreferencesController.m */,
 				A2A340CC7CD54ABA2AE1056F /* LBRemindersController.m */,
 				4AF4261543FF6ED24F470557 /* LBReportsController.m */,
+				21BD9F1495B3FB6AD6DD933B /* LBScreen.m */,
 				DFBD0FF8323401C8CF5C5DF2 /* LBSelfTest.m */,
 				17A5EC43F70F3F6A0365515A /* LBStockCountWindowController.m */,
 				D133B5ACC3CED76663C79052 /* LBStockEditor.m */,
@@ -2564,9 +2639,11 @@
 				3E8947C4E7D3BE07ECE29527 /* LBTasksWindowController.m */,
 				69D7392C369CC87D8182114D /* LBTiming.m */,
 				044AA23AA30A8FF82812654E /* LBUpdater-Apple.m */,
+				E06DC11CB2123E4490D076A1 /* LBWorkspace.m */,
 				D150CB72C0373BBF67E78758 /* main.m */,
 				5AA4112F777D647934A73C69 /* UDCalendarView.m */,
 				B3E1A2A2285935D32D76562A /* UDQuantityField.m */,
+				F0856B43A30A6B5C226AE89D /* UDPaneSplitController.m */,
 				9B3FE38F441D5FFFA5161082 /* LBCalendar.m */,
 				E4BB8CF203F232AF1CA4BAFE /* LBConflicts.m */,
 				4585977F8EC64CE45902C9E3 /* LBDisplay.m */,
@@ -2632,7 +2709,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				HEADER_SEARCH_PATHS = ("$(SRCROOT)/Shared", "$(SRCROOT)/AppKit", "$(SRCROOT)/UDCalendar", "$(SRCROOT)/UDQuantity", "$(SRCROOT)/Server", "$(SRCROOT)/iOS", "$(SRCROOT)/build/Model/Constraints", "$(SRCROOT)/build/Generated");
+				HEADER_SEARCH_PATHS = ("$(SRCROOT)/Shared", "$(SRCROOT)/AppKit", "$(SRCROOT)/UDCalendar", "$(SRCROOT)/UDQuantity", "$(SRCROOT)/UDWorkbench", "$(SRCROOT)/Server", "$(SRCROOT)/iOS", "$(SRCROOT)/build/Model/Constraints", "$(SRCROOT)/build/Generated");
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				SDKROOT = macosx;
 				WARNING_CFLAGS = "-Wall -Wno-unused-parameter";
@@ -2642,6 +2719,7 @@
 		4C52BA657196677304C94126 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppKit/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");
@@ -2682,7 +2760,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = "DEBUG=1";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				HEADER_SEARCH_PATHS = ("$(SRCROOT)/Shared", "$(SRCROOT)/AppKit", "$(SRCROOT)/UDCalendar", "$(SRCROOT)/UDQuantity", "$(SRCROOT)/Server", "$(SRCROOT)/iOS", "$(SRCROOT)/build/Model/Constraints", "$(SRCROOT)/build/Generated");
+				HEADER_SEARCH_PATHS = ("$(SRCROOT)/Shared", "$(SRCROOT)/AppKit", "$(SRCROOT)/UDCalendar", "$(SRCROOT)/UDQuantity", "$(SRCROOT)/UDWorkbench", "$(SRCROOT)/Server", "$(SRCROOT)/iOS", "$(SRCROOT)/build/Model/Constraints", "$(SRCROOT)/build/Generated");
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
@@ -2766,6 +2844,7 @@
 		F050AA867EEC9C45AFB5B8BE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = AppKit/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/../Frameworks");

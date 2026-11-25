@@ -27,8 +27,8 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 
 @synthesize task = _task, tasks = _tasks, waiting = _waiting;
 
-- (instancetype)initWithStore:(LBStore *)store windowNibName:(NSString *)name {
-    if ((self = [super initWithWindowNibName:name])) {
+- (instancetype)initWithStore:(LBStore *)store nibName:(NSString *)name {
+    if ((self = [super initWithNibName:name bundle:nil])) {
         _store = store;
         _context = [store newContext];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stockDidChange:) name:LBStockDidChangeNotification
@@ -44,12 +44,11 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void)windowDidLoad {
-    [super windowDidLoad];
-    self.window.delegate = (id<NSWindowDelegate>)self;
+- (void)viewDidLoad {
+    [super viewDidLoad];
     [self readAgain];
     /* The rules what is edited breaks, at its fields. */
-    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.window.contentView];
+    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.view];
     [_fieldIssues setNeedsRefresh];
 }
 
@@ -228,7 +227,7 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     if (![self commitEdits]) return NO;
     if (!_context.hasChanges) return YES;
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Save the changes before closing?";
+    alert.messageText = self.title.length ? [NSString stringWithFormat:@"Save the changes to %@?", self.title] : @"Save the changes?";
     [alert addButtonWithTitle:@"Save"];
     [alert addButtonWithTitle:@"Cancel"];
     [alert addButtonWithTitle:@"Don't Save"];
@@ -241,7 +240,8 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     return [self saveChanges];
 }
 
-- (BOOL)windowShouldClose:(NSWindow *)sender {
+/* Left for another screen as it would close: its changes saved or let go. */
+- (BOOL)shouldLeave {
     return [self shouldClose];
 }
 

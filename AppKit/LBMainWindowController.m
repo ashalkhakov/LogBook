@@ -1,5 +1,6 @@
 #import "LBMainWindowController.h"
 #import "LBTiming.h"
+#import "LBWorkspace.h"
 #import "LBStore.h"
 #import "LBLocalStore.h"
 #import "LBDisplay.h"
@@ -128,17 +129,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     if (_store.local) [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showSyncStatus)
                                                                    name:LBLocalStoreDidChangeNotification object:_store.local];
     [self showSyncStatus];
-    self.window.title = [NSString stringWithFormat:@"Logbook — %@", _store.serviceRoot.host ?: @""];
     _vehicles.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(vehicleName)) ascending:YES
                                                                   selector:@selector(localizedCaseInsensitiveCompare:)] ];
-    /* No smaller than drawn in MainWindow.xib (a frame saved before may
-       be): the forms' fields keep their widths. */
-    NSSize drawn = NSMakeSize(1060, 680);
-    NSSize now = [self.window.contentView frame].size;
-    self.window.contentMinSize = drawn;
-    if (now.width < drawn.width || now.height < drawn.height) {
-        [self.window setContentSize:NSMakeSize(MAX(now.width, drawn.width), MAX(now.height, drawn.height))];
-    }
     _records.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(lbDate)) ascending:NO] ];
     /* A vehicle's schedules and reminders are the Reminders tab's. */
     NSString *kind = [NSString stringWithFormat:@"%@.%@", NSStringFromSelector(@selector(entity)), NSStringFromSelector(@selector(name))];
@@ -156,8 +148,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     /* Reference data, the model's: read once. */
     self.serviceKinds = [CostKind lbServiceKindsInContext:self.context];
     _attachments.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(fileName)) ascending:YES] ];
-    /* The rules a record or a vehicle breaks, at its fields. */
-    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.window.contentView];
+    /* The rules a record or a vehicle breaks, at its fields (the logbook's
+       page's: a screen has its own). */
+    _fieldIssues = [[LBFieldIssues alloc] initWithView:_workspace.logbookPage ?: self.window.contentView];
     [_fieldIssues setNeedsRefresh];
     /* A day of the model (bought on, issued, expires) is a UTC day: its
        field reads and says it so, whatever the zone here. */
@@ -174,6 +167,23 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_records addObserver:self forKeyPath:selection options:NSKeyValueObservingOptionInitial context:LBRecordChosen];
     [_records addObserver:self forKeyPath:NSStringFromSelector(@selector(arrangedObjects)) options:NSKeyValueObservingOptionInitial
                   context:LBRecordsChanged];
+    /* The sidebar, the screen shown, the window's size (no smaller than
+       the logbook's page was drawn: the forms' fields keep their widths),
+       its title. */
+    /* Read now, not at the end of the event: the sidebar lists them. */
+    [_vehicles fetchWithRequest:nil merge:NO error:NULL];
+    [_workspace windowDidLoad];
+}
+
+/* The vehicle's tabs (MainWindow.xib's delegate): the Reports tab's report
+   worked out as it is shown. */
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)item {
+    if ([item.identifier isEqual:@"reports"]) LBTimed(@"reports shown", ^{ [self->_reports tabShown]; });
+}
+
+- (void)showVehicleTab {
+    NSTabView *tabs = (NSTabView *)[self controlOf:@"tabs" in:_workspace.logbookPage];
+    [tabs selectTabViewItemWithIdentifier:@"vehicle"];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -224,17 +234,6 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [self.window displayIfNeeded];
     LBTimingNote(@"window up to date, %.1f ms after the change began", -[_timingSince timeIntervalSinceNow] * 1000);
     _timingSince = nil;
-}
-
-/* LB_TIMING: a click on the vehicle list, as it asks to change the
-   selection and as it has (the list's delegate, MainWindow.xib). */
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)tableView {
-    LBTimingNote(@"click asks to change the vehicles' selection (row %ld clicked)", (long)tableView.clickedRow);
-    return YES;
-}
-
-- (void)tableViewSelectionDidChange:(NSNotification *)note {
-    LBTimingNote(@"the vehicles' selection changed: row %ld", (long)[note.object selectedRow]);
 }
 
 - (void)vehicleChosenParts {
@@ -976,7 +975,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 - (BOOL)shouldClose {
     if (![self commitEdits]) return NO;
-    if (!_store.context.hasChanges) return YES;
+    if (!_store.context.hasChanges) return [_workspace closeScreensAsking:YES];
     NSAlert *alert = [[NSAlert alloc] init];
     alert.messageText = @"Save the changes before closing?";
     [alert addButtonWithTitle:@"Save"];
@@ -984,9 +983,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [alert addButtonWithTitle:@"Don't Save"];
     NSModalResponse answer = [alert runModal];
     if (answer == NSAlertSecondButtonReturn) return NO;
-    if (answer == NSAlertThirdButtonReturn) return YES;
+    if (answer == NSAlertThirdButtonReturn) return [_workspace closeScreensAsking:YES];
     NSError *error = nil;
-    if ([_store save:&error]) return YES;
+    if ([_store save:&error]) return [_workspace closeScreensAsking:YES];
     [self presentError:[self willPresentError:error]];
     return NO;
 }

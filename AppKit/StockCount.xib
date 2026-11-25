@@ -7,7 +7,7 @@
   <objects>
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockCountWindowController">
       <connections>
-        <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="view" destination="content" id="windowOutlet"/>
         <outlet property="countRows" destination="countRows" id="countRowsOutlet"/>
         <outlet property="countRowsTable" destination="countRowsTable" id="countRowsTableOutlet"/>
         <outlet property="reviewPanel" destination="reviewPanel" id="reviewPanelOutlet"/>
@@ -224,14 +224,9 @@
         </subviews>
       </view>
     </window>
-    <window title="Count" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookStockCount" animationBehavior="default" id="window">
-      <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-      <rect key="contentRect" x="180" y="140" width="660" height="520"/>
-      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
-      <value key="minSize" type="size" width="660" height="520"/>
-      <view key="contentView" id="content">
+    <customView userLabel="Screen" id="content">
         <rect key="frame" x="0" y="0" width="660" height="520"/>
-        <autoresizingMask key="autoresizingMask"/>
+        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
         <subviews>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countPlaceLabel">
             <rect key="frame" x="14" y="489" width="30" height="17"/>
@@ -492,10 +487,6 @@
             </connections>
           </button>
         </subviews>
-      </view>
-      <connections>
-        <outlet property="delegate" destination="-2" id="windowDelegate"/>
-      </connections>
-    </window>
+    </customView>
   </objects>
 </document>

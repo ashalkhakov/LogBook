@@ -7,7 +7,7 @@
   <objects>
     <customObject id="-2" userLabel="File's Owner" customClass="LBCatalogSettingsWindowController">
       <connections>
-        <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="view" destination="content" id="windowOutlet"/>
         <outlet property="warehouseList" destination="warehouseList" id="warehouseListOutlet"/>
         <outlet property="locationList" destination="locationList" id="locationListOutlet"/>
         <outlet property="categoryList" destination="categoryList" id="categoryListOutlet"/>
@@ -40,14 +40,9 @@
         <binding destination="-2" name="contentArray" keyPath="contacts" id="contactListContent"/>
       </connections>
     </arrayController>
-    <window title="Catalog Settings" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookCatalogSettings" animationBehavior="default" id="window">
-      <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-      <rect key="contentRect" x="180" y="140" width="960" height="600"/>
-      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
-      <value key="minSize" type="size" width="960" height="600"/>
-      <view key="contentView" id="content">
+    <customView userLabel="Screen" id="content">
         <rect key="frame" x="0" y="0" width="960" height="600"/>
-        <autoresizingMask key="autoresizingMask"/>
+        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
         <subviews>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="catalogNameLabel">
             <rect key="frame" x="10" y="569" width="70" height="17"/>
@@ -620,10 +615,6 @@
             </connections>
           </button>
         </subviews>
-      </view>
-      <connections>
-        <outlet property="delegate" destination="-2" id="windowDelegate"/>
-      </connections>
-    </window>
+    </customView>
   </objects>
 </document>

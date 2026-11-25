@@ -8,6 +8,7 @@
         <customObject id="-2" userLabel="File's Owner" customClass="LBMainWindowController">
             <connections>
                 <outlet property="window" destination="window" id="windowOutlet"/>
+                <outlet property="workspace" destination="workspace" id="workspaceOutlet"/>
                 <outlet property="vehicles" destination="vehicles" id="vehiclesOutlet"/>
                 <outlet property="syncStatusField" destination="syncStatusField" id="syncStatusFieldOutlet"/>
                 <outlet property="records" destination="records" id="recordsOutlet"/>
@@ -24,6 +25,22 @@
             </connections>
         </customObject>
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
+        <customObject id="workspace" userLabel="Workspace" customClass="LBWorkspace">
+            <connections>
+                <outlet property="windowController" destination="-2" id="workspaceWindowController"/>
+                <outlet property="sidebar" destination="sidebar" id="workspaceSidebar"/>
+                <outlet property="logbookPage" destination="logbookPage" id="workspaceLogbookPage"/>
+                <outlet property="screenHost" destination="screenHost" id="workspaceScreenHost"/>
+                <outlet property="inspectorPane" destination="inspectorPane" id="workspaceInspectorPane"/>
+                <outlet property="paneSplit" destination="paneSplit" id="workspacePaneSplit"/>
+                <outlet property="removeButton" destination="removeVehicle" id="workspaceRemoveButton"/>
+            </connections>
+        </customObject>
+        <customObject id="paneSplit" userLabel="Pane Split" customClass="UDPaneSplitController">
+            <connections>
+                <outlet property="splitView" destination="workspaceSplit" id="paneSplitView"/>
+            </connections>
+        </customObject>
         <customObject id="-3" userLabel="Application" customClass="NSObject"/>
         <arrayController mode="entity" entityName="Vehicle" automaticallyPreparesContent="YES" customClass="LBVehicleController" userLabel="Vehicles" id="vehicles">
             <connections>
@@ -244,111 +261,112 @@
                 <outlet property="controller" destination="volumeUnits" id="volumeUnitsSourceController"/>
             </connections>
         </customObject>
-        <window title="Logbook" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookMainWindow" animationBehavior="default" id="window">
+        <window title="Logbook" toolbarStyle="unified" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookMainWindow" animationBehavior="default" id="window">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-            <rect key="contentRect" x="160" y="120" width="1060" height="680"/>
+            <rect key="contentRect" x="120" y="100" width="1100" height="680"/>
             <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
             <view key="contentView" id="contentView">
-                <rect key="frame" x="0" y="0" width="1060" height="680"/>
+                <rect key="frame" x="0" y="0" width="1100" height="680"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
-                    <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="vehiclesTableScroll">
-                        <rect key="frame" x="20" y="60" width="260" height="600"/>
-                        <autoresizingMask key="autoresizingMask" heightSizable="YES" flexibleMaxX="YES"/>
-                        <clipView key="contentView" id="vehiclesTableClip">
-                            <rect key="frame" x="1" y="1" width="258" height="598"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                            <subviews>
-                                <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="vehiclesTableHeader" identifier="vehiclesTable" id="vehiclesTable">
-                                    <rect key="frame" x="0" y="0" width="258" height="575"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <size key="intercellSpacing" width="3" height="2"/>
-                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
-                                    <tableColumns>
-                    <tableColumn identifier="vehicleName" width="140" minWidth="40" maxWidth="1000" id="vehiclesTableVehicleNameColumn">
-                        <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Vehicle">
-                            <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
-                        </tableHeaderCell>
-                        <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="vehiclesTableVehicleNameCell">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                        <connections>
-                            <binding destination="vehicles" name="value" keyPath="arrangedObjects.vehicleName" id="vehiclesTableVehicleNameValue"/>
-                        </connections>
-                    </tableColumn>
-                    <tableColumn identifier="make" width="100" minWidth="40" maxWidth="1000" id="vehiclesTableMakeColumn">
-                        <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Make">
-                            <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
-                        </tableHeaderCell>
-                        <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="vehiclesTableMakeCell">
-                            <font key="font" metaFont="system"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                        <connections>
-                            <binding destination="vehicles" name="value" keyPath="arrangedObjects.make" id="vehiclesTableMakeValue"/>
-                        </connections>
-                    </tableColumn>
-                                    </tableColumns>
-                                    <connections>
-                                        <outlet property="delegate" destination="-2" id="vehiclesTableDelegate"/>
-                                    </connections>
-                                </tableView>
-                            </subviews>
-                        </clipView>
-                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="vehiclesTableHScroller">
-                            <rect key="frame" x="1" y="584" width="258" height="15"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
-                        </scroller>
-                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="vehiclesTableVScroller">
-                            <rect key="frame" x="244" y="1" width="15" height="598"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
-                        </scroller>
-                        <tableHeaderView key="headerView" id="vehiclesTableHeader">
-                            <rect key="frame" x="0" y="0" width="258" height="23"/>
-                            <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
-                        </tableHeaderView>
-                    </scrollView>
-                    <button verticalHuggingPriority="750" identifier="addVehicle" id="addVehicle">
-                        <rect key="frame" x="14" y="13" width="80" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addVehicleCell">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="add:" target="vehicles" id="addVehicleAction"/>
-                            <binding destination="vehicles" name="enabled" keyPath="canAdd" id="addVehicleEnabled"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" identifier="removeVehicle" id="removeVehicle">
-                        <rect key="frame" x="94" y="13" width="96" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeVehicleCell">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="remove:" target="vehicles" id="removeVehicleAction"/>
-                            <binding destination="vehicles" name="enabled" keyPath="canRemove" id="removeVehicleEnabled"/>
-                        </connections>
-                    </button>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="syncStatus" id="syncStatusField">
-                        <rect key="frame" x="200" y="22" width="846" height="16"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
-                        <textFieldCell key="cell" lineBreakMode="truncatingTail" truncatesLastVisibleLine="YES" sendsActionOnEndEditing="YES" alignment="right" title="Not synced yet." id="syncStatusCell">
-                            <font key="font" metaFont="smallSystem"/>
-                            <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                        </textFieldCell>
-                    </textField>
+                    <splitView dividerStyle="thin" vertical="YES" identifier="workspaceSplit" id="workspaceSplit" userLabel="Sidebar | Screen | Inspector">
+                        <rect key="frame" x="0" y="0" width="1100" height="680"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <customView identifier="sidebarPane" id="sidebarPane" userLabel="Sidebar">
+                                <rect key="frame" x="0" y="0" width="220" height="680"/>
+                                <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
+                                <subviews>
+                                    <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="20" horizontalPageScroll="10" verticalLineScroll="20" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="sidebarScroll">
+                                        <rect key="frame" x="0" y="28" width="220" height="652"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <clipView key="contentView" drawsBackground="NO" id="sidebarClip">
+                                            <rect key="frame" x="0" y="0" width="220" height="652"/>
+                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                            <subviews>
+                                                <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" rowHeight="20" indentationPerLevel="14" outlineTableColumn="sidebarColumn" identifier="sidebar" id="sidebar" userLabel="Sidebar Outline">
+                                                    <rect key="frame" x="0" y="0" width="220" height="652"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <size key="intercellSpacing" width="3" height="2"/>
+                                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                    <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                                                    <tableColumns>
+                                                        <tableColumn identifier="title" width="214" minWidth="40" maxWidth="1000" id="sidebarColumn">
+                                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" title="Sidebar">
+                                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                                            </tableHeaderCell>
+                                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" title="Text Cell" id="sidebarCell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <tableColumnResizingMask key="resizingMask" resizeWithTable="YES"/>
+                                                        </tableColumn>
+                                                    </tableColumns>
+                                                    <connections>
+                                                        <outlet property="dataSource" destination="workspace" id="sidebarSource"/>
+                                                        <outlet property="delegate" destination="workspace" id="sidebarDelegate"/>
+                                                    </connections>
+                                                </outlineView>
+                                            </subviews>
+                                            <nil key="backgroundColor"/>
+                                        </clipView>
+                                        <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="sidebarHScroller">
+                                            <rect key="frame" x="-100" y="-100" width="200" height="15"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                        <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="sidebarVScroller">
+                                            <rect key="frame" x="-100" y="-100" width="15" height="102"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                        </scroller>
+                                    </scrollView>
+                                    <popUpButton toolTip="Add a vehicle or a catalog" verticalHuggingPriority="750" identifier="sidebarAdd" id="sidebarAdd">
+                                        <rect key="frame" x="4" y="2" width="36" height="24"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <popUpButtonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" id="sidebarAddCell">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                            <menu key="menu" id="sidebarAddMenu">
+                                                <items>
+                                                    <menuItem image="NSAddTemplate" hidden="YES" id="sidebarAddTitle"/>
+                                                    <menuItem title="New Vehicle" id="sidebarNewVehicle">
+                                                        <connections>
+                                                            <action selector="newVehicle:" target="workspace" id="sidebarNewVehicleAction"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                    <menuItem title="New Catalog" id="sidebarNewCatalog">
+                                                        <connections>
+                                                            <action selector="newCatalog:" target="workspace" id="sidebarNewCatalogAction"/>
+                                                        </connections>
+                                                    </menuItem>
+                                                </items>
+                                            </menu>
+                                        </popUpButtonCell>
+                                    </popUpButton>
+                                    <button toolTip="Remove the vehicle chosen" verticalHuggingPriority="750" identifier="removeVehicle" id="removeVehicle">
+                                        <rect key="frame" x="39" y="2" width="24" height="24"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeVehicleCell">
+                                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                            <font key="font" metaFont="system"/>
+                                        </buttonCell>
+                                        <connections>
+                                            <action selector="removeVehicle:" target="workspace" id="removeVehicleAction"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                            </customView>
+                            <customView identifier="screenPane" id="screenPane" userLabel="Screen">
+                                <rect key="frame" x="221" y="0" width="879" height="680"/>
+                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                <subviews>
+                                    <customView identifier="logbookPage" id="logbookPage" userLabel="The Logbook: the Vehicle Chosen">
+                                        <rect key="frame" x="0" y="0" width="879" height="680"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                        <subviews>
                     <tabView identifier="tabs" id="tabs">
-                        <rect key="frame" x="294" y="48" width="752" height="620"/>
+                        <rect key="frame" x="14" y="48" width="851" height="620"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <font key="font" metaFont="system"/>
                         <tabViewItems>
@@ -5621,9 +5639,12 @@
                                 </view>
                             </tabViewItem>
                         </tabViewItems>
+                        <connections>
+                            <outlet property="delegate" destination="-2" id="tabsDelegate"/>
+                        </connections>
                     </tabView>
                     <button verticalHuggingPriority="750" identifier="revert" id="revert">
-                        <rect key="frame" x="840" y="13" width="100" height="32"/>
+                        <rect key="frame" x="659" y="13" width="100" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                         <buttonCell key="cell" type="push" title="Revert" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="revertCell">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -5635,7 +5656,7 @@
                         </connections>
                     </button>
                     <button verticalHuggingPriority="750" identifier="save" id="save">
-                        <rect key="frame" x="944" y="13" width="100" height="32"/>
+                        <rect key="frame" x="763" y="13" width="100" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
                         <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="saveCell">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -5646,11 +5667,106 @@
                             
                         </connections>
                     </button>
+                                        </subviews>
+                                    </customView>
+                                    <customView hidden="YES" identifier="screenHost" id="screenHost" userLabel="Another Screen's Host">
+                                        <rect key="frame" x="0" y="0" width="879" height="680"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                    </customView>
+                                </subviews>
+                            </customView>
+                            <customView identifier="inspectorPane" id="inspectorPane" userLabel="Inspector">
+                                <rect key="frame" x="840" y="0" width="260" height="680"/>
+                                <autoresizingMask key="autoresizingMask" heightSizable="YES"/>
+                                <subviews>
+                                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="inspectorEmpty" id="inspectorEmpty">
+                                        <rect key="frame" x="18" y="340" width="224" height="20"/>
+                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES" flexibleMaxY="YES"/>
+                                        <textFieldCell key="cell" lineBreakMode="truncatingTail" alignment="center" title="No Selection" id="inspectorEmptyCell">
+                                            <font key="font" metaFont="system" size="15"/>
+                                            <color key="textColor" name="disabledControlTextColor" catalog="System" colorSpace="catalog"/>
+                                            <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                        </textFieldCell>
+                                    </textField>
+                                </subviews>
+                            </customView>
+                        </subviews>
+                        <holdingPriorities>
+                            <real value="260"/>
+                            <real value="250"/>
+                            <real value="260"/>
+                        </holdingPriorities>
+                    </splitView>
                 </subviews>
             </view>
+            <toolbar key="toolbar" implicitIdentifier="Logbook-Workspace-Toolbar" autosavesConfiguration="NO" allowsUserCustomization="NO" displayMode="iconOnly" sizeMode="regular" id="toolbar">
+                <allowedToolbarItems>
+                    <toolbarItem implicitItemIdentifier="toolbarSidebar" label="Sidebar" paletteLabel="Sidebar" toolTip="Hide or show the sidebar (⌃⌘S)" image="sidebar.left" catalog="system" bordered="YES" id="toolbarSidebar">
+                        <size key="minSize" width="36" height="28"/>
+                        <size key="maxSize" width="36" height="28"/>
+                        <connections>
+                            <action selector="toggleSidebarPane:" target="workspace" id="toolbarSidebarAction"/>
+                        </connections>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="toolbarBack" label="Back" paletteLabel="Back" toolTip="Back to the screen shown before (⌘[)" image="chevron.left" catalog="system" bordered="YES" id="toolbarBack">
+                        <size key="minSize" width="32" height="28"/>
+                        <size key="maxSize" width="32" height="28"/>
+                        <connections>
+                            <action selector="goBack:" target="workspace" id="toolbarBackAction"/>
+                        </connections>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="toolbarForward" label="Forward" paletteLabel="Forward" toolTip="Forward again (⌘])" image="chevron.right" catalog="system" bordered="YES" id="toolbarForward">
+                        <size key="minSize" width="32" height="28"/>
+                        <size key="maxSize" width="32" height="28"/>
+                        <connections>
+                            <action selector="goForward:" target="workspace" id="toolbarForwardAction"/>
+                        </connections>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="toolbarFlex1"/>
+                    <toolbarItem implicitItemIdentifier="toolbarSync" label="Sync" paletteLabel="Sync" id="toolbarSync">
+                        <nil key="toolTip"/>
+                        <size key="minSize" width="200" height="22"/>
+                        <size key="maxSize" width="520" height="22"/>
+                        <textField key="view" focusRingType="none" horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="syncStatus" id="syncStatusField">
+                            <rect key="frame" x="0" y="14" width="420" height="22"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                            <textFieldCell key="cell" lineBreakMode="truncatingTail" truncatesLastVisibleLine="YES" alignment="center" title="Not synced yet." usesSingleLineMode="YES" id="syncStatusCell">
+                                <font key="font" metaFont="system"/>
+                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            </textFieldCell>
+                        </textField>
+                    </toolbarItem>
+                    <toolbarItem implicitItemIdentifier="NSToolbarFlexibleSpaceItem" id="toolbarFlex2"/>
+                    <toolbarItem implicitItemIdentifier="toolbarInspector" label="Inspector" paletteLabel="Inspector" toolTip="Hide or show the inspector (⌥⌘0)" image="sidebar.right" catalog="system" bordered="YES" id="toolbarInspector">
+                        <size key="minSize" width="36" height="28"/>
+                        <size key="maxSize" width="36" height="28"/>
+                        <connections>
+                            <action selector="toggleInspectorPane:" target="workspace" id="toolbarInspectorAction"/>
+                        </connections>
+                    </toolbarItem>
+                </allowedToolbarItems>
+                <defaultToolbarItems>
+                    <toolbarItem reference="toolbarSidebar"/>
+                    <toolbarItem reference="toolbarBack"/>
+                    <toolbarItem reference="toolbarForward"/>
+                    <toolbarItem reference="toolbarFlex1"/>
+                    <toolbarItem reference="toolbarSync"/>
+                    <toolbarItem reference="toolbarFlex2"/>
+                    <toolbarItem reference="toolbarInspector"/>
+                </defaultToolbarItems>
+            </toolbar>
             <connections>
                 <outlet property="delegate" destination="-2" id="windowDelegate"/>
             </connections>
         </window>
     </objects>
+    <resources>
+        <image name="NSAddTemplate" width="14" height="13"/>
+        <image name="NSRemoveTemplate" width="14" height="4"/>
+        <image name="sidebar.left" catalog="system" width="18" height="14"/>
+        <image name="sidebar.right" catalog="system" width="18" height="14"/>
+        <image name="chevron.left" catalog="system" width="9" height="14"/>
+        <image name="chevron.right" catalog="system" width="9" height="14"/>
+    </resources>
 </document>

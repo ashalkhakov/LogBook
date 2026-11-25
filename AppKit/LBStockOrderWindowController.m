@@ -41,7 +41,7 @@
 
 - (instancetype)initWithStore:(LBStore *)store order:(NSManagedObject *)order {
     BOOL sale = [order isKindOfClass:[SaleOrder class]];
-    if ((self = [super initWithStore:store windowNibName:sale ? @"StockSale" : @"StockPurchase"])) {
+    if ((self = [super initWithStore:store nibName:sale ? @"StockSale" : @"StockPurchase"])) {
         _sale = sale;
         _order = [self own:order];
         self.catalog = [_order valueForKey:@"catalog"];
@@ -88,8 +88,8 @@
 
 /* Opened for a task done with a flow's entry: the window, and its step's
    screen over it at once (Confirm the order's sheet). */
-- (void)showWindow:(id)sender {
-    [super showWindow:sender];
+- (void)screenDidShow {
+    [super screenDidShow];
     if (!self.task.entryName || ![self.task.flowName isEqualToString:self.flowName] || self.window.attachedSheet) return;
     NSError *error = nil;
     ORMFlowStep *step = [_flow beginAt:self.task.entryName key:[[(_returning ?: _order) valueForKey:@"id"] UUIDString] error:&error];
@@ -98,12 +98,12 @@
     [self show:step];
 }
 
-- (void)windowDidLoad {
-    [super windowDidLoad];
+- (void)viewDidLoad {
+    [super viewDidLoad];
     /* Its lines, its form's rows: in the order the window lists them. */
     _lineList.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"lbLineOrder" ascending:YES
                                                                   selector:@selector(localizedCaseInsensitiveCompare:)] ];
-    [self.window bind:NSTitleBinding toObject:self withKeyPath:@"windowTitle" options:nil];
+    [self bind:@"title" toObject:self withKeyPath:@"windowTitle" options:nil];
 }
 
 - (NSArray<NSArrayController *> *)editedControllers {
@@ -161,7 +161,7 @@
     LBFormValues *now = [self valuesOfForm:self.orderFormName given:_orderForm.session.given object:_order];
     NSError *error = nil;
     if (!now || ![now.session save:&error]) {
-        if (now) [self refuseForm:now error:error under:self.window.contentView];
+        if (now) [self refuseForm:now error:error under:self.view];
         return NO;
     }
     return [super saveChanges];

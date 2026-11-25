@@ -7,7 +7,7 @@
   <objects>
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockItemWindowController">
       <connections>
-        <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="view" destination="content" id="windowOutlet"/>
         <outlet property="requestPanel" destination="requestPanel" id="requestPanelOutlet"/>
         <outlet property="movePanel" destination="movePanel" id="movePanelOutlet"/>
         <outlet property="cardTabs" destination="cardTabs" id="cardTabsOutlet"/>
@@ -372,14 +372,9 @@
         <binding destination="-2" name="contentArray" keyPath="reorderRules" id="reorderRuleListContent"/>
       </connections>
     </arrayController>
-    <window title="Item" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookStockItem" animationBehavior="default" id="window">
-      <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-      <rect key="contentRect" x="180" y="140" width="660" height="620"/>
-      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
-      <value key="minSize" type="size" width="660" height="620"/>
-      <view key="contentView" id="content">
+    <customView userLabel="Screen" id="content">
         <rect key="frame" x="0" y="0" width="660" height="620"/>
-        <autoresizingMask key="autoresizingMask"/>
+        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
         <subviews>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemNameFieldLabel">
             <rect key="frame" x="14" y="589" width="80" height="17"/>
@@ -1947,10 +1942,6 @@
             </connections>
           </button>
         </subviews>
-      </view>
-      <connections>
-        <outlet property="delegate" destination="-2" id="windowDelegate"/>
-      </connections>
-    </window>
+    </customView>
   </objects>
 </document>

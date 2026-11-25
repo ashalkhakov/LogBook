@@ -11,6 +11,7 @@
 #import "LBListsController.h"
 #import "LBStockWindowController.h"
 #import "LBUpdater.h"
+#import "LBWorkspace.h"
 
 /* Logbook > Check for Updates… (MainMenu.xib), gone where there is no
    updater (LBUpdater.h). */
@@ -21,9 +22,6 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     ODataSignIn *_signIn;
     LBMainWindowController *_window;
     LBPreferencesController *_preferences;
-    LBListsController *_lists;
-    LBStockWindowController *_stock;
-    LBTasksWindowController *_tasks;
     LBUpdater *_updater;
     /* The steps saved here that wait, submitted after each sync. */
     LBTasks *_waitingTasks;
@@ -60,7 +58,6 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
-    if (_stock && ![_stock shouldClose]) return NSTerminateCancel;
     return !_window || [_window shouldClose] ? NSTerminateNow : NSTerminateCancel;
 }
 
@@ -90,10 +87,10 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     [_preferences showWindow:sender];
 }
 
+/* The lists' screen, in the window (the sidebar's Lists). */
 - (void)showLists:(NSString *)tab {
     if (!_window) return;
-    if (!_lists) _lists = [[LBListsController alloc] initWithLogbook:_window];
-    [_lists showTab:tab];
+    [_window.workspace showListsTab:tab];
 }
 
 - (IBAction)showExpenseKinds:(id)sender {
@@ -111,14 +108,13 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
 /* The processes' open tasks (LBTasksWindowController.h). */
 - (IBAction)showTasks:(id)sender {
     if (!_window) return;
-    if (!_tasks) _tasks = [[LBTasksWindowController alloc] initWithStore:_store];
-    [_tasks showWindow:sender];
+    [_window.workspace showTasks];
 }
 
+/* The stock's screen, in the window (the sidebar's Stock). */
 - (IBAction)showStock:(id)sender {
     if (!_window) return;
-    if (!_stock) _stock = [[LBStockWindowController alloc] initWithStore:_store];
-    [_stock showWindow:sender];
+    [_window.workspace showStockTab:nil ofCatalog:nil];
 }
 
 /* Preferences and lists only while there is a logbook, whose user they
@@ -135,12 +131,7 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
 - (void)closeLogbook {
     [_preferences close];
     _preferences = nil;
-    [_lists close];
-    _lists = nil;
-    [_stock close];
-    _stock = nil;
-    [_tasks close];
-    _tasks = nil;
+    [_window.workspace closeScreensAsking:NO];
     if (_store.local) [[NSNotificationCenter defaultCenter] removeObserver:self name:LBLocalStoreDidSyncNotification object:_store.local];
     if (_store.local) [[NSNotificationCenter defaultCenter] removeObserver:self name:LBLocalStoreSyncDidFailNotification object:_store.local];
     _askedToSignIn = NO;

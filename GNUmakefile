@@ -46,10 +46,10 @@ ifneq ($(LB_SERVER_ONLY),yes)
 APP_NAME = Logbook
 endif
 # The updater's GNUstep half (AppKit/LBUpdater.h); the Apple half is Makefile.apple's.
-Logbook_OBJC_FILES = $(filter-out AppKit/LBUpdater-Apple.m,$(wildcard AppKit/*.m)) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard Shared/*.m) $(LB_MODEL)/Constraints/LogbookValidation.m
+Logbook_OBJC_FILES = $(filter-out AppKit/LBUpdater-Apple.m,$(wildcard AppKit/*.m)) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard UDWorkbench/*.m) $(wildcard Shared/*.m) $(LB_MODEL)/Constraints/LogbookValidation.m
 Logbook_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 Logbook_COREDATA_CODEGEN = yes
-Logbook_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity $(ODATASYNC_INCLUDE_DIRS)
+Logbook_INCLUDE_DIRS = -I$(LB_MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity -IUDWorkbench $(ODATASYNC_INCLUDE_DIRS)
 Logbook_OBJCFLAGS = $(ODATAKIT_OBJCFLAGS) -Wall -Wno-unused-parameter
 # GSUpdater, the stack's: the app's updates (AppKit/LBUpdater-GNUstep.m).
 Logbook_GUI_LIBS += -lORMRuntime $(ODATASYNC_LIBS) -lRDLKitUI -lRDLKit -lGSUpdater -lsqlite3
@@ -59,7 +59,7 @@ LB_FORMS = $(foreach f,RecordFillUp RecordService RecordExpense RecordTrip Recor
 	RecordMeterReading RecordTyreChange RecordTyreSet RecordComponentChange EditPurchaseOrder ConfirmPurchaseOrder ReceiveGoods EditSaleOrder ConfirmSaleOrder ShipGoods CountStock ReviewStockCount RequestTransfer MoveStock RequestCustomerReturn ReceiveCustomerReturn RequestSupplierReturn SendSupplierReturn SetUpSchedule ChangeSchedule SetReminder RescheduleReminder CancelReminder MarkReminderDone,$(LB_MODEL)/Forms/$(f).ormform) \
 	$(patsubst Model/%.flow,$(LB_MODEL)/Forms/%.ormflow,$(wildcard Model/*.flow))
 Logbook_RESOURCE_FILES = AppKit/MainMenu.xib AppKit/MainWindow.xib AppKit/ConnectPanel.xib AppKit/Preferences.xib AppKit/Lists.xib AppKit/StockWindow.xib \
-	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib AppKit/Parts.xib AppKit/TasksWindow.xib AppKit/ImportSummary.xib AppKit/InvenTreeConnect.xib AppKit/Logbook.png \
+	AppKit/StockItem.xib AppKit/StockSale.xib AppKit/StockPurchase.xib AppKit/StockCount.xib AppKit/CatalogSettings.xib AppKit/Parts.xib AppKit/TasksWindow.xib AppKit/ImportSummary.xib AppKit/InvenTreeConnect.xib AppKit/Logbook.png $(wildcard Images/GNUstep/*.png) \
 	$(LB_MODEL)/Constraints/Logbook.ormplans $(wildcard Reports/*.rdl) $(LB_FORMS)
 Logbook_MAIN_MODEL_FILE = MainMenu.xib
 

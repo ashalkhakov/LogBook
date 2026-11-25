@@ -1,7 +1,7 @@
 // The lists the users write themselves (Lists.xib): the kinds of expense
 // and the checklists the forms pick from, each checklist's questions in
 // order and an any-of question's options; and the exchange rates costs are
-// counted at. Done saves them, as the logbook's window saves (its rules
+// counted at. Save saves them, as the logbook's window saves (its rules
 // said). What a record or a plan already uses is not removed: it is
 // refused, and said. Kinds of expense and exchange rates are the server's
 // to keep once saved (others' records are of them): only one not saved
@@ -9,12 +9,13 @@
 
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
+#import "LBScreen.h"
 
 @class LBMainWindowController;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface LBListsController : NSWindowController <NSTableViewDelegate>
+@interface LBListsController : LBScreen <NSTableViewDelegate>
 - (instancetype)initWithLogbook:(LBMainWindowController *)logbook;
 // What the XIB binds to: the logbook's context, the lists' order.
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;
@@ -31,8 +32,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSTableView *optionsTable;
 @property (nonatomic, strong) IBOutlet NSTableView *exchangeRatesTable;
 
-// The window shown, at its tab of that identifier: expenseKinds,
-// checklists or exchangeRates.
+// Shown, at its tab of that identifier: expenseKinds, checklists or
+// exchangeRates (the sidebar's Lists).
 - (void)showTab:(NSString *)identifier;
 
 - (IBAction)addExpenseKind:(nullable id)sender;

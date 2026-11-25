@@ -12,6 +12,7 @@
 
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
+#import "LBScreen.h"
 
 @class LBStore, Catalog, User, LBTask, LBTasks, LBFormValues, LBPendingSubmission;
 
@@ -24,9 +25,9 @@ extern NSString *const LBStockCatalogKey;
 
 @class LBFieldIssues;
 
-@interface LBStockEditor : NSWindowController
+@interface LBStockEditor : LBScreen
 
-- (instancetype)initWithStore:(LBStore *)store windowNibName:(NSString *)name;
+- (instancetype)initWithStore:(LBStore *)store nibName:(NSString *)name;
 @property (nonatomic, readonly, strong) LBStore *store;
 // Its own, over the store's (LBStore -newContext): what the XIB binds to.
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;

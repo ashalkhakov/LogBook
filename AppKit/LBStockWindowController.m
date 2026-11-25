@@ -39,7 +39,7 @@
 }
 
 - (instancetype)initWithStore:(LBStore *)store {
-    if ((self = [super initWithStore:store windowNibName:@"StockWindow"])) {
+    if ((self = [super initWithStore:store nibName:@"StockWindow"])) {
         _read = [NSMutableSet set];
         _opened = [NSMutableArray array];
         _catalogs = @[];
@@ -59,8 +59,8 @@
     return self;
 }
 
-- (void)windowDidLoad {
-    self.window.title = [NSString stringWithFormat:@"Stock — %@", self.store.serviceRoot.host ?: @""];
+- (void)viewDidLoad {
+    self.title = self.catalog.lbTitle ?: @"Stock";
     _itemsTable.doubleAction = @selector(openItem:);
     _itemsTable.target = self;
     _salesTable.doubleAction = @selector(openSale:);
@@ -69,7 +69,7 @@
     _purchasesTable.target = self;
     _openOrdersTable.doubleAction = @selector(showOrder:);
     _openOrdersTable.target = self;
-    [super windowDidLoad];
+    [super viewDidLoad];
 }
 
 - (NSArray<NSSortDescriptor *> *)byItem {
@@ -94,6 +94,7 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
     BOOL other = catalog != self.catalog;
     [super setCatalog:catalog];
     if (!other) return;
+    self.title = catalog.lbTitle ?: @"Stock";
     [_read removeAllObjects];
     self.changeItem = nil;
     self.changeLocation = nil;
@@ -240,16 +241,16 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
     editor.quiet = self.quiet;
     if (![_opened containsObject:editor]) {
         [_opened addObject:editor];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(openedWillClose:) name:NSWindowWillCloseNotification
-                                                   object:editor.window];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(openedWillClose:) name:LBScreenWillCloseNotification
+                                                   object:editor];
     }
     [editor showWindow:self];
 }
 
 - (void)openedWillClose:(NSNotification *)note {
     for (LBStockEditor *editor in [_opened copy]) {
-        if (editor.window == note.object) {
-            [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowWillCloseNotification object:editor.window];
+        if (editor == note.object) {
+            [[NSNotificationCenter defaultCenter] removeObserver:self name:LBScreenWillCloseNotification object:editor];
             [_opened removeObject:editor];
         }
     }

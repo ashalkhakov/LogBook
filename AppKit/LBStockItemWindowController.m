@@ -34,7 +34,7 @@
 }
 
 - (instancetype)initWithStore:(LBStore *)store item:(StockItem *)item catalog:(Catalog *)catalog {
-    if ((self = [super initWithStore:store windowNibName:@"StockItem"])) {
+    if ((self = [super initWithStore:store nibName:@"StockItem"])) {
         self.catalog = [self own:catalog];
         _item = [self own:item];
         if (!_item) {
@@ -85,8 +85,8 @@
 }
 
 /* Opened for a transfer's Move the stock: its sheet at once. */
-- (void)showWindow:(id)sender {
-    [super showWindow:sender];
+- (void)screenDidShow {
+    [super screenDidShow];
     if (!_transfer || !self.task.entryName || ![self.task.flowName isEqualToString:@"Transferring"] || self.window.attachedSheet) return;
     NSError *error = nil;
     ORMFlowStep *step = [_flow beginAt:self.task.entryName key:_transfer.id.UUIDString error:&error];
@@ -101,9 +101,9 @@
     if (_moveForm) [self.window beginSheet:_movePanel completionHandler:nil];
 }
 
-- (void)windowDidLoad {
-    [super windowDidLoad];
-    [self.window bind:NSTitleBinding toObject:self withKeyPath:@"item.itemName" options:nil];
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    [self bind:@"title" toObject:self withKeyPath:@"item.itemName" options:nil];
 }
 
 #pragma mark Reading

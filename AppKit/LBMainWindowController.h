@@ -1,4 +1,5 @@
-// The owner's window (MainWindow.xib): the vehicles, and of the one chosen
+// The one window (MainWindow.xib; its places, LBWorkspace.h): the
+// vehicles, and of the one chosen
 // its details and what is recorded of it, each record in a form of its
 // kind; its schedules and reminders (LBRemindersController.h); reports. What it shows and edits is bound in the XIB to array controllers
 // of the model's entities over the store's context (entity mode); this
@@ -13,7 +14,7 @@
 
 @class LBPartsPanelController;
 
-@class LBImport, LBFieldIssues;
+@class LBImport, LBFieldIssues, LBWorkspace;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,7 +24,12 @@ NS_ASSUME_NONNULL_BEGIN
 // What the XIB's controllers bind to.
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;
 @property (nonatomic, strong) IBOutlet NSArrayController *vehicles;
-// The sync's state, under the forms: when it last synced, what waits, and
+// The window's places: the sidebar, the screen shown, Back and Forward.
+@property (nonatomic, strong) IBOutlet LBWorkspace *workspace;
+// The logbook's page shown at the chosen vehicle's Vehicle tab (a new
+// vehicle's details to fill in).
+- (void)showVehicleTab;
+// The sync's state, in the toolbar: when it last synced, what waits, and
 // why it did not ("Not synced: The token is not for this service"), red.
 @property (nonatomic, strong, nullable) IBOutlet NSTextField *syncStatusField;
 // The chosen vehicle's records.
@@ -174,7 +180,8 @@ NS_ASSUME_NONNULL_BEGIN
 // The changes sent; the rules' refusals and the warnings said.
 - (IBAction)save:(nullable id)sender;
 - (IBAction)revertChanges:(nullable id)sender;
-// Whether it may close: nothing unsaved, or the user says so.
+// Whether it may close: nothing unsaved, or the user says so; each screen
+// kept closed, each asked.
 - (BOOL)shouldClose;
 @end
 

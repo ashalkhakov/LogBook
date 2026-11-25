@@ -7,7 +7,7 @@
   <objects>
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockOrderWindowController">
       <connections>
-        <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="view" destination="content" id="windowOutlet"/>
         <outlet property="returnAskPanel" destination="returnAskPanel" id="returnAskPanelOutlet"/>
         <outlet property="returnDoPanel" destination="returnDoPanel" id="returnDoPanelOutlet"/>
         <outlet property="lineList" destination="lineList" id="lineListOutlet"/>
@@ -735,14 +735,9 @@
         </subviews>
       </view>
     </window>
-    <window title="Purchase" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookStockPurchase" animationBehavior="default" id="window">
-      <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-      <rect key="contentRect" x="180" y="140" width="680" height="620"/>
-      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
-      <value key="minSize" type="size" width="680" height="620"/>
-      <view key="contentView" id="content">
+    <customView userLabel="Screen" id="content">
         <rect key="frame" x="0" y="0" width="680" height="620"/>
-        <autoresizingMask key="autoresizingMask"/>
+        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
         <subviews>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderPartyLabel">
             <rect key="frame" x="14" y="589" width="90" height="17"/>
@@ -1341,10 +1336,6 @@
             </connections>
           </button>
         </subviews>
-      </view>
-      <connections>
-        <outlet property="delegate" destination="-2" id="windowDelegate"/>
-      </connections>
-    </window>
+    </customView>
   </objects>
 </document>

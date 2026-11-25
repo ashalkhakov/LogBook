@@ -7,7 +7,7 @@
     <objects>
         <customObject id="-2" userLabel="File's Owner" customClass="LBListsController">
             <connections>
-                <outlet property="window" destination="listsWindow" id="listsWindowOutlet"/>
+                <outlet property="view" destination="listsContent" id="listsWindowOutlet"/>
                 <outlet property="tabs" destination="tabs" id="tabsOutlet"/>
                 <outlet property="expenseKinds" destination="expenseKinds" id="expenseKindsOutlet"/>
                 <outlet property="checklists" destination="checklists" id="checklistsOutlet"/>
@@ -50,16 +50,12 @@
                 <binding destination="questions" name="contentSet" keyPath="selection.options" id="optionsContent"/>
             </connections>
         </arrayController>
-        <window title="Expense Kinds and Checklists" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookLists" animationBehavior="default" id="listsWindow">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" resizable="YES"/>
-            <rect key="contentRect" x="280" y="360" width="700" height="470"/>
-            <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
-            <view key="contentView" id="listsContent">
+        <customView userLabel="Screen" id="listsContent">
                 <rect key="frame" x="0" y="0" width="700" height="470"/>
-                <autoresizingMask key="autoresizingMask"/>
+                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                 <subviews>
-                    <tabView identifier="tabs" id="tabs">
-                        <rect key="frame" x="13" y="50" width="674" height="400"/>
+                    <tabView type="noTabsNoBorder" identifier="tabs" id="tabs">
+                        <rect key="frame" x="0" y="50" width="700" height="420"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <font key="font" metaFont="system"/>
                         <tabViewItems>
@@ -575,7 +571,7 @@
                     <button verticalHuggingPriority="750" identifier="done" id="done">
                         <rect key="frame" x="584" y="13" width="100" height="32"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Done" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="doneCell">
+                        <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="doneCell">
                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                             <font key="font" metaFont="system"/>
                         </buttonCell>
@@ -585,10 +581,6 @@
                         </connections>
                     </button>
                 </subviews>
-            </view>
-            <connections>
-                <outlet property="delegate" destination="-2" id="listsWindowDelegate"/>
-            </connections>
-        </window>
+        </customView>
     </objects>
 </document>

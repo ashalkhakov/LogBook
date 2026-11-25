@@ -1,5 +1,6 @@
 #import "LBListsController.h"
 #import "LBMainWindowController.h"
+#import "LBWorkspace.h"
 #import "LBStore.h"
 #import "LBDisplay.h"
 #import "LBProcedures.h"
@@ -12,7 +13,7 @@
 }
 
 - (instancetype)initWithLogbook:(LBMainWindowController *)logbook {
-    if ((self = [super initWithWindowNibName:@"Lists"])) _logbook = logbook;
+    if ((self = [super initWithNibName:@"Lists" bundle:nil])) _logbook = logbook;
     return self;
 }
 
@@ -24,8 +25,9 @@
     return _logbook.byTitle;
 }
 
-- (void)windowDidLoad {
-    [super windowDidLoad];
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"Lists";
     /* The user's own checklists: drivers go through their owners'. */
     User *user = _logbook.store.user;
     if (user) _checklists.fetchPredicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(user)), user];
@@ -58,8 +60,17 @@
 }
 
 - (void)showTab:(NSString *)identifier {
-    [self showWindow:nil];
-    [_tabs selectTabViewItemWithIdentifier:identifier];
+    [[LBWorkspace current] showListsTab:identifier];
+}
+
+/* Left: what was typed kept, saved with the logbook's other changes. */
+- (BOOL)shouldLeave {
+    if (!self.isViewLoaded) return YES;
+    if (![self.window makeFirstResponder:nil]) return NO;
+    for (NSArrayController *controller in @[ _expenseKinds, _checklists, _questions, _options, _exchangeRates ]) {
+        if (![controller commitEditing]) return NO;
+    }
+    return YES;
 }
 
 /* What cannot be done, said as the logbook says it. */
@@ -258,14 +269,14 @@ static int32_t LBNextPosition(NSSet *objects) {
     [self.context deleteObject:rate];
 }
 
-/* What was typed kept, then saved with the logbook's other changes. */
+/* Save: what was typed kept, then saved with the logbook's other
+   changes; the lists stay shown. */
 - (IBAction)done:(id)sender {
     if (![self.window makeFirstResponder:nil]) return;
     for (NSArrayController *controller in @[ _expenseKinds, _checklists, _questions, _options, _exchangeRates ]) {
         if (![controller commitEditing]) return;
     }
     [_logbook save:sender];
-    if (!_logbook.lastError) [self close];
 }
 
 @end

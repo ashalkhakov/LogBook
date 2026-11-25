@@ -66,7 +66,7 @@ GENERATED = $(BUILD)/Generated
 # What is generated from the model (above), by ORMKit's ormtool.
 MODEL = $(BUILD)/Model
 ORMTOOL ?= $(abspath .deps/bin/ormtool)
-INC = -I$(MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
+INC = -I$(MODEL)/Constraints -IShared -IAppKit -IUDCalendar -IUDQuantity -IUDWorkbench -I$(GENERATED) $(addprefix -F,$(ODATAKIT_DIRS)) -F$(ORMKIT_PRODUCTS)
 LIBS = $(addprefix -F,$(ODATAKIT_DIRS)) $(addprefix -Wl$(comma)-rpath$(comma),$(ODATAKIT_DIRS)) \
 	-F$(ORMKIT_PRODUCTS) -Wl,-rpath,$(ORMKIT_PRODUCTS) \
 	-framework ORMRuntime -framework ODataSync -framework ODataService -framework HTTPServerKit \
@@ -190,7 +190,7 @@ $(BUILD)/lb-import-check: $(MODEL)/.made $(IMPORT_CHECK) $(GENERATED)/.made $(OR
 # The desktop app: its code, its windows (the XIBs compiled), the model, its
 # tables and its forms' contracts in its resources.
 # The updater's Apple half (AppKit/LBUpdater.h); the GNUstep half is the GNUmakefile's.
-APP_SOURCES = $(filter-out AppKit/LBUpdater-GNUstep.m,$(wildcard AppKit/*.m)) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard Shared/*.m) $(MODEL)/Constraints/LogbookValidation.m
+APP_SOURCES = $(filter-out AppKit/LBUpdater-GNUstep.m,$(wildcard AppKit/*.m)) $(wildcard UDCalendar/*.m) $(wildcard UDQuantity/*.m) $(wildcard UDWorkbench/*.m) $(wildcard Shared/*.m) $(MODEL)/Constraints/LogbookValidation.m
 XIBS = $(wildcard AppKit/*.xib)
 # Installed, the app finds its frameworks inside it (install copies them);
 # built, in .deps.
@@ -200,7 +200,7 @@ SPARKLE_DIR = $(abspath .deps/Sparkle.xcframework/macos-arm64_x86_64)
 APP_LIBS = $(addprefix -F,$(RDLKIT_DIRS) $(SPARKLE_DIR)) $(addprefix -Wl$(comma)-rpath$(comma),$(RDLKIT_DIRS) $(SPARKLE_DIR)) \
 	-Wl,-rpath,@executable_path/../Frameworks \
 	-framework RDLKitUI -framework RDLKit -framework Sparkle -framework AppKit
-$(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalendar/*.h UDQuantity/*.h) $(XIBS) $(wildcard Reports/*.rdl) AppKit/Info.plist $(GENERATED)/.made $(BUILD)/Logbook.momd \
+$(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalendar/*.h UDQuantity/*.h UDWorkbench/*.h) $(XIBS) $(wildcard Reports/*.rdl) AppKit/Info.plist $(wildcard AppKit/Assets.xcassets/*/*) $(GENERATED)/.made $(BUILD)/Logbook.momd \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	rm -rf $@ && mkdir -p $@/Contents/MacOS $@/Contents/Resources
 	cp AppKit/Info.plist $@/Contents/
@@ -209,6 +209,11 @@ $(APP): $(MODEL)/.made $(APP_SOURCES) $(wildcard AppKit/*.h Shared/*.h UDCalenda
 	for x in $(XIBS); do xcrun ibtool --errors --compile $@/Contents/Resources/$$(basename $$x .xib).nib $$x >/dev/null \
 	  || { echo "$$x does not compile (ibtool --errors --compile)"; rm -rf $@; exit 1; }; done
 	cp -R $(BUILD)/Logbook.momd $(MODEL)/Constraints/Logbook.ormplans Reports/*.rdl $(MODEL)/Forms/*.ormform $(MODEL)/Forms/*.ormflow $@/Contents/Resources/
+	@# Its icon: AppKit/Assets.xcassets' AppIcon, compiled into the bundle,
+	@# Info.plist told of it (CFBundleIconFile, CFBundleIconName).
+	xcrun actool AppKit/Assets.xcassets --compile $@/Contents/Resources --platform macosx --minimum-deployment-target 14.0 \
+	  --app-icon AppIcon --output-partial-info-plist $(BUILD)/mac-assets.plist >/dev/null
+	/usr/libexec/PlistBuddy -c "Merge $(BUILD)/mac-assets.plist" $@/Contents/Info.plist >/dev/null
 
 check: all
 	for f in Model/*.flow; do $(ORMTOOL) flow Model/Logbook.orm $$f || exit 1; done
