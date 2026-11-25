@@ -14,7 +14,16 @@ build/logbook-server -StoreURL logbook.sqlite -Port 8080 -Localhost NO   # built
 
 `-StoreType PostgreSQL` or `MySQL` (with `-StoreURL` the database's URL)
 keeps it in a database server instead of a SQLite file: FreeCoreData's
-stores, which the AppImage carries.
+stores, which the AppImage carries. The processes' store (the orders'
+steps, `Server/LBWorkflow.h`) then goes in the same database, in a schema
+of its own (`workflow`; in MySQL, a database of that name), apart from the
+logbook's tables. Elsewhere, name it:
+
+| Setting | Default | |
+|---|---|---|
+| `-Workflow` | `Workflow.sqlite` beside a SQLite store; the logbook's database on a database server | a SQLite file, or a database's URL (`postgresql://user:password@host:5432/workflow`) |
+| `-WorkflowStoreType` | a URL's by its scheme (`postgresql:`, `mysql:`), a file's `SQLite`, the logbook's when `-Workflow` is not given | `SQLite`, `PostgreSQL` or `MySQL` |
+| `-WorkflowSchema` | `workflow` | the schema the processes are kept in on a database server |
 
 ## In Docker
 
@@ -39,21 +48,27 @@ it with environment variables, `LB_` and a setting's name:
 |---|---|---|
 | `LB_STORE_TYPE` | `SQLite` | `SQLite`, `PostgreSQL` or `MySQL` |
 | `LB_STORE_URL` | `/data/logbook.sqlite` | a path for SQLite, else the database's URL (`postgresql://user:password@host:5432/logbook`) |
-| `LB_WORKFLOW` | `Workflow.sqlite` beside a SQLite store | the processes' store: give one (`/data/Workflow.sqlite`) with a database server |
+| `LB_WORKFLOW` | `Workflow.sqlite` beside a SQLite store; the logbook's database on a database server | the processes' store: a file, or a database's URL |
+| `LB_WORKFLOW_STORE_TYPE` | `LB_WORKFLOW`'s, by its scheme or as a file; else the logbook's | `SQLite`, `PostgreSQL` or `MySQL` |
+| `LB_WORKFLOW_SCHEMA` | `workflow` | its schema on a database server |
 | `LB_SERVICE_ROOT` | `http://<container>:8080/odata/` | the public URL the service is reached at: set it behind a reverse proxy, as its links begin with it |
 | `LB_PORT` | `8080` | |
 | `LB_JWT_ISSUER`, `LB_ALLOW_ANONYMOUS` | | signing in (below) |
 | `LB_ACCESS_LOG` | `json` | JSON lines, for a log collector |
 | `LB_HEALTH_PATH` | `/health` | for the orchestrator or the proxy |
 
-With PostgreSQL:
+With PostgreSQL, the logbook and its processes both in the database (the
+processes in its `workflow` schema):
 
 ```sh
-docker run -p 8080:8080 -v logbook:/data \
+docker run -p 8080:8080 \
   -e LB_STORE_TYPE=PostgreSQL -e LB_STORE_URL=postgresql://logbook:secret@db:5432/logbook \
-  -e LB_WORKFLOW=/data/Workflow.sqlite \
   ghcr.io/ashalkhakov/logbook-server
 ```
+
+The processes in a database of their own instead:
+`-e LB_WORKFLOW=postgresql://logbook:secret@db:5432/workflow`; in a SQLite
+file still: `-v logbook:/data -e LB_WORKFLOW=/data/Workflow.sqlite`.
 
 Behind a reverse proxy (Nginx Proxy Manager, Caddy, Traefik), forward a
 host to the container's port 8080, and give the address users reach as

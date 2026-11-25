@@ -25,7 +25,9 @@
 #   LB_JWT_ISSUER, LB_TRUSTED_USER_HEADER, LB_ALLOW_ANONYMOUS   signing in
 #   ...and every other of HTTPServerKit's (HS_ settings, LB_ here).
 # The processes' store is beside a SQLite logbook (/data/Workflow.sqlite),
-# else LB_WORKFLOW names it.
+# and in a database server's logbook's database (its schema workflow);
+# else LB_WORKFLOW (a file or a database's URL), LB_WORKFLOW_STORE_TYPE
+# and LB_WORKFLOW_SCHEMA name it.
 #
 # logbook-import, another app's export into a user's logbook, runs from the
 # same image:

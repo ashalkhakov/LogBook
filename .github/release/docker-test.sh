@@ -7,7 +7,10 @@
 #   over OData, then Drivvo's export imported into it by logbook-import
 #   from the same image (Tests/drivvo-export.csv), and read back;
 # - PostgreSQL by its settings (FreeCoreData's store, loaded by name):
-#   started, its health asked, a user made and read back;
+#   started, its health asked, a user made and read back; the processes'
+#   store in the same database, its workflow schema, apart from the
+#   logbook's tables, and kept across a restart; then in a database of
+#   its own (LB_WORKFLOW a URL);
 # - signed in through an identity provider: a token it cannot check is
 #   refused (401), which needs the image's CA certificates to fetch the
 #   provider's keys.
@@ -57,14 +60,36 @@ up 18090 logbook-sqlite
 echo "SQLite: kept in the volume across a restart"
 
 for _ in $(seq 1 60); do docker exec logbook-db pg_isready -h 127.0.0.1 -U postgres > /dev/null 2>&1 && break; sleep 1; done
-docker run -d --name logbook-postgres --network logbook-test -p 18091:8080 \
-  -e LB_STORE_TYPE=PostgreSQL -e LB_STORE_URL=postgresql://postgres:logbook@logbook-db:5432/logbook \
-  -e LB_WORKFLOW=/data/Workflow.sqlite "$image" > /dev/null
-up 18091 logbook-postgres
+postgres() {
+  docker run -d --name logbook-postgres --network logbook-test -p 18091:8080 \
+    -e LB_STORE_TYPE=PostgreSQL -e LB_STORE_URL=postgresql://postgres:logbook@logbook-db:5432/logbook "$@" "$image" > /dev/null
+  up 18091 logbook-postgres
+}
+tables() {
+  docker exec logbook-db psql -U postgres -d "$1" -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema = '$2'"
+}
+definitions() {
+  curl -sf "http://127.0.0.1:18091/workflow/ProcessDefinitions/\$count"
+}
+postgres
 post 18091 Users '{"Email":"anna@example.org"}' logbook-postgres
 users=$(count 18091 Users)
 echo "PostgreSQL: $users user"
 [ "$users" -ge 1 ] || { docker logs logbook-postgres; exit 1; }
+deployed=$(definitions)
+echo "PostgreSQL: $deployed processes deployed, $(tables logbook workflow) tables in the workflow schema, $(tables logbook public) the logbook's"
+[ "$deployed" -ge 1 ] && [ "$(tables logbook workflow)" -ge 1 ] || { docker logs logbook-postgres; exit 1; }
+[ "$(docker exec logbook-db psql -U postgres -d logbook -tAc "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' AND table_name ILIKE '%processdefinition%'")" = 0 ] \
+  || { echo "the processes' tables are among the logbook's"; exit 1; }
+docker rm -f logbook-postgres > /dev/null
+postgres
+[ "$(definitions)" = "$deployed" ] || { echo "the processes not kept in the database: $(definitions)"; docker logs logbook-postgres; exit 1; }
+echo "PostgreSQL: the processes kept across a restart"
+docker rm -f logbook-postgres > /dev/null
+docker exec logbook-db createdb -U postgres workflow
+postgres -e LB_WORKFLOW=postgresql://postgres:logbook@logbook-db:5432/workflow
+[ "$(definitions)" -ge 1 ] && [ "$(tables workflow workflow)" -ge 1 ] || { echo "no processes in their own database"; docker logs logbook-postgres; exit 1; }
+echo "PostgreSQL: the processes in a database of their own, $(tables workflow workflow) tables"
 
 docker run -d --name logbook-oidc -p 18092:8080 \
   -e LB_JWT_ISSUER=https://accounts.google.com -e LB_ALLOW_ANONYMOUS=NO "$image" > /dev/null

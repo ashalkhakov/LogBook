@@ -55,10 +55,16 @@
 // SendSupplierReturn): returned, its moves made as it saves
 // (lb_returnChangedReturns), or cancelled.
 //
-// Settings: Workflow, the engine's store (a SQLite file; default
-// Workflow.sqlite beside the logbook's; Temporary with a temporary
-// logbook); Processes, the built deployment (default
-// Logbook.wfdeployment beside the server).
+// Settings: Workflow, the engine's store: a SQLite file (default
+// Workflow.sqlite beside a SQLite logbook; Temporary, in memory, and with
+// a temporary logbook), or a database's URL; WorkflowStoreType, its kind
+// as StoreType's (SQLite, PostgreSQL, MySQL; default a URL's by its
+// scheme, a file's SQLite, and the logbook's when Workflow is not given) -- with the logbook on a
+// database server and Workflow not given, the processes are kept in the
+// logbook's database; WorkflowSchema, the schema they are kept in on a
+// database server (default workflow; in MySQL, a database of that name),
+// apart from the logbook's tables; Processes, the built deployment
+// (default Logbook.wfdeployment beside the server).
 
 #pragma once
 #import <ODataService/ODataServer.h>
@@ -67,6 +73,10 @@
 @class PurchaseOrder;
 
 NS_ASSUME_NONNULL_BEGIN
+
+// A store type by its short name (StoreType's: SQLite, PostgreSQL, MySQL),
+// its library loaded when nothing registered it: the server's.
+NSString *LBStoreType(NSString *_Nullable name);
 
 @interface LBWorkflow : NSObject
 

@@ -26,8 +26,15 @@
 //                (HSApplication.h)
 //   AllowAnonymous  NO: a request that names no one is refused (default
 //                YES, for trying it out)
-//   Workflow     the processes' store (LBWorkflow.h; default Workflow.sqlite
-//                beside the logbook's; Temporary with a temporary one)
+//   Workflow     the processes' store (LBWorkflow.h): a SQLite file
+//                (default Workflow.sqlite beside a SQLite logbook;
+//                Temporary with a temporary one), or a database's URL
+//   WorkflowStoreType  its kind, as StoreType's (default a URL's by its
+//                scheme, a file's SQLite, else the logbook's): with
+//                the logbook on PostgreSQL or MySQL and Workflow not
+//                given, the processes are kept in the logbook's database
+//   WorkflowSchema  their schema there (default workflow; in MySQL a
+//                database of that name), apart from the logbook's tables
 //   Processes    the processes, as wf-build built them (default
 //                Logbook.wfdeployment beside the server)
 //   Permissions  who may see and change the stock, as relations (default
@@ -68,7 +75,8 @@
 + (NSString *)environmentPrefix { return @"LB_"; }
 + (NSArray<NSString *> *)knownSettings {
     return [[super knownSettings] arrayByAddingObjectsFromArray:@[ @"Model", @"Plans", @"StoreType", @"StoreURL", @"ServiceRoot",
-                                                                   @"AllowAnonymous", @"Permissions", @"Workflow", @"Processes" ]];
+                                                                   @"AllowAnonymous", @"Permissions", @"Workflow", @"WorkflowStoreType",
+                                                                   @"WorkflowSchema", @"Processes" ]];
 }
 
 - (id<HSAuthenticator>)authenticatorWithError:(NSError **)error {
@@ -109,7 +117,7 @@ static NSError *LBError(NSInteger code, NSString *message) {
 
 /* A store type by its short name; one nothing registered, its library
    loaded by name (libCDPostgreSQLStore), which registers it as it loads. */
-static NSString *LBStoreType(NSString *name) {
+NSString *LBStoreType(NSString *name) {
     NSDictionary *known = @{ @"SQLite": NSSQLiteStoreType, @"PostgreSQL": @"CDPostgreSQLStore", @"MySQL": @"CDMySQLStore",
                              @"MariaDB": @"CDMySQLStore" };
     NSString *type = known[name ?: @"SQLite"] ?: name;
