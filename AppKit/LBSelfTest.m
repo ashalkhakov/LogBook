@@ -2121,7 +2121,7 @@ static void LBKindSteps(LBMainWindowController *controller) {
     /* Signed in, the permissions apply: a file is read through its record
        (Logbook.permissions.plist), so the orphan is no longer the user's
        to see; with no sign-in, it is there. */
-    BOOL signedIn = [NSProcessInfo processInfo].environment[@"LB_SIGN_IN_TOKENS"].length > 0;
+    BOOL signedIn = [[NSProcessInfo processInfo].environment[@"LB_SIGN_IN_TOKENS"] length] > 0;
     NSUInteger orphans = [LBServerObjects([Attachment class], [NSPredicate predicateWithFormat:@"%K == %@ AND %K == nil",
                                                                             NSStringFromSelector(@selector(fileName)), @"odometer.txt",
                                                                             NSStringFromSelector(@selector(record))]) count];
@@ -2516,7 +2516,7 @@ static void LBConnectSteps(void) {
     /* Signed in through an identity provider (Tests/signed-in-check.sh):
        the user is the token's, by its email; a server that asks no one is
        not this one. */
-    if ([NSProcessInfo processInfo].environment[@"LB_SIGN_IN_TOKENS"].length) {
+    if ([[NSProcessInfo processInfo].environment[@"LB_SIGN_IN_TOKENS"] length]) {
         LBCheck(@"signed in through the identity provider, the user its token's email",
                 LBAppStore.signIn.isSignedIn && [LBAppStore.user.email isEqualToString:LBAppStore.signIn.email ?: @"-"],
                 [NSString stringWithFormat:@"%@ / %@", LBAppStore.user.email, LBAppStore.signIn.email]);
