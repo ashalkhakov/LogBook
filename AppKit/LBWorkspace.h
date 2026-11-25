@@ -79,6 +79,9 @@ typedef NS_ENUM(NSInteger, LBWorkspacePane) {
 @property (nonatomic, readonly, strong) LBListsController *lists;
 - (BOOL)showListsTab:(NSString *)tab;
 
+// The screen's place changed within it (the stock's tab or catalog, chosen
+// there): the sidebar shows it, and Back comes back to it.
+- (void)screenChangedPlace:(LBScreen *)screen;
 // What the sidebar lists, read again (vehicles and catalogs added,
 // renamed, removed).
 - (void)reloadSidebar;

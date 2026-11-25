@@ -217,10 +217,10 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
             </tableHeaderView>
           </scrollView>
-          <button verticalHuggingPriority="750" identifier="addWarehouse" id="addWarehouse">
-            <rect key="frame" x="6" y="252" width="80" height="32"/>
+          <button toolTip="Add" verticalHuggingPriority="750" identifier="addWarehouse" id="addWarehouse">
+            <rect key="frame" x="10" y="267" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addWarehouseCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addWarehouseCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -228,10 +228,10 @@
               <action selector="addWarehouse:" target="-2" id="addWarehouseAction"/>
             </connections>
           </button>
-          <button verticalHuggingPriority="750" identifier="removeWarehouse" id="removeWarehouse">
-            <rect key="frame" x="86" y="252" width="90" height="32"/>
+          <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeWarehouse" id="removeWarehouse">
+            <rect key="frame" x="33" y="267" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeWarehouseCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeWarehouseCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -307,10 +307,10 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
             </tableHeaderView>
           </scrollView>
-          <button verticalHuggingPriority="750" identifier="addLocation" id="addLocation">
-            <rect key="frame" x="271" y="252" width="80" height="32"/>
+          <button toolTip="Add" verticalHuggingPriority="750" identifier="addLocation" id="addLocation">
+            <rect key="frame" x="275" y="267" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addLocationCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addLocationCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -319,10 +319,10 @@
               <binding destination="warehouseList" name="enabled" keyPath="selectedObjects.@count" id="addLocationEnabled"/>
             </connections>
           </button>
-          <button verticalHuggingPriority="750" identifier="removeLocation" id="removeLocation">
-            <rect key="frame" x="351" y="252" width="90" height="32"/>
+          <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeLocation" id="removeLocation">
+            <rect key="frame" x="298" y="267" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeLocationCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeLocationCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -385,10 +385,10 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
             </tableHeaderView>
           </scrollView>
-          <button verticalHuggingPriority="750" identifier="addCategory" id="addCategory">
-            <rect key="frame" x="6" y="10" width="80" height="32"/>
+          <button toolTip="Add" verticalHuggingPriority="750" identifier="addCategory" id="addCategory">
+            <rect key="frame" x="10" y="25" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addCategoryCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addCategoryCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -396,10 +396,10 @@
               <action selector="addCategory:" target="-2" id="addCategoryAction"/>
             </connections>
           </button>
-          <button verticalHuggingPriority="750" identifier="removeCategory" id="removeCategory">
-            <rect key="frame" x="86" y="10" width="90" height="32"/>
+          <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeCategory" id="removeCategory">
+            <rect key="frame" x="33" y="25" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeCategoryCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeCategoryCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -516,10 +516,10 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
             </tableHeaderView>
           </scrollView>
-          <button verticalHuggingPriority="750" identifier="addContact" id="addContact">
-            <rect key="frame" x="536" y="212" width="80" height="32"/>
+          <button toolTip="Add" verticalHuggingPriority="750" identifier="addContact" id="addContact">
+            <rect key="frame" x="540" y="227" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addContactCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addContactCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -527,10 +527,10 @@
               <action selector="addContact:" target="-2" id="addContactAction"/>
             </connections>
           </button>
-          <button verticalHuggingPriority="750" identifier="removeContact" id="removeContact">
-            <rect key="frame" x="616" y="212" width="90" height="32"/>
+          <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeContact" id="removeContact">
+            <rect key="frame" x="563" y="227" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeContactCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeContactCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -617,4 +617,8 @@
         </subviews>
     </customView>
   </objects>
+    <resources>
+        <image name="NSAddTemplate" width="14" height="13"/>
+        <image name="NSRemoveTemplate" width="14" height="4"/>
+    </resources>
 </document>

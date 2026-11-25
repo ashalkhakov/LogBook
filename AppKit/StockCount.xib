@@ -317,14 +317,14 @@
             </connections>
           </textField>
           <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="countRowsTableScroll">
-            <rect key="frame" x="14" y="90" width="632" height="352"/>
+            <rect key="frame" x="14" y="114" width="632" height="328"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <clipView key="contentView" id="countRowsTableClip">
-              <rect key="frame" x="1" y="1" width="630" height="350"/>
+              <rect key="frame" x="1" y="1" width="630" height="326"/>
               <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
               <subviews>
                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="countRowsTableHeader" identifier="countRowsTable" id="countRowsTable">
-                  <rect key="frame" x="0" y="0" width="630" height="327"/>
+                  <rect key="frame" x="0" y="0" width="630" height="303"/>
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <size key="intercellSpacing" width="3" height="2"/>
                   <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -397,7 +397,7 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             </scroller>
             <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="countRowsTableVScroller">
-              <rect key="frame" x="616" y="1" width="15" height="350"/>
+              <rect key="frame" x="616" y="1" width="15" height="326"/>
               <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
             </scroller>
             <tableHeaderView key="headerView" id="countRowsTableHeader">
@@ -451,10 +451,10 @@
               <binding destination="countRows" name="selectedObject" keyPath="selection.location" previousBinding="countRowLocationValues" id="countRowLocationChosen"/>
             </connections>
           </popUpButton>
-          <button verticalHuggingPriority="750" identifier="addCountRow" id="addCountRow">
-            <rect key="frame" x="10" y="8" width="100" height="32"/>
+          <button toolTip="Add Row" verticalHuggingPriority="750" identifier="addCountRow" id="addCountRow">
+            <rect key="frame" x="14" y="91" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Add Row" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addCountRowCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addCountRowCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -462,10 +462,10 @@
               <action selector="addCountRow:" target="-2" id="addCountRowAction"/>
             </connections>
           </button>
-          <button verticalHuggingPriority="750" identifier="removeCountRow" id="removeCountRow">
-            <rect key="frame" x="110" y="8" width="115" height="32"/>
+          <button toolTip="Remove Row" verticalHuggingPriority="750" identifier="removeCountRow" id="removeCountRow">
+            <rect key="frame" x="37" y="91" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Remove Row" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeCountRowCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeCountRowCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -489,4 +489,8 @@
         </subviews>
     </customView>
   </objects>
+    <resources>
+        <image name="NSAddTemplate" width="14" height="13"/>
+        <image name="NSRemoveTemplate" width="14" height="4"/>
+    </resources>
 </document>

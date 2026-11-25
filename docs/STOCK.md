@@ -421,9 +421,9 @@ order a form confirms is confirmed as `Confirm` does it, wherever it is
 saved: refused with no lines, a sale's phantom kits expanded. A shipment's
 moves are worked out as it is saved: each of its line's item, from where it
 went, made by who recorded it, when.
-**Window > Tasks** lists the open tasks, the oldest first, each with its
-order; Open shows the order in its own window, titled with the task, where
-its step is done. Its API is the server's
+**Tasks** (the sidebar's Work, or Window > Tasks) lists the open tasks,
+the oldest first, each with its order; Open shows the order in the main
+pane, titled with the task, where its step is done. Its API is the server's
 `workflow/` (WorkflowKit's `WFODataService.h`); with no one signed in, a
 trial user may work every task. `Tests/process-check.py` runs it over
 HTTP. Stock counts, and picking and packing, are to follow: what a count
@@ -534,15 +534,18 @@ devices make it.
   | `Reorder` | a warehouse | `Day` | the drafts |
 
   An order or a count posted with no number is given the next.
-- **The desktop app** has a window for each thing stock is made of. The
-  Stock window lists: the catalog's items, sales, purchases, the
-  changelog (each move with what its locations held before and after),
-  counts, and the overview (with what is held weighs and takes up, in the
-  catalog's units). What it lists opens in a window of its own, which
-  edits it: an item (its stock, recipe, suppliers, codes, size, reorder
-  rules), an order, a count being taken, the catalog's settings. Each
-  window has its own context and reads only what it shows; after a save
-  or an action it says stock changed, and the others read theirs again.
+- **The desktop app** shows stock in its one window: the sidebar lists
+  each catalog's Overview (with what is held weighs and takes up, in the
+  catalog's units), Items, Purchases, Sales, Counts, Changelog (each move
+  with what its locations held before and after) and Settings. What a
+  list shows opens in the main pane, which edits it: an item (its stock,
+  recipe, suppliers, codes, units, size, reorder rules), an order, a
+  count being taken; Back returns to the list. A move opens what made it
+  (Open, or a double click, in an item's moves and the changelog): its
+  order, its count, a part's record on the vehicle's page. Amounts are
+  in a currency chosen beside them. Each screen has its own context and
+  reads only what it shows; after a save or an action it says stock
+  changed, and the others read theirs again.
   The actions are the server's, as the Reminders tab calls them.
 - **The iOS app** shows stock in place of the logbook when asked (the
   Vehicle tab's Stock row; Settings' row back, and it stays so across
@@ -724,4 +727,5 @@ it. FIFO costing needs lots, and comes after them.
 4. Numbers: the app's prefix for the kind of document, the catalog's own
    prefix that its owner types in, and a running number
    ([Changes](#changes-to-the-model), 5).
-5. The desktop app's stock is a window of its own.
+5. The desktop app's stock is a place of its one window (the sidebar's
+   Stock).

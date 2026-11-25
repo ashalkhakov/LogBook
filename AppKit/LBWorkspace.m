@@ -55,6 +55,9 @@ static void *LBScreenTitled = &LBScreenTitled;
     /* The sidebar chosen in code, not by the user. */
     BOOL _choosing;
     BOOL _loaded;
+    /* The workspace itself choosing a screen's tab or catalog: not a
+       change of place within the screen. */
+    BOOL _navigating;
 }
 
 + (LBWorkspace *)current {
@@ -306,8 +309,10 @@ static void *LBScreenTitled = &LBScreenTitled;
         if (![self mayLeaveFor:stock]) return NO;
         [stock view];
         Catalog *catalog = [stock own:item.object];
+        _navigating = YES;
         if (catalog && catalog != stock.catalog) stock.catalog = catalog;
         [stock.tabs selectTabViewItemWithIdentifier:item.tab];
+        _navigating = NO;
         return [self present:stock place:key recording:recording asking:NO];
     }
     if ([key isEqualToString:@"tasks"]) return [self present:self.tasks place:key recording:recording asking:YES];
@@ -355,8 +360,10 @@ static void *LBScreenTitled = &LBScreenTitled;
     LBStockWindowController *stock = self.stock;
     if (![self mayLeaveFor:stock]) return NO;
     [stock view];
+    _navigating = YES;
     if (catalog) stock.catalog = [stock own:catalog] ?: stock.catalog;
     if (tab) [stock.tabs selectTabViewItemWithIdentifier:tab];
+    _navigating = NO;
     return [self present:stock place:[self placeOfStock] recording:YES asking:NO];
 }
 
@@ -441,6 +448,15 @@ static void *LBScreenTitled = &LBScreenTitled;
     [self.window makeFirstResponder:nil];
     [screen screenDidShow];
     return YES;
+}
+
+- (void)screenChangedPlace:(LBScreen *)screen {
+    if (_navigating || screen != _shownScreen || screen != _stock) return;
+    NSString *place = [self placeOfStock];
+    if (!place || [place isEqualToString:_place]) return;
+    _place = place;
+    [self notePlaceLeft];
+    [self showPlaceChosen];
 }
 
 /* The place being left as it is now, for Back: the stock's tab, the
@@ -531,8 +547,10 @@ static void *LBScreenTitled = &LBScreenTitled;
         _windowController.vehicles.selectedObjects = @[ item.object ];
     } else if (item && screen == _stock && item.tab) {
         Catalog *catalog = [_stock own:item.object];
+        _navigating = YES;
         if (catalog && catalog != _stock.catalog) _stock.catalog = catalog;
         [_stock.tabs selectTabViewItemWithIdentifier:item.tab];
+        _navigating = NO;
     } else if (item && screen == _lists && item.tab) {
         [_lists.tabs selectTabViewItemWithIdentifier:item.tab];
     }

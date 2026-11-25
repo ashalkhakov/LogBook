@@ -707,14 +707,14 @@
                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                     <subviews>
                                         <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="recordsTableScroll">
-                                            <rect key="frame" x="12" y="424" width="508" height="140"/>
+                                            <rect key="frame" x="12" y="448" width="508" height="116"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                             <clipView key="contentView" id="recordsTableClip">
-                                                <rect key="frame" x="1" y="1" width="506" height="198"/>
+                                                <rect key="frame" x="1" y="1" width="506" height="174"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="recordsTableHeader" identifier="recordsTable" id="recordsTable">
-                                                        <rect key="frame" x="0" y="0" width="506" height="175"/>
+                                                        <rect key="frame" x="0" y="0" width="506" height="151"/>
                                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                         <size key="intercellSpacing" width="3" height="2"/>
                                                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -787,7 +787,7 @@
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                             </scroller>
                                             <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="recordsTableVScroller">
-                                                <rect key="frame" x="492" y="1" width="15" height="198"/>
+                                                <rect key="frame" x="492" y="1" width="15" height="174"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                                             </scroller>
                                             <tableHeaderView key="headerView" id="recordsTableHeader">
@@ -856,10 +856,10 @@
                                                 <binding destination="attachments" name="enabled" keyPath="selectedObjects.@count" id="openAttachmentEnabled"/>
                                             </connections>
                                         </button>
-                                        <button verticalHuggingPriority="750" identifier="addAttachment" id="addAttachment">
-                                            <rect key="frame" x="592" y="390" width="64" height="32"/>
+                                        <button toolTip="Add…" verticalHuggingPriority="750" identifier="addAttachment" id="addAttachment">
+                                            <rect key="frame" x="532" y="425" width="24" height="23"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                            <buttonCell key="cell" type="push" title="Add…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addAttachmentCell">
+                                            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addAttachmentCell">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -868,10 +868,10 @@
                                                 <binding destination="records" name="enabled" keyPath="canRemove" id="addAttachmentEnabled"/>
                                             </connections>
                                         </button>
-                                        <button verticalHuggingPriority="750" identifier="removeAttachment" id="removeAttachment">
-                                            <rect key="frame" x="652" y="390" width="74" height="32"/>
+                                        <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeAttachment" id="removeAttachment">
+                                            <rect key="frame" x="555" y="425" width="24" height="23"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeAttachmentCell">
+                                            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeAttachmentCell">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -880,23 +880,23 @@
                                                 <binding destination="attachments" name="enabled" keyPath="canRemove" id="removeAttachmentEnabled"/>
                                             </connections>
                                         </button>
-                                        <popUpButton verticalHuggingPriority="750" identifier="addRecord" id="addRecord">
-                                            <rect key="frame" x="12" y="394" width="130" height="26"/>
+                                        <popUpButton toolTip="Add" verticalHuggingPriority="750" identifier="addRecord" id="addRecord">
+                                            <rect key="frame" x="12" y="425" width="36" height="23"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                            <popUpButtonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="addRecordCell">
+                                            <popUpButtonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="addRecordCell">
                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                                 <menu key="menu" id="addRecordMenu">
                                                     <items>
-                                                        <menuItem title="Add" id="addRecordTitleItem"/>
+                                                        <menuItem image="NSAddTemplate" hidden="YES" id="addRecordTitleItem"/>
                                                     </items>
                                                 </menu>
                                             </popUpButtonCell>
                                         </popUpButton>
-                                        <button verticalHuggingPriority="750" identifier="removeRecord" id="removeRecord">
-                                            <rect key="frame" x="146" y="390" width="100" height="32"/>
+                                        <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeRecord" id="removeRecord">
+                                            <rect key="frame" x="47" y="425" width="24" height="23"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                            <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeRecordCell">
+                                            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeRecordCell">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -1698,10 +1698,10 @@
                                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                                                                 </tableHeaderView>
                                                             </scrollView>
-                                                            <button verticalHuggingPriority="750" identifier="addServiceItem" id="addServiceItem">
-                                                                <rect key="frame" x="122" y="64" width="80" height="32"/>
+                                                            <button toolTip="Add" verticalHuggingPriority="750" identifier="addServiceItem" id="addServiceItem">
+                                                                <rect key="frame" x="128" y="77" width="24" height="23"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addServiceItemCell">
+                                                                <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addServiceItemCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
                                                                 </buttonCell>
@@ -1710,10 +1710,10 @@
                                                                     <binding destination="serviceItems" name="enabled" keyPath="canAdd" id="addServiceItemEnabled"/>
                                                                 </connections>
                                                             </button>
-                                                            <button verticalHuggingPriority="750" identifier="removeServiceItem" id="removeServiceItem">
-                                                                <rect key="frame" x="202" y="64" width="96" height="32"/>
+                                                            <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeServiceItem" id="removeServiceItem">
+                                                                <rect key="frame" x="151" y="77" width="24" height="23"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeServiceItemCell">
+                                                                <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeServiceItemCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
                                                                 </buttonCell>

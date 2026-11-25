@@ -1192,14 +1192,14 @@
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="supplierItemsTableScroll">
-                      <rect key="frame" x="10" y="48" width="594" height="226"/>
+                      <rect key="frame" x="10" y="72" width="594" height="202"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="supplierItemsTableClip">
-                        <rect key="frame" x="1" y="1" width="592" height="224"/>
+                        <rect key="frame" x="1" y="1" width="592" height="200"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="supplierItemsTableHeader" identifier="supplierItemsTable" id="supplierItemsTable">
-                            <rect key="frame" x="0" y="0" width="592" height="201"/>
+                            <rect key="frame" x="0" y="0" width="592" height="177"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <size key="intercellSpacing" width="3" height="2"/>
                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1344,7 +1344,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="supplierItemsTableVScroller">
-                        <rect key="frame" x="578" y="1" width="15" height="224"/>
+                        <rect key="frame" x="578" y="1" width="15" height="200"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="supplierItemsTableHeader">
@@ -1375,10 +1375,10 @@
                         <binding destination="supplierItemList" name="selectedObject" keyPath="selection.supplier" previousBinding="supplierItemSupplierValues" id="supplierItemSupplierChosen"/>
                       </connections>
                     </popUpButton>
-                    <button verticalHuggingPriority="750" identifier="addSupplierItem" id="addSupplierItem">
-                      <rect key="frame" x="281" y="8" width="80" height="32"/>
+                    <button toolTip="Add" verticalHuggingPriority="750" identifier="addSupplierItem" id="addSupplierItem">
+                      <rect key="frame" x="10" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addSupplierItemCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addSupplierItemCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1386,10 +1386,10 @@
                         <action selector="addSupplierItem:" target="-2" id="addSupplierItemAction"/>
                       </connections>
                     </button>
-                    <button verticalHuggingPriority="750" identifier="removeSupplierItem" id="removeSupplierItem">
-                      <rect key="frame" x="361" y="8" width="90" height="32"/>
+                    <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeSupplierItem" id="removeSupplierItem">
+                      <rect key="frame" x="33" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeSupplierItemCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeSupplierItemCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1407,14 +1407,14 @@
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="itemCodesTableScroll">
-                      <rect key="frame" x="10" y="48" width="594" height="226"/>
+                      <rect key="frame" x="10" y="72" width="594" height="202"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="itemCodesTableClip">
-                        <rect key="frame" x="1" y="1" width="592" height="224"/>
+                        <rect key="frame" x="1" y="1" width="592" height="200"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="itemCodesTableHeader" identifier="itemCodesTable" id="itemCodesTable">
-                            <rect key="frame" x="0" y="0" width="592" height="201"/>
+                            <rect key="frame" x="0" y="0" width="592" height="177"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <size key="intercellSpacing" width="3" height="2"/>
                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1472,7 +1472,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="itemCodesTableVScroller">
-                        <rect key="frame" x="578" y="1" width="15" height="224"/>
+                        <rect key="frame" x="578" y="1" width="15" height="200"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="itemCodesTableHeader">
@@ -1503,10 +1503,10 @@
                         <binding destination="itemCodeList" name="selectedObject" keyPath="selection.codeKind" previousBinding="itemCodeKindValues" id="itemCodeKindChosen"/>
                       </connections>
                     </popUpButton>
-                    <button verticalHuggingPriority="750" identifier="addItemCode" id="addItemCode">
-                      <rect key="frame" x="211" y="8" width="80" height="32"/>
+                    <button toolTip="Add" verticalHuggingPriority="750" identifier="addItemCode" id="addItemCode">
+                      <rect key="frame" x="10" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addItemCodeCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addItemCodeCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1514,10 +1514,10 @@
                         <action selector="addItemCode:" target="-2" id="addItemCodeAction"/>
                       </connections>
                     </button>
-                    <button verticalHuggingPriority="750" identifier="removeItemCode" id="removeItemCode">
-                      <rect key="frame" x="291" y="8" width="90" height="32"/>
+                    <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeItemCode" id="removeItemCode">
+                      <rect key="frame" x="33" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeItemCodeCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeItemCodeCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1607,10 +1607,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <button verticalHuggingPriority="750" identifier="addStockUnit" id="addStockUnit">
-                      <rect key="frame" x="4" y="8" width="80" height="32"/>
+                    <button toolTip="Add" verticalHuggingPriority="750" identifier="addStockUnit" id="addStockUnit">
+                      <rect key="frame" x="10" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addStockUnitCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addStockUnitCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1618,10 +1618,10 @@
                         <action selector="addStockUnit:" target="-2" id="addStockUnitAction"/>
                       </connections>
                     </button>
-                    <button verticalHuggingPriority="750" identifier="removeStockUnit" id="removeStockUnit">
-                      <rect key="frame" x="84" y="8" width="90" height="32"/>
+                    <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeStockUnit" id="removeStockUnit">
+                      <rect key="frame" x="33" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeStockUnitCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeStockUnitCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1811,14 +1811,14 @@
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="reorderRulesTableScroll">
-                      <rect key="frame" x="10" y="48" width="594" height="226"/>
+                      <rect key="frame" x="10" y="72" width="594" height="202"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="reorderRulesTableClip">
-                        <rect key="frame" x="1" y="1" width="592" height="224"/>
+                        <rect key="frame" x="1" y="1" width="592" height="200"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="reorderRulesTableHeader" identifier="reorderRulesTable" id="reorderRulesTable">
-                            <rect key="frame" x="0" y="0" width="592" height="201"/>
+                            <rect key="frame" x="0" y="0" width="592" height="177"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <size key="intercellSpacing" width="3" height="2"/>
                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1891,7 +1891,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="reorderRulesTableVScroller">
-                        <rect key="frame" x="578" y="1" width="15" height="224"/>
+                        <rect key="frame" x="578" y="1" width="15" height="200"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="reorderRulesTableHeader">
@@ -1922,10 +1922,10 @@
                         <binding destination="reorderRuleList" name="selectedObject" keyPath="selection.warehouse" previousBinding="reorderWarehouseValues" id="reorderWarehouseChosen"/>
                       </connections>
                     </popUpButton>
-                    <button verticalHuggingPriority="750" identifier="addReorderRule" id="addReorderRule">
-                      <rect key="frame" x="296" y="8" width="80" height="32"/>
+                    <button toolTip="Add" verticalHuggingPriority="750" identifier="addReorderRule" id="addReorderRule">
+                      <rect key="frame" x="10" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addReorderRuleCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addReorderRuleCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1933,10 +1933,10 @@
                         <action selector="addReorderRule:" target="-2" id="addReorderRuleAction"/>
                       </connections>
                     </button>
-                    <button verticalHuggingPriority="750" identifier="removeReorderRule" id="removeReorderRule">
-                      <rect key="frame" x="376" y="8" width="90" height="32"/>
+                    <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeReorderRule" id="removeReorderRule">
+                      <rect key="frame" x="33" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeReorderRuleCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeReorderRuleCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1975,4 +1975,8 @@
         </subviews>
     </customView>
   </objects>
+    <resources>
+        <image name="NSAddTemplate" width="14" height="13"/>
+        <image name="NSRemoveTemplate" width="14" height="4"/>
+    </resources>
 </document>

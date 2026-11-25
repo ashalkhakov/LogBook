@@ -1,4 +1,5 @@
 #import "LBStockWindowController.h"
+#import "LBWorkspace.h"
 #import "LBStore.h"
 #import "LBStockDisplay.h"
 #import "LBStockItemWindowController.h"
@@ -60,7 +61,8 @@
 }
 
 - (void)viewDidLoad {
-    self.title = self.catalog.lbTitle ?: @"Stock";
+    /* Its title its catalog's name, as it is renamed too. */
+    self.titleKeyPath = @"catalog.catalogName";
     _itemsTable.doubleAction = @selector(openItem:);
     _itemsTable.target = self;
     _salesTable.doubleAction = @selector(openSale:);
@@ -96,7 +98,7 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
     BOOL other = catalog != self.catalog;
     [super setCatalog:catalog];
     if (!other) return;
-    self.title = catalog.lbTitle ?: @"Stock";
+    [[LBWorkspace current] screenChangedPlace:self];
     [_read removeAllObjects];
     self.changeItem = nil;
     self.changeLocation = nil;
@@ -105,6 +107,7 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)item {
     [self readShown];
+    [[LBWorkspace current] screenChangedPlace:self];
 }
 
 - (void)readShown {

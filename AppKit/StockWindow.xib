@@ -228,10 +228,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <button verticalHuggingPriority="750" identifier="addItem" id="addItem">
-                      <rect key="frame" x="6" y="10" width="110" height="32"/>
+                    <button toolTip="Add Item" verticalHuggingPriority="750" identifier="addItem" id="addItem">
+                      <rect key="frame" x="10" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Add Item" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addItemCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addItemCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -245,7 +245,7 @@
                       </connections>
                     </button>
                     <button verticalHuggingPriority="750" identifier="openItem" id="openItem">
-                      <rect key="frame" x="116" y="10" width="90" height="32"/>
+                      <rect key="frame" x="64" y="21" width="90" height="32"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                       <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="openItemCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -256,10 +256,10 @@
                         <binding destination="itemList" name="enabled" keyPath="selectedObjects.@count" id="openItemEnabled"/>
                       </connections>
                     </button>
-                    <button verticalHuggingPriority="750" identifier="removeItem" id="removeItem">
-                      <rect key="frame" x="206" y="10" width="100" height="32"/>
+                    <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeItem" id="removeItem">
+                      <rect key="frame" x="33" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeItemCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeItemCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -392,10 +392,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <button verticalHuggingPriority="750" identifier="newSale" id="newSale">
-                      <rect key="frame" x="6" y="10" width="130" height="32"/>
+                    <button toolTip="New Sale" verticalHuggingPriority="750" identifier="newSale" id="newSale">
+                      <rect key="frame" x="10" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="New Sale" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="newSaleCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="newSaleCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -409,7 +409,7 @@
                       </connections>
                     </button>
                     <button verticalHuggingPriority="750" identifier="openSale" id="openSale">
-                      <rect key="frame" x="136" y="10" width="90" height="32"/>
+                      <rect key="frame" x="40" y="21" width="90" height="32"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                       <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="openSaleCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -544,10 +544,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <button verticalHuggingPriority="750" identifier="newPurchase" id="newPurchase">
-                      <rect key="frame" x="6" y="10" width="130" height="32"/>
+                    <button toolTip="New Purchase" verticalHuggingPriority="750" identifier="newPurchase" id="newPurchase">
+                      <rect key="frame" x="10" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="New Purchase" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="newPurchaseCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="newPurchaseCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -561,7 +561,7 @@
                       </connections>
                     </button>
                     <button verticalHuggingPriority="750" identifier="openPurchase" id="openPurchase">
-                      <rect key="frame" x="136" y="10" width="90" height="32"/>
+                      <rect key="frame" x="40" y="21" width="90" height="32"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                       <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="openPurchaseCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -933,10 +933,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <button verticalHuggingPriority="750" identifier="newCount" id="newCount">
-                      <rect key="frame" x="6" y="222" width="140" height="32"/>
+                    <button toolTip="New Count…" verticalHuggingPriority="750" identifier="newCount" id="newCount">
+                      <rect key="frame" x="10" y="237" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="New Count…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="newCountCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="newCountCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1607,4 +1607,8 @@
         </subviews>
     </customView>
   </objects>
+    <resources>
+        <image name="NSAddTemplate" width="14" height="13"/>
+        <image name="NSRemoveTemplate" width="14" height="4"/>
+    </resources>
 </document>
