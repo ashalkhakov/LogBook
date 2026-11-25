@@ -104,7 +104,9 @@
 /* The email the logbook knows the user by: the sign-in's, else the LBUser
    default (a server with no sign-in, for trying it out). */
 - (NSString *)email {
-    NSString *named = _signIn.isSignedIn ? _signIn.userName : nil;
+    /* By the token's email, as the server knows the user (its
+       preferred_username is not always an email). */
+    NSString *named = _signIn.isSignedIn ? (_signIn.email ?: _signIn.userName) : nil;
     return named.length ? named : [[NSUserDefaults standardUserDefaults] stringForKey:@"LBUser"];
 }
 

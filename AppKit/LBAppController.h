@@ -19,6 +19,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Another server, asked for.
 - (IBAction)connect:(nullable id)sender;
 - (IBAction)signOut:(nullable id)sender;
+// The same server signed in to afresh (its tokens forgotten): what is kept
+// on this Mac kept, and sent once signed in.
+- (IBAction)signInAgain:(nullable id)sender;
 // The signed-in user's preferences (LBPreferencesController.h).
 - (IBAction)showPreferences:(nullable id)sender;
 // The kinds of expense, the checklists and the exchange rates, each at its

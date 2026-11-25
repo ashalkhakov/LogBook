@@ -29,6 +29,10 @@
 			isa = PBXBuildFile;
 			fileRef = 4E83A3CB72FBFB07198EF507 /* Preferences.xib */;
 		};
+		0386ABE84B86E8AA7EC592F7 /* InvenTreeConnect.xib */ = {
+			isa = PBXBuildFile;
+			fileRef = F77B910AB4FB7BEC961A4121 /* InvenTreeConnect.xib */;
+		};
 		03DC87140492556BB818E764 /* LBLocalActions.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 0573CF7D416C8F082B374C6E /* LBLocalActions.m */;
@@ -80,10 +84,6 @@
 		1C4A264FCFA2C77B33A648D2 /* ImportSummary.xib */ = {
 			isa = PBXBuildFile;
 			fileRef = 79BD7E3003262AA6A6464465 /* ImportSummary.xib */;
-		};
-		6A1E0C3F9D2B4E57A8C1D2E3 /* InvenTreeConnect.xib */ = {
-			isa = PBXBuildFile;
-			fileRef = 6A1E0C3F9D2B4E57A8C1D2E4 /* InvenTreeConnect.xib */;
 		};
 		1DDAAAA209F502AABBD87A63 /* ODataKit.xcframework */ = {
 			isa = PBXBuildFile;
@@ -145,6 +145,10 @@
 		341E885D3AA2F3A42B7F04CC /* LBProcedures.m */ = {
 			isa = PBXBuildFile;
 			fileRef = FA961075CB2A673BD7F848CD /* LBProcedures.m */;
+		};
+		394FDC8FB4E47550A3AD4D63 /* LBRuleIssues.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 994C8ED64CF3C392D62FB301 /* LBRuleIssues.m */;
 		};
 		3B87B042E25C5C6BAF69C6BF /* LBReportData.m */ = {
 			isa = PBXBuildFile;
@@ -285,6 +289,10 @@
 			isa = PBXBuildFile;
 			fileRef = DCD36BEFF925FD84E6C7A1B9 /* Sparkle.xcframework */;
 			settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); };
+		};
+		69D7392C369CC87D8182114D /* LBTiming.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 4EC3D6008DF36665D482D905 /* LBTiming.m */;
 		};
 		6F4CEC1C995918B6B3F61C6F /* LogbookModel.m */ = {
 			isa = PBXBuildFile;
@@ -501,6 +509,10 @@
 			isa = PBXBuildFile;
 			fileRef = 1CC8C602EA1AEB4AA9CACE1B /* LogbookModel.m */;
 		};
+		B9A603FCA923B4A9707D1CF8 /* LBFieldIssues.m */ = {
+			isa = PBXBuildFile;
+			fileRef = 45EDD798E1AC1315C9BE1087 /* LBFieldIssues.m */;
+		};
 		C151D3F90E7A8315F69EF777 /* LBConnectPanel.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */;
@@ -566,21 +578,13 @@
 			isa = PBXBuildFile;
 			fileRef = 33507005495470C8207C2597 /* ORMRuntime.xcframework */;
 		};
-		7C2F1A0B3D4E5F6071829312 /* LBRuleIssues.m */ = {
+		D0A6A503E13E36FA5B99487F /* LBRuleIssues.m */ = {
 			isa = PBXBuildFile;
-			fileRef = 7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */;
-		};
-		7C2F1A0B3D4E5F6071829313 /* LBRuleIssues.m */ = {
-			isa = PBXBuildFile;
-			fileRef = 7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */;
+			fileRef = 994C8ED64CF3C392D62FB301 /* LBRuleIssues.m */;
 		};
 		D133B5ACC3CED76663C79052 /* LBStockEditor.m */ = {
 			isa = PBXBuildFile;
 			fileRef = 1A3310166FC5A264617FA591 /* LBStockEditor.m */;
-		};
-		7C2F1A0B3D4E5F6071829306 /* LBFieldIssues.m */ = {
-			isa = PBXBuildFile;
-			fileRef = 7C2F1A0B3D4E5F6071829305 /* LBFieldIssues.m */;
 		};
 		D150CB72C0373BBF67E78758 /* main.m */ = {
 			isa = PBXBuildFile;
@@ -881,34 +885,10 @@
 			path = LBStockOrderWindowController.h;
 			sourceTree = "<group>";
 		};
-		7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.objc;
-			path = LBRuleIssues.m;
-			sourceTree = "<group>";
-		};
-		7C2F1A0B3D4E5F6071829310 /* LBRuleIssues.h */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.h;
-			path = LBRuleIssues.h;
-			sourceTree = "<group>";
-		};
 		1A3310166FC5A264617FA591 /* LBStockEditor.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
 			path = LBStockEditor.m;
-			sourceTree = "<group>";
-		};
-		7C2F1A0B3D4E5F6071829305 /* LBFieldIssues.m */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.objc;
-			path = LBFieldIssues.m;
-			sourceTree = "<group>";
-		};
-		7C2F1A0B3D4E5F6071829304 /* LBFieldIssues.h */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.c.h;
-			path = LBFieldIssues.h;
 			sourceTree = "<group>";
 		};
 		1AA616881FDF64023A455351 /* OTelKit.xcframework */ = {
@@ -1107,6 +1087,12 @@
 			path = docs/BUILDING.md;
 			sourceTree = "<group>";
 		};
+		45EDD798E1AC1315C9BE1087 /* LBFieldIssues.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBFieldIssues.m;
+			sourceTree = "<group>";
+		};
 		470AD526B3A4B8CA0ADFC09B /* README.md */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = net.daringfireball.markdown;
@@ -1129,6 +1115,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
 			path = Preferences.xib;
+			sourceTree = "<group>";
+		};
+		4EC3D6008DF36665D482D905 /* LBTiming.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBTiming.m;
 			sourceTree = "<group>";
 		};
 		4FE96229781E69B34DF214C9 /* MainMenu.xib */ = {
@@ -1287,12 +1279,6 @@
 			path = ImportSummary.xib;
 			sourceTree = "<group>";
 		};
-		6A1E0C3F9D2B4E57A8C1D2E4 /* InvenTreeConnect.xib */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = file.xib;
-			path = InvenTreeConnect.xib;
-			sourceTree = "<group>";
-		};
 		7B58A3F22B5132525D3F4330 /* Parts.xib */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
@@ -1309,6 +1295,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = LBConflicts.h;
+			sourceTree = "<group>";
+		};
+		8185E15C7B5E86F10A5C0468 /* LBFieldIssues.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBFieldIssues.h;
 			sourceTree = "<group>";
 		};
 		81DAB9656DE4F22F4B52A58A /* Logbook.orm */ = {
@@ -1388,6 +1380,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = LBActions.h;
+			sourceTree = "<group>";
+		};
+		994C8ED64CF3C392D62FB301 /* LBRuleIssues.m */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.objc;
+			path = LBRuleIssues.m;
 			sourceTree = "<group>";
 		};
 		9C514FCE6BBB463148F5C3AF /* WorkflowKit.xcframework */ = {
@@ -1619,6 +1617,12 @@
 			path = LBiOSApp.h;
 			sourceTree = "<group>";
 		};
+		CF3A589FEFCFB2738EF3D793 /* LBRuleIssues.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBRuleIssues.h;
+			sourceTree = "<group>";
+		};
 		D090AFF26F4A18054D8494CB /* LBStockWindowController.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1711,6 +1715,12 @@
 			path = LBFormValues.h;
 			sourceTree = "<group>";
 		};
+		ECB1D72B086A6109DE8754F8 /* LBTiming.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBTiming.h;
+			sourceTree = "<group>";
+		};
 		EEE3822C8E2C03EB633ED3AE /* Fuel.rdl */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = text.xml;
@@ -1733,6 +1743,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = file.xib;
 			path = StockWindow.xib;
+			sourceTree = "<group>";
+		};
+		F77B910AB4FB7BEC961A4121 /* InvenTreeConnect.xib */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = file.xib;
+			path = InvenTreeConnect.xib;
 			sourceTree = "<group>";
 		};
 		F8295B3B2D8B6C8074CED1C2 /* MainWindow.xib */ = {
@@ -2034,8 +2050,8 @@
 				2432BF71F62D11F0DCE041C6 /* CatalogSettings.xib */,
 				F8746362A46CB5E2C52D1A7E /* ConnectPanel.xib */,
 				79BD7E3003262AA6A6464465 /* ImportSummary.xib */,
-				6A1E0C3F9D2B4E57A8C1D2E4 /* InvenTreeConnect.xib */,
 				ABFDBC32D4665ABB05B1F819 /* Info.plist */,
+				F77B910AB4FB7BEC961A4121 /* InvenTreeConnect.xib */,
 				1858D9209D5FE7B48B58866F /* LBAnswersController.h */,
 				7D121C7DECA61E76A9483A71 /* LBAnswersController.m */,
 				AAE85EE9A321374CF4B6CB43 /* LBAppController.h */,
@@ -2048,6 +2064,8 @@
 				4A1F8F1409D3E81AE6E6CB41 /* LBConnectPanel.m */,
 				324BB6A3D9A9BE9DE4F32543 /* LBCurrencies.h */,
 				5F97649AA937E1D48D47004D /* LBCurrencies.m */,
+				8185E15C7B5E86F10A5C0468 /* LBFieldIssues.h */,
+				45EDD798E1AC1315C9BE1087 /* LBFieldIssues.m */,
 				EB16200FD86C6DDB04D51064 /* LBFormValues.h */,
 				A3417EE9EC39BE87936D3D2D /* LBFormValues.m */,
 				B4B350AF69C986E38E58A1AF /* LBListsController.h */,
@@ -2066,8 +2084,6 @@
 				D754F8EB42F3ADAE0E299F79 /* LBSelfTest.m */,
 				B84277BF72A1805D5D8DB7FC /* LBStockCountWindowController.h */,
 				409C3F87EC54981EE98BFB26 /* LBStockCountWindowController.m */,
-				7C2F1A0B3D4E5F6071829304 /* LBFieldIssues.h */,
-				7C2F1A0B3D4E5F6071829305 /* LBFieldIssues.m */,
 				4DDC4EDEB5B9B0DABA7644A1 /* LBStockEditor.h */,
 				1A3310166FC5A264617FA591 /* LBStockEditor.m */,
 				2E035A472DE9048A40CC51E2 /* LBStockItemWindowController.h */,
@@ -2080,6 +2096,8 @@
 				A95A50DBF58ADE2AB8422970 /* LBTasks.m */,
 				CBAE16E841908FD28440E49F /* LBTasksWindowController.h */,
 				526FFAAA5962D49791B39417 /* LBTasksWindowController.m */,
+				ECB1D72B086A6109DE8754F8 /* LBTiming.h */,
+				4EC3D6008DF36665D482D905 /* LBTiming.m */,
 				54D9B95BA710144DC1887114 /* LBUpdater.h */,
 				63F76DCE6702DEFBD71EE19B /* LBUpdater-Apple.m */,
 				694E25C06D350F4886223FAB /* Lists.xib */,
@@ -2115,8 +2133,6 @@
 				81606360A961AF809407450F /* LBConflicts.h */,
 				690202E342F3343CCC4A45AF /* LBConflicts.m */,
 				D371E9DF0A4D53CA5C5BEBEF /* LBDisplay.h */,
-				7C2F1A0B3D4E5F6071829310 /* LBRuleIssues.h */,
-				7C2F1A0B3D4E5F6071829311 /* LBRuleIssues.m */,
 				B7670FC7C874BC5F07604ED6 /* LBDisplay.m */,
 				016E3CDFD6B10734D786ACB4 /* LBImport.h */,
 				352653C4276B2B999855FBF3 /* LBImport.m */,
@@ -2130,6 +2146,8 @@
 				FA961075CB2A673BD7F848CD /* LBProcedures.m */,
 				FF47C44BF13F9BF3086EC393 /* LBReportData.h */,
 				37F5E52039B2A71A1E5ADA60 /* LBReportData.m */,
+				CF3A589FEFCFB2738EF3D793 /* LBRuleIssues.h */,
+				994C8ED64CF3C392D62FB301 /* LBRuleIssues.m */,
 				3E7094F8DD90DECD608C53E2 /* LBSignIn.h */,
 				F202254F689402A7F179E854 /* LBSignIn.m */,
 				FA64ED383FFB91BEFF498056 /* LBStockDisplay.h */,
@@ -2316,7 +2334,7 @@
 				72F298546B4BBA2B1AD0CAED /* Parts.xib */,
 				70729DFCD31B9162AEE7E120 /* TasksWindow.xib */,
 				1C4A264FCFA2C77B33A648D2 /* ImportSummary.xib */,
-				6A1E0C3F9D2B4E57A8C1D2E3 /* InvenTreeConnect.xib */,
+				0386ABE84B86E8AA7EC592F7 /* InvenTreeConnect.xib */,
 				B71574A70BF424AC03F6ED06 /* Logbook.png */,
 				259654FD508E5BF614256C60 /* CostsByMonth.rdl */,
 				00FBA85C05869297B715A3D3 /* Fuel.rdl */,
@@ -2480,7 +2498,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7C2F1A0B3D4E5F6071829313 /* LBRuleIssues.m */,
 				49FFF4D6C3A4AD8EF59C7DE1 /* LBRecordForm.m */,
 				C84DC34E113C7F7313C34038 /* LBStockControllers.m */,
 				649ED8F26B5FBF618A78A5F0 /* LBStockPhone.m */,
@@ -2495,6 +2512,7 @@
 				76BD0C0C6014EC946C220ED3 /* LBLocalStore.m */,
 				E73043F2D16EEE3508B1033E /* LBPlanned.m */,
 				FFEC986A4E28F6F71BAB1EC2 /* LBProcedures.m */,
+				394FDC8FB4E47550A3AD4D63 /* LBRuleIssues.m */,
 				5713E0AD6431DEC5019FE81E /* LBSignIn.m */,
 				840AEC8AE6CB6EE50306F090 /* LBStockDisplay.m */,
 				83BAF198A28BAB6D44A6A1F0 /* LBStockProcedures.m */,
@@ -2522,13 +2540,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7C2F1A0B3D4E5F6071829312 /* LBRuleIssues.m */,
 				0A441C7DD4CE7A4FEEFA6A41 /* LBAnswersController.m */,
 				C3CE11FCB129BDCF4852DCA0 /* LBAppController.m */,
 				E63A728CF00EB704CEB4F90E /* LBCalendarController.m */,
 				C850D84A632E628032978828 /* LBCatalogSettingsWindowController.m */,
 				C151D3F90E7A8315F69EF777 /* LBConnectPanel.m */,
 				529DADF700964FC6237620B6 /* LBCurrencies.m */,
+				B9A603FCA923B4A9707D1CF8 /* LBFieldIssues.m */,
 				2C2C66E4B2EA58564AE99733 /* LBFormValues.m */,
 				D66D87A70D3592981C2035CD /* LBListsController.m */,
 				54D6EE49D6E938F7DDAE8527 /* LBMainWindowController.m */,
@@ -2539,12 +2557,12 @@
 				DFBD0FF8323401C8CF5C5DF2 /* LBSelfTest.m */,
 				17A5EC43F70F3F6A0365515A /* LBStockCountWindowController.m */,
 				D133B5ACC3CED76663C79052 /* LBStockEditor.m */,
-				7C2F1A0B3D4E5F6071829306 /* LBFieldIssues.m */,
 				9FFA1CCB7AD055C596E55444 /* LBStockItemWindowController.m */,
 				C399DB33835639D25AA56269 /* LBStockOrderWindowController.m */,
 				4A7C39DF8D06BBC66581C911 /* LBStockWindowController.m */,
 				7204C89B8654DCCB36E71B6E /* LBTasks.m */,
 				3E8947C4E7D3BE07ECE29527 /* LBTasksWindowController.m */,
+				69D7392C369CC87D8182114D /* LBTiming.m */,
 				044AA23AA30A8FF82812654E /* LBUpdater-Apple.m */,
 				D150CB72C0373BBF67E78758 /* main.m */,
 				5AA4112F777D647934A73C69 /* UDCalendarView.m */,
@@ -2558,6 +2576,7 @@
 				5B672684CC818796AB007ED1 /* LBPlanned.m */,
 				341E885D3AA2F3A42B7F04CC /* LBProcedures.m */,
 				3B87B042E25C5C6BAF69C6BF /* LBReportData.m */,
+				D0A6A503E13E36FA5B99487F /* LBRuleIssues.m */,
 				55D29C133A3C05C2C743A7E5 /* LBSignIn.m */,
 				EC78B9EAEEC42F90EBCC9844 /* LBStockDisplay.m */,
 				8800FD168A2C69561DAD95C9 /* LBStockProcedures.m */,

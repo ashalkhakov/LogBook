@@ -2,6 +2,7 @@
 #import "LBStore.h"
 #import "LBStockDisplay.h"
 #import "LBStockProcedures.h"
+#import "StockUnit+CoreDataClass.h"
 #import "LBTasks.h"
 #import "LBFormValues.h"
 #import <ORMRuntime/ORMForm.h>
@@ -14,6 +15,7 @@
 @property (nonatomic, readwrite, copy) NSArray<KitLine *> *kitLines;
 @property (nonatomic, readwrite, copy) NSArray<SupplierItem *> *supplierItems;
 @property (nonatomic, readwrite, copy) NSArray<ItemCode *> *itemCodes;
+@property (nonatomic, readwrite, copy) NSArray<StockUnit *> *stockUnits;
 @property (nonatomic, readwrite, copy) NSArray<ReorderRule *> *reorderRules;
 @property (nonatomic, readwrite, copy) NSArray<Category *> *categories;
 @property (nonatomic, readwrite, copy) NSArray<Supplier *> *suppliers;
@@ -138,6 +140,8 @@ static NSPredicate *LBOf(NSString *key, id object) {
     [self listSupplierItems];
     self.itemCodes = [self fetch:[ItemCode class] where:LBOf(@"stockItem", _item)
                         sortedBy:@[ [NSSortDescriptor sortDescriptorWithKey:@"codeText" ascending:YES] ]];
+    self.stockUnits = [self fetch:[StockUnit class] where:LBOf(@"stockItem", _item)
+                         sortedBy:@[ [NSSortDescriptor sortDescriptorWithKey:@"serialNumber" ascending:YES] ]];
     self.reorderRules = [self fetch:[ReorderRule class] where:LBOf(@"stockItem", _item)
                            sortedBy:@[ [NSSortDescriptor sortDescriptorWithKey:@"warehouse.lbTitle" ascending:YES] ]];
 }
@@ -350,6 +354,19 @@ static NSPredicate *LBOf(NSString *key, id object) {
 
 - (IBAction)removeItemCode:(id)sender {
     [self remove:_itemCodeList list:@"itemCodes"];
+}
+
+/* A unit of it, by the code on it: its serial number typed (or scanned
+   into the field), where it is its moves' to say. */
+- (IBAction)addStockUnit:(id)sender {
+    if (![self commitEdits]) return;
+    StockUnit *unit = [self newOf:[StockUnit class]];
+    unit.stockItem = _item;
+    [self add:unit list:@"stockUnits" to:_stockUnitList editing:0 of:_stockUnitsTable];
+}
+
+- (IBAction)removeStockUnit:(id)sender {
+    [self remove:_stockUnitList list:@"stockUnits"];
 }
 
 - (IBAction)addReorderRule:(id)sender {

@@ -1,4 +1,5 @@
 #import "LBLocalStore.h"
+#import <ODataKit/ODataError.h>
 #import "LogbookValidation.h"
 #import "LBProcedures.h"
 #import "LBStockProcedures.h"
@@ -11,6 +12,7 @@
 
 NSNotificationName const LBLocalStoreDidChangeNotification = @"LBLocalStoreDidChangeNotification";
 NSNotificationName const LBLocalStoreDidSyncNotification = @"LBLocalStoreDidSyncNotification";
+NSNotificationName const LBLocalStoreSyncDidFailNotification = @"LBLocalStoreSyncDidFailNotification";
 
 NSDate *LBNow(void) {
     return [NSDate dateWithTimeIntervalSinceReferenceDate:floor([NSDate timeIntervalSinceReferenceDate])];
@@ -159,6 +161,19 @@ static NSString *LBCount(NSUInteger n) {
     return _lastFailure;
 }
 
+/* A 401 anywhere in the failure: the store's error, or one under it. */
+static BOOL LBRefusedSignIn(NSError *error, NSUInteger depth) {
+    if (!error || depth > 4) return NO;
+    if ([error.userInfo[ODataErrorHTTPStatusKey] integerValue] == 401) return YES;
+    if (LBRefusedSignIn(error.userInfo[NSUnderlyingErrorKey], depth + 1)) return YES;
+    for (NSError *each in error.userInfo[NSDetailedErrorsKey]) if (LBRefusedSignIn(each, depth + 1)) return YES;
+    return NO;
+}
+
+- (BOOL)signInRefused {
+    return LBRefusedSignIn(_lastFailure, 0);
+}
+
 - (NSArray<ODataSyncIssue *> *)issues {
     return _engine.issues;
 }
@@ -210,6 +225,7 @@ static NSString *LBCount(NSUInteger n) {
     if (_user.isDeleted || _user.managedObjectContext == nil) _user = nil;
     if (error) {
         [self say:[NSString stringWithFormat:@"Not synced: %@ Changes wait here.", error.localizedDescription ?: @"no answer."]];
+        [[NSNotificationCenter defaultCenter] postNotificationName:LBLocalStoreSyncDidFailNotification object:self];
     } else {
         _lastSync = [NSDate date];
         [self say:[self syncedStatus]];
@@ -291,7 +307,9 @@ static NSString *LBCount(NSUInteger n) {
 /* The email the logbook knows the user by: the sign-in's, else the one
    given (a server that asks for no one). */
 - (NSString *)userEmail {
-    NSString *named = _signIn.isSignedIn ? _signIn.userName : nil;
+    /* By the token's email, as the server knows the user (its
+       preferred_username is not always an email). */
+    NSString *named = _signIn.isSignedIn ? (_signIn.email ?: _signIn.userName) : nil;
     return named.length ? named : _email;
 }
 

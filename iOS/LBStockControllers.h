@@ -7,7 +7,12 @@
 //   LBStockTabBarController     Items, Orders, Overview, Settings
 //   LBStockItemsViewController  the catalog's items, searched; + a new one
 //   LBStockItemViewController   an item: its details (edited), quantities,
-//                               holdings and moves; adjusted, transferred
+//                               holdings and moves; adjusted, transferred;
+//                               a holding opens its moves, a move its
+//                               order (a receipt's, a shipment's) or itself
+//   LBStockHoldingViewController  an item's holding: the moves there
+//   LBStockMoveDetailViewController  a move: what, when, how many, from,
+//                               to, whose, the unit, its note; its order
 //   LBStockMoveViewController   how many, where (and where to), why
 //   LBStockOrdersViewController sales or purchases
 //   LBStockOrderViewController  an order: its lines shipped (received),
@@ -23,7 +28,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@class LBStockItemViewController, LBStockOrderViewController, LBStockCountViewController;
+@class LBStockItemViewController, LBStockOrderViewController, LBStockCountViewController, Move, Holding;
+
+// What a move opens: its order (a receipt's purchase, a shipment's sale),
+// else the move itself.
+UIViewController *LBStockScreenOfMove(Move *move, LBStockPhone *phone);
 
 @interface LBStockTabBarController : UITabBarController
 - (instancetype)initWithStockPhone:(LBStockPhone *)phone NS_DESIGNATED_INITIALIZER;
@@ -50,6 +59,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface LBStockItemViewController : UITableViewController <UITextFieldDelegate>
 - (instancetype)initWithItem:(StockItem *)item phone:(LBStockPhone *)phone NS_DESIGNATED_INITIALIZER;
+// A row of Held at, or of Moves, tapped: what it opens, pushed.
+- (UIViewController *)openHoldingAt:(NSUInteger)row;
+- (UIViewController *)openMoveAt:(NSUInteger)row;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
 - (instancetype)initWithNibName:(nullable NSString *)nibName bundle:(nullable NSBundle *)bundle NS_UNAVAILABLE;
@@ -73,6 +85,32 @@ NS_ASSUME_NONNULL_BEGIN
 
 // What moving an item's stock is about to do: how many, where (from),
 // where to (a transfer), why (an adjustment). Done moves it.
+// An item's holding: where, how many, and the moves in and out of there,
+// each opening its order or itself.
+@interface LBStockHoldingViewController : UITableViewController
+- (instancetype)initWithHolding:(Holding *)holding phone:(LBStockPhone *)phone NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(nullable NSString *)nibName bundle:(nullable NSBundle *)bundle NS_UNAVAILABLE;
+@property (nonatomic, readonly) Holding *holding;
+// Into or out of its place, the latest first.
+@property (nonatomic, readonly, copy) NSArray<Move *> *moves;
+@end
+
+// A move, as it was made: none of it is changed here (a move is made by
+// what makes it: an adjustment, a transfer, an order's line, a count).
+@interface LBStockMoveDetailViewController : UITableViewController
+- (instancetype)initWithMove:(Move *)move phone:(LBStockPhone *)phone NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder *)coder NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(nullable NSString *)nibName bundle:(nullable NSBundle *)bundle NS_UNAVAILABLE;
+@property (nonatomic, readonly) Move *move;
+// "What: Transfer", "When: …", "Moved: 1", "From: …", "To: …", …
+- (NSArray<NSString *> *)detailRows;
+// Its order, where it has one (a line's, a receipt's, a shipment's).
+@property (nonatomic, readonly, nullable) NSManagedObject *order;
+@end
+
 @interface LBStockMoveViewController : UITableViewController <UITextFieldDelegate>
 - (instancetype)initWithItemController:(LBStockItemViewController *)item transfer:(BOOL)transfer NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;

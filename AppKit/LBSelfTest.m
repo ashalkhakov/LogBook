@@ -58,6 +58,7 @@
 #import "LBTasks.h"
 #import "LBStockCountWindowController.h"
 #import "LBCatalogSettingsWindowController.h"
+#import "LBTiming.h"
 #import "LBPartsPanelController.h"
 #import "LBStockDisplay.h"
 #import "LBFormValues.h"
@@ -169,7 +170,8 @@ static NSManagedObjectContext *LBServerContext(void) {
     if (LBAppStore.local && ![LBAppStore syncAndWait:&error]) NSLog(@"self-test: not synced: %@", error.localizedDescription);
     for (ODataSyncIssue *issue in LBAppStore.local.issues) NSLog(@"self-test: set aside: %@ %@ %ld %@", issue.entityName, issue.key, (long)issue.status, issue.message);
     if (!LBServerSide) {
-        LBServerSide = [[LBStore alloc] initWithServiceRoot:LBSelfTestRoot signIn:nil];
+        /* As the app is signed in, where the server asks for a sign-in. */
+        LBServerSide = [[LBStore alloc] initWithServiceRoot:LBSelfTestRoot signIn:LBAppStore.signIn];
         if (![LBServerSide open:NULL]) LBServerSide = nil;
     }
     return LBServerSide.context;
@@ -2117,13 +2119,19 @@ static void LBKindSteps(LBMainWindowController *controller) {
                                                        [object isKindOfClass:[Answer class]] ? [NSString stringWithFormat:@" of %@", ((Answer *)object).inspection.entity.name] : @""]];
     }
     LBClick(window, @"save");
-    LBCheck(@"a record removed, on the server too; its file left, an orphan", !controller.lastError
+    /* Signed in, the permissions apply: a file is read through its record
+       (Logbook.permissions.plist), so the orphan is no longer the user's
+       to see; with no sign-in, it is there. */
+    BOOL signedIn = [[NSProcessInfo processInfo].environment[@"LB_SIGN_IN_TOKENS"] length] > 0;
+    NSUInteger orphans = [LBServerObjects([Attachment class], [NSPredicate predicateWithFormat:@"%K == %@ AND %K == nil",
+                                                                            NSStringFromSelector(@selector(fileName)), @"odometer.txt",
+                                                                            NSStringFromSelector(@selector(record))]) count];
+    LBCheck(signedIn ? @"a record removed, on the server too; its file, an orphan, no longer the user's to see"
+                     : @"a record removed, on the server too; its file left, an orphan", !controller.lastError
                 && [LBServerObjects([MeterReading class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(id)),
                                                                          readingID]) count] == 0
-                && [LBServerObjects([Attachment class], [NSPredicate predicateWithFormat:@"%K == %@ AND %K == nil",
-                                                                      NSStringFromSelector(@selector(fileName)), @"odometer.txt",
-                                                                      NSStringFromSelector(@selector(record))]) count] == 1,
-            [NSString stringWithFormat:@"%@ deleting %@", controller.lastError.localizedDescription, deleting]);
+                && orphans == (signedIn ? 0 : 1),
+            [NSString stringWithFormat:@"%@ deleting %@, %lu orphans seen", controller.lastError.localizedDescription, deleting, (unsigned long)orphans]);
 }
 
 /* The view drawn into a bitmap, as it is now. */
@@ -2506,6 +2514,15 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
    the user is forgotten, and the panel shown again waits to be told to
    connect. */
 static void LBConnectSteps(void) {
+    /* Signed in through an identity provider (Tests/signed-in-check.sh):
+       the user is the token's, by its email; a server that asks no one is
+       not this one. */
+    if ([[NSProcessInfo processInfo].environment[@"LB_SIGN_IN_TOKENS"] length]) {
+        LBCheck(@"signed in through the identity provider, the user its token's email",
+                LBAppStore.signIn.isSignedIn && [LBAppStore.user.email isEqualToString:LBAppStore.signIn.email ?: @"-"],
+                [NSString stringWithFormat:@"%@ / %@", LBAppStore.user.email, LBAppStore.signIn.email]);
+        return;
+    }
     LBSetDefault(@"LBUser", @"");
     LBConnectPanel *panel = [[LBConnectPanel alloc] init];
     LBConnected *connected = [[LBConnected alloc] init];
@@ -2915,6 +2932,15 @@ static void LBInvenTreeSteps(LBMainWindowController *controller) {
     LBCheck(@"InvenTree's stock imported into a catalog of the user's: 29 made", done && count == 29,
             error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
     if (LBAppStore.local) [LBAppStore syncAndWait:NULL];
+    LBSpin();
+    /* The sync's line under the forms (MainWindow.xib): connected, and
+       saying it synced, in no alarm. */
+    if (LBAppStore.local) {
+        NSTextField *line = controller.syncStatusField;
+        LBCheck(@"the window's sync line: connected, \"Synced …\", not red", line && ![line isHidden] && [line.stringValue hasPrefix:@"Synced"]
+                    && [line isDescendantOf:controller.window.contentView] && !LBAppStore.local.signInRefused,
+                line ? line.stringValue : @"not connected");
+    }
     Catalog *there = nil;
     for (Catalog *each in controller.store.user.ownedCatalogs) if ([each.catalogName isEqualToString:catalog]) there = each;
     [there.managedObjectContext refreshObject:there mergeChanges:NO];
@@ -2925,10 +2951,100 @@ static void LBInvenTreeSteps(LBMainWindowController *controller) {
     done = [controller importRecordsOf:read() intoVehicle:nil catalogNamed:catalog made:&count skipped:&skipped error:&error];
     LBCheck(@"imported again: nothing made", done && count == 0 && skipped > 0,
             error ?: [NSString stringWithFormat:@"%lu made, %lu there", (unsigned long)count, (unsigned long)skipped]);
+
+    /* What it was bought for: the unit cost of each item, and of its
+       supplier's, from InvenTree's stock items' purchase prices. */
+    StockItem *mini = nil, *cable = nil;
+    for (StockItem *each in there.stockItems) {
+        if ([each.itemName isEqualToString:@"Mini PC N100"]) mini = each;
+        if ([each.itemName isEqualToString:@"USB-C cable 1m"]) cable = each;
+    }
+    LBCheck(@"unit costs from what InvenTree's stock was bought for: the Mini PC 250, the cables' average 3.25; its supplier's the same",
+            LBIs(mini.unitCostAmount, @"250") && LBIs(cable.unitCostAmount, @"3.25")
+                && LBIs([mini.supplierItems.anyObject supplierCostAmount], @"250"),
+            [NSString stringWithFormat:@"%@ %@ %@", mini.unitCostAmount, cable.unitCostAmount, [mini.supplierItems.anyObject supplierCostAmount]]);
+
+    /* A place added for it first, as the user did: Kitchen, under the
+       warehouse it is kept at, in the catalog's settings, saved. */
+    Location *held = [(Holding *)[LBServerObjects([Holding class], [NSPredicate predicateWithFormat:@"stockItem.id == %@", mini.id]) firstObject] location];
+    LBCatalogSettingsWindowController *places = [[LBCatalogSettingsWindowController alloc] initWithStore:LBAppStore catalog:there];
+    places.quiet = YES;
+    [places showWindow:nil];
+    LBSpin();
+    for (Warehouse *each in places.warehouseList.arrangedObjects) {
+        if ([each.id isEqual:held.warehouse.id]) [places.warehouseList setSelectedObjects:@[ each ]];
+    }
+    LBSpin();
+    LBClick(places.window, @"addLocation");
+    LBTypeInRow(places.window, @"the new place's name", @"Kitchen");
+    LBSavedIn(places, @"Kitchen added under the item's warehouse");
+    [places close];
+
+    /* Its unit, in the item's window: the Units tab lists it by its
+       serial; the stock window finds the item by it, as a scanner types
+       it. Then moved, as a user moves it: 1 from where it is to another
+       place, by Transfer and its sheet. */
+    LBStockItemWindowController *card = [[LBStockItemWindowController alloc] initWithStore:LBAppStore item:mini catalog:there];
+    card.quiet = YES;
+    [card showWindow:nil];
+    LBSpin();
+    [card.cardTabs selectTabViewItemWithIdentifier:@"units"];
+    LBSpin();
+    LBCheck(@"the Units tab: the Mini PC's unit, N100-0001", [[card.stockUnits valueForKey:@"serialNumber"] isEqualToArray:@[ @"N100-0001" ]]
+                && card.stockUnitsTable.numberOfRows == 1,
+            [card.stockUnits valueForKey:@"serialNumber"]);
+    NSString *from = [card.holdings.firstObject lbLocationTitle];
+    NSPopUpButton *to = (NSPopUpButton *)LBControl(card.window.contentView, @"stockTo");
+    NSString *elsewhere = nil;
+    for (NSString *title in to.itemTitles) if ([title hasSuffix:@"/ Kitchen"]) elsewhere = title;
+    LBChoose(card.window, @"stockAt", from);
+    LBChoose(card.window, @"stockTo", elsewhere);
+    LBMoveStock(card, @"transfer", @"1", nil);
+    /* The app syncs now and then: one while the sheet is open, the
+       transfer it asks for not saved yet. */
+    if (LBAppStore.local) [LBAppStore.local syncAndWait:NULL];
+    LBSpin();
+    LBClick(card.requestPanel, @"submitRequest");
+    NSArray *asked = LBServerObjects([StockTransfer class], [NSPredicate predicateWithFormat:@"stockItem.id == %@", mini.id]);
+    LBCheck(@"an imported unit's transfer asked for: requested, the sheet gone, nothing refused",
+            asked.count == 1 && [[asked.firstObject transferState] isEqualToString:@"Requested"] && !card.window.attachedSheet,
+            [NSString stringWithFormat:@"from %@ to %@: %@ %@", from, elsewhere, card.lastError.localizedDescription ?: @"", asked]);
+    if (card.window.attachedSheet) [card dismissForm:nil];
+    [card close];
+}
+
+/* LB_STEPS=timing (with LB_TIMING=1): MainTrack's bicycles imported, then
+   each vehicle chosen in the list as a click selects it, twice over, and
+   how long each took to the window settled, as LBTiming.h writes it. */
+static void LBTimingSteps(LBMainWindowController *controller) {
+    LBMainTrackSteps(controller);
+    LBSpin();
+    NSTableView *table = (NSTableView *)LBControl(controller.window.contentView, @"vehiclesTable");
+    LBTimingNote(@"vehicles: %ld", (long)table.numberOfRows);
+    for (int pass = 0; pass < 2; pass++) {
+        for (NSInteger row = 0; row < table.numberOfRows; row++) {
+            LBTimingNote(@"--- choose row %ld, %@", (long)row,
+                         [[controller.vehicles.arrangedObjects objectAtIndex:(NSUInteger)row] valueForKey:@"vehicleName"]);
+            LBTimed(@"chosen, drawn and settled", ^{
+                [table selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
+                [controller.window displayIfNeeded];
+                [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate dateWithTimeIntervalSinceNow:0.01]];
+            });
+        }
+    }
 }
 
 static void LBSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
+    NSTableView *vehiclesTable = (NSTableView *)LBControl(window.contentView, @"vehiclesTable");
+    LBCheck(@"the vehicle list's delegate the window's controller (MainWindow.xib), for LB_TIMING's clicks",
+            vehiclesTable.delegate == (id)controller, vehiclesTable.delegate);
+    if ([[NSProcessInfo processInfo].environment[@"LB_STEPS"] isEqualToString:@"timing"]) {
+        controller.quiet = YES;
+        [window makeKeyAndOrderFront:nil];
+        LBTimingSteps(controller);
+        return;
+    }
     controller.quiet = YES;
     [NSApp activateIgnoringOtherApps:YES];
     [window makeKeyAndOrderFront:nil];

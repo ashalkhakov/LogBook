@@ -81,7 +81,7 @@ static NSURL *LBRoot, *LBModelURL;
 /* Signed in as a user already: the access token the issuer gave them
    (sync-check.sh), sent with every request, as a sign-in's tokens are. */
 @interface LBTokenSignIn : ODataSignIn
-@property (nonatomic, copy) NSString *email;
+@property (nonatomic, copy) NSString *signedInEmail;
 @property (nonatomic, copy) NSString *token;
 @end
 
@@ -89,13 +89,14 @@ static NSURL *LBRoot, *LBModelURL;
 
 + (instancetype)signInAs:(NSString *)email token:(NSString *)token {
     LBTokenSignIn *signIn = [[self alloc] initWithServiceRoot:LBRoot secrets:[[LBNoSecrets alloc] init]];
-    signIn.email = email;
+    signIn.signedInEmail = email;
     signIn.token = token;
     return signIn;
 }
 
 - (BOOL)isSignedIn { return YES; }
-- (NSString *)userName { return _email; }
+- (NSString *)userName { return _signedInEmail; }
+- (NSString *)email { return _signedInEmail; }
 
 - (ODataConfiguration *)configuration {
     ODataConfiguration *c = [[ODataConfiguration alloc] initWithURL:LBRoot options:nil];

@@ -160,10 +160,18 @@ As SimpleNotes does:
      -JWTIssuer https://id.example.com/realms/<realm> -AllowAnonymous NO
    ```
 
-   `-JWTAudience` additionally checks the tokens' audience, if your realm
-   sets one. Each setting is an `LB_` variable too (`LB_JWT_ISSUER`).
-   `$metadata` stays readable without signing in, so the apps can find
-   out where to sign in.
+   Each setting is an `LB_` variable too (`LB_JWT_ISSUER`). `$metadata`
+   stays readable without signing in, so the apps can find out where to
+   sign in.
+3. To check that the tokens are meant for Logbook (recommended), give
+   `-JWTAudience logbook` (`LB_JWT_AUDIENCE=logbook`) **and** make
+   Keycloak put `logbook` in them: Keycloak leaves a client out of its own
+   tokens' audience (they say `account`). In Clients → `logbook` → Client
+   scopes → `logbook-dedicated` → Add mapper → By configuration →
+   **Audience**: Included Client Audience `logbook`, Add to access token
+   on. Without the mapper the server refuses every token (401, "The token
+   is not for this service": its log says so as `auth_failure`
+   `audience`), and the apps say the server refused the sign-in.
 
 Once signed in, who may see and change what, and call which action, is
 the permissions file's, `Server/Logbook.permissions.plist`

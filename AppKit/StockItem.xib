@@ -14,6 +14,8 @@
         <outlet property="kitLineList" destination="kitLineList" id="kitLineListOutlet"/>
         <outlet property="supplierItemList" destination="supplierItemList" id="supplierItemListOutlet"/>
         <outlet property="itemCodeList" destination="itemCodeList" id="itemCodeListOutlet"/>
+        <outlet property="stockUnitList" destination="stockUnitList" id="stockUnitListOutlet"/>
+        <outlet property="stockUnitsTable" destination="stockUnitsTable" id="stockUnitsTableOutlet"/>
         <outlet property="reorderRuleList" destination="reorderRuleList" id="reorderRuleListOutlet"/>
         <outlet property="supplierItemsTable" destination="supplierItemsTable" id="supplierItemsTableOutlet"/>
         <outlet property="itemCodesTable" destination="itemCodesTable" id="itemCodesTableOutlet"/>
@@ -353,6 +355,11 @@
     <arrayController editable="YES" userLabel="Supplier Items" id="supplierItemList">
       <connections>
         <binding destination="-2" name="contentArray" keyPath="supplierItems" id="supplierItemListContent"/>
+      </connections>
+    </arrayController>
+    <arrayController editable="YES" userLabel="Units" id="stockUnitList">
+      <connections>
+        <binding destination="-2" name="contentArray" keyPath="stockUnits" id="stockUnitListContent"/>
       </connections>
     </arrayController>
     <arrayController editable="YES" userLabel="Codes" id="itemCodeList">
@@ -1491,6 +1498,110 @@
                       <connections>
                         <action selector="removeItemCode:" target="-2" id="removeItemCodeAction"/>
                         <binding destination="itemCodeList" name="enabled" keyPath="canRemove" id="removeItemCodeEnabled"/>
+                      </connections>
+                    </button>
+                  </subviews>
+                </view>
+              </tabViewItem>
+              <tabViewItem label="Units" identifier="units" id="unitsTab">
+                <view key="view" id="unitsView">
+                  <rect key="frame" x="10" y="33" width="614" height="284"/>
+                  <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                  <subviews>
+                    <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="stockUnitsTableScroll">
+                      <rect key="frame" x="10" y="48" width="594" height="226"/>
+                      <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                      <clipView key="contentView" id="stockUnitsTableClip">
+                        <rect key="frame" x="1" y="1" width="592" height="224"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                          <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="stockUnitsTableHeader" identifier="stockUnitsTable" id="stockUnitsTable">
+                            <rect key="frame" x="0" y="0" width="592" height="201"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <size key="intercellSpacing" width="3" height="2"/>
+                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                            <tableColumns>
+                              <tableColumn identifier="serialNumber" width="200" minWidth="30" maxWidth="1000" id="stockUnitsTableSerialNumberColumn">
+                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Serial number / code">
+                                  <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                </tableHeaderCell>
+                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="stockUnitsTableSerialNumberCell">
+                                  <font key="font" metaFont="system"/>
+                                  <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                  <binding destination="stockUnitList" name="value" keyPath="arrangedObjects.serialNumber" id="stockUnitsTableSerialNumberValue"/>
+                                </connections>
+                              </tableColumn>
+                              <tableColumn identifier="location" width="150" minWidth="30" maxWidth="1000" id="stockUnitsTableLocationColumn">
+                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Where">
+                                  <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                </tableHeaderCell>
+                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="stockUnitsTableLocationCell">
+                                  <font key="font" metaFont="system"/>
+                                  <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                  <binding destination="stockUnitList" name="value" keyPath="arrangedObjects.location.lbTitle" id="stockUnitsTableLocationValue"/>
+                                </connections>
+                              </tableColumn>
+                              <tableColumn identifier="note" width="230" minWidth="30" maxWidth="1000" id="stockUnitsTableNoteColumn">
+                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Note">
+                                  <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                </tableHeaderCell>
+                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="stockUnitsTableNoteCell">
+                                  <font key="font" metaFont="system"/>
+                                  <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                  <binding destination="stockUnitList" name="value" keyPath="arrangedObjects.note" id="stockUnitsTableNoteValue"/>
+                                </connections>
+                              </tableColumn>
+                            </tableColumns>
+                          </tableView>
+                        </subviews>
+                      </clipView>
+                      <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="stockUnitsTableHScroller">
+                        <rect key="frame" x="1" y="210" width="592" height="15"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                      </scroller>
+                      <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="stockUnitsTableVScroller">
+                        <rect key="frame" x="578" y="1" width="15" height="224"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                      </scroller>
+                      <tableHeaderView key="headerView" id="stockUnitsTableHeader">
+                        <rect key="frame" x="0" y="0" width="592" height="23"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                      </tableHeaderView>
+                    </scrollView>
+                    <button verticalHuggingPriority="750" identifier="addStockUnit" id="addStockUnit">
+                      <rect key="frame" x="4" y="8" width="80" height="32"/>
+                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                      <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addStockUnitCell">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                      </buttonCell>
+                      <connections>
+                        <action selector="addStockUnit:" target="-2" id="addStockUnitAction"/>
+                      </connections>
+                    </button>
+                    <button verticalHuggingPriority="750" identifier="removeStockUnit" id="removeStockUnit">
+                      <rect key="frame" x="84" y="8" width="90" height="32"/>
+                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                      <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeStockUnitCell">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                      </buttonCell>
+                      <connections>
+                        <action selector="removeStockUnit:" target="-2" id="removeStockUnitAction"/>
+                        <binding destination="stockUnitList" name="enabled" keyPath="canRemove" id="removeStockUnitEnabled"/>
                       </connections>
                     </button>
                   </subviews>
