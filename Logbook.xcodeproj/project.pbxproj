@@ -1245,6 +1245,12 @@
 			path = LBCurrencies.m;
 			sourceTree = "<group>";
 		};
+		600A6F8358F9D75BD0057BF4 /* LBSelectors.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBSelectors.h;
+			sourceTree = "<group>";
+		};
 		629B5816603A0B12D55AECA8 /* LBStockPhone.m */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.objc;
@@ -2221,6 +2227,7 @@
 				37F5E52039B2A71A1E5ADA60 /* LBReportData.m */,
 				CF3A589FEFCFB2738EF3D793 /* LBRuleIssues.h */,
 				994C8ED64CF3C392D62FB301 /* LBRuleIssues.m */,
+				600A6F8358F9D75BD0057BF4 /* LBSelectors.h */,
 				3E7094F8DD90DECD608C53E2 /* LBSignIn.h */,
 				F202254F689402A7F179E854 /* LBSignIn.m */,
 				FA64ED383FFB91BEFF498056 /* LBStockDisplay.h */,

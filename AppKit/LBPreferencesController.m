@@ -26,7 +26,7 @@
 /* What was typed kept, then saved with the logbook's other changes. */
 - (IBAction)done:(id)sender {
     if (![self.window makeFirstResponder:nil] || ![_userController commitEditing]) return;
-    [_logbook save:sender];
+    [_logbook saveLogbook];
     if (!_logbook.lastError) [self close];
 }
 

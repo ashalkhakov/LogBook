@@ -41,6 +41,16 @@ FOUNDATION_EXPORT NSNotificationName const LBScreenWillCloseNotification;
 // sheet, its lists read again).
 - (void)screenDidShow;
 
+// File > Save and File > Revert to Saved, while it is the screen shown
+// (the window's controller sends them on): its changes saved, or let go
+// and what it shows read again. Nothing here: a screen with nothing of its
+// own to save (the tasks).
+- (IBAction)save:(nullable id)sender;
+- (IBAction)revertChanges:(nullable id)sender;
+// Whether it has changes of its own to save, File's Save and Revert to
+// Saved enabled for it: NO here.
+@property (nonatomic, readonly) BOOL savable;
+
 // Its title kept as a key path of it says (an item's name): observed, so
 // on GNUstep too, whose bindings bind no title.
 @property (nonatomic, copy, nullable) NSString *titleKeyPath;

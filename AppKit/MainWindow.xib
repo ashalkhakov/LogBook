@@ -366,7 +366,7 @@
                                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                         <subviews>
                     <tabView identifier="tabs" id="tabs">
-                        <rect key="frame" x="14" y="48" width="851" height="620"/>
+                        <rect key="frame" x="14" y="10" width="851" height="658"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <font key="font" metaFont="system"/>
                         <tabViewItems>
@@ -377,7 +377,7 @@
                                     <subviews>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="vehicleNameLabel">
                                             <rect key="frame" x="12" y="537" width="112" height="17"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Name:" id="vehicleNameLabelCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -385,8 +385,8 @@
                                             </textFieldCell>
                                         </textField>
                                         <textField verticalHuggingPriority="750" identifier="vehicleName" id="vehicleName">
-                                            <rect key="frame" x="132" y="534" width="580" height="22"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <rect key="frame" x="132" y="534" width="260" height="22"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="vehicleNameCell">
                                                 
                                                 <font key="font" metaFont="system"/>
@@ -403,7 +403,7 @@
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="makeLabel">
                                             <rect key="frame" x="12" y="505" width="112" height="17"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Make:" id="makeLabelCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -411,8 +411,8 @@
                                             </textFieldCell>
                                         </textField>
                                         <textField verticalHuggingPriority="750" identifier="make" id="make">
-                                            <rect key="frame" x="132" y="502" width="580" height="22"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <rect key="frame" x="132" y="502" width="260" height="22"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="makeCell">
                                                 
                                                 <font key="font" metaFont="system"/>
@@ -429,7 +429,7 @@
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="carModelLabel">
                                             <rect key="frame" x="12" y="473" width="112" height="17"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Model:" id="carModelLabelCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -437,8 +437,8 @@
                                             </textFieldCell>
                                         </textField>
                                         <textField verticalHuggingPriority="750" identifier="carModel" id="carModel">
-                                            <rect key="frame" x="132" y="470" width="580" height="22"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <rect key="frame" x="132" y="470" width="260" height="22"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="carModelCell">
                                                 
                                                 <font key="font" metaFont="system"/>
@@ -455,7 +455,7 @@
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="manufactureYearLabel">
                                             <rect key="frame" x="12" y="441" width="112" height="17"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Year:" id="manufactureYearLabelCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -463,8 +463,8 @@
                                             </textFieldCell>
                                         </textField>
                                         <textField verticalHuggingPriority="750" identifier="manufactureYear" id="manufactureYear">
-                                            <rect key="frame" x="132" y="438" width="580" height="22"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <rect key="frame" x="132" y="438" width="260" height="22"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="manufactureYearCell">
                                                 <numberFormatter key="formatter" formatterBehavior="custom10_4" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="0" id="manufactureYearFormatter"/>
                                                 <font key="font" metaFont="system"/>
@@ -480,8 +480,8 @@
                                             </connections>
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="fuelLabel">
-                                            <rect key="frame" x="12" y="409" width="112" height="17"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <rect key="frame" x="404" y="537" width="100" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Fuel:" id="fuelLabelCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -489,8 +489,8 @@
                                             </textFieldCell>
                                         </textField>
                                         <textField verticalHuggingPriority="750" identifier="fuel" id="fuel">
-                                            <rect key="frame" x="132" y="406" width="580" height="22"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <rect key="frame" x="512" y="534" width="200" height="22"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="fuelCell">
                                                 
                                                 <font key="font" metaFont="system"/>
@@ -506,8 +506,8 @@
                                             </connections>
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="vinLabel">
-                                            <rect key="frame" x="12" y="377" width="112" height="17"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <rect key="frame" x="404" y="505" width="100" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="VIN:" id="vinLabelCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -515,8 +515,8 @@
                                             </textFieldCell>
                                         </textField>
                                         <textField verticalHuggingPriority="750" identifier="vin" id="vin">
-                                            <rect key="frame" x="132" y="374" width="580" height="22"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <rect key="frame" x="512" y="502" width="200" height="22"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="vinCell">
                                                 
                                                 <font key="font" metaFont="system"/>
@@ -532,8 +532,8 @@
                                             </connections>
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="registrationNumberLabel">
-                                            <rect key="frame" x="12" y="345" width="112" height="17"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <rect key="frame" x="404" y="473" width="100" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Registration:" id="registrationNumberLabelCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -541,8 +541,8 @@
                                             </textFieldCell>
                                         </textField>
                                         <textField verticalHuggingPriority="750" identifier="registrationNumber" id="registrationNumber">
-                                            <rect key="frame" x="132" y="342" width="580" height="22"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <rect key="frame" x="512" y="470" width="200" height="22"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="registrationNumberCell">
                                                 
                                                 <font key="font" metaFont="system"/>
@@ -558,8 +558,8 @@
                                             </connections>
                                         </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="vehicleKindLabel">
-                                            <rect key="frame" x="12" y="313" width="112" height="17"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <rect key="frame" x="12" y="409" width="112" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Kind:" id="vehicleKindLabelCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -567,7 +567,7 @@
                                             </textFieldCell>
                                         </textField>
                                         <popUpButton verticalHuggingPriority="750" identifier="vehicleKind" id="vehicleKind">
-                                            <rect key="frame" x="129" y="306" width="200" height="26"/>
+                                            <rect key="frame" x="129" y="402" width="200" height="26"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="vehicleKindCell">
                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -580,7 +580,7 @@
                                             </connections>
                                         </popUpButton>
                                                             <button identifier="vehicleHasNoMeter" id="vehicleHasNoMeter">
-                                                                <rect key="frame" x="340" y="310" width="300" height="18"/>
+                                                                <rect key="frame" x="132" y="376" width="300" height="18"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <buttonCell key="cell" type="check" title="No meter: distance from its trips" bezelStyle="regularSquare" imagePosition="left" state="on" inset="2" id="vehicleHasNoMeterCell">
                                                                     <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
@@ -591,8 +591,8 @@
                                                                 </connections>
                                                             </button>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="driversLabel">
-                                            <rect key="frame" x="12" y="261" width="112" height="17"/>
-                                            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+                                            <rect key="frame" x="12" y="317" width="112" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Shared with:" id="driversLabelCell">
                                                 <font key="font" metaFont="system"/>
                                                 <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
@@ -600,8 +600,8 @@
                                             </textFieldCell>
                                         </textField>
                                         <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="driversTableScroll">
-                                            <rect key="frame" x="132" y="140" width="580" height="138"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                            <rect key="frame" x="132" y="196" width="580" height="138"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <clipView key="contentView" id="driversTableClip">
                                                 <rect key="frame" x="1" y="1" width="578" height="168"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -659,7 +659,7 @@
                                             </tableHeaderView>
                                         </scrollView>
                                         <textField verticalHuggingPriority="750" identifier="shareEmail" id="shareEmail">
-                                            <rect key="frame" x="132" y="104" width="260" height="22"/>
+                                            <rect key="frame" x="132" y="160" width="260" height="22"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" placeholderString="Their email" drawsBackground="YES" id="shareEmailCell">
                                                 <font key="font" metaFont="system"/>
@@ -675,7 +675,7 @@
                                             </connections>
                                         </textField>
                                         <button verticalHuggingPriority="750" identifier="share" id="share">
-                                            <rect key="frame" x="396" y="99" width="90" height="32"/>
+                                            <rect key="frame" x="396" y="155" width="90" height="32"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <buttonCell key="cell" type="push" title="Share" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="shareCell">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -687,7 +687,7 @@
                                             </connections>
                                         </button>
                                         <button verticalHuggingPriority="750" identifier="unshare" id="unshare">
-                                            <rect key="frame" x="486" y="99" width="100" height="32"/>
+                                            <rect key="frame" x="486" y="155" width="100" height="32"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                             <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="unshareCell">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -796,10 +796,10 @@
                                             </tableHeaderView>
                                         </scrollView>
                                         <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="attachmentsTableScroll">
-                                            <rect key="frame" x="532" y="424" width="188" height="140"/>
+                                            <rect key="frame" x="532" y="448" width="188" height="116"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
                                             <clipView key="contentView" id="attachmentsTableClip">
-                                                <rect key="frame" x="1" y="1" width="186" height="198"/>
+                                                <rect key="frame" x="1" y="1" width="186" height="114"/>
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 <subviews>
                                                     <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="attachmentsTableHeader" identifier="attachmentsTable" id="attachmentsTable">
@@ -836,7 +836,7 @@
                                                 <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                                             </scroller>
                                             <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="attachmentsTableVScroller">
-                                                <rect key="frame" x="172" y="1" width="15" height="198"/>
+                                                <rect key="frame" x="172" y="1" width="15" height="114"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                                             </scroller>
                                             <tableHeaderView key="headerView" id="attachmentsTableHeader">
@@ -845,11 +845,11 @@
                                             </tableHeaderView>
                                         </scrollView>
                                         <button verticalHuggingPriority="750" identifier="openAttachment" id="openAttachment">
-                                            <rect key="frame" x="526" y="390" width="70" height="32"/>
+                                            <rect key="frame" x="582" y="422" width="70" height="28"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                            <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="openAttachmentCell">
+                                            <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="openAttachmentCell">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                                <font key="font" metaFont="system"/>
+                                                <font key="font" metaFont="smallSystem"/>
                                             </buttonCell>
                                             <connections>
                                                 <action selector="openAttachment:" target="-2" id="openAttachmentAction"/>
@@ -1791,7 +1791,7 @@
                                                                 </connections>
                                                             </customView>
                                                             <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ServiceItemChargedLabel">
-                                                                <rect key="frame" x="426" y="109" width="68" height="17"/>
+                                                                <rect key="frame" x="434" y="109" width="60" height="17"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                                 <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Charged:" id="ServiceItemChargedLabelCell">
                                                                     <font key="font" metaFont="system"/>
@@ -5643,30 +5643,6 @@
                             <outlet property="delegate" destination="-2" id="tabsDelegate"/>
                         </connections>
                     </tabView>
-                    <button verticalHuggingPriority="750" identifier="revert" id="revert">
-                        <rect key="frame" x="659" y="13" width="100" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Revert" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="revertCell">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="revertChanges:" target="-2" id="revertAction"/>
-                            
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" identifier="save" id="save">
-                        <rect key="frame" x="763" y="13" width="100" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="saveCell">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="save:" target="-2" id="saveAction"/>
-                            
-                        </connections>
-                    </button>
                                         </subviews>
                                     </customView>
                                     <customView hidden="YES" identifier="screenHost" id="screenHost" userLabel="Another Screen's Host">

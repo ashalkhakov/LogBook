@@ -376,11 +376,11 @@
       </connections>
     </arrayController>
     <customView userLabel="Screen" id="content">
-        <rect key="frame" x="0" y="0" width="660" height="620"/>
+        <rect key="frame" x="0" y="0" width="660" height="582"/>
         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
         <subviews>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemNameFieldLabel">
-            <rect key="frame" x="14" y="589" width="80" height="17"/>
+            <rect key="frame" x="14" y="551" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Name" id="itemNameFieldLabelCell">
               <font key="font" metaFont="system"/>
@@ -389,7 +389,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemNameField" id="itemNameField">
-            <rect key="frame" x="98" y="586" width="220" height="22"/>
+            <rect key="frame" x="98" y="548" width="220" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemNameFieldCell">
               <font key="font" metaFont="system"/>
@@ -401,7 +401,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCategoryLabel">
-            <rect key="frame" x="330" y="589" width="80" height="17"/>
+            <rect key="frame" x="330" y="551" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Category" id="itemCategoryLabelCell">
               <font key="font" metaFont="system"/>
@@ -410,7 +410,7 @@
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="itemCategory" id="itemCategory">
-            <rect key="frame" x="414" y="583" width="232" height="26"/>
+            <rect key="frame" x="414" y="545" width="232" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="itemCategoryCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -429,7 +429,7 @@
             </connections>
           </popUpButton>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemDescriptionLabel">
-            <rect key="frame" x="14" y="559" width="80" height="17"/>
+            <rect key="frame" x="14" y="521" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Description" id="itemDescriptionLabelCell">
               <font key="font" metaFont="system"/>
@@ -438,7 +438,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemDescription" id="itemDescription">
-            <rect key="frame" x="98" y="556" width="220" height="22"/>
+            <rect key="frame" x="98" y="518" width="220" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemDescriptionCell">
               <font key="font" metaFont="system"/>
@@ -450,7 +450,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemSupplierLabel">
-            <rect key="frame" x="330" y="559" width="80" height="17"/>
+            <rect key="frame" x="330" y="521" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier" id="itemSupplierLabelCell">
               <font key="font" metaFont="system"/>
@@ -459,7 +459,7 @@
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="itemSupplier" id="itemSupplier">
-            <rect key="frame" x="414" y="553" width="232" height="26"/>
+            <rect key="frame" x="414" y="515" width="232" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="itemSupplierCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -478,7 +478,7 @@
             </connections>
           </popUpButton>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemSKULabel">
-            <rect key="frame" x="14" y="529" width="80" height="17"/>
+            <rect key="frame" x="14" y="491" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="SKU" id="itemSKULabelCell">
               <font key="font" metaFont="system"/>
@@ -487,7 +487,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemSKU" id="itemSKU">
-            <rect key="frame" x="98" y="526" width="220" height="22"/>
+            <rect key="frame" x="98" y="488" width="220" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemSKUCell">
               <font key="font" metaFont="system"/>
@@ -499,7 +499,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCountUnitLabel">
-            <rect key="frame" x="330" y="529" width="80" height="17"/>
+            <rect key="frame" x="330" y="491" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Count unit" id="itemCountUnitLabelCell">
               <font key="font" metaFont="system"/>
@@ -508,7 +508,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemCountUnit" id="itemCountUnit">
-            <rect key="frame" x="414" y="526" width="232" height="22"/>
+            <rect key="frame" x="414" y="488" width="232" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemCountUnitCell">
               <font key="font" metaFont="system"/>
@@ -520,7 +520,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemPriceLabel">
-            <rect key="frame" x="14" y="499" width="80" height="17"/>
+            <rect key="frame" x="14" y="461" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Price" id="itemPriceLabelCell">
               <font key="font" metaFont="system"/>
@@ -529,7 +529,7 @@
             </textFieldCell>
           </textField>
           <customView identifier="itemPrice" id="itemPrice" customClass="UDQuantityField">
-            <rect key="frame" x="98" y="494" width="220" height="26"/>
+            <rect key="frame" x="98" y="456" width="220" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <userDefinedRuntimeAttributes>
               <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
@@ -543,7 +543,7 @@
             </connections>
           </customView>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemUnitCostLabel">
-            <rect key="frame" x="330" y="499" width="80" height="17"/>
+            <rect key="frame" x="330" y="461" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Unit cost" id="itemUnitCostLabelCell">
               <font key="font" metaFont="system"/>
@@ -552,7 +552,7 @@
             </textFieldCell>
           </textField>
           <customView identifier="itemUnitCost" id="itemUnitCost" customClass="UDQuantityField">
-            <rect key="frame" x="414" y="494" width="232" height="26"/>
+            <rect key="frame" x="414" y="456" width="232" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <userDefinedRuntimeAttributes>
               <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
@@ -566,7 +566,7 @@
             </connections>
           </customView>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemNoteLabel">
-            <rect key="frame" x="14" y="469" width="80" height="17"/>
+            <rect key="frame" x="14" y="431" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="itemNoteLabelCell">
               <font key="font" metaFont="system"/>
@@ -575,7 +575,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemNote" id="itemNote">
-            <rect key="frame" x="98" y="466" width="548" height="22"/>
+            <rect key="frame" x="98" y="428" width="548" height="22"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemNoteCell">
               <font key="font" metaFont="system"/>
@@ -587,7 +587,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemTotalQuantityLabel">
-            <rect key="frame" x="14" y="439" width="80" height="17"/>
+            <rect key="frame" x="14" y="401" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="On hand" id="itemTotalQuantityLabelCell">
               <font key="font" metaFont="system"/>
@@ -596,7 +596,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemTotalQuantity" id="itemTotalQuantity">
-            <rect key="frame" x="98" y="436" width="90" height="22"/>
+            <rect key="frame" x="98" y="398" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemTotalQuantityCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemTotalQuantityFormatter"/>
@@ -609,7 +609,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemAvailableLabel">
-            <rect key="frame" x="230" y="439" width="80" height="17"/>
+            <rect key="frame" x="230" y="401" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Available" id="itemAvailableLabelCell">
               <font key="font" metaFont="system"/>
@@ -618,7 +618,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemAvailable" id="itemAvailable">
-            <rect key="frame" x="314" y="436" width="90" height="22"/>
+            <rect key="frame" x="314" y="398" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemAvailableCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemAvailableFormatter"/>
@@ -631,7 +631,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCommittedLabel">
-            <rect key="frame" x="446" y="439" width="80" height="17"/>
+            <rect key="frame" x="446" y="401" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Committed" id="itemCommittedLabelCell">
               <font key="font" metaFont="system"/>
@@ -640,7 +640,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemCommitted" id="itemCommitted">
-            <rect key="frame" x="530" y="436" width="90" height="22"/>
+            <rect key="frame" x="530" y="398" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemCommittedCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemCommittedFormatter"/>
@@ -653,7 +653,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemIncomingLabel">
-            <rect key="frame" x="14" y="415" width="80" height="17"/>
+            <rect key="frame" x="14" y="377" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Incoming" id="itemIncomingLabelCell">
               <font key="font" metaFont="system"/>
@@ -662,7 +662,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemIncoming" id="itemIncoming">
-            <rect key="frame" x="98" y="412" width="90" height="22"/>
+            <rect key="frame" x="98" y="374" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemIncomingCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemIncomingFormatter"/>
@@ -675,7 +675,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemShortageLabel">
-            <rect key="frame" x="230" y="415" width="80" height="17"/>
+            <rect key="frame" x="230" y="377" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Short" id="itemShortageLabelCell">
               <font key="font" metaFont="system"/>
@@ -684,7 +684,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemShortage" id="itemShortage">
-            <rect key="frame" x="314" y="412" width="90" height="22"/>
+            <rect key="frame" x="314" y="374" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemShortageCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemShortageFormatter"/>
@@ -697,7 +697,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemMakeableLabel">
-            <rect key="frame" x="446" y="415" width="80" height="17"/>
+            <rect key="frame" x="446" y="377" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Can make" id="itemMakeableLabelCell">
               <font key="font" metaFont="system"/>
@@ -706,7 +706,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemMakeable" id="itemMakeable">
-            <rect key="frame" x="530" y="412" width="90" height="22"/>
+            <rect key="frame" x="530" y="374" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemMakeableCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemMakeableFormatter"/>
@@ -719,7 +719,7 @@
             </connections>
           </textField>
           <tabView identifier="cardTabs" id="cardTabs">
-            <rect key="frame" x="13" y="48" width="634" height="330"/>
+            <rect key="frame" x="13" y="10" width="634" height="330"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <font key="font" metaFont="system"/>
             <tabViewItems>
@@ -1950,28 +1950,6 @@
               </tabViewItem>
             </tabViewItems>
           </tabView>
-          <button verticalHuggingPriority="750" identifier="revert" id="revert">
-            <rect key="frame" x="450" y="10" width="95" height="32"/>
-            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Revert" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="revertCell">
-              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-              <font key="font" metaFont="system"/>
-            </buttonCell>
-            <connections>
-              <action selector="revertChanges:" target="-2" id="revertAction"/>
-            </connections>
-          </button>
-          <button verticalHuggingPriority="750" identifier="save" id="save">
-            <rect key="frame" x="545" y="10" width="100" height="32"/>
-            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="saveCell">
-              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-              <font key="font" metaFont="system"/>
-            </buttonCell>
-            <connections>
-              <action selector="save:" target="-2" id="saveAction"/>
-            </connections>
-          </button>
         </subviews>
     </customView>
   </objects>

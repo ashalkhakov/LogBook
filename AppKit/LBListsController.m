@@ -271,12 +271,26 @@ static int32_t LBNextPosition(NSSet *objects) {
 
 /* Save: what was typed kept, then saved with the logbook's other
    changes; the lists stay shown. */
-- (IBAction)done:(id)sender {
+- (IBAction)save:(id)sender {
     if (![self.window makeFirstResponder:nil]) return;
     for (NSArrayController *controller in @[ _expenseKinds, _checklists, _questions, _options, _exchangeRates ]) {
         if (![controller commitEditing]) return;
     }
-    [_logbook save:sender];
+    [_logbook saveLogbook];
+}
+
+- (IBAction)revertChanges:(id)sender {
+    [_logbook revertLogbook];
+    /* Each list read again: what was added and let go no longer in it
+       (GNUstep's controllers keep a rolled-back object listed). */
+    NSError *error = nil;
+    for (NSArrayController *controller in @[ _expenseKinds, _checklists, _exchangeRates ]) {
+        if (![controller fetchWithRequest:nil merge:NO error:&error]) [_logbook reportError:error];
+    }
+}
+
+- (BOOL)savable {
+    return YES;
 }
 
 @end

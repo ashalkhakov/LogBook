@@ -51,10 +51,10 @@
             </connections>
           </popUpButton>
           <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="partsTableScroll">
-            <rect key="frame" x="14" y="110" width="532" height="196"/>
+            <rect key="frame" x="14" y="134" width="532" height="172"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <clipView key="contentView" id="partsTableClip">
-              <rect key="frame" x="1" y="1" width="530" height="194"/>
+              <rect key="frame" x="1" y="1" width="530" height="170"/>
               <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
               <subviews>
                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="partsTableHeader" identifier="partsTable" id="partsTable">
@@ -132,7 +132,7 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             </scroller>
             <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="partsTableVScroller">
-              <rect key="frame" x="516" y="1" width="15" height="194"/>
+              <rect key="frame" x="516" y="1" width="15" height="170"/>
               <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
             </scroller>
             <tableHeaderView key="headerView" id="partsTableHeader">
@@ -196,7 +196,7 @@
             </connections>
           </button>
           <button toolTip="Remove" verticalHuggingPriority="750" identifier="removePart" id="removePart">
-            <rect key="frame" x="14" y="87" width="24" height="23"/>
+            <rect key="frame" x="14" y="111" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removePartCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>

@@ -537,7 +537,13 @@ devices make it.
 - **The desktop app** shows stock in its one window: the sidebar lists
   each catalog's Overview (with what is held weighs and takes up, in the
   catalog's units), Items, Purchases, Sales, Counts, Changelog (each move
-  with what its locations held before and after) and Settings. What a
+  with what its locations held before and after), and its settings, a
+  row a page: Warehouses (and the chosen one's locations), Contacts (its
+  customers and suppliers), Categories, and Settings (its name,
+  currency, prefix and units); one save saves them all. File > Save
+  and File > Revert to Saved act on the screen shown (the logbook's
+  page, an item, an order, a catalog's settings, the lists); the
+  screens have no buttons of their own for them. What a
   list shows opens in the main pane, which edits it: an item (its stock,
   recipe, suppliers, codes, units, size, reorder rules), an order, a
   count being taken; Back returns to the list. A move opens what made it

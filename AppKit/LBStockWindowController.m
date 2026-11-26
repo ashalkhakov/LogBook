@@ -283,8 +283,11 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
 
 - (IBAction)showSettings:(id)sender {
     if (!self.catalog) return;
-    LBStockEditor *editor = [self windowOfClass:[LBCatalogSettingsWindowController class]]
-                            ?: [[LBCatalogSettingsWindowController alloc] initWithStore:self.store catalog:self.catalog];
+    LBCatalogSettingsWindowController *editor = (LBCatalogSettingsWindowController *)[self windowOfClass:[LBCatalogSettingsWindowController class]]
+                                                ?: [[LBCatalogSettingsWindowController alloc] initWithStore:self.store catalog:self.catalog];
+    /* At its own page: the catalog's name, currency, prefix and units. */
+    [editor view];
+    [editor.tabs selectTabViewItemWithIdentifier:@"settings"];
     [self show:editor];
 }
 

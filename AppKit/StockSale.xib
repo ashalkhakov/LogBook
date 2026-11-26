@@ -598,10 +598,10 @@
             </connections>
           </popUpButton>
           <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="shipMovesTableScroll">
-            <rect key="frame" x="14" y="110" width="492" height="200"/>
+            <rect key="frame" x="14" y="134" width="492" height="176"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <clipView key="contentView" id="shipMovesTableClip">
-              <rect key="frame" x="1" y="1" width="490" height="198"/>
+              <rect key="frame" x="1" y="1" width="490" height="174"/>
               <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
               <subviews>
                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" headerView="shipMovesTableHeader" identifier="shipMovesTable" id="shipMovesTable">
@@ -667,7 +667,7 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             </scroller>
             <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="shipMovesTableVScroller">
-              <rect key="frame" x="476" y="1" width="15" height="198"/>
+              <rect key="frame" x="476" y="1" width="15" height="174"/>
               <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
             </scroller>
             <tableHeaderView key="headerView" id="shipMovesTableHeader">
@@ -699,7 +699,7 @@
             </connections>
           </popUpButton>
           <button toolTip="Remove Line" verticalHuggingPriority="750" identifier="removeShipped" id="removeShipped">
-            <rect key="frame" x="14" y="87" width="24" height="23"/>
+            <rect key="frame" x="14" y="111" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
             <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeShippedCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -736,11 +736,11 @@
       </view>
     </window>
     <customView userLabel="Screen" id="content">
-        <rect key="frame" x="0" y="0" width="680" height="620"/>
+        <rect key="frame" x="0" y="0" width="680" height="582"/>
         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
         <subviews>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderPartyLabel">
-            <rect key="frame" x="14" y="589" width="90" height="17"/>
+            <rect key="frame" x="14" y="551" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Customer" id="orderPartyLabelCell">
               <font key="font" metaFont="system"/>
@@ -749,7 +749,7 @@
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="orderParty" id="orderParty">
-            <rect key="frame" x="110" y="583" width="220" height="26"/>
+            <rect key="frame" x="110" y="545" width="220" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="orderPartyCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -768,7 +768,7 @@
             </connections>
           </popUpButton>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderPlacedLabel">
-            <rect key="frame" x="345" y="589" width="80" height="17"/>
+            <rect key="frame" x="345" y="551" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Placed on" id="orderPlacedLabelCell">
               <font key="font" metaFont="system"/>
@@ -777,7 +777,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="orderPlaced" id="orderPlaced">
-            <rect key="frame" x="430" y="586" width="236" height="22"/>
+            <rect key="frame" x="430" y="548" width="236" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="orderPlacedCell">
               <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="medium" timeStyle="none" id="orderPlacedFormatter"/>
@@ -790,7 +790,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderReferenceLabel">
-            <rect key="frame" x="14" y="559" width="90" height="17"/>
+            <rect key="frame" x="14" y="521" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Their number" id="orderReferenceLabelCell">
               <font key="font" metaFont="system"/>
@@ -799,7 +799,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="orderReference" id="orderReference">
-            <rect key="frame" x="110" y="556" width="220" height="22"/>
+            <rect key="frame" x="110" y="518" width="220" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="orderReferenceCell">
               <font key="font" metaFont="system"/>
@@ -811,7 +811,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderStateLabel">
-            <rect key="frame" x="345" y="559" width="80" height="17"/>
+            <rect key="frame" x="345" y="521" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State" id="orderStateLabelCell">
               <font key="font" metaFont="system"/>
@@ -820,7 +820,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="orderState" id="orderState">
-            <rect key="frame" x="430" y="556" width="236" height="22"/>
+            <rect key="frame" x="430" y="518" width="236" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="orderStateCell">
               <font key="font" metaFont="system"/>
@@ -832,7 +832,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderNoteLabel">
-            <rect key="frame" x="14" y="529" width="90" height="17"/>
+            <rect key="frame" x="14" y="491" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="orderNoteLabelCell">
               <font key="font" metaFont="system"/>
@@ -841,7 +841,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="orderNote" id="orderNote">
-            <rect key="frame" x="110" y="526" width="556" height="22"/>
+            <rect key="frame" x="110" y="488" width="556" height="22"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="orderNoteCell">
               <font key="font" metaFont="system"/>
@@ -853,7 +853,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderShipToLabel">
-            <rect key="frame" x="14" y="499" width="90" height="17"/>
+            <rect key="frame" x="14" y="461" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Ship to" id="orderShipToLabelCell">
               <font key="font" metaFont="system"/>
@@ -862,7 +862,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="orderShipTo" id="orderShipTo">
-            <rect key="frame" x="110" y="496" width="556" height="22"/>
+            <rect key="frame" x="110" y="458" width="556" height="22"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="orderShipToCell">
               <font key="font" metaFont="system"/>
@@ -874,7 +874,7 @@
             </connections>
           </textField>
           <button verticalHuggingPriority="750" identifier="confirmOrder" id="confirmOrder">
-            <rect key="frame" x="10" y="458" width="100" height="32"/>
+            <rect key="frame" x="10" y="420" width="100" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <buttonCell key="cell" type="push" title="Confirm" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="confirmOrderCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -885,7 +885,7 @@
             </connections>
           </button>
           <button verticalHuggingPriority="750" identifier="closeOrder" id="closeOrder">
-            <rect key="frame" x="110" y="458" width="100" height="32"/>
+            <rect key="frame" x="110" y="420" width="100" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="closeOrderCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -896,7 +896,7 @@
             </connections>
           </button>
           <button verticalHuggingPriority="750" identifier="cancelOrder" id="cancelOrder">
-            <rect key="frame" x="210" y="458" width="100" height="32"/>
+            <rect key="frame" x="210" y="420" width="100" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelOrderCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -907,7 +907,7 @@
             </connections>
           </button>
           <button verticalHuggingPriority="750" identifier="reopenOrder" id="reopenOrder">
-            <rect key="frame" x="310" y="458" width="100" height="32"/>
+            <rect key="frame" x="310" y="420" width="100" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <buttonCell key="cell" type="push" title="Reopen" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="reopenOrderCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -918,7 +918,7 @@
             </connections>
           </button>
           <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="linesTableScroll">
-            <rect key="frame" x="14" y="264" width="652" height="186"/>
+            <rect key="frame" x="14" y="226" width="652" height="186"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <clipView key="contentView" id="linesTableClip">
               <rect key="frame" x="1" y="1" width="650" height="184"/>
@@ -1066,7 +1066,7 @@
             </tableHeaderView>
           </scrollView>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="lineItemLabel">
-            <rect key="frame" x="14" y="209" width="40" height="17"/>
+            <rect key="frame" x="14" y="171" width="40" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item" id="lineItemLabelCell">
               <font key="font" metaFont="system"/>
@@ -1075,7 +1075,7 @@
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="lineItem" id="lineItem">
-            <rect key="frame" x="59" y="203" width="220" height="26"/>
+            <rect key="frame" x="59" y="165" width="220" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="lineItemCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -1089,7 +1089,7 @@
             </connections>
           </popUpButton>
           <button toolTip="Add Line" verticalHuggingPriority="750" identifier="addLine" id="addLine">
-            <rect key="frame" x="14" y="241" width="24" height="23"/>
+            <rect key="frame" x="14" y="203" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addLineCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1100,7 +1100,7 @@
             </connections>
           </button>
           <button toolTip="Remove Line" verticalHuggingPriority="750" identifier="removeLine" id="removeLine">
-            <rect key="frame" x="37" y="241" width="24" height="23"/>
+            <rect key="frame" x="37" y="203" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeLineCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1112,7 +1112,7 @@
             </connections>
           </button>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveQuantityLabel">
-            <rect key="frame" x="14" y="175" width="60" height="17"/>
+            <rect key="frame" x="14" y="137" width="60" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity" id="moveQuantityLabelCell">
               <font key="font" metaFont="system"/>
@@ -1121,7 +1121,7 @@
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="moveQuantity" id="moveQuantity">
-            <rect key="frame" x="79" y="172" width="70" height="22"/>
+            <rect key="frame" x="79" y="134" width="70" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="moveQuantityCell">
               <font key="font" metaFont="system"/>
@@ -1133,7 +1133,7 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveAtLabel">
-            <rect key="frame" x="154" y="175" width="40" height="17"/>
+            <rect key="frame" x="154" y="137" width="40" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From" id="moveAtLabelCell">
               <font key="font" metaFont="system"/>
@@ -1142,7 +1142,7 @@
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="moveAt" id="moveAt">
-            <rect key="frame" x="199" y="169" width="200" height="26"/>
+            <rect key="frame" x="199" y="131" width="200" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="moveAtCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -1156,7 +1156,7 @@
             </connections>
           </popUpButton>
           <button verticalHuggingPriority="750" identifier="moveLine" id="moveLine">
-            <rect key="frame" x="404" y="166" width="125" height="32"/>
+            <rect key="frame" x="404" y="128" width="125" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <buttonCell key="cell" type="push" title="Ship Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="moveLineCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1168,7 +1168,7 @@
             </connections>
           </button>
           <button verticalHuggingPriority="750" identifier="moveOutstanding" id="moveOutstanding">
-            <rect key="frame" x="529" y="166" width="125" height="32"/>
+            <rect key="frame" x="529" y="128" width="125" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <buttonCell key="cell" type="push" title="Ship All" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="moveOutstandingCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1179,7 +1179,7 @@
             </connections>
           </button>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnReasonLabel">
-            <rect key="frame" x="14" y="145" width="60" height="17"/>
+            <rect key="frame" x="14" y="107" width="60" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason" id="returnReasonLabelCell">
               <font key="font" metaFont="system"/>
@@ -1188,7 +1188,7 @@
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="returnReason" id="returnReason">
-            <rect key="frame" x="79" y="139" width="200" height="26"/>
+            <rect key="frame" x="79" y="101" width="200" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="returnReasonCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -1202,7 +1202,7 @@
             </connections>
           </popUpButton>
           <button verticalHuggingPriority="750" identifier="returnLine" id="returnLine">
-            <rect key="frame" x="284" y="136" width="125" height="32"/>
+            <rect key="frame" x="284" y="98" width="125" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <buttonCell key="cell" type="push" title="Return Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="returnLineCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1214,7 +1214,7 @@
             </connections>
           </button>
           <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="documentsTableScroll">
-            <rect key="frame" x="14" y="48" width="322" height="84"/>
+            <rect key="frame" x="14" y="10" width="322" height="84"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
             <clipView key="contentView" id="documentsTableClip">
               <rect key="frame" x="1" y="1" width="320" height="82"/>
@@ -1288,7 +1288,7 @@
             </tableHeaderView>
           </scrollView>
           <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="returnsTableScroll">
-            <rect key="frame" x="344" y="48" width="322" height="84"/>
+            <rect key="frame" x="344" y="10" width="322" height="84"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
             <clipView key="contentView" id="returnsTableClip">
               <rect key="frame" x="1" y="1" width="320" height="82"/>
@@ -1360,28 +1360,6 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
             </tableHeaderView>
           </scrollView>
-          <button verticalHuggingPriority="750" identifier="revert" id="revert">
-            <rect key="frame" x="470" y="10" width="95" height="32"/>
-            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Revert" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="revertCell">
-              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-              <font key="font" metaFont="system"/>
-            </buttonCell>
-            <connections>
-              <action selector="revertChanges:" target="-2" id="revertAction"/>
-            </connections>
-          </button>
-          <button verticalHuggingPriority="750" identifier="save" id="save">
-            <rect key="frame" x="565" y="10" width="100" height="32"/>
-            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="saveCell">
-              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-              <font key="font" metaFont="system"/>
-            </buttonCell>
-            <connections>
-              <action selector="save:" target="-2" id="saveAction"/>
-            </connections>
-          </button>
         </subviews>
     </customView>
   </objects>

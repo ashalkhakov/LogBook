@@ -1,6 +1,7 @@
 #import "LBMainWindowController.h"
 #import "LBTiming.h"
 #import "LBWorkspace.h"
+#import "LBScreen.h"
 #import "LBCurrencies.h"
 #import "LBStore.h"
 #import "LBLocalStore.h"
@@ -33,6 +34,7 @@
 #import "LBStockEditor.h"
 #import "LBStockProcedures.h"
 #import "LBFormValues.h"
+#import "LBSelectors.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 
@@ -974,6 +976,26 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (IBAction)save:(id)sender {
+    LBScreen *screen = _workspace.shownScreen;
+    if (screen) [screen save:sender];
+    else [self saveLogbook];
+}
+
+- (IBAction)revertChanges:(id)sender {
+    LBScreen *screen = _workspace.shownScreen;
+    if (screen) [screen revertChanges:sender];
+    else [self revertLogbook];
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)item {
+    if (LBSameSelector(item.action, @selector(save:)) || LBSameSelector(item.action, @selector(revertChanges:))) {
+        LBScreen *screen = _workspace.shownScreen;
+        return !screen || screen.savable;
+    }
+    return [self respondsToSelector:item.action];
+}
+
+- (void)saveLogbook {
     if (![self commitEdits]) return;
     [self completeReadings];
     NSArray<NSError *> *warnings = [[_store warnings] arrayByAddingObjectsFromArray:[self reminderWarnings]];
@@ -1002,7 +1024,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
                                        NSLocalizedRecoverySuggestionErrorKey: said }];
 }
 
-- (IBAction)revertChanges:(id)sender {
+- (void)revertLogbook {
     [self.window makeFirstResponder:nil];
     [_store.context rollback];
     [self answersChanged];

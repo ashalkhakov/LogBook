@@ -11,6 +11,7 @@
 #import "LBMainWindowController.h"
 #import "LBStockOrderWindowController.h"
 #import "LBStockCountWindowController.h"
+#import "ComponentChange+CoreDataClass.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 
@@ -282,6 +283,10 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     if (move.componentChange && [workspace.windowController showRecord:move.componentChange]) return YES;
     NSBeep();
     return NO;
+}
+
+- (BOOL)savable {
+    return YES;
 }
 
 - (IBAction)save:(id)sender {

@@ -32,6 +32,12 @@ static void *LBWarehouseChosen = &LBWarehouseChosen;
     return self;
 }
 
+- (void)showTab:(NSString *)identifier {
+    [self view];
+    [_tabs selectTabViewItemWithIdentifier:identifier];
+    [self showWindow:nil];
+}
+
 - (void)dealloc {
     if (self.isWindowLoaded) [_warehouseList removeObserver:self forKeyPath:@"selectionIndexes" context:LBWarehouseChosen];
 }

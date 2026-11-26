@@ -48,7 +48,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)removeOption:(nullable id)sender;
 - (IBAction)addExchangeRate:(nullable id)sender;
 - (IBAction)removeExchangeRate:(nullable id)sender;
-- (IBAction)done:(nullable id)sender;
+// File > Save: what was typed kept, then saved with the logbook's other
+// changes (its context); Revert to Saved lets them go.
+- (IBAction)save:(nullable id)sender;
+- (IBAction)revertChanges:(nullable id)sender;
 @end
 
 NS_ASSUME_NONNULL_END

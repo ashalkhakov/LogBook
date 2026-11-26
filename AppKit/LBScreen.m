@@ -54,6 +54,16 @@ static void *LBScreenTitleChanged = &LBScreenTitleChanged;
     return YES;
 }
 
+- (BOOL)savable {
+    return NO;
+}
+
+- (IBAction)save:(id)sender {
+}
+
+- (IBAction)revertChanges:(id)sender {
+}
+
 - (BOOL)shouldClose {
     return [self shouldLeave];
 }

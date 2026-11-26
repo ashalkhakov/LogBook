@@ -8,7 +8,8 @@
 //              Vehicle, Records, Reminders, Calendar, Reports)
 //   Stock      each catalog: Overview, Items, Purchases, Sales, Counts,
 //              Changelog (the stock's screen, LBStockWindowController),
-//              Settings (its settings' screen)
+//              Warehouses, Contacts, Categories, Settings (its settings'
+//              screen's pages, LBCatalogSettingsWindowController)
 //   Work       Tasks (LBTasksWindowController)
 //   Lists      Expense Kinds, Checklists, Exchange Rates (LBListsController)
 // with + (New Vehicle, New Catalog) and - (the vehicle chosen removed)

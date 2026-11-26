@@ -12,6 +12,7 @@
 #import "LBStockWindowController.h"
 #import "LBUpdater.h"
 #import "LBWorkspace.h"
+#import "LBSelectors.h"
 
 /* Logbook > Check for Updates… (MainMenu.xib), gone where there is no
    updater (LBUpdater.h). */
@@ -121,10 +122,10 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
    are; updates while the updater can look for them. */
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     SEL action = item.action;
-    if (action == @selector(checkForUpdates:)) return _updater.canCheckForUpdates;
-    BOOL needsLogbook = action == @selector(showPreferences:) || action == @selector(showExpenseKinds:) || action == @selector(showChecklists:)
-                        || action == @selector(showExchangeRates:) || action == @selector(showStock:)
-                        || action == @selector(showTasks:);
+    if (LBSameSelector(action, @selector(checkForUpdates:))) return _updater.canCheckForUpdates;
+    BOOL needsLogbook = LBSameSelector(action, @selector(showPreferences:)) || LBSameSelector(action, @selector(showExpenseKinds:)) || LBSameSelector(action, @selector(showChecklists:))
+                        || LBSameSelector(action, @selector(showExchangeRates:)) || LBSameSelector(action, @selector(showStock:))
+                        || LBSameSelector(action, @selector(showTasks:));
     return !needsLogbook || _window != nil;
 }
 

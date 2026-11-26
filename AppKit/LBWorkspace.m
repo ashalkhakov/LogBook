@@ -12,6 +12,7 @@
 #import "LBListsController.h"
 #import "LBTiming.h"
 #import "UDPaneSplitController.h"
+#import "LBSelectors.h"
 
 /* The least the logbook's page is given: its forms' fields keep their
    widths (as MainWindow.xib draws them). */
@@ -35,6 +36,8 @@ static const CGFloat LBLogbookWidth = 780, LBLogbookHeight = 680;
 @end
 
 static __weak LBWorkspace *LBCurrentWorkspace;
+/* A catalog's tabs that are its settings' pages (LBCatalogSettingsWindowController). */
+#define LBSettingsPages (@[ @"warehouses", @"contacts", @"categories", @"settings" ])
 static void *LBVehiclesChanged = &LBVehiclesChanged;
 static void *LBScreenTitled = &LBScreenTitled;
 
@@ -189,7 +192,8 @@ static void *LBScreenTitled = &LBScreenTitled;
     NSMutableArray<LBSidebarItem *> *catalogs = [NSMutableArray array];
     NSArray<NSArray<NSString *> *> *tabs = @[ @[ @"overview", @"Overview" ], @[ @"items", @"Items" ], @[ @"purchaseOrders", @"Purchases" ],
                                               @[ @"saleOrders", @"Sales" ], @[ @"counts", @"Counts" ], @[ @"changes", @"Changelog" ],
-                                              @[ @"settings", @"Settings" ] ];
+                                              @[ @"warehouses", @"Warehouses" ], @[ @"contacts", @"Contacts" ],
+                                              @[ @"categories", @"Categories" ], @[ @"settings", @"Settings" ] ];
     for (Catalog *catalog in [self catalogs]) {
         NSString *key = [@"catalog " stringByAppendingString:[self keyOfObject:catalog]];
         NSMutableArray<LBSidebarItem *> *pages = [NSMutableArray array];
@@ -300,9 +304,12 @@ static void *LBScreenTitled = &LBScreenTitled;
         if (![_windowController.chosenVehicle isEqual:item.object]) _windowController.vehicles.selectedObjects = @[ item.object ];
         return [self present:nil place:key recording:recording asking:NO];
     }
-    if ([key hasPrefix:@"catalog "] && [item.tab isEqualToString:@"settings"]) {
+    if ([key hasPrefix:@"catalog "] && [LBSettingsPages containsObject:item.tab]) {
         LBCatalogSettingsWindowController *settings = [self settingsOfCatalog:(Catalog *)item.object];
-        return [self present:settings place:key recording:recording asking:YES];
+        if (![self mayLeaveFor:settings]) return NO;
+        [settings view];
+        [settings.tabs selectTabViewItemWithIdentifier:item.tab];
+        return [self present:settings place:key recording:recording asking:NO];
     }
     if ([key hasPrefix:@"catalog "]) {
         LBStockWindowController *stock = self.stock;
@@ -388,13 +395,23 @@ static void *LBScreenTitled = &LBScreenTitled;
 }
 
 - (BOOL)showScreen:(LBScreen *)screen {
-    NSString *place = screen == _stock ? [self placeOfStock] : screen == _tasks ? @"tasks" : nil;
-    if (screen == _lists) place = [@"list " stringByAppendingString:_lists.tabs.selectedTabViewItem.identifier ?: @""];
+    return [self present:screen place:[self placeOfScreen:screen] recording:YES asking:YES];
+}
+
+/* The sidebar's row of a screen as it is (its tab chosen); nil, none of
+   the sidebar's. */
+- (NSString *)placeOfScreen:(LBScreen *)screen {
+    if (screen == _stock) return [self placeOfStock];
+    if (screen == _tasks) return @"tasks";
+    if (screen == _lists) return [@"list " stringByAppendingString:_lists.tabs.selectedTabViewItem.identifier ?: @""];
     if ([screen isKindOfClass:[LBCatalogSettingsWindowController class]]) {
-        Catalog *catalog = ((LBCatalogSettingsWindowController *)screen).catalog;
-        if (catalog) place = [NSString stringWithFormat:@"catalog %@ settings", [self keyOfObject:catalog]];
+        LBCatalogSettingsWindowController *settings = (LBCatalogSettingsWindowController *)screen;
+        Catalog *catalog = settings.catalog;
+        if (!catalog) return nil;
+        [settings view];
+        return [NSString stringWithFormat:@"catalog %@ %@", [self keyOfObject:catalog], settings.tabs.selectedTabViewItem.identifier ?: @"settings"];
     }
-    return [self present:screen place:place recording:YES asking:YES];
+    return nil;
 }
 
 - (BOOL)showLogbook {
@@ -463,8 +480,7 @@ static void *LBScreenTitled = &LBScreenTitled;
    lists' (chosen there, not only in the sidebar). */
 - (void)notePlaceLeft {
     if (_at < 0 || _at >= (NSInteger)_history.count || _history[(NSUInteger)_at][0] != (id)_shownScreen || !_shownScreen) return;
-    NSString *now = _shownScreen == _stock ? [self placeOfStock]
-                    : _shownScreen == _lists ? [@"list " stringByAppendingString:_lists.tabs.selectedTabViewItem.identifier ?: @""] : nil;
+    NSString *now = _shownScreen == _tasks ? nil : [self placeOfScreen:_shownScreen];
     if (now) _history[(NSUInteger)_at] = @[ _shownScreen, now ];
 }
 
@@ -553,6 +569,8 @@ static void *LBScreenTitled = &LBScreenTitled;
         _navigating = NO;
     } else if (item && screen == _lists && item.tab) {
         [_lists.tabs selectTabViewItemWithIdentifier:item.tab];
+    } else if (item && [screen isKindOfClass:[LBCatalogSettingsWindowController class]] && item.tab) {
+        [((LBCatalogSettingsWindowController *)screen).tabs selectTabViewItemWithIdentifier:item.tab];
     }
     if ([self present:screen place:place recording:NO asking:NO]) _at = at;
     [self validateButtons];
@@ -617,26 +635,26 @@ static void *LBScreenTitled = &LBScreenTitled;
 - (void)validateButtons {
     _removeButton.enabled = !_shownScreen && [_place hasPrefix:@"vehicle "] && _windowController.vehicles.canRemove;
     for (NSToolbarItem *item in self.window.toolbar.items) {
-        if (item.action == @selector(goBack:)) item.enabled = _at > 0;
-        else if (item.action == @selector(goForward:)) item.enabled = _at + 1 < (NSInteger)_history.count;
+        if (LBSameSelector(item.action, @selector(goBack:))) item.enabled = _at > 0;
+        else if (LBSameSelector(item.action, @selector(goForward:))) item.enabled = _at + 1 < (NSInteger)_history.count;
     }
 }
 
 - (BOOL)validateToolbarItem:(NSToolbarItem *)item {
-    if (item.action == @selector(goBack:)) return _at > 0;
-    if (item.action == @selector(goForward:)) return _at + 1 < (NSInteger)_history.count;
+    if (LBSameSelector(item.action, @selector(goBack:))) return _at > 0;
+    if (LBSameSelector(item.action, @selector(goForward:))) return _at + 1 < (NSInteger)_history.count;
     return YES;
 }
 
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     SEL action = item.action;
-    if (action == @selector(goBack:)) return _at > 0;
-    if (action == @selector(goForward:)) return _at + 1 < (NSInteger)_history.count;
-    if (action == @selector(toggleSidebarPane:)) {
+    if (LBSameSelector(action, @selector(goBack:))) return _at > 0;
+    if (LBSameSelector(action, @selector(goForward:))) return _at + 1 < (NSInteger)_history.count;
+    if (LBSameSelector(action, @selector(toggleSidebarPane:))) {
         item.title = [_paneSplit isPaneVisible:LBSidebarPane] ? @"Hide Sidebar" : @"Show Sidebar";
-    } else if (action == @selector(toggleInspectorPane:)) {
+    } else if (LBSameSelector(action, @selector(toggleInspectorPane:))) {
         item.title = [_paneSplit isPaneVisible:LBInspectorPane] ? @"Hide Inspector" : @"Show Inspector";
-    } else if (action == @selector(removeVehicle:)) {
+    } else if (LBSameSelector(action, @selector(removeVehicle:))) {
         return !_shownScreen && _windowController.vehicles.canRemove;
     }
     return YES;

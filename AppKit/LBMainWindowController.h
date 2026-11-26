@@ -183,9 +183,14 @@ NS_ASSUME_NONNULL_BEGIN
 // (LBPartsPanelController); its window while it is open.
 - (IBAction)showParts:(nullable id)sender;
 @property (nonatomic, readonly, strong, nullable) LBPartsPanelController *partsPanel;
-// The changes sent; the rules' refusals and the warnings said.
+// File > Save and File > Revert to Saved: the screen shown's (LBScreen),
+// or, the logbook's page shown, the logbook's own (below).
 - (IBAction)save:(nullable id)sender;
 - (IBAction)revertChanges:(nullable id)sender;
+// The logbook's changes sent, the rules' refusals and the warnings said;
+// or let go. The lists' and the preferences' too, made in its context.
+- (void)saveLogbook;
+- (void)revertLogbook;
 // Whether it may close: nothing unsaved, or the user says so; each screen
 // kept closed, each asked.
 - (BOOL)shouldClose;
