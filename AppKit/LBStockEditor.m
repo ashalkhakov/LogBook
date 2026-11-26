@@ -12,6 +12,7 @@
 #import "LBStockOrderWindowController.h"
 #import "LBStockCountWindowController.h"
 #import "ComponentChange+CoreDataClass.h"
+#import "LBAlerts.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 
@@ -302,12 +303,8 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 - (BOOL)shouldClose {
     if (![self commitEdits]) return NO;
     if (!_context.hasChanges) return YES;
-    NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = self.title.length ? [NSString stringWithFormat:@"Save the changes to %@?", self.title] : @"Save the changes?";
-    [alert addButtonWithTitle:@"Save"];
-    [alert addButtonWithTitle:@"Cancel"];
-    [alert addButtonWithTitle:@"Don't Save"];
-    NSModalResponse answer = [alert runModal];
+    NSAlert *alert = LBSaveChangesAlert(self.title.length ? [NSString stringWithFormat:@"“%@”", self.title] : nil);
+    NSModalResponse answer = LBAskInSheet(alert, self.window);
     if (answer == NSAlertSecondButtonReturn) return NO;
     if (answer == NSAlertThirdButtonReturn) {
         [_context rollback];
@@ -369,7 +366,7 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
         return NO;
     }
     [self saveChanges];
-    /* The server's tasks, where it has some: opened from Window > Tasks,
+    /* The server's tasks, where it has some: opened from Go > Tasks,
        those; from the stock's window, asked here. */
     if (!_tasks && self.store.serviceRoot) _tasks = [[LBTasks alloc] initWithServiceRoot:self.store.serviceRoot signIn:self.store.signIn];
     NSString *formName = now.session.form.name;
@@ -377,7 +374,7 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     NSString *instance = [LBTasks instanceOf:now.session];
     /* What the form saved, at the server before its task is told: the
        process goes on with the facts. Offline first, where the server
-       cannot be reached, the step waits, saved (Window > Tasks), and is
+       cannot be reached, the step waits, saved (Go > Tasks), and is
        submitted after a sync. */
     if (![self.store syncAndWait:&error]) {
         if (self.store.local) return [self wait:formName about:about instance:instance task:_task.name];
@@ -397,6 +394,7 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     for (LBPendingSubmission *waiting in [self.store.local.appState pendingSubmissions]) {
         if (task && [waiting.formName isEqualToString:formName] && [waiting.businessKey isEqualToString:about]) [self.store.local.appState removeSubmission:waiting];
     }
+    [self.store.local statusChanged];
     _waiting = nil;
     [self stepDone:formName];
     return YES;
@@ -406,13 +404,9 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
    quiet. */
 - (BOOL)wait:(NSString *)formName about:(NSString *)about instance:(NSString *)instance task:(NSString *)taskName {
     _waiting = [self.store.local.appState keepSubmissionOfForm:formName about:about taskName:taskName instance:instance];
-    if (!self.quiet) {
-        NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"Saved here, not submitted yet";
-        alert.informativeText = [NSString stringWithFormat:@"The server cannot be reached. %@ waits in Window > Tasks, and is submitted "
-                                                           @"after the next sync.", taskName.length ? taskName : @"The step"];
-        [alert beginSheetModalForWindow:self.window completionHandler:nil];
-    }
+    /* Said in the sync's status (the toolbar): "1 step waiting in Tasks";
+       not an alert, which would only inform (HIG). */
+    [self.store.local statusChanged];
     return YES;
 }
 

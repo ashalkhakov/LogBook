@@ -296,6 +296,17 @@ static UIImage *LBReceiptPhoto(void) {
     LBMainViewController *main = app.mainController;
     LBSay(main != nil, [NSString stringWithFormat:@"signed in, with no sign-in, as an email (%@)", signIn.status]);
     if (!main) return;
+    /* The HIG's: Log is the navigation bar's +, on each tab (no button
+       floating over the tab bar); the lists' sync status is their refresh
+       control's title, the prompt only for a failed sync. */
+    BOOL plusOnEach = YES;
+    for (UINavigationController *tab in main.viewControllers) {
+        UIBarButtonItem *add = tab.viewControllers.firstObject.navigationItem.rightBarButtonItem;
+        plusOnEach = plusOnEach && add && add.target == main && [NSStringFromSelector(add.action) isEqualToString:@"log:"];
+    }
+    BOOL floating = NO;
+    for (UIView *view in main.view.subviews) floating = floating || ([view isKindOfClass:[UIButton class]] && !view.isHidden);
+    LBSay(plusOnEach && !floating, @"Log is the navigation bar's + on each tab, nothing floating over the tab bar");
     LBLocalStore *store = app.store;
     LBSettle(store);
     LBSync(store, @"the first sync");

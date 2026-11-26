@@ -183,6 +183,23 @@ NS_ASSUME_NONNULL_BEGIN
 // (LBPartsPanelController); its window while it is open.
 - (IBAction)showParts:(nullable id)sender;
 @property (nonatomic, readonly, strong, nullable) LBPartsPanelController *partsPanel;
+// The menus' commands of the one window's places (View, Go, File > New),
+// sent on to its workspace (LBWorkspace.h), as its toolbar sends them.
+- (IBAction)goBack:(nullable id)sender;
+- (IBAction)goForward:(nullable id)sender;
+- (IBAction)toggleSidebarPane:(nullable id)sender;
+- (IBAction)toggleInspectorPane:(nullable id)sender;
+- (IBAction)newVehicle:(nullable id)sender;
+- (IBAction)newCatalog:(nullable id)sender;
+// File's Save and Revert to Saved, Edit's Delete and Find, and the
+// workspace's commands enabled as they apply now.
+- (BOOL)validateMenuItem:(NSMenuItem *)item;
+// Edit > Delete: the chosen row of the list that has the focus removed, as
+// the - under that list does (none there: not enabled).
+- (IBAction)delete:(nullable id)sender;
+// Edit > Find…: the search field of what is shown, ready to type in (none
+// there: not enabled).
+- (IBAction)findInScreen:(nullable id)sender;
 // File > Save and File > Revert to Saved: the screen shown's (LBScreen),
 // or, the logbook's page shown, the logbook's own (below).
 - (IBAction)save:(nullable id)sender;

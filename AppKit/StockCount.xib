@@ -46,7 +46,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reviewCounterLabel">
             <rect key="frame" x="14" y="303" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted by" id="reviewCounterLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted by:" id="reviewCounterLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -67,7 +67,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reviewCountedOnLabel">
             <rect key="frame" x="14" y="273" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted on" id="reviewCountedOnLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted on:" id="reviewCountedOnLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -179,7 +179,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reviewStateLabel">
             <rect key="frame" x="14" y="59" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Review" id="reviewStateLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Review:" id="reviewStateLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -204,6 +204,9 @@
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissReviewCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="dismissForm:" target="-2" id="dismissReviewAction"/>
@@ -212,8 +215,7 @@
           <button verticalHuggingPriority="750" identifier="submitReview" id="submitReview">
             <rect key="frame" x="315" y="12" width="95" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="
-" id="submitReviewCell">
+            <buttonCell key="cell" type="push" title="Post Count" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitReviewCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -231,7 +233,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countPlaceLabel">
             <rect key="frame" x="14" y="489" width="30" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Of" id="countPlaceLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Of:" id="countPlaceLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -274,9 +276,9 @@
             </connections>
           </button>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countDayLabel">
-            <rect key="frame" x="14" y="455" width="70" height="17"/>
+            <rect key="frame" x="2" y="455" width="82" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted on" id="countDayLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted on:" id="countDayLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -296,9 +298,9 @@
             </connections>
           </datePicker>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countNoteLabel">
-            <rect key="frame" x="220" y="455" width="35" height="17"/>
+            <rect key="frame" x="215" y="455" width="40" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="countNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="countNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -408,7 +410,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countRowItemLabel">
             <rect key="frame" x="14" y="55" width="40" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item" id="countRowItemLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item:" id="countRowItemLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -431,7 +433,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countRowLocationLabel">
             <rect key="frame" x="284" y="55" width="25" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At" id="countRowLocationLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At:" id="countRowLocationLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -477,7 +479,7 @@
           <button verticalHuggingPriority="750" identifier="submitCount" id="submitCount">
             <rect key="frame" x="535" y="8" width="115" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="submitCountCell">
+            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitCountCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>

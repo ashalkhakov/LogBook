@@ -263,6 +263,7 @@
         </customObject>
         <window title="Logbook" toolbarStyle="unified" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookMainWindow" animationBehavior="default" id="window">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowCollectionBehavior key="collectionBehavior" fullScreenPrimary="YES"/>
             <rect key="contentRect" x="120" y="100" width="1100" height="680"/>
             <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
             <view key="contentView" id="contentView">
@@ -284,7 +285,7 @@
                                             <rect key="frame" x="0" y="0" width="220" height="652"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
-                                                <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" rowHeight="20" indentationPerLevel="14" outlineTableColumn="sidebarColumn" identifier="sidebar" id="sidebar" userLabel="Sidebar Outline">
+                                                <outlineView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnReordering="NO" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" rowHeight="20" indentationPerLevel="14" selectionHighlightStyle="sourceList" outlineTableColumn="sidebarColumn" identifier="sidebar" id="sidebar" userLabel="Sidebar Outline">
                                                     <rect key="frame" x="0" y="0" width="220" height="652"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                     <size key="intercellSpacing" width="3" height="2"/>
@@ -324,7 +325,7 @@
                                     <popUpButton toolTip="Add a vehicle or a catalog" verticalHuggingPriority="750" identifier="sidebarAdd" id="sidebarAdd">
                                         <rect key="frame" x="4" y="2" width="36" height="24"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                        <popUpButtonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" id="sidebarAddCell">
+                                        <popUpButtonCell key="cell" type="smallSquare" bezelStyle="smallSquare" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="arrowAtBottom" id="sidebarAddCell">
                                             <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                             <font key="font" metaFont="system"/>
                                             <menu key="menu" id="sidebarAddMenu">
@@ -883,7 +884,7 @@
                                         <popUpButton toolTip="Add" verticalHuggingPriority="750" identifier="addRecord" id="addRecord">
                                             <rect key="frame" x="12" y="425" width="36" height="23"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                            <popUpButtonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="addRecordCell">
+                                            <popUpButtonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" pullsDown="YES" arrowPosition="arrowAtBottom" preferredEdge="maxY" id="addRecordCell">
                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                                 <menu key="menu" id="addRecordMenu">
@@ -4356,7 +4357,7 @@
                                         <button verticalHuggingPriority="750" identifier="cancelReminder" id="cancelReminder">
                                             <rect key="frame" x="582" y="508" width="146" height="32"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
-                                            <buttonCell key="cell" type="push" title="Cancel…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelReminderCell">
+                                            <buttonCell key="cell" type="push" title="Cancel Reminder…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelReminderCell">
                                                 <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
@@ -4656,7 +4657,7 @@
                                                             <button verticalHuggingPriority="750" identifier="scheduleSave" id="scheduleSave">
                                                                 <rect key="frame" x="184" y="174" width="88" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="scheduleSaveCell">
+                                                                <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="scheduleSaveCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
                                                                 </buttonCell>
@@ -4671,6 +4672,9 @@
                                                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="scheduleCloseCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
+                                                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
                                                                 </buttonCell>
                                                                 <connections>
                                                                     <action selector="closeForm:" target="remindersController" id="scheduleCloseAction"/>
@@ -4873,7 +4877,7 @@
                                                             <button verticalHuggingPriority="750" identifier="changeSave" id="changeSave">
                                                                 <rect key="frame" x="184" y="234" width="88" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="changeSaveCell">
+                                                                <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="changeSaveCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
                                                                 </buttonCell>
@@ -4888,6 +4892,9 @@
                                                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="changeCloseCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
+                                                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
                                                                 </buttonCell>
                                                                 <connections>
                                                                     <action selector="closeForm:" target="remindersController" id="changeCloseAction"/>
@@ -5091,7 +5098,7 @@
                                                             <button verticalHuggingPriority="750" identifier="reminderSave" id="reminderSave">
                                                                 <rect key="frame" x="184" y="234" width="88" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="reminderSaveCell">
+                                                                <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="reminderSaveCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
                                                                 </buttonCell>
@@ -5106,6 +5113,9 @@
                                                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="reminderCloseCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
+                                                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
                                                                 </buttonCell>
                                                                 <connections>
                                                                     <action selector="closeForm:" target="remindersController" id="reminderCloseAction"/>
@@ -5205,7 +5215,7 @@
                                                             <button verticalHuggingPriority="750" identifier="rescheduleSave" id="rescheduleSave">
                                                                 <rect key="frame" x="184" y="324" width="88" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="push" title="Move" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="rescheduleSaveCell">
+                                                                <buttonCell key="cell" type="push" title="Move" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="rescheduleSaveCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
                                                                 </buttonCell>
@@ -5220,6 +5230,9 @@
                                                                 <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="rescheduleCloseCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
+                                                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
                                                                 </buttonCell>
                                                                 <connections>
                                                                     <action selector="closeForm:" target="remindersController" id="rescheduleCloseAction"/>
@@ -5328,9 +5341,9 @@
                                                                 </connections>
                                                             </customView>
                                                             <button verticalHuggingPriority="750" identifier="cancelSave" id="cancelSave">
-                                                                <rect key="frame" x="176" y="294" width="96" height="32"/>
+                                                                <rect key="frame" x="132" y="294" width="140" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="push" title="Cancel It" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelSaveCell">
+                                                                <buttonCell key="cell" type="push" title="Cancel Reminder" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelSaveCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
                                                                 </buttonCell>
@@ -5340,11 +5353,14 @@
                                                                 </connections>
                                                             </button>
                                                             <button verticalHuggingPriority="750" identifier="cancelClose" id="cancelClose">
-                                                                <rect key="frame" x="92" y="294" width="84" height="32"/>
+                                                                <rect key="frame" x="4" y="294" width="128" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="push" title="Back" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelCloseCell">
+                                                                <buttonCell key="cell" type="push" title="Keep Reminder" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelCloseCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
+                                                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
                                                                 </buttonCell>
                                                                 <connections>
                                                                     <action selector="closeForm:" target="remindersController" id="cancelCloseAction"/>
@@ -5385,7 +5401,7 @@
                                                             <button verticalHuggingPriority="750" identifier="doneSave" id="doneSave">
                                                                 <rect key="frame" x="168" y="384" width="104" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="push" title="Mark Done" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="doneSaveCell">
+                                                                <buttonCell key="cell" type="push" title="Mark Done" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="doneSaveCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
                                                                 </buttonCell>
@@ -5397,9 +5413,12 @@
                                                             <button verticalHuggingPriority="750" identifier="doneClose" id="doneClose">
                                                                 <rect key="frame" x="84" y="384" width="84" height="32"/>
                                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                                                                <buttonCell key="cell" type="push" title="Back" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="doneCloseCell">
+                                                                <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="doneCloseCell">
                                                                     <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                                                                     <font key="font" metaFont="system"/>
+                                                                    <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
                                                                 </buttonCell>
                                                                 <connections>
                                                                     <action selector="closeForm:" target="remindersController" id="doneCloseAction"/>
@@ -5675,7 +5694,7 @@
                     </splitView>
                 </subviews>
             </view>
-            <toolbar key="toolbar" implicitIdentifier="Logbook-Workspace-Toolbar" autosavesConfiguration="NO" allowsUserCustomization="NO" displayMode="iconOnly" sizeMode="regular" id="toolbar">
+            <toolbar key="toolbar" implicitIdentifier="Logbook-Workspace-Toolbar" autosavesConfiguration="YES" allowsUserCustomization="YES" displayMode="iconOnly" sizeMode="regular" id="toolbar">
                 <allowedToolbarItems>
                     <toolbarItem implicitItemIdentifier="toolbarSidebar" label="Sidebar" paletteLabel="Sidebar" toolTip="Hide or show the sidebar (⌃⌘S)" image="sidebar.left" catalog="system" bordered="YES" id="toolbarSidebar">
                         <size key="minSize" width="36" height="28"/>

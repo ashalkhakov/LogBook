@@ -5,7 +5,7 @@
 // expected added; submitted, saved as counted, for a manager to review.
 // Its review (ReviewStockCount, a sheet over it) posts it, its differences
 // adjusted, or rejects it: its process's task (Model/CountReview.bpmn, the
-// flow Counting's Review), opened from Window > Tasks.
+// flow Counting's Review), opened from Go > Tasks.
 
 #import "LBStockEditor.h"
 

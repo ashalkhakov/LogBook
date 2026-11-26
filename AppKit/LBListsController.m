@@ -266,7 +266,10 @@ static int32_t LBNextPosition(NSSet *objects) {
         [self refuse:@"This rate is saved: exchange rates are kept once saved, as costs are counted at them."];
         return;
     }
-    [self.context deleteObject:rate];
+    /* Through the list (entity mode: deleted from the context too), so it
+       is no longer listed at once, not after the context's pending
+       changes are processed. */
+    [_exchangeRates removeObject:rate];
 }
 
 /* Save: what was typed kept, then saved with the logbook's other

@@ -1,6 +1,7 @@
 #import "LBPreferencesController.h"
 #import "LBMainWindowController.h"
 #import "LBStore.h"
+#import "User+CoreDataClass.h"
 
 @implementation LBPreferencesController {
     LBMainWindowController *_logbook;
@@ -23,11 +24,13 @@
     return _logbook.byTitle;
 }
 
-/* What was typed kept, then saved with the logbook's other changes. */
-- (IBAction)done:(id)sender {
-    if (![self.window makeFirstResponder:nil] || ![_userController commitEditing]) return;
+/* Closing: what was typed kept, then saved with the logbook's other
+   changes; refused, the window stays open, the refusal said. */
+- (BOOL)windowShouldClose:(NSWindow *)sender {
+    if (![self.window makeFirstResponder:nil] || ![_userController commitEditing]) return NO;
+    if (!self.user.hasChanges) return YES;
     [_logbook saveLogbook];
-    if (!_logbook.lastError) [self close];
+    return !self.user.hasChanges;
 }
 
 @end

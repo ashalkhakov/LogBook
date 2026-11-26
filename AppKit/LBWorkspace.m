@@ -256,7 +256,14 @@ static void *LBScreenTitled = &LBScreenTitled;
 
 - (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)column byItem:(id)item {
     LBSidebarItem *row = item;
+#ifdef GNUSTEP
+    /* GNUstep draws no source list's headings: in capitals, they stand out. */
     return row.group ? row.title.uppercaseString : row.title;
+#else
+    /* A source list's headings as the HIG has them: title case, drawn as
+       headings by the outline's style. */
+    return row.title;
+#endif
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView isGroupItem:(id)item {

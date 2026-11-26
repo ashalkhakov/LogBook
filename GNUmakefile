@@ -214,6 +214,7 @@ obj/Logbook.wfdeployment: Model/Logbook.orm $(wildcard Model/*.flow) $(wildcard 
 check:: all
 	for f in Model/*.flow; do $(ORMTOOL) flow Model/Logbook.orm $$f || exit 1; done
 	python3 Tests/contract-check.py $(LB_MODEL)/Forms AppKit/MainWindow.xib AppKit/StockPurchase.xib AppKit/StockSale.xib AppKit/StockCount.xib AppKit/StockItem.xib
+	python3 Tests/hig-check.py AppKit/*.xib
 	Tests/bundle-check.sh Logbook.app/Resources $(LB_MODEL)/Forms
 	obj/lb-procedures-check obj/Logbook.momd obj/Logbook.ormplans
 	obj/lb-stock-check obj/Logbook.momd obj/Logbook.ormplans

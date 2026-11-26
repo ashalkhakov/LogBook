@@ -48,7 +48,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestQuantityLabel">
             <rect key="frame" x="14" y="176" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many" id="requestQuantityLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many:" id="requestQuantityLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -70,7 +70,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestFromLabel">
             <rect key="frame" x="14" y="146" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From" id="requestFromLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From:" id="requestFromLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -93,7 +93,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestToLabel">
             <rect key="frame" x="14" y="116" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To" id="requestToLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To:" id="requestToLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -116,7 +116,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestNoteLabel">
             <rect key="frame" x="14" y="86" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="requestNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="requestNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -140,6 +140,9 @@
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissRequestCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="dismissForm:" target="-2" id="dismissRequestAction"/>
@@ -148,7 +151,7 @@
           <button verticalHuggingPriority="750" identifier="submitRequest" id="submitRequest">
             <rect key="frame" x="315" y="12" width="95" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitRequestCell">
+            <buttonCell key="cell" type="push" title="Transfer" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitRequestCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -170,7 +173,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveItemLabel">
             <rect key="frame" x="14" y="266" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item" id="moveItemLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item:" id="moveItemLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -191,7 +194,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveQuantityLabel">
             <rect key="frame" x="14" y="236" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many" id="moveQuantityLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many:" id="moveQuantityLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -212,7 +215,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveFromLabel">
             <rect key="frame" x="14" y="206" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From" id="moveFromLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From:" id="moveFromLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -233,7 +236,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveToLabel">
             <rect key="frame" x="14" y="176" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To" id="moveToLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To:" id="moveToLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -254,7 +257,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveAskedByLabel">
             <rect key="frame" x="14" y="146" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Asked by" id="moveAskedByLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Asked by:" id="moveAskedByLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -275,7 +278,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveNoteLabel">
             <rect key="frame" x="14" y="116" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="moveNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="moveNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -296,7 +299,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveStateLabel">
             <rect key="frame" x="14" y="86" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Moved" id="moveStateLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Moved:" id="moveStateLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -321,6 +324,9 @@
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissMoveCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="dismissForm:" target="-2" id="dismissMoveAction"/>
@@ -329,7 +335,7 @@
           <button verticalHuggingPriority="750" identifier="submitMove" id="submitMove">
             <rect key="frame" x="315" y="12" width="95" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitMoveCell">
+            <buttonCell key="cell" type="push" title="Move" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitMoveCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -382,7 +388,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemNameFieldLabel">
             <rect key="frame" x="14" y="551" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Name" id="itemNameFieldLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Name:" id="itemNameFieldLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -403,7 +409,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCategoryLabel">
             <rect key="frame" x="330" y="551" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Category" id="itemCategoryLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Category:" id="itemCategoryLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -431,7 +437,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemDescriptionLabel">
             <rect key="frame" x="14" y="521" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Description" id="itemDescriptionLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Description:" id="itemDescriptionLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -452,7 +458,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemSupplierLabel">
             <rect key="frame" x="330" y="521" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier" id="itemSupplierLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier:" id="itemSupplierLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -480,7 +486,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemSKULabel">
             <rect key="frame" x="14" y="491" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="SKU" id="itemSKULabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="SKU:" id="itemSKULabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -501,7 +507,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCountUnitLabel">
             <rect key="frame" x="330" y="491" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Count unit" id="itemCountUnitLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Count unit:" id="itemCountUnitLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -522,7 +528,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemPriceLabel">
             <rect key="frame" x="14" y="461" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Price" id="itemPriceLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Price:" id="itemPriceLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -545,7 +551,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemUnitCostLabel">
             <rect key="frame" x="330" y="461" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Unit cost" id="itemUnitCostLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Unit cost:" id="itemUnitCostLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -568,7 +574,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemNoteLabel">
             <rect key="frame" x="14" y="431" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="itemNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="itemNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -589,7 +595,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemTotalQuantityLabel">
             <rect key="frame" x="14" y="401" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="On hand" id="itemTotalQuantityLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="On hand:" id="itemTotalQuantityLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -611,7 +617,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemAvailableLabel">
             <rect key="frame" x="230" y="401" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Available" id="itemAvailableLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Available:" id="itemAvailableLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -633,7 +639,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCommittedLabel">
             <rect key="frame" x="446" y="401" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Committed" id="itemCommittedLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Committed:" id="itemCommittedLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -655,7 +661,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemIncomingLabel">
             <rect key="frame" x="14" y="377" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Incoming" id="itemIncomingLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Incoming:" id="itemIncomingLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -677,7 +683,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemShortageLabel">
             <rect key="frame" x="230" y="377" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Short" id="itemShortageLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Short:" id="itemShortageLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -699,7 +705,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemMakeableLabel">
             <rect key="frame" x="446" y="377" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Can make" id="itemMakeableLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Can make:" id="itemMakeableLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -905,7 +911,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockQuantityLabel">
                       <rect key="frame" x="10" y="51" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity" id="stockQuantityLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity:" id="stockQuantityLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -926,7 +932,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockAtLabel">
                       <rect key="frame" x="150" y="51" width="65" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At / from" id="stockAtLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At / from:" id="stockAtLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -949,7 +955,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockToLabel">
                       <rect key="frame" x="395" y="51" width="25" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To" id="stockToLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To:" id="stockToLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -972,7 +978,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockReasonLabel">
                       <rect key="frame" x="10" y="17" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason" id="stockReasonLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason:" id="stockReasonLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1047,7 +1053,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemYieldLabel">
                       <rect key="frame" x="10" y="257" width="40" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Yield" id="itemYieldLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Yield:" id="itemYieldLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1355,7 +1361,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="supplierItemSupplierLabel">
                       <rect key="frame" x="10" y="17" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier" id="supplierItemSupplierLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier:" id="supplierItemSupplierLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1483,7 +1489,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCodeKindLabel">
                       <rect key="frame" x="10" y="17" width="40" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Kind" id="itemCodeKindLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Kind:" id="itemCodeKindLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1641,7 +1647,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemWeightLabel">
                       <rect key="frame" x="10" y="249" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Weight" id="itemWeightLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Weight:" id="itemWeightLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1682,7 +1688,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemLengthLabel">
                       <rect key="frame" x="10" y="217" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Length" id="itemLengthLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Length:" id="itemLengthLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1723,7 +1729,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemWidthLabel">
                       <rect key="frame" x="10" y="185" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Width" id="itemWidthLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Width:" id="itemWidthLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1764,7 +1770,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemHeightLabel">
                       <rect key="frame" x="10" y="153" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Height" id="itemHeightLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Height:" id="itemHeightLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1900,9 +1906,9 @@
                       </tableHeaderView>
                     </scrollView>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reorderWarehouseLabel">
-                      <rect key="frame" x="10" y="17" width="75" height="17"/>
+                      <rect key="frame" x="5" y="17" width="80" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Warehouse" id="reorderWarehouseLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Warehouse:" id="reorderWarehouseLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>

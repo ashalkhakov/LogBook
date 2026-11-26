@@ -87,7 +87,7 @@ extern NSString *const LBStockCatalogKey;
 // sheet, then its instance submitted to the open task of it about that
 // (this one, or found), which the server's process goes on with
 // (Server/LBWorkflow.h); the tasks are asked again. Offline first, where
-// the server cannot be reached, the step waits, saved (Window > Tasks:
+// the server cannot be reached, the step waits, saved (Go > Tasks:
 // waiting), and is submitted after a sync. NO, said, where refused.
 @property (nonatomic, strong, nullable) LBTask *task;
 @property (nonatomic, strong, nullable) LBTasks *tasks;

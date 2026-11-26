@@ -6,6 +6,7 @@
 #import "LogbookValidation.h"
 #import "LBFormValues.h"
 #import "Vehicle+CoreDataClass.h"
+#import "LBAlerts.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 
@@ -413,7 +414,7 @@ static void LBNoLoneUnit(LBFormValues *form, NSString *element) {
                                                            @"next by the changed schedule.", open.lbDue];
         [alert addButtonWithTitle:@"Change Schedule"];
         [alert addButtonWithTitle:@"Cancel"];
-        if ([alert runModal] != NSAlertFirstButtonReturn) return NO;
+        if (LBAskInSheet(alert, _windowController.window) != NSAlertFirstButtonReturn) return NO;
     }
     return [self submit:form action:@"Continue" on:schedule parameters:^NSDictionary *(LBFormValues *values) {
         NSMutableDictionary *parameters = [NSMutableDictionary dictionary];

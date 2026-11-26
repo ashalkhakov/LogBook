@@ -272,7 +272,7 @@ stock's.
   return**: `Model/CustomerReturn.bpmn`, `SupplierReturn.bpmn`), gives the
   catalog's keepers Receive the return (Send the return), the flow
   Selling's ReceiveReturn (Purchasing's SendReturn: ReceiveCustomerReturn,
-  SendSupplierReturn), opened from Window > Tasks in the order's window:
+  SendSupplierReturn), opened from Go > Tasks in the order's window:
   the day, and where it comes back to (goes from), **returned**, its moves
   made as it saves, as `Return` makes them; or **cancelled**. The order's
   window lists its returns. The server's `Return` action on a sale or a
@@ -324,7 +324,7 @@ model's form RequestTransfer, saved as a `StockTransfer` **requested**
 yet. Its process, **transfer stock** (`Model/TransferStock.bpmn`), gives
 the keepers of where it goes from (`keeperAt:<warehouse>`) Move the stock
 (the flow Transferring's Move, MoveStock, a sheet over the item's window,
-opened from Window > Tasks): **moved**, its move made as it saves, as
+opened from Go > Tasks): **moved**, its move made as it saves, as
 `Transfer` makes it (refused where less is held), made by who moved it;
 or **cancelled**. A keeper of where it goes from makes its move, wherever
 it goes.
@@ -358,7 +358,7 @@ holds shown if the counter asks; submitted, it is saved as **counted**,
 and nothing is adjusted yet. Its process, **count review**
 (`Model/CountReview.bpmn`), gives a manager of its catalog Review the
 count (the flow Counting's Review, ReviewStockCount, a sheet over the
-count, opened from Window > Tasks): **posted**, its differences adjusted
+count, opened from Go > Tasks): **posted**, its differences adjusted
 as it saves, against what is held then (what is held where it counts
 and no line found, none); or **rejected**, to be counted again. A count
 reviewed stays as it was. The server's `Count` action still counts and
@@ -398,7 +398,7 @@ docs/FORMS.md, Flows): the order's window is its EditPurchaseOrder screen;
 sheet over the order (on the order, or given it), and the sheet's Submit
 and Cancel close it back to the order. Its entries Confirm and Receive are
 what the tasks are done with (`ormkit:flow:Purchasing.flow#Confirm`): a
-task opened from Window > Tasks opens its order's window with its step's
+task opened from Go > Tasks opens its order's window with its step's
 sheet at once. `make check` checks that the window's views have each
 screen's form and each trigger (`Tests/contract-check.py`). Each step is
 done with its form: what the form enters is saved as the logbook's facts
@@ -421,7 +421,7 @@ order a form confirms is confirmed as `Confirm` does it, wherever it is
 saved: refused with no lines, a sale's phantom kits expanded. A shipment's
 moves are worked out as it is saved: each of its line's item, from where it
 went, made by who recorded it, when.
-**Tasks** (the sidebar's Work, or Window > Tasks) lists the open tasks,
+**Tasks** (the sidebar's Work, or Go > Tasks) lists the open tasks,
 the oldest first, each with its order; Open shows the order in the main
 pane, titled with the task, where its step is done. Its API is the server's
 `workflow/` (WorkflowKit's `WFODataService.h`); with no one signed in, a

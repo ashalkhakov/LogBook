@@ -1245,6 +1245,12 @@
 			path = LBCurrencies.m;
 			sourceTree = "<group>";
 		};
+		5F9B6D9A7D4B579962C82FD2 /* LBSyncStatus.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBSyncStatus.h;
+			sourceTree = "<group>";
+		};
 		600A6F8358F9D75BD0057BF4 /* LBSelectors.h */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
@@ -1291,6 +1297,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			path = LBCalendarController.h;
+			sourceTree = "<group>";
+		};
+		6F3BEF4BA47D456DE143C31A /* LBAlerts.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = LBAlerts.h;
 			sourceTree = "<group>";
 		};
 		7123A5B32AEDE7068F8B7F8F /* lb-sync-check */ = {
@@ -2033,6 +2045,7 @@
 				0C70284B01D938EB0C94402F /* LBStockControllers.m */,
 				EF1B04C35E7635514A3AA07B /* LBStockPhone.h */,
 				629B5816603A0B12D55AECA8 /* LBStockPhone.m */,
+				5F9B6D9A7D4B579962C82FD2 /* LBSyncStatus.h */,
 				CCE2C3C58F1E04519BAA59B1 /* LBiOSApp.h */,
 				2BF486C62A308B2388CCDA61 /* LBiOSControllers.h */,
 				DBCAEB84C9CA0A46A31C8CE9 /* LBiOSControllers.m */,
@@ -2127,6 +2140,7 @@
 				79BD7E3003262AA6A6464465 /* ImportSummary.xib */,
 				ABFDBC32D4665ABB05B1F819 /* Info.plist */,
 				F77B910AB4FB7BEC961A4121 /* InvenTreeConnect.xib */,
+				6F3BEF4BA47D456DE143C31A /* LBAlerts.h */,
 				1858D9209D5FE7B48B58866F /* LBAnswersController.h */,
 				7D121C7DECA61E76A9483A71 /* LBAnswersController.m */,
 				AAE85EE9A321374CF4B6CB43 /* LBAppController.h */,

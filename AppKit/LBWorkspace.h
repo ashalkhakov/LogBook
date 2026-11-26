@@ -95,6 +95,11 @@ typedef NS_ENUM(NSInteger, LBWorkspacePane) {
 - (IBAction)newVehicle:(nullable id)sender;
 - (IBAction)newCatalog:(nullable id)sender;
 - (IBAction)removeVehicle:(nullable id)sender;
+// Its commands' menu items, as the toolbar's: Back and Forward while there
+// is somewhere to go, Show/Hide Sidebar and Inspector titled as they would
+// do (the window's controller asks it for the menus' View, Go and File >
+// New).
+- (BOOL)validateMenuItem:(NSMenuItem *)item;
 
 @end
 

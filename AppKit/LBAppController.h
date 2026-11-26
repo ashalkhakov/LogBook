@@ -32,8 +32,12 @@ NS_ASSUME_NONNULL_BEGIN
 // The stock window (LBStockWindowController.h): the catalogs, their items
 // and their stock, over the same server.
 - (IBAction)showStock:(nullable id)sender;
-// Window > Tasks: the processes' open tasks (LBTasksWindowController.h).
+// Go > Tasks: the processes' open tasks (LBTasksWindowController.h).
 - (IBAction)showTasks:(nullable id)sender;
+// Go > Logbook: the logbook's page, at the vehicle chosen.
+- (IBAction)showLogbook:(nullable id)sender;
+// Help > Logbook Help: the project's page, its README (no help book yet).
+- (IBAction)showHelp:(nullable id)sender;
 // Updates, now (LBUpdater.h).
 - (IBAction)checkForUpdates:(nullable id)sender;
 @end

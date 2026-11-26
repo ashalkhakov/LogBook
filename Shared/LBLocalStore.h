@@ -78,6 +78,9 @@ FOUNDATION_EXPORT NSNotificationName const LBLocalStoreSyncDidFailNotification;
 @property (nonatomic, readonly, getter=isSyncing) BOOL syncing;
 // "Synced 10:42. 2 changes waiting.", "Sync is off.", "Not synced: ..."
 @property (nonatomic, readonly, copy) NSString *status;
+// The status said again, what waits having changed (a process's step kept
+// to be sent, or sent): its notification posted. Nothing while it syncs.
+- (void)statusChanged;
 @property (nonatomic, readonly, nullable) NSDate *lastSync;
 // Changes not sent yet; those the server refused (with its words).
 - (NSUInteger)pendingCount;

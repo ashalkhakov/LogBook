@@ -112,6 +112,16 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     [_window.workspace showTasks];
 }
 
+- (IBAction)showLogbook:(id)sender {
+    if (!_window) return;
+    [_window showWindow:sender];
+    [_window.workspace showLogbook];
+}
+
+- (IBAction)showHelp:(id)sender {
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/ashalkhakov/LogBook#readme"]];
+}
+
 /* The stock's screen, in the window (the sidebar's Stock). */
 - (IBAction)showStock:(id)sender {
     if (!_window) return;
@@ -125,7 +135,7 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     if (LBSameSelector(action, @selector(checkForUpdates:))) return _updater.canCheckForUpdates;
     BOOL needsLogbook = LBSameSelector(action, @selector(showPreferences:)) || LBSameSelector(action, @selector(showExpenseKinds:)) || LBSameSelector(action, @selector(showChecklists:))
                         || LBSameSelector(action, @selector(showExchangeRates:)) || LBSameSelector(action, @selector(showStock:))
-                        || LBSameSelector(action, @selector(showTasks:));
+                        || LBSameSelector(action, @selector(showTasks:)) || LBSameSelector(action, @selector(showLogbook:));
     return !needsLogbook || _window != nil;
 }
 
@@ -158,6 +168,7 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     _submittingWaiting = YES;
     if ([_waitingTasks submitWaitingIn:state]) [_waitingTasks noteChange];
     _submittingWaiting = NO;
+    [_store.local statusChanged];
 }
 
 /* The server refused who is signed in (a token for another audience,

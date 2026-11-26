@@ -1,5 +1,5 @@
 // The open tasks of the server's processes (LBTasks.h), in a window of
-// their own (TasksWindow.xib; the sidebar's Tasks, Window > Tasks): each a person's step --
+// their own (TasksWindow.xib; the sidebar's Tasks, Go > Tasks): each a person's step --
 // Confirm the order, Receive the goods, Ship the goods, Review the count
 // -- with the order or count it is about.
 // Open (or a double-click) shows its order in the order's window

@@ -35,6 +35,7 @@
 #import "LBStockProcedures.h"
 #import "LBFormValues.h"
 #import "LBSelectors.h"
+#import "LBAlerts.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 
@@ -485,7 +486,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         alert.informativeText = @"Discarding the record deletes that reminder too, and what you changed of it.";
         [alert addButtonWithTitle:@"Delete It Too"];
         [alert addButtonWithTitle:@"Cancel"];
-        if ([alert runModal] != NSAlertFirstButtonReturn) return;
+        if (LBAskInSheet(alert, self.window) != NSAlertFirstButtonReturn) return;
         error = nil;
         if ([self call:@"Discard" on:record parameters:@{ @"KeepNextReminder": @NO } error:&error]) return;
     }
@@ -987,12 +988,84 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     else [self revertLogbook];
 }
 
+- (IBAction)goBack:(id)sender {
+    [_workspace goBack:sender];
+}
+
+- (IBAction)goForward:(id)sender {
+    [_workspace goForward:sender];
+}
+
+- (IBAction)toggleSidebarPane:(id)sender {
+    [_workspace toggleSidebarPane:sender];
+}
+
+- (IBAction)toggleInspectorPane:(id)sender {
+    [_workspace toggleInspectorPane:sender];
+}
+
+- (IBAction)newVehicle:(id)sender {
+    [_workspace newVehicle:sender];
+}
+
+- (IBAction)newCatalog:(id)sender {
+    [_workspace newCatalog:sender];
+}
+
+/* The - under the list that has the focus: a button named remove...
+   flush under its scroll view's bottom edge (MainWindow.xib and the
+   screens' XIBs put them so). */
+- (nullable NSButton *)removeButtonOfFocusedList {
+    NSResponder *focused = self.window.firstResponder;
+    if (![focused isKindOfClass:[NSTableView class]]) return nil;
+    NSScrollView *scroll = ((NSTableView *)focused).enclosingScrollView;
+    for (NSView *view in scroll.superview.subviews) {
+        if (![view isKindOfClass:[NSButton class]] || view.isHidden) continue;
+        NSButton *button = (NSButton *)view;
+        if (![button.identifier hasPrefix:@"remove"]) continue;
+        NSRect b = button.frame, s = scroll.frame;
+        BOOL under = scroll.superview.isFlipped ? fabs(NSMinY(b) - NSMaxY(s)) <= 2 : fabs(NSMaxY(b) - NSMinY(s)) <= 2;
+        if (under && NSMinX(b) >= NSMinX(s) - 2 && NSMinX(b) < NSMaxX(s)) return button;
+    }
+    return nil;
+}
+
+- (IBAction)delete:(id)sender {
+    NSButton *remove = [self removeButtonOfFocusedList];
+    if (remove.isEnabled) [remove performClick:sender];
+}
+
+/* The first search field shown in the main pane. */
+- (nullable NSSearchField *)searchFieldIn:(NSView *)view {
+    if (view.isHidden) return nil;
+    if ([view isKindOfClass:[NSSearchField class]]) return (NSSearchField *)view;
+    for (NSView *sub in view.subviews) {
+        NSSearchField *found = [self searchFieldIn:sub];
+        if (found) return found;
+    }
+    return nil;
+}
+
+- (IBAction)findInScreen:(id)sender {
+    NSSearchField *field = [self searchFieldIn:_workspace.shownScreen ? _workspace.screenHost : _workspace.logbookPage];
+    if (field) [self.window makeFirstResponder:field];
+}
+
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
-    if (LBSameSelector(item.action, @selector(save:)) || LBSameSelector(item.action, @selector(revertChanges:))) {
+    SEL action = item.action;
+    if (LBSameSelector(action, @selector(save:)) || LBSameSelector(action, @selector(revertChanges:))) {
         LBScreen *screen = _workspace.shownScreen;
         return !screen || screen.savable;
     }
-    return [self respondsToSelector:item.action];
+    if (LBSameSelector(action, @selector(delete:))) return [self removeButtonOfFocusedList].isEnabled;
+    if (LBSameSelector(action, @selector(findInScreen:))) {
+        return [self searchFieldIn:_workspace.shownScreen ? _workspace.screenHost : _workspace.logbookPage] != nil;
+    }
+    /* The workspace's own: as it says (Back, Forward, Show/Hide Sidebar). */
+    for (NSString *name in @[ @"goBack:", @"goForward:", @"toggleSidebarPane:", @"toggleInspectorPane:", @"newVehicle:", @"newCatalog:" ]) {
+        if (LBSameSelector(action, NSSelectorFromString(name))) return [_workspace validateMenuItem:item];
+    }
+    return [self respondsToSelector:action];
 }
 
 - (void)saveLogbook {
@@ -1008,11 +1081,13 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 /* The deontic rules a change breaks: what ought not to be, but may. */
 - (BOOL)proceedDespite:(NSArray<NSError *> *)warnings {
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = warnings.count == 1 ? @"This ought not to be so" : @"These ought not to be so";
-    alert.informativeText = [[warnings valueForKey:NSStringFromSelector(@selector(localizedDescription))] componentsJoinedByString:@"\n"];
+    alert.messageText = warnings.count == 1 ? @"The logbook's rules advise against this change. Save it anyway?"
+                                            : @"The logbook's rules advise against these changes. Save them anyway?";
+    alert.informativeText = [[[warnings valueForKey:NSStringFromSelector(@selector(localizedDescription))] componentsJoinedByString:@"\n"]
+        stringByAppendingString:@"\n\nThe rules allow it: it is saved as it is, if you say so."];
     [alert addButtonWithTitle:@"Save Anyway"];
     [alert addButtonWithTitle:@"Cancel"];
-    return [alert runModal] == NSAlertFirstButtonReturn;
+    return LBAskInSheet(alert, self.window) == NSAlertFirstButtonReturn;
 }
 
 /* A save's refusal, each violation said: Core Data's message names none. */
@@ -1033,12 +1108,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 - (BOOL)shouldClose {
     if (![self commitEdits]) return NO;
     if (!_store.context.hasChanges) return [_workspace closeScreensAsking:YES];
-    NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Save the changes before closing?";
-    [alert addButtonWithTitle:@"Save"];
-    [alert addButtonWithTitle:@"Cancel"];
-    [alert addButtonWithTitle:@"Don't Save"];
-    NSModalResponse answer = [alert runModal];
+    NSAlert *alert = LBSaveChangesAlert(@"the logbook");
+    NSModalResponse answer = LBAskInSheet(alert, self.window);
     if (answer == NSAlertSecondButtonReturn) return NO;
     if (answer == NSAlertThirdButtonReturn) return [_workspace closeScreensAsking:YES];
     NSError *error = nil;
