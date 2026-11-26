@@ -294,6 +294,19 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
     NSWindow *window = controller.window;
     User *user = controller.store.user;
     NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
+    /* The inspector: shown, its page as the tab says (no record chosen
+       yet: none). */
+    NSTabView *pages = controller.inspectorPages;
+    [tabs selectTabViewItemWithIdentifier:@"vehicle"];
+    LBSpin();
+    LBCheck(@"the inspector shown, nothing in it on the Vehicle tab", [controller.workspace.paneSplit isPaneVisible:LBInspectorPane]
+                && [pages.selectedTabViewItem.identifier isEqual:@"none"], pages.selectedTabViewItem.identifier);
+    [tabs selectTabViewItemWithIdentifier:@"reminders"];
+    LBSpin();
+    LBCheck(@"Reminders: the inspector has their actions and forms", [pages.selectedTabViewItem.identifier isEqual:@"reminder"]
+                && [LBControl(controller.workspace.inspectorPane, @"newReminder") isKindOfClass:[NSButton class]]
+                && LBControl(controller.workspace.inspectorPane, @"reminderForms") != nil,
+            pages.selectedTabViewItem.identifier);
     [tabs selectTabViewItemWithIdentifier:@"records"];
     LBSpin();
     NSPopUpButton *add = (NSPopUpButton *)LBControl(window.contentView, @"addRecord");
@@ -307,6 +320,15 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBCheck(@"a new fill-up, chosen, its form shown",
             [fillUp isKindOfClass:[FillUp class]] && [controller.recordForms.selectedTabViewItem.identifier isEqual:@"FillUp"],
             controller.recordForms.selectedTabViewItem.identifier);
+    /* Its form in the inspector, not under the list: the list the page's
+       height. */
+    NSView *timestamp = LBControl(window.contentView, @"FillUpTimestamp");
+    BOOL inInspector = [timestamp isDescendantOf:controller.workspace.inspectorPane];
+    NSScrollView *list = [controller.records.arrangedObjects count] ? ((NSTableView *)LBControl(window.contentView, @"recordsTable")).enclosingScrollView : nil;
+    LBCheck(@"the fill-up's form in the inspector, the records' list down the whole page",
+            [pages.selectedTabViewItem.identifier isEqual:@"record"] && inInspector && NSHeight(list.frame) > 400,
+            [NSString stringWithFormat:@"page %@, in the inspector %d, the list %.0f high", pages.selectedTabViewItem.identifier, inInspector,
+                                       NSHeight(list.frame)]);
     LBCheck(@"filled in: now, here (this Mac's time zone), its driver the user, in the user's units",
             fillUp.timestamp && [fillUp.timeZone isEqualToString:[NSTimeZone localTimeZone].name] && fillUp.driver == user
                 && fillUp.mileageDistanceUnit && fillUp.mileageDistanceUnit == user.distanceUnit
@@ -2756,9 +2778,26 @@ static void LBPictureSteps(LBMainWindowController *controller) {
     }
     LBSpin();
     LBSnapshot(window, @"records");
+    /* Each kind of record the sample has, its form in the inspector. */
+    NSMutableSet *pictured = [NSMutableSet set];
+    for (Record *record in controller.records.arrangedObjects) {
+        NSString *kind = record.entity.name;
+        if ([pictured containsObject:kind]) continue;
+        [pictured addObject:kind];
+        [controller.records setSelectedObjects:@[ record ]];
+        LBSpin();
+        LBSnapshot(window, [@"record-" stringByAppendingString:kind]);
+    }
     [tabs selectTabViewItemWithIdentifier:@"reminders"];
     LBSpin();
     LBSnapshot(window, @"reminders");
+    /* A reminder chosen, and its Reschedule… form in the inspector. */
+    NSButton *reschedule = (NSButton *)LBControl(window.contentView, @"reschedule");
+    if (reschedule.isEnabled) {
+        [reschedule performClick:nil];
+        LBSpin();
+        LBSnapshot(window, @"reminder-reschedule");
+    }
     [tabs selectTabViewItemWithIdentifier:@"calendar"];
     controller.calendarController.allVehicles = YES;
     LBSpin();
@@ -3280,6 +3319,8 @@ static void LBSteps(LBMainWindowController *controller) {
     [NSApp activateIgnoringOtherApps:YES];
     [window makeKeyAndOrderFront:nil];
     LBCheck(@"the window", window.isVisible, nil);
+    /* The forms are in the inspector: shown, whatever layout was saved. */
+    [controller.workspace.paneSplit setPane:LBInspectorPane visible:YES];
     if ([[NSProcessInfo processInfo].environment[@"LB_STEPS"] isEqualToString:@"pictures"]) {
         LBPictureSteps(controller);
         return;

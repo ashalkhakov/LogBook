@@ -63,6 +63,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 @end
 
 @implementation LBMainWindowController {
+    /* Each record form's height, by its identifier (its page in the
+       inspector fitted to it: no scrolling past its end). */
+    NSDictionary<NSString *, NSNumber *> *_formHeights;
     /* LB_TIMING: when the change being timed began. */
     NSDate *_timingSince;
     NSArray<NSString *> *_tyreSetTitles;
@@ -154,10 +157,21 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     _attachments.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(fileName)) ascending:YES] ];
     /* The rules a record or a vehicle breaks, at its fields (the logbook's
        page's: a screen has its own). */
-    _fieldIssues = [[LBFieldIssues alloc] initWithView:_workspace.logbookPage ?: self.window.contentView];
+    _fieldIssues = _workspace.logbookPage ? [[LBFieldIssues alloc] initWithViews:@[ _workspace.logbookPage, _workspace.inspectorPane ]]
+                                          : [[LBFieldIssues alloc] initWithView:self.window.contentView];
     [_fieldIssues setNeedsRefresh];
     /* A day of the model (bought on, issued, expires) is a UTC day: its
        field reads and says it so, whatever the zone here. */
+    /* Each form's height, as the XIB draws them, from the top of the
+       tallest (MainWindow.xib): to its lowest control, and a margin. */
+    NSMutableDictionary *heights = [NSMutableDictionary dictionary];
+    CGFloat tallest = NSHeight(_recordForms.frame);
+    for (NSTabViewItem *form in _recordForms.tabViewItems) {
+        CGFloat lowest = tallest;
+        for (NSView *each in form.view.subviews) lowest = MIN(lowest, NSMinY(each.frame));
+        heights[form.identifier] = @(MAX(tallest - lowest + 12, 0));
+    }
+    _formHeights = heights;
     for (NSTabViewItem *form in _recordForms.tabViewItems) {
         for (NSString *identifier in @[ @"TyreSetDate", @"DocumentDate", @"DocumentExpires" ]) {
             NSTextField *field = (NSTextField *)[self controlOf:identifier in:form.view];
@@ -183,6 +197,28 @@ static void *LBRecordsChanged = &LBRecordsChanged;
    worked out as it is shown. */
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)item {
     if ([item.identifier isEqual:@"reports"]) LBTimed(@"reports shown", ^{ [self->_reports tabShown]; });
+    [self showInspectorPage];
+}
+
+/* The inspector's record page as tall as the form shown (its document,
+   flipped, the form's top at its top), scrolled to the top. */
+- (void)fitRecordPage {
+    NSView *document = _recordForms.superview;
+    NSString *shown = _recordForms.selectedTabViewItem.identifier;
+    CGFloat height = [_formHeights[shown ?: @"none"] doubleValue];
+    if (!document || height <= 0) return;
+    NSSize size = document.frame.size;
+    if (size.height != height) [document setFrameSize:NSMakeSize(size.width, height)];
+    [document scrollPoint:NSZeroPoint];
+}
+
+- (void)showInspectorPage {
+    NSTabView *tabs = (NSTabView *)[self controlOf:@"tabs" in:_workspace.logbookPage];
+    NSString *tab = _workspace.shownScreen ? nil : tabs.selectedTabViewItem.identifier;
+    NSString *page = @"none";
+    if ([tab isEqual:@"records"] && _records.selectedObjects.count == 1 && _recordForm) page = @"record";
+    if ([tab isEqual:@"reminders"]) page = @"reminder";
+    if (![_inspectorPages.selectedTabViewItem.identifier isEqual:page]) [_inspectorPages selectTabViewItemWithIdentifier:page];
 }
 
 - (BOOL)showRecord:(Record *)record {
@@ -315,6 +351,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_recordForm showErrors:@{} under:_recordForms];
     NSInteger form = [_recordForms indexOfTabViewItemWithIdentifier:kind ?: @"none"];
     [_recordForms selectTabViewItemAtIndex:form == NSNotFound ? 0 : form];
+    [self fitRecordPage];
+    [self showInspectorPage];
     [self answersChanged];
 }
 

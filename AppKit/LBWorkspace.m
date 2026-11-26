@@ -35,6 +35,17 @@ static const CGFloat LBLogbookWidth = 780, LBLogbookHeight = 680;
 @implementation LBSidebarItem
 @end
 
+/* The inspector's pages' document views (MainWindow.xib): flipped, their
+   top shown first in their scroll views, their frames counted from it. */
+@interface LBFlippedView : NSView
+@end
+
+@implementation LBFlippedView
+- (BOOL)isFlipped {
+    return YES;
+}
+@end
+
 static __weak LBWorkspace *LBCurrentWorkspace;
 /* A catalog's tabs that are its settings' pages (LBCatalogSettingsWindowController). */
 #define LBSettingsPages (@[ @"warehouses", @"contacts", @"categories", @"settings" ])
@@ -95,14 +106,21 @@ static void *LBScreenTitled = &LBScreenTitled;
     LBCurrentWorkspace = self;
     _loaded = YES;
     _paneSplit.flexiblePaneIndex = LBScreenPane;
-    _paneSplit.minimumThicknesses = @[ @160, @(LBLogbookWidth), @200 ];
-    _paneSplit.defaultThicknesses = @[ @220, @0, @260 ];
+    _paneSplit.minimumThicknesses = @[ @160, @(LBLogbookWidth), @300 ];
+    _paneSplit.defaultThicknesses = @[ @220, @0, @330 ];
     NSString *autosave = @"LogbookWorkspacePanes";
     BOOL saved = [[NSUserDefaults standardUserDefaults] dictionaryForKey:[@"UDPaneSplitController " stringByAppendingString:autosave]] != nil;
     _paneSplit.autosaveName = autosave;
     [_paneSplit restoreLayout];
-    /* The inspector, at first, hidden: it shows nothing yet. */
-    if (!saved) [_paneSplit setPane:LBInspectorPane visible:NO];
+    /* The inspector holds the record's and the reminders' forms: shown,
+       unlike Xcode's, and shown once more where an earlier version saved
+       it hidden (it showed nothing then). */
+    (void)saved;
+    NSString *introduced = @"LBInspectorHoldsForms";
+    if (![[NSUserDefaults standardUserDefaults] boolForKey:introduced]) {
+        [_paneSplit setPane:LBInspectorPane visible:YES];
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:introduced];
+    }
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(panesChanged:)
                                                  name:UDPaneSplitControllerDidChangeVisibilityNotification object:_paneSplit];
     /* The sidebar's catalogs, as stock changes and as syncs bring them. */
@@ -455,6 +473,7 @@ static void *LBScreenTitled = &LBScreenTitled;
     }
     _screenHost.hidden = screen == nil;
     _logbookPage.hidden = screen != nil;
+    [_windowController showInspectorPage];
     [self fitWindow];
     _place = [place copy];
     if (recording) {
@@ -498,7 +517,7 @@ static void *LBScreenTitled = &LBScreenTitled;
     if (!window) return;
     NSSize drawn = _shownScreen ? _shownScreen.drawnSize : NSZeroSize;
     CGFloat width = MAX(LBLogbookWidth, drawn.width), height = MAX(_shownScreen ? 400 : LBLogbookHeight, drawn.height);
-    _paneSplit.minimumThicknesses = @[ @160, @(width), @200 ];
+    _paneSplit.minimumThicknesses = @[ @160, @(width), @300 ];
     for (NSNumber *pane in @[ @(LBSidebarPane), @(LBInspectorPane) ]) {
         if ([_paneSplit isPaneVisible:pane.integerValue]) width += [_paneSplit thicknessOfPane:pane.integerValue] + 1;
     }
