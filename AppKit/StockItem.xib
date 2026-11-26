@@ -7,6 +7,8 @@
   <objects>
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockItemWindowController">
       <connections>
+        <outlet property="inspectorView" destination="screenInspector" id="screenInspectorOutlet"/>
+        <outlet property="inspectorPages" destination="screenInspectorPages" id="screenInspectorPagesOutlet"/>
         <outlet property="view" destination="content" id="windowOutlet"/>
         <outlet property="requestPanel" destination="requestPanel" id="requestPanelOutlet"/>
         <outlet property="movePanel" destination="movePanel" id="movePanelOutlet"/>
@@ -735,10 +737,10 @@ Gw
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="holdingsTableScroll">
-                      <rect key="frame" x="10" y="112" width="240" height="162"/>
-                      <autoresizingMask key="autoresizingMask" heightSizable="YES" flexibleMaxX="YES"/>
+                      <rect key="frame" x="10" y="48" width="240" height="226"/>
+                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="holdingsTableClip">
-                        <rect key="frame" x="1" y="1" width="238" height="188"/>
+                        <rect key="frame" x="1" y="1" width="238" height="252"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="holdingsTableHeader" identifier="holdingsTable" id="holdingsTable">
@@ -786,7 +788,7 @@ Gw
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="holdingsTableVScroller">
-                        <rect key="frame" x="224" y="1" width="15" height="188"/>
+                        <rect key="frame" x="224" y="1" width="15" height="252"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="holdingsTableHeader">
@@ -795,7 +797,7 @@ Gw
                       </tableHeaderView>
                     </scrollView>
                     <button toolTip="Open what made the move chosen: its order, its count, its record" verticalHuggingPriority="750" identifier="openMove" id="openMove">
-                      <rect key="frame" x="256" y="82" width="90" height="28"/>
+                      <rect key="frame" x="256" y="18" width="90" height="28"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                       <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="openMoveCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -806,10 +808,10 @@ Gw
                       </connections>
                     </button>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="movesTableScroll">
-                      <rect key="frame" x="260" y="112" width="344" height="162"/>
+                      <rect key="frame" x="260" y="48" width="344" height="226"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="movesTableClip">
-                        <rect key="frame" x="1" y="1" width="342" height="188"/>
+                        <rect key="frame" x="1" y="1" width="342" height="252"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="movesTableHeader" identifier="movesTable" id="movesTable">
@@ -900,7 +902,7 @@ Gw
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="movesTableVScroller">
-                        <rect key="frame" x="328" y="1" width="15" height="188"/>
+                        <rect key="frame" x="328" y="1" width="15" height="252"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="movesTableHeader">
@@ -908,140 +910,6 @@ Gw
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockQuantityLabel">
-                      <rect key="frame" x="10" y="51" width="60" height="17"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity:" id="stockQuantityLabelCell">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
-                    </textField>
-                    <textField verticalHuggingPriority="750" identifier="stockQuantity" id="stockQuantity">
-                      <rect key="frame" x="75" y="48" width="70" height="22"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="stockQuantityCell">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
-                      <connections>
-                        <binding destination="-2" name="value" keyPath="stockQuantity" id="stockQuantityValue"/>
-                      </connections>
-                    </textField>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockAtLabel">
-                      <rect key="frame" x="150" y="51" width="65" height="17"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At / from:" id="stockAtLabelCell">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
-                    </textField>
-                    <popUpButton verticalHuggingPriority="750" identifier="stockAt" id="stockAt">
-                      <rect key="frame" x="220" y="45" width="170" height="26"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="stockAtCell">
-                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                        <menu key="menu" id="stockAtMenu"/>
-                      </popUpButtonCell>
-                      <connections>
-                        <binding destination="-2" name="content" keyPath="locations" id="stockAtContent"/>
-                        <binding destination="-2" name="contentValues" keyPath="locations.lbTitle" previousBinding="stockAtContent" id="stockAtValues"/>
-                        <binding destination="-2" name="selectedObject" keyPath="stockAt" previousBinding="stockAtValues" id="stockAtChosen"/>
-                      </connections>
-                    </popUpButton>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockToLabel">
-                      <rect key="frame" x="395" y="51" width="25" height="17"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To:" id="stockToLabelCell">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
-                    </textField>
-                    <popUpButton verticalHuggingPriority="750" identifier="stockTo" id="stockTo">
-                      <rect key="frame" x="425" y="45" width="179" height="26"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="stockToCell">
-                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                        <menu key="menu" id="stockToMenu"/>
-                      </popUpButtonCell>
-                      <connections>
-                        <binding destination="-2" name="content" keyPath="locations" id="stockToContent"/>
-                        <binding destination="-2" name="contentValues" keyPath="locations.lbTitle" previousBinding="stockToContent" id="stockToValues"/>
-                        <binding destination="-2" name="selectedObject" keyPath="stockTo" previousBinding="stockToValues" id="stockToChosen"/>
-                      </connections>
-                    </popUpButton>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockReasonLabel">
-                      <rect key="frame" x="10" y="17" width="60" height="17"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason:" id="stockReasonLabelCell">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
-                    </textField>
-                    <popUpButton verticalHuggingPriority="750" identifier="stockReason" id="stockReason">
-                      <rect key="frame" x="75" y="11" width="130" height="26"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="stockReasonCell">
-                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                        <menu key="menu" id="stockReasonMenu"/>
-                      </popUpButtonCell>
-                      <connections>
-                        <binding destination="-2" name="content" keyPath="reasons" id="stockReasonContent"/>
-                        <binding destination="-2" name="contentValues" keyPath="reasons" previousBinding="stockReasonContent" id="stockReasonValues"/>
-                        <binding destination="-2" name="selectedObject" keyPath="stockReason" previousBinding="stockReasonValues" id="stockReasonChosen"/>
-                      </connections>
-                    </popUpButton>
-                    <button verticalHuggingPriority="750" identifier="adjust" id="adjust">
-                      <rect key="frame" x="210" y="8" width="90" height="32"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Adjust" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="adjustCell">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                      </buttonCell>
-                      <connections>
-                        <action selector="adjust:" target="-2" id="adjustAction"/>
-                      </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" identifier="transfer" id="transfer">
-                      <rect key="frame" x="300" y="8" width="95" height="32"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Transfer" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="transferCell">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                      </buttonCell>
-                      <connections>
-                        <action selector="transfer:" target="-2" id="transferAction"/>
-                      </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" identifier="assemble" id="assemble">
-                      <rect key="frame" x="395" y="8" width="100" height="32"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Assemble" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="assembleCell">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                      </buttonCell>
-                      <connections>
-                        <action selector="assemble:" target="-2" id="assembleAction"/>
-                      </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" identifier="disassemble" id="disassemble">
-                      <rect key="frame" x="495" y="8" width="112" height="32"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Take Apart" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="disassembleCell">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                      </buttonCell>
-                      <connections>
-                        <action selector="disassemble:" target="-2" id="disassembleAction"/>
-                      </connections>
-                    </button>
                   </subviews>
                 </view>
               </tabViewItem>
@@ -1084,14 +952,14 @@ Gw
                       </connections>
                     </button>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="kitLinesTableScroll">
-                      <rect key="frame" x="10" y="10" width="380" height="234"/>
-                      <autoresizingMask key="autoresizingMask" heightSizable="YES" flexibleMaxX="YES"/>
+                      <rect key="frame" x="10" y="10" width="594" height="234"/>
+                      <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="kitLinesTableClip">
-                        <rect key="frame" x="1" y="1" width="378" height="232"/>
+                        <rect key="frame" x="1" y="1" width="592" height="232"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="kitLinesTableHeader" identifier="kitLinesTable" id="kitLinesTable">
-                            <rect key="frame" x="0" y="0" width="378" height="209"/>
+                            <rect key="frame" x="0" y="0" width="592" height="209"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <size key="intercellSpacing" width="3" height="2"/>
                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1135,60 +1003,14 @@ Gw
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="kitLinesTableVScroller">
-                        <rect key="frame" x="364" y="1" width="15" height="232"/>
+                        <rect key="frame" x="578" y="1" width="15" height="232"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="kitLinesTableHeader">
-                        <rect key="frame" x="0" y="0" width="378" height="23"/>
+                        <rect key="frame" x="0" y="0" width="592" height="23"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="kitComponentLabel">
-                      <rect key="frame" x="400" y="227" width="80" height="17"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="Component" id="kitComponentLabelCell">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
-                    </textField>
-                    <popUpButton verticalHuggingPriority="750" identifier="kitComponent" id="kitComponent">
-                      <rect key="frame" x="400" y="197" width="204" height="26"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="kitComponentCell">
-                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                        <menu key="menu" id="kitComponentMenu"/>
-                      </popUpButtonCell>
-                      <connections>
-                        <binding destination="-2" name="content" keyPath="components" id="kitComponentContent"/>
-                        <binding destination="-2" name="contentValues" keyPath="components.lbTitle" previousBinding="kitComponentContent" id="kitComponentValues"/>
-                        <binding destination="kitLineList" name="selectedObject" keyPath="selection.component" previousBinding="kitComponentValues" id="kitComponentChosen"/>
-                      </connections>
-                    </popUpButton>
-                    <button verticalHuggingPriority="750" identifier="addKitLine" id="addKitLine">
-                      <rect key="frame" x="396" y="159" width="100" height="32"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <buttonCell key="cell" type="push" title="Add Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addKitLineCell">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                      </buttonCell>
-                      <connections>
-                        <action selector="addKitLine:" target="-2" id="addKitLineAction"/>
-                      </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" identifier="removeKitLine" id="removeKitLine">
-                      <rect key="frame" x="496" y="159" width="112" height="32"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <buttonCell key="cell" type="push" title="Remove Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeKitLineCell">
-                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                      </buttonCell>
-                      <connections>
-                        <action selector="removeKitLine:" target="-2" id="removeKitLineAction"/>
-                        <binding destination="kitLineList" name="enabled" keyPath="canRemove" id="removeKitLineEnabled"/>
-                      </connections>
-                    </button>
                   </subviews>
                 </view>
               </tabViewItem>
@@ -1198,10 +1020,10 @@ Gw
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="supplierItemsTableScroll">
-                      <rect key="frame" x="10" y="72" width="594" height="202"/>
+                      <rect key="frame" x="10" y="48" width="594" height="226"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="supplierItemsTableClip">
-                        <rect key="frame" x="1" y="1" width="592" height="200"/>
+                        <rect key="frame" x="1" y="1" width="592" height="224"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="supplierItemsTableHeader" identifier="supplierItemsTable" id="supplierItemsTable">
@@ -1350,7 +1172,7 @@ Gw
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="supplierItemsTableVScroller">
-                        <rect key="frame" x="578" y="1" width="15" height="200"/>
+                        <rect key="frame" x="578" y="1" width="15" height="224"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="supplierItemsTableHeader">
@@ -1358,31 +1180,8 @@ Gw
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="supplierItemSupplierLabel">
-                      <rect key="frame" x="10" y="17" width="60" height="17"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier:" id="supplierItemSupplierLabelCell">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
-                    </textField>
-                    <popUpButton verticalHuggingPriority="750" identifier="supplierItemSupplier" id="supplierItemSupplier">
-                      <rect key="frame" x="75" y="11" width="200" height="26"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="supplierItemSupplierCell">
-                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                        <menu key="menu" id="supplierItemSupplierMenu"/>
-                      </popUpButtonCell>
-                      <connections>
-                        <binding destination="-2" name="content" keyPath="suppliers" id="supplierItemSupplierContent"/>
-                        <binding destination="-2" name="contentValues" keyPath="suppliers.lbTitle" previousBinding="supplierItemSupplierContent" id="supplierItemSupplierValues"/>
-                        <binding destination="supplierItemList" name="selectedObject" keyPath="selection.supplier" previousBinding="supplierItemSupplierValues" id="supplierItemSupplierChosen"/>
-                      </connections>
-                    </popUpButton>
                     <button toolTip="Add" verticalHuggingPriority="750" identifier="addSupplierItem" id="addSupplierItem">
-                      <rect key="frame" x="10" y="49" width="24" height="23"/>
+                      <rect key="frame" x="10" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                       <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addSupplierItemCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1393,7 +1192,7 @@ Gw
                       </connections>
                     </button>
                     <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeSupplierItem" id="removeSupplierItem">
-                      <rect key="frame" x="33" y="49" width="24" height="23"/>
+                      <rect key="frame" x="33" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                       <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeSupplierItemCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1413,10 +1212,10 @@ Gw
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="itemCodesTableScroll">
-                      <rect key="frame" x="10" y="72" width="594" height="202"/>
+                      <rect key="frame" x="10" y="48" width="594" height="226"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="itemCodesTableClip">
-                        <rect key="frame" x="1" y="1" width="592" height="200"/>
+                        <rect key="frame" x="1" y="1" width="592" height="224"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="itemCodesTableHeader" identifier="itemCodesTable" id="itemCodesTable">
@@ -1478,7 +1277,7 @@ Gw
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="itemCodesTableVScroller">
-                        <rect key="frame" x="578" y="1" width="15" height="200"/>
+                        <rect key="frame" x="578" y="1" width="15" height="224"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="itemCodesTableHeader">
@@ -1486,31 +1285,8 @@ Gw
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCodeKindLabel">
-                      <rect key="frame" x="10" y="17" width="40" height="17"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Kind:" id="itemCodeKindLabelCell">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
-                    </textField>
-                    <popUpButton verticalHuggingPriority="750" identifier="itemCodeKind" id="itemCodeKind">
-                      <rect key="frame" x="55" y="11" width="150" height="26"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="itemCodeKindCell">
-                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                        <menu key="menu" id="itemCodeKindMenu"/>
-                      </popUpButtonCell>
-                      <connections>
-                        <binding destination="-2" name="content" keyPath="codeKinds" id="itemCodeKindContent"/>
-                        <binding destination="-2" name="contentValues" keyPath="codeKinds" previousBinding="itemCodeKindContent" id="itemCodeKindValues"/>
-                        <binding destination="itemCodeList" name="selectedObject" keyPath="selection.codeKind" previousBinding="itemCodeKindValues" id="itemCodeKindChosen"/>
-                      </connections>
-                    </popUpButton>
                     <button toolTip="Add" verticalHuggingPriority="750" identifier="addItemCode" id="addItemCode">
-                      <rect key="frame" x="10" y="49" width="24" height="23"/>
+                      <rect key="frame" x="10" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                       <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addItemCodeCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1521,7 +1297,7 @@ Gw
                       </connections>
                     </button>
                     <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeItemCode" id="removeItemCode">
-                      <rect key="frame" x="33" y="49" width="24" height="23"/>
+                      <rect key="frame" x="33" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                       <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeItemCodeCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1817,10 +1593,10 @@ Gw
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="reorderRulesTableScroll">
-                      <rect key="frame" x="10" y="72" width="594" height="202"/>
+                      <rect key="frame" x="10" y="48" width="594" height="226"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="reorderRulesTableClip">
-                        <rect key="frame" x="1" y="1" width="592" height="200"/>
+                        <rect key="frame" x="1" y="1" width="592" height="224"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="reorderRulesTableHeader" identifier="reorderRulesTable" id="reorderRulesTable">
@@ -1897,7 +1673,7 @@ Gw
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="reorderRulesTableVScroller">
-                        <rect key="frame" x="578" y="1" width="15" height="200"/>
+                        <rect key="frame" x="578" y="1" width="15" height="224"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="reorderRulesTableHeader">
@@ -1905,31 +1681,8 @@ Gw
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reorderWarehouseLabel">
-                      <rect key="frame" x="5" y="17" width="80" height="17"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Warehouse:" id="reorderWarehouseLabelCell">
-                        <font key="font" metaFont="system"/>
-                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
-                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
-                    </textField>
-                    <popUpButton verticalHuggingPriority="750" identifier="reorderWarehouse" id="reorderWarehouse">
-                      <rect key="frame" x="90" y="11" width="200" height="26"/>
-                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="reorderWarehouseCell">
-                        <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                        <font key="font" metaFont="system"/>
-                        <menu key="menu" id="reorderWarehouseMenu"/>
-                      </popUpButtonCell>
-                      <connections>
-                        <binding destination="-2" name="content" keyPath="catalogWarehouses" id="reorderWarehouseContent"/>
-                        <binding destination="-2" name="contentValues" keyPath="catalogWarehouses.lbTitle" previousBinding="reorderWarehouseContent" id="reorderWarehouseValues"/>
-                        <binding destination="reorderRuleList" name="selectedObject" keyPath="selection.warehouse" previousBinding="reorderWarehouseValues" id="reorderWarehouseChosen"/>
-                      </connections>
-                    </popUpButton>
                     <button toolTip="Add" verticalHuggingPriority="750" identifier="addReorderRule" id="addReorderRule">
-                      <rect key="frame" x="10" y="49" width="24" height="23"/>
+                      <rect key="frame" x="10" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                       <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addReorderRuleCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1940,7 +1693,7 @@ Gw
                       </connections>
                     </button>
                     <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeReorderRule" id="removeReorderRule">
-                      <rect key="frame" x="33" y="49" width="24" height="23"/>
+                      <rect key="frame" x="33" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                       <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeReorderRuleCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1955,7 +1708,577 @@ Gw
                 </view>
               </tabViewItem>
             </tabViewItems>
+            <connections>
+              <outlet property="delegate" destination="-2" id="cardTabsDelegate"/>
+            </connections>
           </tabView>
+        </subviews>
+    </customView>
+    <customView userLabel="Inspector" identifier="screenInspector" id="screenInspector">
+        <rect key="frame" x="0" y="0" width="300" height="308"/>
+        <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+        <subviews>
+            <tabView type="noTabsNoBorder" identifier="inspectorPages" id="screenInspectorPages">
+                <rect key="frame" x="0" y="0" width="300" height="308"/>
+                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                <font key="font" metaFont="system"/>
+                <tabViewItems>
+                    <tabViewItem label="stock" identifier="stock" id="screenInspector-stock">
+                        <view key="view" id="screenInspector-stockView">
+                            <rect key="frame" x="0" y="0" width="300" height="308"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockQuantityLabel">
+                                  <rect key="frame" x="4" y="276.5" width="96" height="17"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity:" id="stockQuantityLabelCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="stockQuantity" id="stockQuantity">
+                                  <rect key="frame" x="106" y="274" width="172" height="22"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="stockQuantityCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                  <connections>
+                                    <binding destination="-2" name="value" keyPath="stockQuantity" id="stockQuantityValue"/>
+                                  </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockAtLabel">
+                                  <rect key="frame" x="4" y="244.5" width="96" height="17"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At / from:" id="stockAtLabelCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" identifier="stockAt" id="stockAt">
+                                  <rect key="frame" x="104" y="240" width="176" height="26"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="stockAtCell">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <menu key="menu" id="stockAtMenu"/>
+                                  </popUpButtonCell>
+                                  <connections>
+                                    <binding destination="-2" name="content" keyPath="locations" id="stockAtContent"/>
+                                    <binding destination="-2" name="contentValues" keyPath="locations.lbTitle" previousBinding="stockAtContent" id="stockAtValues"/>
+                                    <binding destination="-2" name="selectedObject" keyPath="stockAt" previousBinding="stockAtValues" id="stockAtChosen"/>
+                                  </connections>
+                                </popUpButton>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockToLabel">
+                                  <rect key="frame" x="4" y="210.5" width="96" height="17"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To:" id="stockToLabelCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" identifier="stockTo" id="stockTo">
+                                  <rect key="frame" x="104" y="206" width="176" height="26"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="stockToCell">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <menu key="menu" id="stockToMenu"/>
+                                  </popUpButtonCell>
+                                  <connections>
+                                    <binding destination="-2" name="content" keyPath="locations" id="stockToContent"/>
+                                    <binding destination="-2" name="contentValues" keyPath="locations.lbTitle" previousBinding="stockToContent" id="stockToValues"/>
+                                    <binding destination="-2" name="selectedObject" keyPath="stockTo" previousBinding="stockToValues" id="stockToChosen"/>
+                                  </connections>
+                                </popUpButton>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockReasonLabel">
+                                  <rect key="frame" x="4" y="176.5" width="96" height="17"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason:" id="stockReasonLabelCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" identifier="stockReason" id="stockReason">
+                                  <rect key="frame" x="104" y="172" width="176" height="26"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="stockReasonCell">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <menu key="menu" id="stockReasonMenu"/>
+                                  </popUpButtonCell>
+                                  <connections>
+                                    <binding destination="-2" name="content" keyPath="reasons" id="stockReasonContent"/>
+                                    <binding destination="-2" name="contentValues" keyPath="reasons" previousBinding="stockReasonContent" id="stockReasonValues"/>
+                                    <binding destination="-2" name="selectedObject" keyPath="stockReason" previousBinding="stockReasonValues" id="stockReasonChosen"/>
+                                  </connections>
+                                </popUpButton>
+                                <button verticalHuggingPriority="750" identifier="adjust" id="adjust">
+                                  <rect key="frame" x="106" y="132" width="90" height="32"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <buttonCell key="cell" type="push" title="Adjust" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="adjustCell">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                  </buttonCell>
+                                  <connections>
+                                    <action selector="adjust:" target="-2" id="adjustAction"/>
+                                  </connections>
+                                </button>
+                                <button verticalHuggingPriority="750" identifier="transfer" id="transfer">
+                                  <rect key="frame" x="106" y="92" width="95" height="32"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <buttonCell key="cell" type="push" title="Transfer" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="transferCell">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                  </buttonCell>
+                                  <connections>
+                                    <action selector="transfer:" target="-2" id="transferAction"/>
+                                  </connections>
+                                </button>
+                                <button verticalHuggingPriority="750" identifier="assemble" id="assemble">
+                                  <rect key="frame" x="106" y="52" width="100" height="32"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <buttonCell key="cell" type="push" title="Assemble" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="assembleCell">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                  </buttonCell>
+                                  <connections>
+                                    <action selector="assemble:" target="-2" id="assembleAction"/>
+                                  </connections>
+                                </button>
+                                <button verticalHuggingPriority="750" identifier="disassemble" id="disassemble">
+                                  <rect key="frame" x="106" y="12" width="112" height="32"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <buttonCell key="cell" type="push" title="Take Apart" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="disassembleCell">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                  </buttonCell>
+                                  <connections>
+                                    <action selector="disassemble:" target="-2" id="disassembleAction"/>
+                                  </connections>
+                                </button>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="recipe" identifier="recipe" id="screenInspector-recipe">
+                        <view key="view" id="screenInspector-recipeView">
+                            <rect key="frame" x="0" y="0" width="300" height="308"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="kitComponentLabel">
+                                  <rect key="frame" x="4" y="165" width="292" height="17"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" lineBreakMode="clipping" alignment="left" title="Component" id="kitComponentLabelCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" identifier="kitComponent" id="kitComponent">
+                                  <rect key="frame" x="104" y="270" width="176" height="26"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="kitComponentCell">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <menu key="menu" id="kitComponentMenu"/>
+                                  </popUpButtonCell>
+                                  <connections>
+                                    <binding destination="-2" name="content" keyPath="components" id="kitComponentContent"/>
+                                    <binding destination="-2" name="contentValues" keyPath="components.lbTitle" previousBinding="kitComponentContent" id="kitComponentValues"/>
+                                    <binding destination="kitLineList" name="selectedObject" keyPath="selection.component" previousBinding="kitComponentValues" id="kitComponentChosen"/>
+                                  </connections>
+                                </popUpButton>
+                                <button verticalHuggingPriority="750" identifier="addKitLine" id="addKitLine">
+                                  <rect key="frame" x="106" y="230" width="100" height="32"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <buttonCell key="cell" type="push" title="Add Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addKitLineCell">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                  </buttonCell>
+                                  <connections>
+                                    <action selector="addKitLine:" target="-2" id="addKitLineAction"/>
+                                  </connections>
+                                </button>
+                                <button verticalHuggingPriority="750" identifier="removeKitLine" id="removeKitLine">
+                                  <rect key="frame" x="106" y="190" width="112" height="32"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <buttonCell key="cell" type="push" title="Remove Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeKitLineCell">
+                                    <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                  </buttonCell>
+                                  <connections>
+                                    <action selector="removeKitLine:" target="-2" id="removeKitLineAction"/>
+                                    <binding destination="kitLineList" name="enabled" keyPath="canRemove" id="removeKitLineEnabled"/>
+                                  </connections>
+                                </button>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="suppliers" identifier="suppliers" id="screenInspector-suppliers">
+                        <view key="view" id="screenInspector-suppliersView">
+                            <rect key="frame" x="0" y="0" width="300" height="308"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="supplierItemSupplierLabel">
+                                  <rect key="frame" x="4" y="274.5" width="96" height="17"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier:" id="supplierItemSupplierLabelCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" identifier="supplierItemSupplier" id="supplierItemSupplier">
+                                  <rect key="frame" x="104" y="270" width="176" height="26"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="supplierItemSupplierCell">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <menu key="menu" id="supplierItemSupplierMenu"/>
+                                  </popUpButtonCell>
+                                  <connections>
+                                    <binding destination="-2" name="content" keyPath="suppliers" id="supplierItemSupplierContent"/>
+                                    <binding destination="-2" name="contentValues" keyPath="suppliers.lbTitle" previousBinding="supplierItemSupplierContent" id="supplierItemSupplierValues"/>
+                                    <binding destination="supplierItemList" name="selectedObject" keyPath="selection.supplier" previousBinding="supplierItemSupplierValues" id="supplierItemSupplierChosen"/>
+                                  </connections>
+                                </popUpButton>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="codes" identifier="codes" id="screenInspector-codes">
+                        <view key="view" id="screenInspector-codesView">
+                            <rect key="frame" x="0" y="0" width="300" height="308"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCodeKindLabel">
+                                  <rect key="frame" x="4" y="274.5" width="96" height="17"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Kind:" id="itemCodeKindLabelCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" identifier="itemCodeKind" id="itemCodeKind">
+                                  <rect key="frame" x="104" y="270" width="176" height="26"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="itemCodeKindCell">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <menu key="menu" id="itemCodeKindMenu"/>
+                                  </popUpButtonCell>
+                                  <connections>
+                                    <binding destination="-2" name="content" keyPath="codeKinds" id="itemCodeKindContent"/>
+                                    <binding destination="-2" name="contentValues" keyPath="codeKinds" previousBinding="itemCodeKindContent" id="itemCodeKindValues"/>
+                                    <binding destination="itemCodeList" name="selectedObject" keyPath="selection.codeKind" previousBinding="itemCodeKindValues" id="itemCodeKindChosen"/>
+                                  </connections>
+                                </popUpButton>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="reorder" identifier="reorder" id="screenInspector-reorder">
+                        <view key="view" id="screenInspector-reorderView">
+                            <rect key="frame" x="0" y="0" width="300" height="308"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reorderWarehouseLabel">
+                                  <rect key="frame" x="4" y="274.5" width="96" height="17"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Warehouse:" id="reorderWarehouseLabelCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" identifier="reorderWarehouse" id="reorderWarehouse">
+                                  <rect key="frame" x="104" y="270" width="176" height="26"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="reorderWarehouseCell">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <menu key="menu" id="reorderWarehouseMenu"/>
+                                  </popUpButtonCell>
+                                  <connections>
+                                    <binding destination="-2" name="content" keyPath="catalogWarehouses" id="reorderWarehouseContent"/>
+                                    <binding destination="-2" name="contentValues" keyPath="catalogWarehouses.lbTitle" previousBinding="reorderWarehouseContent" id="reorderWarehouseValues"/>
+                                    <binding destination="reorderRuleList" name="selectedObject" keyPath="selection.warehouse" previousBinding="reorderWarehouseValues" id="reorderWarehouseChosen"/>
+                                  </connections>
+                                </popUpButton>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="units" identifier="units" id="screenInspector-units">
+                        <view key="view" id="screenInspector-unitsView">
+                            <rect key="frame" x="0" y="0" width="300" height="308"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="size" identifier="size" id="screenInspector-size">
+                        <view key="view" id="screenInspector-sizeView">
+                            <rect key="frame" x="0" y="0" width="300" height="308"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="row-movesTable" identifier="row-movesTable" id="row-movesTable">
+                        <view key="view" id="row-movesTableView">
+                            <rect key="frame" x="0" y="0" width="300" height="308"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-movesTable-0Label">
+                                    <rect key="frame" x="4" y="277" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="When:" id="row-movesTable-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-movesTable-0" id="row-movesTable-0">
+                                    <rect key="frame" x="106" y="277" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-movesTable-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="medium" timeStyle="short" id="row-movesTable-0Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="moveList" name="value" keyPath="selection.moment" id="row-movesTable-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-movesTable-1Label">
+                                    <rect key="frame" x="4" y="252" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity:" id="row-movesTable-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-movesTable-1" id="row-movesTable-1">
+                                    <rect key="frame" x="106" y="252" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-movesTable-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="3" id="row-movesTable-1Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="moveList" name="value" keyPath="selection.moved" id="row-movesTable-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-movesTable-2Label">
+                                    <rect key="frame" x="4" y="227" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From:" id="row-movesTable-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-movesTable-2" id="row-movesTable-2">
+                                    <rect key="frame" x="106" y="209" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-movesTable-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="moveList" name="value" keyPath="selection.lbFromTitle" id="row-movesTable-2Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-movesTable-3Label">
+                                    <rect key="frame" x="4" y="184" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To:" id="row-movesTable-3LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-movesTable-3" id="row-movesTable-3">
+                                    <rect key="frame" x="106" y="166" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-movesTable-3Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="moveList" name="value" keyPath="selection.lbToTitle" id="row-movesTable-3Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-movesTable-4Label">
+                                    <rect key="frame" x="4" y="141" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="What:" id="row-movesTable-4LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-movesTable-4" id="row-movesTable-4">
+                                    <rect key="frame" x="106" y="123" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-movesTable-4Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="moveList" name="value" keyPath="selection.lbWhat" id="row-movesTable-4Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-movesTable-5Label">
+                                    <rect key="frame" x="4" y="98" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason:" id="row-movesTable-5LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-movesTable-5" id="row-movesTable-5">
+                                    <rect key="frame" x="106" y="98" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-movesTable-5Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="moveList" name="value" keyPath="selection.adjustmentReason" id="row-movesTable-5Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-movesTable-6Label">
+                                    <rect key="frame" x="4" y="73" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="By:" id="row-movesTable-6LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-movesTable-6" id="row-movesTable-6">
+                                    <rect key="frame" x="106" y="73" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-movesTable-6Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="moveList" name="value" keyPath="selection.user.lbTitle" id="row-movesTable-6Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-movesTable-7Label">
+                                    <rect key="frame" x="4" y="48" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="row-movesTable-7LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-movesTable-7" id="row-movesTable-7">
+                                    <rect key="frame" x="106" y="30" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-movesTable-7Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="moveList" name="value" keyPath="selection.note" id="row-movesTable-7Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="row-stockUnitsTable" identifier="row-stockUnitsTable" id="row-stockUnitsTable">
+                        <view key="view" id="row-stockUnitsTableView">
+                            <rect key="frame" x="0" y="0" width="300" height="308"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-stockUnitsTable-0Label">
+                                    <rect key="frame" x="4" y="277" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Serial number:" id="row-stockUnitsTable-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-stockUnitsTable-0" id="row-stockUnitsTable-0">
+                                    <rect key="frame" x="106" y="277" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-stockUnitsTable-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="stockUnitList" name="value" keyPath="selection.serialNumber" id="row-stockUnitsTable-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-stockUnitsTable-1Label">
+                                    <rect key="frame" x="4" y="252" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Where:" id="row-stockUnitsTable-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-stockUnitsTable-1" id="row-stockUnitsTable-1">
+                                    <rect key="frame" x="106" y="252" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-stockUnitsTable-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="stockUnitList" name="value" keyPath="selection.location.lbTitle" id="row-stockUnitsTable-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-stockUnitsTable-2Label">
+                                    <rect key="frame" x="4" y="227" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="row-stockUnitsTable-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-stockUnitsTable-2" id="row-stockUnitsTable-2">
+                                    <rect key="frame" x="106" y="209" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-stockUnitsTable-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="stockUnitList" name="value" keyPath="selection.note" id="row-stockUnitsTable-2Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                </tabViewItems>
+            </tabView>
         </subviews>
     </customView>
   </objects>

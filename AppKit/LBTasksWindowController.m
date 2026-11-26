@@ -10,6 +10,7 @@
 #import "LBConflicts.h"
 
 @implementation LBTasksWindowController {
+    NSDictionary<NSString *, NSString *> *_chosen;
     LBStore *_store;
     NSArray<LBTask *> *_openTasks;
     NSArray<LBPendingSubmission *> *_waiting;
@@ -90,6 +91,7 @@
     }
     self.messageLabel.stringValue = said;
     [self.table reloadData];
+    [self sayChosen];
     [self didChangeValueForKey:@"waitingChosen"];
 }
 
@@ -105,8 +107,41 @@
 - (void)tableViewSelectionDidChange:(NSNotification *)notification {
     [self willChangeValueForKey:@"waitingChosen"];
     [self didChangeValueForKey:@"waitingChosen"];
+    [self sayChosen];
     LBPendingSubmission *waiting = [self chosenWaiting];
     if (waiting.lastError.length) self.messageLabel.stringValue = [@"Not submitted: " stringByAppendingString:waiting.lastError];
+}
+
+/* The row chosen, for the inspector: what the table says of it, and more
+   (its process, its form, its status; why a waiting step was not sent). */
+- (void)sayChosen {
+    NSInteger row = self.table.selectedRow;
+    NSDictionary *said = nil;
+    if (row >= 0 && row < [self numberOfRowsInTableView:self.table]) {
+        LBTask *task = row < (NSInteger)_openTasks.count ? _openTasks[(NSUInteger)row] : nil;
+        LBPendingSubmission *waiting = task ? nil : _waiting[(NSUInteger)row - _openTasks.count];
+        NSString *(^column)(NSString *) = ^NSString *(NSString *identifier) {
+            NSTableColumn *each = [self.table tableColumnWithIdentifier:identifier];
+            id value = each ? [self tableView:self.table objectValueForTableColumn:each row:row] : nil;
+            return [value description] ?: @"";
+        };
+        said = @{ @"task": task ? task.name : (waiting.taskName ?: waiting.formName ?: @""),
+                  @"about": column(@"order"),
+                  @"since": column(@"since"),
+                  @"process": (task ? task.flowName : nil) ?: @"",
+                  @"form": (task ? task.formName : waiting.formName) ?: @"",
+                  @"status": task ? @"Open: its step is done in what it is about (Open)."
+                                  : @"Saved here, not sent yet: sent after the next sync, or now (Submit).",
+                  @"lastError": waiting.lastError ?: @"" };
+    }
+    [self willChangeValueForKey:@"chosen"];
+    _chosen = [said copy];
+    [self didChangeValueForKey:@"chosen"];
+    [self showInspectorPage:nil];
+}
+
+- (BOOL)inspectorHasChoice {
+    return _chosen != nil;
 }
 
 /* The order a task is about (its business key: a purchase's, a sale's),

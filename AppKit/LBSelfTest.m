@@ -1304,6 +1304,9 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
     NSWindow *window = purchase.window;
     PurchaseOrder *order = (PurchaseOrder *)purchase.order;
     LBClick(window, @"addLine");
+    /* The chosen line's form in the inspector, the lines' list on the page. */
+    LBCheck(@"the order's line form in the inspector", [LBControl(window.contentView, @"lineItem") isDescendantOf:[LBWorkspace current].inspectorPane]
+                && ![LBControl(window.contentView, @"linesTable") isDescendantOf:[LBWorkspace current].inspectorPane], nil);
     LBChoose(window, @"lineItem", @"Bracket");
     LBTypeInCell(window, @"linesTable", 1, @"5");
     LBTypeInCell(window, @"linesTable", 2, @"1");
@@ -1548,6 +1551,33 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
             [bought.lbFilled isEqualToString:@"Received"] && purchase.documents.count == 2
                 && [brackets compare:[bracketsBefore decimalNumberByAdding:LBN10()]] == NSOrderedSame,
             purchase.lastError ?: brackets);
+    /* A receipt chosen, as a user clicks it: the inspector shows it, its
+       number and what it moved; the line chosen again, its form back. */
+    {
+        LBShown(purchase);
+        NSTableView *receipts = (NSTableView *)LBControl(window.contentView, @"documentsTable");
+        NSTableView *lines = (NSTableView *)LBControl(window.contentView, @"linesTable");
+        NSInteger line = lines.selectedRow;
+        [window makeFirstResponder:receipts];
+        [receipts selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];
+        LBSpin();
+        NSTabView *pages = [LBWorkspace current].windowController.inspectorPages;
+        NSTextField *number = (NSTextField *)LBControl([LBWorkspace current].inspectorPane, @"row-documentsTable-0");
+        NSTableView *moved = (NSTableView *)LBControl([LBWorkspace current].inspectorPane, @"row-documentsTable-moves");
+        LBCheck(@"a receipt chosen: the inspector shows it, its number and what it moved",
+                [pages.selectedTabViewItem.identifier isEqual:@"screen"] && [purchase.inspectorPages.selectedTabViewItem.identifier isEqual:@"row-documentsTable"]
+                    && number.stringValue.length > 0 && moved.numberOfRows > 0,
+                [NSString stringWithFormat:@"page %@, number '%@', %ld moves", purchase.inspectorPages.selectedTabViewItem.identifier, number.stringValue,
+                                           (long)moved.numberOfRows]);
+        [window makeFirstResponder:lines];
+        [lines selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)MAX(line, 0)] byExtendingSelection:NO];
+        /* Clicked, as a user does (the row chosen already: no change of
+           selection, the click shows it). */
+        [lines sendAction:lines.action to:lines.target];
+        LBSpin();
+        LBCheck(@"the line chosen again: its form in the inspector", [purchase.inspectorPages.selectedTabViewItem.identifier isEqual:@"row-linesTable"],
+                purchase.inspectorPages.selectedTabViewItem.identifier);
+    }
     names = LBTasksOf(tasks, bought, @[]);
     LBCheck(@"its process done: no task of its left", names.count == 0, names);
     PurchaseOrder *kept = LBServerOf(bought);
@@ -1829,7 +1859,10 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
             [draft.orderState isEqualToString:@"Draft"] && [draft.supplier.lbTitle isEqualToString:@"Parts Ltd"]
                 && [wanted.stockItem.itemName isEqualToString:@"Bolt"] && wanted.quantity.integerValue >= 100
                 && wanted.quantity.integerValue % 50 == 0 && [stock.tabs.selectedTabViewItem.identifier isEqual:@"purchaseOrders"],
-            stock.lastError ?: [NSString stringWithFormat:@"%@ %@ %@", draft.lb_number, wanted.stockItem.itemName, wanted.quantity]);
+            stock.lastError ?: [NSString stringWithFormat:@"%@ %@ %@; purchases listed %lu, chosen %@, tab %@", draft.lb_number,
+                                                          wanted.stockItem.itemName, wanted.quantity,
+                                                          (unsigned long)[stock.purchaseList.arrangedObjects count],
+                                                          stock.purchaseList.selectionIndexes, stock.tabs.selectedTabViewItem.identifier]);
 }
 
 /* The stock windows (docs/STOCK.md): a catalog made, its settings in their
@@ -1880,6 +1913,40 @@ static void LBStockSteps(LBMainWindowController *controller) {
     LBStockItemWindowController *card = LBAddStockItem(stock, @"Bolt");
     StockItem *bolt = card.item;
     NSWindow *boltWindow = card.window;
+    /* The item's tabs' row forms in the inspector, each tab's page; a tab
+       with none (Units): No Selection. */
+    {
+        LBWorkspace *workspace = [LBWorkspace current];
+        NSTabView *pages = workspace.windowController.inspectorPages;
+        NSArray *forms = @[ @[ @"stock", @"stockQuantity" ], @[ @"recipe", @"kitComponent" ], @[ @"suppliers", @"supplierItemSupplier" ],
+                            @[ @"codes", @"itemCodeKind" ], @[ @"reorder", @"reorderWarehouse" ] ];
+        for (NSArray *form in forms) {
+            [card.cardTabs selectTabViewItemWithIdentifier:form[0]];
+            LBSpin();
+            NSView *control = LBControl(boltWindow.contentView, form[1]);
+            LBCheck([NSString stringWithFormat:@"the item's %@ tab: its row's form in the inspector", form[0]],
+                    [pages.selectedTabViewItem.identifier isEqual:@"screen"] && [control isDescendantOf:workspace.inspectorPane], control);
+        }
+        [card.cardTabs selectTabViewItemWithIdentifier:@"units"];
+        LBSpin();
+        LBCheck(@"the item's Units tab: No Selection in the inspector", [pages.selectedTabViewItem.identifier isEqual:@"none"],
+                pages.selectedTabViewItem.identifier);
+        [card.cardTabs selectTabViewItemWithIdentifier:@"stock"];
+        LBSpin();
+        /* Stock's Items, the bolt chosen: a quick look at it in the
+           inspector. */
+        LBShown(stock);
+        [stock.tabs selectTabViewItemWithIdentifier:@"items"];
+        LBSpin();
+        for (StockItem *each in stock.itemList.arrangedObjects) {
+            if ([each.objectID isEqual:bolt.objectID]) [stock.itemList setSelectedObjects:@[ each ]];
+        }
+        LBSpin();
+        NSTextField *name = (NSTextField *)LBControl(workspace.inspectorPane, @"ql-items-0");
+        LBCheck(@"Stock's Items, the bolt chosen: its quick look in the inspector", [pages.selectedTabViewItem.identifier isEqual:@"screen"]
+                    && [name.stringValue isEqualToString:@"Bolt"], name.stringValue);
+        LBShown(card);
+    }
     LBType(boltWindow, @"itemPriceValue", @"0.5");
     LBChoose(boltWindow, @"itemCategory", @"Fasteners");
     LBChoose(boltWindow, @"itemSupplier", @"Parts Ltd");
@@ -3345,7 +3412,8 @@ static void LBSteps(LBMainWindowController *controller) {
     @try {
         LBSteps(self.window);
     } @catch (NSException *e) {
-        LBCheck(@"no exception", NO, e.reason);
+        /* Where it was raised, said too: the reason alone does not find it. */
+        LBCheck(@"no exception", NO, [NSString stringWithFormat:@"%@\n%@", e.reason, [e.callStackSymbols componentsJoinedByString:@"\n"]]);
     }
     printf("self-test done: %lu failed\n", (unsigned long)LBFailures);
     fflush(stdout);

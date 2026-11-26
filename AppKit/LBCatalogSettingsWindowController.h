@@ -9,7 +9,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface LBCatalogSettingsWindowController : LBStockEditor
+@interface LBCatalogSettingsWindowController : LBStockEditor <NSTabViewDelegate>
 
 - (instancetype)initWithStore:(LBStore *)store catalog:(Catalog *)catalog;
 // Shown in the main pane, at its page of that identifier.

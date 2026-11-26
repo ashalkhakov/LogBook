@@ -149,11 +149,16 @@
     /* Offline first, a window's (a child of the main one): its new
        objects' IDs the store's before they go into the main one, so that
        another window finds them by them. */
+    if (![context lb_confirmChangedOrders:error] || ![context lb_completeShippedMoves:error] || ![context lb_postChangedCounts:error] || ![context lb_moveChangedTransfers:error] || ![context lb_returnChangedReturns:error] || ![context lb_holdMovedItems:error]
+        || ![context orm_prepareForSave:error])
+        return NO;
+    /* The permanent IDs after the stock's hooks, which make objects too (a
+       transfer's moves, a holding): none goes into the main one under a
+       temporary ID, which the main one's save would leave this context
+       holding a second copy of. */
     if (_local && context.insertedObjects.count && ![context obtainPermanentIDsForObjects:context.insertedObjects.allObjects error:error])
         return NO;
-    if (![context lb_confirmChangedOrders:error] || ![context lb_completeShippedMoves:error] || ![context lb_postChangedCounts:error] || ![context lb_moveChangedTransfers:error] || ![context lb_returnChangedReturns:error] || ![context lb_holdMovedItems:error]
-        || ![context orm_prepareForSave:error] || ![context save:error])
-        return NO;
+    if (![context save:error]) return NO;
     /* Offline first, a window's: into the main one, then saved as it is. */
     return _local ? [_local save:error] : YES;
 }

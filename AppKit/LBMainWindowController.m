@@ -66,6 +66,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     /* Each record form's height, by its identifier (its page in the
        inspector fitted to it: no scrolling past its end). */
     NSDictionary<NSString *, NSNumber *> *_formHeights;
+    /* The logbook page's list a row was chosen in last: the inspector's
+       page is its row's (a record's form, an attachment, a day's entry). */
+    __weak NSTableView *_chosenList;
     /* LB_TIMING: when the change being timed began. */
     NSDate *_timingSince;
     NSArray<NSString *> *_tyreSetTitles;
@@ -172,6 +175,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         heights[form.identifier] = @(MAX(tallest - lowest + 12, 0));
     }
     _formHeights = heights;
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(logbookListChosen:)
+                                                 name:NSTableViewSelectionDidChangeNotification object:nil];
+    LBListsClickedTo(_workspace.logbookPage, self, @selector(logbookListClicked:));
     for (NSTabViewItem *form in _recordForms.tabViewItems) {
         for (NSString *identifier in @[ @"TyreSetDate", @"DocumentDate", @"DocumentExpires" ]) {
             NSTextField *field = (NSTextField *)[self controlOf:identifier in:form.view];
@@ -212,12 +218,95 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [document scrollPoint:NSZeroPoint];
 }
 
+/* The inspector's page of a logbook list's chosen row: Records' the
+   record's form, Reminders' lists their actions and forms; any other its
+   own page, "row-<identifier>". */
+- (nullable NSString *)inspectorPageOfList:(NSTableView *)list {
+    NSString *identifier = list.identifier;
+    if ([identifier isEqual:@"recordsTable"]) return _records.selectedObjects.count == 1 && _recordForm ? @"record" : @"none";
+    if ([@[ @"schedulesTable", @"remindersTable", @"reschedulingsTable" ] containsObject:identifier ?: @""]) return @"reminder";
+    NSString *own = [@"row-" stringByAppendingString:identifier ?: @""];
+    return [_inspectorPages indexOfTabViewItemWithIdentifier:own] != NSNotFound ? own : nil;
+}
+
+- (nullable NSTableView *)firstChosenListIn:(NSView *)view {
+    if (view.isHidden || view == _workspace.inspectorPane) return nil;
+    if ([view isKindOfClass:[NSTableView class]] && ((NSTableView *)view).selectedRow >= 0 && [self inspectorPageOfList:(NSTableView *)view]) {
+        return (NSTableView *)view;
+    }
+    for (NSView *each in view.subviews) {
+        NSTableView *found = [self firstChosenListIn:each];
+        if (found) return found;
+    }
+    return nil;
+}
+
+- (IBAction)logbookListClicked:(NSTableView *)list {
+    if (![list isKindOfClass:[NSTableView class]] || list.selectedRow < 0) return;
+    _chosenList = list;
+    [self showInspectorPage];
+}
+
+- (void)logbookListChosen:(NSNotification *)note {
+    NSTableView *list = note.object;
+    if (![list isKindOfClass:[NSTableView class]] || ![list isDescendantOf:_workspace.logbookPage]) return;
+    /* Only a row the user chose (the list has the focus). */
+    if (list.window.firstResponder != list) return;
+    if (list.selectedRow >= 0) _chosenList = list;
+    [self showInspectorPage];
+}
+
+/* How tall what is shown of a view drawn from the top of its height is:
+   to its lowest subview, and a margin (a tab view: its chosen page's). */
+static CGFloat LBUsedHeight(NSView *view) {
+    NSView *drawn = view;
+    if (view.subviews.count == 1 && [view.subviews.firstObject isKindOfClass:[NSTabView class]]) {
+        drawn = ((NSTabView *)view.subviews.firstObject).selectedTabViewItem.view ?: view;
+    }
+    CGFloat lowest = NSHeight(drawn.bounds);
+    for (NSView *each in drawn.subviews) {
+        if (!each.isHidden) lowest = MIN(lowest, NSMinY(each.frame));
+    }
+    return NSHeight(drawn.bounds) - lowest + 12;
+}
+
+/* The screen's inspector view in the screen page's document, as tall as
+   what it shows. */
+- (void)hostScreenInspector:(NSView *)view {
+    NSView *document = _screenInspectorDocument;
+    if (view.superview != document) {
+        for (NSView *each in [document.subviews copy]) [each removeFromSuperview];
+        view.frame = NSMakeRect(0, 0, NSWidth(document.bounds), NSHeight(view.frame));
+        view.autoresizingMask = NSViewWidthSizable;
+        [document addSubview:view];
+    }
+    CGFloat height = LBUsedHeight(view);
+    if (NSHeight(document.frame) != height) [document setFrameSize:NSMakeSize(NSWidth(document.frame), height)];
+    [document scrollPoint:NSZeroPoint];
+}
+
 - (void)showInspectorPage {
     NSTabView *tabs = (NSTabView *)[self controlOf:@"tabs" in:_workspace.logbookPage];
     NSString *tab = _workspace.shownScreen ? nil : tabs.selectedTabViewItem.identifier;
     NSString *page = @"none";
+    LBScreen *screen = _workspace.shownScreen;
+    NSView *screenView = screen.inspectorView;
+    /* A screen's page with nothing on it (an item's Units): none. */
+    if (screen.inspectorPages && !screen.inspectorPages.selectedTabViewItem.view.subviews.count) screenView = nil;
+    if (!screen.inspectorHasChoice) screenView = nil;
+    if (screenView) {
+        [self hostScreenInspector:screenView];
+        page = @"screen";
+    }
     if ([tab isEqual:@"records"] && _records.selectedObjects.count == 1 && _recordForm) page = @"record";
     if ([tab isEqual:@"reminders"]) page = @"reminder";
+    /* The list chosen last on this tab, else its first with a row chosen:
+       that row's page. */
+    NSView *tabView = tabs.selectedTabViewItem.view;
+    NSTableView *list = !screen && _chosenList && [_chosenList isDescendantOf:tabView] && _chosenList.selectedRow >= 0 ? _chosenList : nil;
+    if (!screen && !list) list = [self firstChosenListIn:tabView];
+    NSString *listPage = list ? [self inspectorPageOfList:list] : nil;
+    if (listPage) page = listPage;
     if (![_inspectorPages.selectedTabViewItem.identifier isEqual:page]) [_inspectorPages selectTabViewItemWithIdentifier:page];
 }
 

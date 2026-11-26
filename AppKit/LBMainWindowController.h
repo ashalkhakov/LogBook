@@ -47,6 +47,9 @@ NS_ASSUME_NONNULL_BEGIN
 // The inspector's page as what the window shows says: the logbook's page
 // at Records (a record chosen) or Reminders; else none.
 - (void)showInspectorPage;
+// The inspector's page of the screen shown (MainWindow.xib): its document,
+// the screen's inspectorView in it.
+@property (nonatomic, strong) IBOutlet NSView *screenInspectorDocument;
 // Add's pull-down: an item for each kind of record.
 @property (nonatomic, strong) IBOutlet NSPopUpButton *addRecordButton;
 // The Reports tab's.

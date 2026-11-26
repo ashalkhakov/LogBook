@@ -18,6 +18,11 @@ NS_ASSUME_NONNULL_BEGIN
 // Posted as a screen is closed (no longer kept by the workspace).
 FOUNDATION_EXPORT NSNotificationName const LBScreenWillCloseNotification;
 
+// Each list under the view with no action of its own: clicked, the
+// target's action sent (the inspector shows its row, the chosen row
+// clicked again too).
+FOUNDATION_EXPORT void LBListsClickedTo(NSView *view, id target, SEL action);
+
 @interface LBScreen : NSViewController
 
 // The window it is shown in, the one window; nil, none open.
@@ -50,6 +55,25 @@ FOUNDATION_EXPORT NSNotificationName const LBScreenWillCloseNotification;
 // Whether it has changes of its own to save, File's Save and Revert to
 // Saved enabled for it: NO here.
 @property (nonatomic, readonly) BOOL savable;
+
+// The form of what it has chosen (a line, a row), shown in the window's
+// inspector while it is shown (its XIB's "screenInspector", a view drawn
+// from the top of its height); nil, none ("No Selection").
+@property (nonatomic, strong, nullable) IBOutlet NSView *inspectorView;
+// Its pages, where it has several (one per tab of the screen's): the one
+// it shows chosen by it, the inspector fitted to it.
+@property (nonatomic, strong, nullable) IBOutlet NSTabView *inspectorPages;
+// The inspector's page of that identifier chosen, the window told.
+- (void)showInspectorPage:(nullable NSString *)identifier;
+// The list a row was chosen in last (by the user: the list has the focus)
+// decides the page: "row-<the list's identifier>", else the page of the tab
+// it is on. A tab chosen: the tab's own page, else its first list's chosen
+// row's.
+- (nullable NSString *)inspectorPageForList:(NSTableView *)list;
+- (void)inspectorFollowTab:(NSTabViewItem *)item;
+// Whether it has something chosen for its inspector to show: YES here; a
+// screen whose one list has nothing chosen says NO ("No Selection").
+@property (nonatomic, readonly) BOOL inspectorHasChoice;
 
 // Its title kept as a key path of it says (an item's name): observed, so
 // on GNUstep too, whose bindings bind no title.

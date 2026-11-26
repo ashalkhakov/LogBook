@@ -7,6 +7,8 @@
   <objects>
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockWindowController">
       <connections>
+        <outlet property="inspectorView" destination="screenInspector" id="screenInspectorOutlet"/>
+        <outlet property="inspectorPages" destination="screenInspectorPages" id="screenInspectorPagesOutlet"/>
         <outlet property="changesTable" destination="changesTable" id="changesTableOutlet"/>
         <outlet property="view" destination="content" id="windowOutlet"/>
         <outlet property="tabs" destination="stockTabs" id="tabsOutlet"/>
@@ -1604,6 +1606,1408 @@
               <outlet property="delegate" destination="-2" id="stockTabsDelegate"/>
             </connections>
           </tabView>
+        </subviews>
+    </customView>
+    <customView userLabel="Inspector" identifier="screenInspector" id="screenInspector">
+        <rect key="frame" x="0" y="0" width="300" height="331"/>
+        <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+        <subviews>
+            <tabView type="noTabsNoBorder" identifier="inspectorPages" id="screenInspectorPages">
+                <rect key="frame" x="0" y="0" width="300" height="331"/>
+                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                <font key="font" metaFont="system"/>
+                <tabViewItems>
+                    <tabViewItem label="items" identifier="items" id="screenInspector-items">
+                        <view key="view" id="screenInspector-itemsView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-0Label">
+                                    <rect key="frame" x="4" y="300" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Name:" id="ql-items-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-0" id="ql-items-0">
+                                    <rect key="frame" x="106" y="300" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-items-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.itemName" id="ql-items-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-1Label">
+                                    <rect key="frame" x="4" y="275" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="SKU:" id="ql-items-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-1" id="ql-items-1">
+                                    <rect key="frame" x="106" y="275" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-items-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.sku" id="ql-items-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-2Label">
+                                    <rect key="frame" x="4" y="250" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Manufacturer:" id="ql-items-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-2" id="ql-items-2">
+                                    <rect key="frame" x="106" y="250" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-items-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.manufacturer" id="ql-items-2Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-3Label">
+                                    <rect key="frame" x="4" y="225" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Part number:" id="ql-items-3LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-3" id="ql-items-3">
+                                    <rect key="frame" x="106" y="225" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-items-3Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.mpn" id="ql-items-3Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-4Label">
+                                    <rect key="frame" x="4" y="200" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Description:" id="ql-items-4LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-4" id="ql-items-4">
+                                    <rect key="frame" x="106" y="182" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="ql-items-4Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.descriptionValue" id="ql-items-4Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-5Label">
+                                    <rect key="frame" x="4" y="157" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Price:" id="ql-items-5LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-5" id="ql-items-5">
+                                    <rect key="frame" x="106" y="157" width="136" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-items-5Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="2" id="ql-items-5Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.priceAmount" id="ql-items-5Value"/>
+                                    </connections>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-5Currency" id="ql-items-5Currency">
+                                    <rect key="frame" x="246" y="157" width="46" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="clipping" title="" id="ql-items-5CurrencyCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.priceCurrency" id="ql-items-5CurrencyValue"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-6Label">
+                                    <rect key="frame" x="4" y="132" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Unit cost:" id="ql-items-6LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-6" id="ql-items-6">
+                                    <rect key="frame" x="106" y="132" width="136" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-items-6Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="2" id="ql-items-6Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.unitCostAmount" id="ql-items-6Value"/>
+                                    </connections>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-6Currency" id="ql-items-6Currency">
+                                    <rect key="frame" x="246" y="132" width="46" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="clipping" title="" id="ql-items-6CurrencyCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.unitCostCurrency" id="ql-items-6CurrencyValue"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-7Label">
+                                    <rect key="frame" x="4" y="107" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="On hand:" id="ql-items-7LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-7" id="ql-items-7">
+                                    <rect key="frame" x="106" y="107" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-items-7Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="3" id="ql-items-7Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.totalQuantity" id="ql-items-7Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-8Label">
+                                    <rect key="frame" x="4" y="82" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Available:" id="ql-items-8LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-8" id="ql-items-8">
+                                    <rect key="frame" x="106" y="82" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-items-8Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="3" id="ql-items-8Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.available" id="ql-items-8Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-9Label">
+                                    <rect key="frame" x="4" y="57" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Incoming:" id="ql-items-9LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-9" id="ql-items-9">
+                                    <rect key="frame" x="106" y="57" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-items-9Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="3" id="ql-items-9Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.incoming" id="ql-items-9Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-items-10Label">
+                                    <rect key="frame" x="4" y="32" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="ql-items-10LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-items-10" id="ql-items-10">
+                                    <rect key="frame" x="106" y="14" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="ql-items-10Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="itemList" name="value" keyPath="selection.note" id="ql-items-10Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="purchaseOrders" identifier="purchaseOrders" id="screenInspector-purchaseOrders">
+                        <view key="view" id="screenInspector-purchaseOrdersView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-purchaseOrders-0Label">
+                                    <rect key="frame" x="4" y="300" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Number:" id="ql-purchaseOrders-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-purchaseOrders-0" id="ql-purchaseOrders-0">
+                                    <rect key="frame" x="106" y="300" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-purchaseOrders-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="purchaseList" name="value" keyPath="selection.lb_number" id="ql-purchaseOrders-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-purchaseOrders-1Label">
+                                    <rect key="frame" x="4" y="275" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier:" id="ql-purchaseOrders-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-purchaseOrders-1" id="ql-purchaseOrders-1">
+                                    <rect key="frame" x="106" y="275" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-purchaseOrders-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="purchaseList" name="value" keyPath="selection.supplier.lbTitle" id="ql-purchaseOrders-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-purchaseOrders-2Label">
+                                    <rect key="frame" x="4" y="250" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Placed:" id="ql-purchaseOrders-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-purchaseOrders-2" id="ql-purchaseOrders-2">
+                                    <rect key="frame" x="106" y="250" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-purchaseOrders-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="medium" timeStyle="none" id="ql-purchaseOrders-2Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="purchaseList" name="value" keyPath="selection.ordered" id="ql-purchaseOrders-2Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-purchaseOrders-3Label">
+                                    <rect key="frame" x="4" y="225" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State:" id="ql-purchaseOrders-3LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-purchaseOrders-3" id="ql-purchaseOrders-3">
+                                    <rect key="frame" x="106" y="225" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-purchaseOrders-3Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="purchaseList" name="value" keyPath="selection.orderState" id="ql-purchaseOrders-3Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-purchaseOrders-4Label">
+                                    <rect key="frame" x="4" y="200" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Filled:" id="ql-purchaseOrders-4LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-purchaseOrders-4" id="ql-purchaseOrders-4">
+                                    <rect key="frame" x="106" y="200" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-purchaseOrders-4Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="purchaseList" name="value" keyPath="selection.lbFilled" id="ql-purchaseOrders-4Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-purchaseOrders-5Label">
+                                    <rect key="frame" x="4" y="175" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Their number:" id="ql-purchaseOrders-5LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-purchaseOrders-5" id="ql-purchaseOrders-5">
+                                    <rect key="frame" x="106" y="175" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-purchaseOrders-5Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="purchaseList" name="value" keyPath="selection.supplierReference" id="ql-purchaseOrders-5Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-purchaseOrders-6Label">
+                                    <rect key="frame" x="4" y="150" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="ql-purchaseOrders-6LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-purchaseOrders-6" id="ql-purchaseOrders-6">
+                                    <rect key="frame" x="106" y="132" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="ql-purchaseOrders-6Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="purchaseList" name="value" keyPath="selection.note" id="ql-purchaseOrders-6Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="saleOrders" identifier="saleOrders" id="screenInspector-saleOrders">
+                        <view key="view" id="screenInspector-saleOrdersView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-saleOrders-0Label">
+                                    <rect key="frame" x="4" y="300" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Number:" id="ql-saleOrders-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-saleOrders-0" id="ql-saleOrders-0">
+                                    <rect key="frame" x="106" y="300" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-saleOrders-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="saleList" name="value" keyPath="selection.lb_number" id="ql-saleOrders-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-saleOrders-1Label">
+                                    <rect key="frame" x="4" y="275" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Customer:" id="ql-saleOrders-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-saleOrders-1" id="ql-saleOrders-1">
+                                    <rect key="frame" x="106" y="275" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-saleOrders-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="saleList" name="value" keyPath="selection.customer.lbTitle" id="ql-saleOrders-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-saleOrders-2Label">
+                                    <rect key="frame" x="4" y="250" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Placed:" id="ql-saleOrders-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-saleOrders-2" id="ql-saleOrders-2">
+                                    <rect key="frame" x="106" y="250" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-saleOrders-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="medium" timeStyle="none" id="ql-saleOrders-2Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="saleList" name="value" keyPath="selection.saleOrdered" id="ql-saleOrders-2Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-saleOrders-3Label">
+                                    <rect key="frame" x="4" y="225" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State:" id="ql-saleOrders-3LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-saleOrders-3" id="ql-saleOrders-3">
+                                    <rect key="frame" x="106" y="225" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-saleOrders-3Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="saleList" name="value" keyPath="selection.orderState" id="ql-saleOrders-3Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-saleOrders-4Label">
+                                    <rect key="frame" x="4" y="200" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Filled:" id="ql-saleOrders-4LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-saleOrders-4" id="ql-saleOrders-4">
+                                    <rect key="frame" x="106" y="200" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-saleOrders-4Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="saleList" name="value" keyPath="selection.lbFilled" id="ql-saleOrders-4Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-saleOrders-5Label">
+                                    <rect key="frame" x="4" y="175" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Their number:" id="ql-saleOrders-5LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-saleOrders-5" id="ql-saleOrders-5">
+                                    <rect key="frame" x="106" y="175" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-saleOrders-5Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="saleList" name="value" keyPath="selection.customerReference" id="ql-saleOrders-5Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-saleOrders-6Label">
+                                    <rect key="frame" x="4" y="150" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="ql-saleOrders-6LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-saleOrders-6" id="ql-saleOrders-6">
+                                    <rect key="frame" x="106" y="132" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="ql-saleOrders-6Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="saleList" name="value" keyPath="selection.note" id="ql-saleOrders-6Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="changes" identifier="changes" id="screenInspector-changes">
+                        <view key="view" id="screenInspector-changesView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-changes-0Label">
+                                    <rect key="frame" x="4" y="300" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="When:" id="ql-changes-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-changes-0" id="ql-changes-0">
+                                    <rect key="frame" x="106" y="300" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-changes-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="medium" timeStyle="short" id="ql-changes-0Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="changeList" name="value" keyPath="selection.move.moment" id="ql-changes-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-changes-1Label">
+                                    <rect key="frame" x="4" y="275" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item:" id="ql-changes-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-changes-1" id="ql-changes-1">
+                                    <rect key="frame" x="106" y="275" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-changes-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="changeList" name="value" keyPath="selection.move.stockItem.lbTitle" id="ql-changes-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-changes-2Label">
+                                    <rect key="frame" x="4" y="250" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity:" id="ql-changes-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-changes-2" id="ql-changes-2">
+                                    <rect key="frame" x="106" y="250" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-changes-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="3" id="ql-changes-2Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="changeList" name="value" keyPath="selection.move.moved" id="ql-changes-2Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-changes-3Label">
+                                    <rect key="frame" x="4" y="225" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From:" id="ql-changes-3LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-changes-3" id="ql-changes-3">
+                                    <rect key="frame" x="106" y="207" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="ql-changes-3Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="changeList" name="value" keyPath="selection.fromTitle" id="ql-changes-3Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-changes-4Label">
+                                    <rect key="frame" x="4" y="182" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To:" id="ql-changes-4LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-changes-4" id="ql-changes-4">
+                                    <rect key="frame" x="106" y="164" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="ql-changes-4Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="changeList" name="value" keyPath="selection.toTitle" id="ql-changes-4Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-changes-5Label">
+                                    <rect key="frame" x="4" y="139" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="What:" id="ql-changes-5LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-changes-5" id="ql-changes-5">
+                                    <rect key="frame" x="106" y="121" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="ql-changes-5Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="changeList" name="value" keyPath="selection.move.lbWhat" id="ql-changes-5Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="ql-changes-6Label">
+                                    <rect key="frame" x="4" y="96" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="By:" id="ql-changes-6LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="ql-changes-6" id="ql-changes-6">
+                                    <rect key="frame" x="106" y="96" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="ql-changes-6Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="changeList" name="value" keyPath="selection.move.user.lbTitle" id="ql-changes-6Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="counts" identifier="counts" id="screenInspector-counts">
+                        <view key="view" id="screenInspector-countsView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="overview" identifier="overview" id="screenInspector-overview">
+                        <view key="view" id="screenInspector-overviewView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="row-countsTable" identifier="row-countsTable" id="row-countsTable">
+                        <view key="view" id="row-countsTableView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countsTable-0Label">
+                                    <rect key="frame" x="4" y="300" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Count:" id="row-countsTable-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countsTable-0" id="row-countsTable-0">
+                                    <rect key="frame" x="106" y="300" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countsTable-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countList" name="value" keyPath="selection.lbNumber" id="row-countsTable-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countsTable-1Label">
+                                    <rect key="frame" x="4" y="275" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State:" id="row-countsTable-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countsTable-1" id="row-countsTable-1">
+                                    <rect key="frame" x="106" y="275" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countsTable-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countList" name="value" keyPath="selection.countState" id="row-countsTable-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countsTable-2Label">
+                                    <rect key="frame" x="4" y="250" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted on:" id="row-countsTable-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countsTable-2" id="row-countsTable-2">
+                                    <rect key="frame" x="106" y="250" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countsTable-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="medium" timeStyle="none" id="row-countsTable-2Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countList" name="value" keyPath="selection.countedOn" id="row-countsTable-2Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countsTable-3Label">
+                                    <rect key="frame" x="4" y="225" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Where:" id="row-countsTable-3LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countsTable-3" id="row-countsTable-3">
+                                    <rect key="frame" x="106" y="207" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-countsTable-3Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countList" name="value" keyPath="selection.lbWhere" id="row-countsTable-3Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countsTable-4Label">
+                                    <rect key="frame" x="4" y="182" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="By:" id="row-countsTable-4LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countsTable-4" id="row-countsTable-4">
+                                    <rect key="frame" x="106" y="182" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countsTable-4Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countList" name="value" keyPath="selection.counter.lbTitle" id="row-countsTable-4Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countsTable-5Label">
+                                    <rect key="frame" x="4" y="157" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="row-countsTable-5LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countsTable-5" id="row-countsTable-5">
+                                    <rect key="frame" x="106" y="139" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-countsTable-5Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countList" name="value" keyPath="selection.note" id="row-countsTable-5Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="row-countMovesTable" identifier="row-countMovesTable" id="row-countMovesTable">
+                        <view key="view" id="row-countMovesTableView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countMovesTable-0Label">
+                                    <rect key="frame" x="4" y="300" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item:" id="row-countMovesTable-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countMovesTable-0" id="row-countMovesTable-0">
+                                    <rect key="frame" x="106" y="300" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countMovesTable-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countMoveList" name="value" keyPath="selection.stockItem.lbTitle" id="row-countMovesTable-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countMovesTable-1Label">
+                                    <rect key="frame" x="4" y="275" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Location:" id="row-countMovesTable-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countMovesTable-1" id="row-countMovesTable-1">
+                                    <rect key="frame" x="106" y="275" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countMovesTable-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countMoveList" name="value" keyPath="selection.lbPlaceTitle" id="row-countMovesTable-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countMovesTable-2Label">
+                                    <rect key="frame" x="4" y="250" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Change:" id="row-countMovesTable-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countMovesTable-2" id="row-countMovesTable-2">
+                                    <rect key="frame" x="106" y="250" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countMovesTable-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countMoveList" name="value" keyPath="selection.lbChange" id="row-countMovesTable-2Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countMovesTable-3Label">
+                                    <rect key="frame" x="4" y="225" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="When:" id="row-countMovesTable-3LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countMovesTable-3" id="row-countMovesTable-3">
+                                    <rect key="frame" x="106" y="225" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countMovesTable-3Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="medium" timeStyle="short" id="row-countMovesTable-3Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countMoveList" name="value" keyPath="selection.moment" id="row-countMovesTable-3Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countMovesTable-4Label">
+                                    <rect key="frame" x="4" y="200" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason:" id="row-countMovesTable-4LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countMovesTable-4" id="row-countMovesTable-4">
+                                    <rect key="frame" x="106" y="200" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countMovesTable-4Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countMoveList" name="value" keyPath="selection.adjustmentReason" id="row-countMovesTable-4Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countMovesTable-5Label">
+                                    <rect key="frame" x="4" y="175" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="row-countMovesTable-5LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countMovesTable-5" id="row-countMovesTable-5">
+                                    <rect key="frame" x="106" y="157" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-countMovesTable-5Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="countMoveList" name="value" keyPath="selection.note" id="row-countMovesTable-5Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="row-dueTable" identifier="row-dueTable" id="row-dueTable">
+                        <view key="view" id="row-dueTableView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-dueTable-0Label">
+                                    <rect key="frame" x="4" y="300" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item:" id="row-dueTable-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-dueTable-0" id="row-dueTable-0">
+                                    <rect key="frame" x="106" y="300" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-dueTable-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="dueList" name="value" keyPath="selection.stockItem.lbTitle" id="row-dueTable-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-dueTable-1Label">
+                                    <rect key="frame" x="4" y="275" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Warehouse:" id="row-dueTable-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-dueTable-1" id="row-dueTable-1">
+                                    <rect key="frame" x="106" y="275" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-dueTable-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="dueList" name="value" keyPath="selection.warehouse.lbTitle" id="row-dueTable-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-dueTable-2Label">
+                                    <rect key="frame" x="4" y="250" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Available:" id="row-dueTable-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-dueTable-2" id="row-dueTable-2">
+                                    <rect key="frame" x="106" y="250" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-dueTable-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="3" id="row-dueTable-2Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="dueList" name="value" keyPath="selection.stockItem.available" id="row-dueTable-2Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-dueTable-3Label">
+                                    <rect key="frame" x="4" y="225" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Incoming:" id="row-dueTable-3LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-dueTable-3" id="row-dueTable-3">
+                                    <rect key="frame" x="106" y="225" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-dueTable-3Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="3" id="row-dueTable-3Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="dueList" name="value" keyPath="selection.stockItem.incoming" id="row-dueTable-3Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-dueTable-4Label">
+                                    <rect key="frame" x="4" y="200" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reorder point:" id="row-dueTable-4LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-dueTable-4" id="row-dueTable-4">
+                                    <rect key="frame" x="106" y="200" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-dueTable-4Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="3" id="row-dueTable-4Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="dueList" name="value" keyPath="selection.reorderPoint" id="row-dueTable-4Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-dueTable-5Label">
+                                    <rect key="frame" x="4" y="175" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reorder level:" id="row-dueTable-5LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-dueTable-5" id="row-dueTable-5">
+                                    <rect key="frame" x="106" y="175" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-dueTable-5Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="3" id="row-dueTable-5Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="dueList" name="value" keyPath="selection.reorderLevel" id="row-dueTable-5Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="row-countsDueTable" identifier="row-countsDueTable" id="row-countsDueTable">
+                        <view key="view" id="row-countsDueTableView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countsDueTable-0Label">
+                                    <rect key="frame" x="4" y="300" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Warehouse:" id="row-countsDueTable-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countsDueTable-0" id="row-countsDueTable-0">
+                                    <rect key="frame" x="106" y="300" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countsDueTable-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="warehouseList" name="value" keyPath="selection.lbTitle" id="row-countsDueTable-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countsDueTable-1Label">
+                                    <rect key="frame" x="4" y="275" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Last counted:" id="row-countsDueTable-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countsDueTable-1" id="row-countsDueTable-1">
+                                    <rect key="frame" x="106" y="275" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countsDueTable-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="medium" timeStyle="none" id="row-countsDueTable-1Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="warehouseList" name="value" keyPath="selection.lastInventory" id="row-countsDueTable-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countsDueTable-2Label">
+                                    <rect key="frame" x="4" y="250" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Next count:" id="row-countsDueTable-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countsDueTable-2" id="row-countsDueTable-2">
+                                    <rect key="frame" x="106" y="250" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countsDueTable-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="medium" timeStyle="none" id="row-countsDueTable-2Formatter"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="warehouseList" name="value" keyPath="selection.nextInventory" id="row-countsDueTable-2Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-countsDueTable-3Label">
+                                    <rect key="frame" x="4" y="225" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Locations:" id="row-countsDueTable-3LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-countsDueTable-3" id="row-countsDueTable-3">
+                                    <rect key="frame" x="106" y="225" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-countsDueTable-3Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="warehouseList" name="value" keyPath="selection.locations.@count" id="row-countsDueTable-3Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="row-openOrdersTable" identifier="row-openOrdersTable" id="row-openOrdersTable">
+                        <view key="view" id="row-openOrdersTableView">
+                            <rect key="frame" x="0" y="0" width="300" height="331"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-openOrdersTable-0Label">
+                                    <rect key="frame" x="4" y="300" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Number:" id="row-openOrdersTable-0LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-openOrdersTable-0" id="row-openOrdersTable-0">
+                                    <rect key="frame" x="106" y="300" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-openOrdersTable-0Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="openList" name="value" keyPath="selection.lb_number" id="row-openOrdersTable-0Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-openOrdersTable-1Label">
+                                    <rect key="frame" x="4" y="275" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Kind:" id="row-openOrdersTable-1LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-openOrdersTable-1" id="row-openOrdersTable-1">
+                                    <rect key="frame" x="106" y="275" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-openOrdersTable-1Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="openList" name="value" keyPath="selection.lbKind" id="row-openOrdersTable-1Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-openOrdersTable-2Label">
+                                    <rect key="frame" x="4" y="250" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To / from:" id="row-openOrdersTable-2LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-openOrdersTable-2" id="row-openOrdersTable-2">
+                                    <rect key="frame" x="106" y="250" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-openOrdersTable-2Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="openList" name="value" keyPath="selection.lbParty" id="row-openOrdersTable-2Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-openOrdersTable-3Label">
+                                    <rect key="frame" x="4" y="225" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State:" id="row-openOrdersTable-3LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-openOrdersTable-3" id="row-openOrdersTable-3">
+                                    <rect key="frame" x="106" y="225" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-openOrdersTable-3Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="openList" name="value" keyPath="selection.orderState" id="row-openOrdersTable-3Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-openOrdersTable-4Label">
+                                    <rect key="frame" x="4" y="200" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Filled:" id="row-openOrdersTable-4LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-openOrdersTable-4" id="row-openOrdersTable-4">
+                                    <rect key="frame" x="106" y="200" width="186" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-openOrdersTable-4Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="openList" name="value" keyPath="selection.lbFilled" id="row-openOrdersTable-4Value"/>
+                                    </connections>
+                                </textField>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-openOrdersTable-5Label">
+                                    <rect key="frame" x="4" y="175" width="96" height="17"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="row-openOrdersTable-5LabelCell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                </textField>
+                                <textField verticalHuggingPriority="750" identifier="row-openOrdersTable-5" id="row-openOrdersTable-5">
+                                    <rect key="frame" x="106" y="157" width="186" height="35"/>
+                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                    <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-openOrdersTable-5Cell">
+                                        <font key="font" metaFont="system"/>
+                                        <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                        <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                    </textFieldCell>
+                                    <connections>
+                                        <binding destination="openList" name="value" keyPath="selection.note" id="row-openOrdersTable-5Value"/>
+                                    </connections>
+                                </textField>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                </tabViewItems>
+            </tabView>
         </subviews>
     </customView>
   </objects>

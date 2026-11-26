@@ -14,6 +14,7 @@
                 <outlet property="records" destination="records" id="recordsOutlet"/>
                 <outlet property="recordForms" destination="recordForms" id="recordFormsOutlet"/>
                 <outlet property="inspectorPages" destination="inspectorPages" id="inspectorPagesOutlet"/>
+                <outlet property="screenInspectorDocument" destination="inspectorScreenDocument" id="screenInspectorDocumentOutlet"/>
                 <outlet property="addRecordButton" destination="addRecord" id="addRecordOutlet"/>
                 <outlet property="reports" destination="reportsController" id="reportsOutlet"/>
                 <outlet property="vehicleDrivers" destination="vehicleDrivers" id="vehicleDriversOutlet"/>
@@ -5758,6 +5759,250 @@
                                                                 <autoresizingMask key="autoresizingMask"/>
                                                             </scroller>
                                                         </scrollView>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="Screen" identifier="screen" id="inspectorScreenItem">
+                                                <view key="view" id="inspectorScreenView">
+                                                    <rect key="frame" x="0" y="0" width="300" height="640"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <scrollView borderType="none" autohidesScrollers="YES" horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" identifier="inspectorScreenScroll" id="inspectorScreenScroll">
+                                                            <rect key="frame" x="0" y="0" width="300" height="640"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                            <clipView key="contentView" drawsBackground="NO" id="inspectorScreenClip">
+                                                                <rect key="frame" x="0" y="0" width="300" height="640"/>
+                                                                <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                                <subviews>
+                                                                <customView customClass="LBFlippedView" id="inspectorScreenDocument">
+                                                                    <rect key="frame" x="0" y="0" width="300" height="100"/>
+                                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                                                                </customView>
+                                                                </subviews>
+                                                            </clipView>
+                                                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="inspectorScreenHScroller">
+                                                                <rect key="frame" x="-100" y="-100" width="300" height="15"/>
+                                                                <autoresizingMask key="autoresizingMask"/>
+                                                            </scroller>
+                                                            <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="inspectorScreenVScroller">
+                                                                <rect key="frame" x="285" y="0" width="15" height="640"/>
+                                                                <autoresizingMask key="autoresizingMask"/>
+                                                            </scroller>
+                                                        </scrollView>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="row-attachmentsTable" identifier="row-attachmentsTable" id="row-attachmentsTable">
+                                                <view key="view" id="row-attachmentsTableView">
+                                                    <rect key="frame" x="0" y="0" width="300" height="680"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-attachmentsTable-0Label">
+                                                            <rect key="frame" x="4" y="649" width="96" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="File:" id="row-attachmentsTable-0LabelCell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField verticalHuggingPriority="750" identifier="row-attachmentsTable-0" id="row-attachmentsTable-0">
+                                                            <rect key="frame" x="106" y="631" width="186" height="35"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-attachmentsTable-0Cell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="attachments" name="value" keyPath="selection.fileName" id="row-attachmentsTable-0Value"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-attachmentsTable-1Label">
+                                                            <rect key="frame" x="4" y="606" width="96" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Size (bytes):" id="row-attachmentsTable-1LabelCell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField verticalHuggingPriority="750" identifier="row-attachmentsTable-1" id="row-attachmentsTable-1">
+                                                            <rect key="frame" x="106" y="606" width="186" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-attachmentsTable-1Cell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <numberFormatter key="formatter" formatterBehavior="custom10_4" numberStyle="decimal" minimumFractionDigits="0" maximumFractionDigits="3" id="row-attachmentsTable-1Formatter"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="attachments" name="value" keyPath="selection.content.length" id="row-attachmentsTable-1Value"/>
+                                                            </connections>
+                                                        </textField>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="row-calendarEntries" identifier="row-calendarEntries" id="row-calendarEntries">
+                                                <view key="view" id="row-calendarEntriesView">
+                                                    <rect key="frame" x="0" y="0" width="300" height="680"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-calendarEntries-0Label">
+                                                            <rect key="frame" x="4" y="649" width="96" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Day:" id="row-calendarEntries-0LabelCell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField verticalHuggingPriority="750" identifier="row-calendarEntries-0" id="row-calendarEntries-0">
+                                                            <rect key="frame" x="106" y="649" width="186" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-calendarEntries-0Cell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="calendarListed" name="value" keyPath="selection.dayText" id="row-calendarEntries-0Value"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-calendarEntries-1Label">
+                                                            <rect key="frame" x="4" y="624" width="96" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Vehicle:" id="row-calendarEntries-1LabelCell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField verticalHuggingPriority="750" identifier="row-calendarEntries-1" id="row-calendarEntries-1">
+                                                            <rect key="frame" x="106" y="624" width="186" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-calendarEntries-1Cell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="calendarListed" name="value" keyPath="selection.vehicleTitle" id="row-calendarEntries-1Value"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-calendarEntries-2Label">
+                                                            <rect key="frame" x="4" y="599" width="96" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="What:" id="row-calendarEntries-2LabelCell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField verticalHuggingPriority="750" identifier="row-calendarEntries-2" id="row-calendarEntries-2">
+                                                            <rect key="frame" x="106" y="599" width="186" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-calendarEntries-2Cell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="calendarListed" name="value" keyPath="selection.kindText" id="row-calendarEntries-2Value"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-calendarEntries-3Label">
+                                                            <rect key="frame" x="4" y="574" width="96" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="For:" id="row-calendarEntries-3LabelCell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField verticalHuggingPriority="750" identifier="row-calendarEntries-3" id="row-calendarEntries-3">
+                                                            <rect key="frame" x="106" y="556" width="186" height="35"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-calendarEntries-3Cell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="calendarListed" name="value" keyPath="selection.title" id="row-calendarEntries-3Value"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-calendarEntries-4Label">
+                                                            <rect key="frame" x="4" y="531" width="96" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Detail:" id="row-calendarEntries-4LabelCell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField verticalHuggingPriority="750" identifier="row-calendarEntries-4" id="row-calendarEntries-4">
+                                                            <rect key="frame" x="106" y="513" width="186" height="35"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" selectable="YES" lineBreakMode="wordWrapping" title="" id="row-calendarEntries-4Cell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="calendarListed" name="value" keyPath="selection.detail" id="row-calendarEntries-4Value"/>
+                                                            </connections>
+                                                        </textField>
+                                                    </subviews>
+                                                </view>
+                                            </tabViewItem>
+                                            <tabViewItem label="row-driversTable" identifier="row-driversTable" id="row-driversTable">
+                                                <view key="view" id="row-driversTableView">
+                                                    <rect key="frame" x="0" y="0" width="300" height="680"/>
+                                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                                                    <subviews>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-driversTable-0Label">
+                                                            <rect key="frame" x="4" y="649" width="96" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Email:" id="row-driversTable-0LabelCell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField verticalHuggingPriority="750" identifier="row-driversTable-0" id="row-driversTable-0">
+                                                            <rect key="frame" x="106" y="649" width="186" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-driversTable-0Cell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="vehicleDrivers" name="value" keyPath="selection.user.email" id="row-driversTable-0Value"/>
+                                                            </connections>
+                                                        </textField>
+                                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="row-driversTable-1Label">
+                                                            <rect key="frame" x="4" y="624" width="96" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Name:" id="row-driversTable-1LabelCell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="secondaryLabelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                        </textField>
+                                                        <textField verticalHuggingPriority="750" identifier="row-driversTable-1" id="row-driversTable-1">
+                                                            <rect key="frame" x="106" y="624" width="186" height="17"/>
+                                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                                            <textFieldCell key="cell" selectable="YES" lineBreakMode="truncatingTail" title="" id="row-driversTable-1Cell">
+                                                                <font key="font" metaFont="system"/>
+                                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                                            </textFieldCell>
+                                                            <connections>
+                                                                <binding destination="vehicleDrivers" name="value" keyPath="selection.user.personName" id="row-driversTable-1Value"/>
+                                                            </connections>
+                                                        </textField>
                                                     </subviews>
                                                 </view>
                                             </tabViewItem>

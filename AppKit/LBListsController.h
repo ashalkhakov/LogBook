@@ -15,7 +15,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface LBListsController : LBScreen <NSTableViewDelegate>
+@interface LBListsController : LBScreen <NSTableViewDelegate, NSTabViewDelegate>
 - (instancetype)initWithLogbook:(LBMainWindowController *)logbook;
 // What the XIB binds to: the logbook's context, the lists' order.
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;

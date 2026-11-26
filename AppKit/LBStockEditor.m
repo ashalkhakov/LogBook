@@ -38,6 +38,8 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     if ((self = [super initWithNibName:name bundle:nil])) {
         _store = store;
         _context = [store newContext];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextDidSave:)
+                                                     name:NSManagedObjectContextDidSaveNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stockDidChange:) name:LBStockDidChangeNotification
                                                    object:nil];
         /* Offline first: what a sync brought down, read again. */
@@ -55,9 +57,11 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     [super viewDidLoad];
     [self readAgain];
     /* The rules what is edited breaks, at its fields. */
-    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.view];
+    _fieldIssues = self.inspectorView ? [[LBFieldIssues alloc] initWithViews:@[ self.view, self.inspectorView ]]
+                                      : [[LBFieldIssues alloc] initWithView:self.view];
     [_fieldIssues setNeedsRefresh];
     [self offerCurrenciesUnder:self.view];
+    if (self.inspectorView) [self offerCurrenciesUnder:self.inspectorView];
 }
 
 /* The currencies a money field picks from (LBCurrencies'): its catalog's
@@ -131,6 +135,28 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
         if (!object.isInserted) [_context refreshObject:object mergeChanges:object.hasChanges];
     }
     return order.count ? [found sortedArrayUsingDescriptors:order] : found;
+}
+
+/* Another screen's context saved: what it changed that is here read again
+   (kept what this screen is editing), not only what its lists fetch again:
+   one reached through a relationship (an item's supplier item, the reorder's
+   cost) would stay as it was. The IDs only (the saving context may be
+   another thread's); read again on the main thread, this screen's. */
+- (void)contextDidSave:(NSNotification *)note {
+    NSManagedObjectContext *saved = note.object;
+    if (saved == _context || !_context || saved.persistentStoreCoordinator != _context.persistentStoreCoordinator) return;
+    NSArray *changed = [[note.userInfo[NSUpdatedObjectsKey] allObjects] valueForKey:@"objectID"];
+    if (!changed.count) return;
+    __weak LBStockEditor *weakSelf = self;
+    void (^refresh)(void) = ^{
+        NSManagedObjectContext *context = weakSelf.context;
+        for (NSManagedObjectID *objectID in changed) {
+            NSManagedObject *here = [context objectRegisteredForID:objectID];
+            if (here && !here.isFault && !here.hasChanges) [context refreshObject:here mergeChanges:NO];
+        }
+    };
+    if ([NSThread isMainThread]) refresh();
+    else dispatch_async(dispatch_get_main_queue(), refresh);
 }
 
 - (void)stockDidChange:(NSNotification *)note {
@@ -303,6 +329,18 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 - (BOOL)shouldClose {
     if (![self commitEdits]) return NO;
     if (!_context.hasChanges) return YES;
+    /* Quiet (a self-test): no alert, which nobody would answer; refused,
+       what is unsaved said. */
+    if (self.quiet) {
+        NSMutableArray *said = [NSMutableArray array];
+        for (NSManagedObject *each in _context.updatedObjects) [said addObject:[NSString stringWithFormat:@"%@ %@", each.entity.name, each.changedValues]];
+        for (NSManagedObject *each in _context.insertedObjects) [said addObject:[NSString stringWithFormat:@"new %@", each.entity.name]];
+        for (NSManagedObject *each in _context.deletedObjects) [said addObject:[NSString stringWithFormat:@"deleted %@", each.entity.name]];
+        [self refuse:[NSString stringWithFormat:@"%@ would ask to save its changes: %@", self.title ?: NSStringFromClass([self class]),
+                                                [said componentsJoinedByString:@"; "]]];
+        NSLog(@"%@", self.lastError.localizedDescription);
+        return NO;
+    }
     NSAlert *alert = LBSaveChangesAlert(self.title.length ? [NSString stringWithFormat:@"“%@”", self.title] : nil);
     NSModalResponse answer = LBAskInSheet(alert, self.window);
     if (answer == NSAlertSecondButtonReturn) return NO;
