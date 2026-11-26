@@ -10,6 +10,7 @@ NSNotificationName const UDPaneSplitControllerDidChangeVisibilityNotification = 
     NSMutableArray<NSNumber *> *_thicknesses;   // of every pane; the flexible one's is unused
     NSMutableIndexSet *_hidden;
     BOOL _laying;                               // inside our own layout: no saving
+    BOOL _resizing;                             // inside the split view's layout
 }
 
 - (instancetype)init {
@@ -208,6 +209,12 @@ NSNotificationName const UDPaneSplitControllerDidChangeVisibilityNotification = 
     }
     [split setNeedsDisplay:YES];
     _laying = NO;
+    // macOS draws the dividers as layers of their own, over the panes, and
+    // moves them only in the split view's layout: without one they stay
+    // where the panes were (a hidden pane's divider over the one shown).
+    // Inside that layout (-splitView:resizeSubviewsWithOldSize:) it is
+    // under way already.
+    if (!_resizing) [split setNeedsLayout:YES];
 }
 
 // ---------------------------------------------------------------------------
@@ -215,7 +222,9 @@ NSNotificationName const UDPaneSplitControllerDidChangeVisibilityNotification = 
 // ---------------------------------------------------------------------------
 
 - (void)splitView:(NSSplitView *)splitView resizeSubviewsWithOldSize:(NSSize)oldSize {
+    _resizing = YES;
     [self _layout];
+    _resizing = NO;
 }
 
 - (BOOL)splitView:(NSSplitView *)splitView shouldAdjustSizeOfSubview:(NSView *)view {
