@@ -23,8 +23,11 @@ NS_ASSUME_NONNULL_BEGIN
 // The reports there are: their files, in the order the picker offers them.
 @property (nonatomic, readonly, copy) NSArray<NSURL *> *reports;
 - (IBAction)chooseReport:(nullable id)sender;
-// The vehicle chosen in the window changed: the report shown, of it.
+// The vehicle chosen in the window changed: the report shown, of it. The
+// report is worked out only while the Reports tab is shown: a report or a
+// vehicle chosen with it hidden is worked out as it is shown (-tabShown).
 - (void)vehicleChosen;
+- (void)tabShown;
 @end
 
 NS_ASSUME_NONNULL_END

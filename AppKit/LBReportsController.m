@@ -8,6 +8,20 @@ static NSString * const LBReportNames[] = { @"CostsByMonth", @"Fuel", @"Logbook"
 
 @implementation LBReportsController {
     NSArray<NSURL *> *_reports;
+    /* What the Reports tab shows is behind (the report chosen, the vehicle
+       chosen): worked out again only as the tab is shown, as working it out
+       lays the whole report out again (2.7 s a vehicle on Linux). */
+    BOOL _reportStale, _vehicleStale;
+}
+
+/* Whether the Reports tab is shown: its view in the window. */
+- (BOOL)isShown {
+    return _reportArea.window != nil;
+}
+
+- (void)tabShown {
+    if (_reportStale) [self chooseReport:nil];
+    else if (_vehicleStale) [self vehicleChosen];
 }
 
 - (void)awakeFromNib {
@@ -34,6 +48,8 @@ static NSString * const LBReportNames[] = { @"CostsByMonth", @"Fuel", @"Logbook"
 }
 
 - (IBAction)chooseReport:(id)sender {
+    _reportStale = ![self isShown];
+    if (_reportStale) return;
     NSInteger index = _reportPicker.selectedTag;
     if (index < 0 || index >= (NSInteger)_reports.count) return;
     NSError *error = nil;
@@ -45,7 +61,8 @@ static NSString * const LBReportNames[] = { @"CostsByMonth", @"Fuel", @"Logbook"
 }
 
 - (void)vehicleChosen {
-    if (!_viewer.report) return;
+    _vehicleStale = ![self isShown];
+    if (_vehicleStale || !_viewer.report) return;
     Vehicle *vehicle = _windowController.vehicles.selectedObjects.firstObject;
     [_viewer setValue:vehicle.lbTitle ?: @"" forParameter:@"Vehicle"];
 }

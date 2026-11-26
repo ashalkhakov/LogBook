@@ -1,7 +1,8 @@
 // The signed-in user's preferences (Preferences.xib): their name, and the
 // currency and units their new records are filled in with and their
-// reports total in. Done saves them, as the logbook's window saves (its
-// rules said).
+// reports total in. They take effect as they are changed; closing the
+// window saves them, as the logbook's window saves (its rules said; refused,
+// the window stays open). No Done: a preferences window has none (HIG).
 
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
@@ -17,7 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, strong, nullable) User *user;
 @property (nonatomic, readonly, copy) NSArray<NSSortDescriptor *> *byTitle;
 @property (nonatomic, strong) IBOutlet NSObjectController *userController;
-- (IBAction)done:(nullable id)sender;
 @end
 
 NS_ASSUME_NONNULL_END

@@ -12,8 +12,9 @@
 
 #import <AppKit/AppKit.h>
 #import <CoreData/CoreData.h>
+#import "LBScreen.h"
 
-@class LBStore, Catalog, User, LBTask, LBTasks, LBFormValues, LBPendingSubmission;
+@class LBStore, Catalog, User, LBTask, LBTasks, LBFormValues, LBPendingSubmission, Move;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -24,9 +25,9 @@ extern NSString *const LBStockCatalogKey;
 
 @class LBFieldIssues;
 
-@interface LBStockEditor : NSWindowController
+@interface LBStockEditor : LBScreen
 
-- (instancetype)initWithStore:(LBStore *)store windowNibName:(NSString *)name;
+- (instancetype)initWithStore:(LBStore *)store nibName:(NSString *)name;
 @property (nonatomic, readonly, strong) LBStore *store;
 // Its own, over the store's (LBStore -newContext): what the XIB binds to.
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;
@@ -86,7 +87,7 @@ extern NSString *const LBStockCatalogKey;
 // sheet, then its instance submitted to the open task of it about that
 // (this one, or found), which the server's process goes on with
 // (Server/LBWorkflow.h); the tasks are asked again. Offline first, where
-// the server cannot be reached, the step waits, saved (Window > Tasks:
+// the server cannot be reached, the step waits, saved (Go > Tasks:
 // waiting), and is submitted after a sync. NO, said, where refused.
 @property (nonatomic, strong, nullable) LBTask *task;
 @property (nonatomic, strong, nullable) LBTasks *tasks;
@@ -95,6 +96,13 @@ extern NSString *const LBStockCatalogKey;
 - (BOOL)submitForm:(LBFormValues *)values sheet:(NSWindow *)sheet;
 - (BOOL)wait:(NSString *)formName about:(NSString *)about instance:(NSString *)instance task:(nullable NSString *)taskName;
 - (void)stepDone:(NSString *)form;
+
+// What made the move shown, in its screen: its purchase or sale (a
+// receipt's, a shipment's, a line's, a return's), its count; a part fitted
+// or taken off, its record on the vehicle's page. NO, and a beep, where
+// nothing else made it (an adjustment, a transfer, an assembly: the item's
+// own).
+- (BOOL)openSourceOfMove:(nullable Move *)move;
 
 - (IBAction)save:(nullable id)sender;
 - (IBAction)revertChanges:(nullable id)sender;

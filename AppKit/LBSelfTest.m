@@ -37,6 +37,9 @@
 #import "LBReportsController.h"
 #import "LBRemindersController.h"
 #import "LBListsController.h"
+#import "LBWorkspace.h"
+#import "UDPaneSplitController.h"
+#import "LBScreen.h"
 #import "LBAnswersController.h"
 #import "LBCalendarController.h"
 #import "UDCalendarView.h"
@@ -62,6 +65,7 @@
 #import "LBPartsPanelController.h"
 #import "LBStockDisplay.h"
 #import "LBFormValues.h"
+#import "LBSelectors.h"
 #import <ORMRuntime/ORMFormSession.h>
 #import <ORMRuntime/ORMForm.h>
 
@@ -109,6 +113,9 @@ static void LBCheck(NSString *what, BOOL ok, id detail) {
 /* The control of the identifier, in the view or under it. */
 static NSView *LBControl(NSView *view, NSString *identifier) {
     if ([view.identifier isEqualToString:identifier]) return view;
+    /* The one window's page not shown (the logbook's, or another
+       screen's host): none of it is there for the user. */
+    if (view.isHidden && ([view.identifier isEqualToString:@"logbookPage"] || [view.identifier isEqualToString:@"screenHost"])) return nil;
     for (NSView *each in view.subviews) {
         NSView *found = LBControl(each, identifier);
         if (found) return found;
@@ -147,6 +154,51 @@ static void LBTypeStaying(NSWindow *window, NSString *identifier, NSString *text
     [editor insertText:text replacementRange:NSMakeRange(NSNotFound, 0)];
     LBSpin();
     LBCheck([NSString stringWithFormat:@"%@ still being typed into", identifier], field.currentEditor != nil, window.firstResponder);
+}
+
+/* A command of the main menu chosen, as a user does (File > Save, File >
+   Revert to Saved): the item found by its action, enabled as the menu
+   validates it, sent to the window's responders. */
+static void LBMenuCommand(NSWindow *window, SEL action) {
+    NSMenuItem *found = nil;
+    NSMutableArray<NSMenu *> *menus = [NSMutableArray arrayWithObject:NSApp.mainMenu];
+    while (menus.count && !found) {
+        NSMenu *menu = menus.firstObject;
+        [menus removeObjectAtIndex:0];
+        for (NSMenuItem *item in menu.itemArray) {
+            if (!found && item.action && LBSameSelector(item.action, action)) found = item;
+            if (item.submenu) [menus addObject:item.submenu];
+        }
+    }
+    NSString *name = NSStringFromSelector(action);
+    [window makeKeyAndOrderFront:nil];
+    LBSpin();
+    BOOL enabled = NO;
+    id target = nil;
+    if (found && NSApp.keyWindow == window) {
+        /* The window key: the menu validates the item, and sends it. */
+        [found.menu update];
+        enabled = found.isEnabled;
+        target = [NSApp targetForAction:action to:found.target from:found];
+    } else if (found) {
+        /* The app not active (another app in front): no window is key,
+           so the menu reaches none. The responders AppKit asks for the
+           key window asked here: its first responder and those after it,
+           the window, its delegate, the app, the app's delegate. */
+        for (NSResponder *r = window.firstResponder ?: window; r && !target; r = r.nextResponder) {
+            if ([r respondsToSelector:action]) target = r;
+        }
+        for (id candidate in @[ window, (id)window.delegate ?: [NSNull null], NSApp, (id)NSApp.delegate ?: [NSNull null] ]) {
+            if (!target && [candidate respondsToSelector:action]) target = candidate;
+        }
+        enabled = target && (![target respondsToSelector:@selector(validateMenuItem:)] || [target validateMenuItem:found]);
+    }
+    LBCheck([NSString stringWithFormat:@"the menu's %@ there and enabled", found.title ?: name], found && enabled,
+            [NSString stringWithFormat:@"target %@, key window %@", target, NSApp.keyWindow]);
+    if (!found || !enabled) return;
+    if (NSApp.keyWindow == window) [found.menu performActionForItemAtIndex:[found.menu indexOfItem:found]];
+    else [NSApp sendAction:action to:target from:found];
+    LBSpin();
 }
 
 static void LBClick(NSWindow *window, NSString *identifier) {
@@ -214,13 +266,13 @@ static void LBSharingSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBCheck(@"shared, the email as a user of the logbook", [controller.vehicleDrivers.arrangedObjects count] == 1
                 && [[controller.drivers valueForKey:NSStringFromSelector(@selector(email))] containsObject:@"ben@example.org"],
             controller.drivers);
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     LBCheck(@"the sharing saved", !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
     LBCheck(@"the server has Ben driving it", [LBSharedWith(kept) isEqualToArray:@[ @"ben@example.org" ]], LBSharedWith(kept));
     [controller.vehicleDrivers setSelectionIndex:0];
     LBClick(window, @"unshare");
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     LBCheck(@"the sharing ended, on the server too", [controller.vehicleDrivers.arrangedObjects count] == 0
                 && LBSharedWith(kept).count == 0 && controller.drivers.count == 1, LBSharedWith(kept));
 }
@@ -286,7 +338,7 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
        pop-up, nothing saved; the driver chosen again, it is gone. */
     LBChoose(window, @"FillUpDriver", @"None");
     LBCheck(@"no driver chosen: none is the fill-up's", fillUp.driver == nil, fillUp.driver.email);
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     LBCheck(@"saved with no driver: refused by the form, said under the driver, nothing saved",
             [LBFormValues problemAt:@"driver" under:controller.recordForms].length > 0 && controller.store.context.hasChanges,
             [LBFormValues problemAt:@"driver" under:controller.recordForms]);
@@ -294,7 +346,7 @@ static void LBRecordSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBCheck(@"the driver chosen again: what was said under it gone",
             fillUp.driver == user && [LBFormValues problemAt:@"driver" under:controller.recordForms].length == 0,
             [LBFormValues problemAt:@"driver" under:controller.recordForms]);
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     LBCheck(@"the fill-up saved", !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
     [LBServerContext() refreshObject:kept mergeChanges:NO];
@@ -401,7 +453,10 @@ static void LBPreferenceSteps(LBMainWindowController *controller) {
                                        user.distanceUnit.lbTitle, user.volumeUnit.lbTitle]);
     LBType(preferences, @"currencyUnit", @"eur");
     LBType(preferences, @"personName", @"Sam Driver");
-    LBClick(preferences, @"done");
+    /* No Done (HIG): closed, as a user closes it, it saves. */
+    LBCheck(@"no Done button: preferences take effect as changed", !LBControl(preferences.contentView, @"done"), nil);
+    [preferences performClose:nil];
+    LBSpin();
     LBCheck(@"saved and closed", !preferences.isVisible && !controller.lastError && !controller.store.context.hasChanges,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
     LBCheck(@"the user's currency", [controller.store.user.currency isEqualToString:@"EUR"], controller.store.user.currency);
@@ -439,11 +494,28 @@ static void LBTypeInRow(NSWindow *window, NSString *what, NSString *text) {
     LBSpin();
 }
 
+/* The lists' screen's window, while it is the one shown. */
 static NSWindow *LBListsWindow(void) {
-    for (NSWindow *window in NSApp.windows) {
-        if (window.isVisible && [window.windowController isKindOfClass:NSClassFromString(@"LBListsController")]) return window;
+    LBListsController *lists = [LBWorkspace current].lists;
+    return lists.isShown ? lists.window : nil;
+}
+
+/* The sidebar's + chosen, New Vehicle, as a user does. */
+static void LBAddVehicle(NSWindow *window) {
+    NSPopUpButton *add = (NSPopUpButton *)LBControl(window.contentView, @"sidebarAdd");
+    NSInteger index = [add indexOfItemWithTitle:@"New Vehicle"];
+    LBCheck(@"the sidebar's + offers New Vehicle", add && index > 0, add.itemTitles);
+    if (index > 0) [add.menu performActionForItemAtIndex:index];
+    LBSpin();
+}
+
+/* The screen shown, as the user goes to it; its window. */
+static NSWindow *LBShown(LBScreen *screen) {
+    if (!screen.isShown) {
+        [screen showWindow:nil];
+        LBSpin();
     }
-    return nil;
+    return screen.window;
 }
 
 /* The users' own lists, written in their window: a kind of expense, a
@@ -453,7 +525,7 @@ static void LBListSteps(LBMainWindowController *controller) {
     [NSApp sendAction:@selector(showExpenseKinds:) to:nil from:nil];
     LBSpin();
     NSWindow *lists = LBListsWindow();
-    LBListsController *owner = lists.windowController;
+    LBListsController *owner = [LBWorkspace current].lists;
     LBCheck(@"the lists' window, at the kinds of expense", lists && [owner.tabs.selectedTabViewItem.identifier isEqual:@"expenseKinds"], nil);
     if (!lists) return;
     LBClick(lists, @"addExpenseKind");
@@ -492,9 +564,28 @@ static void LBListSteps(LBMainWindowController *controller) {
     LBCheck(@"a rate of today: 1 USD is worth 0.9 in the user's currency", [rate.baseCurrency isEqualToString:@"USD"]
                 && [rate.quoteCurrency isEqualToString:mine] && [rate.factor isEqual:[NSDecimalNumber decimalNumberWithString:@"0.9"]],
             rate);
-    LBClick(lists, @"done");
-    LBCheck(@"saved and closed", !lists.isVisible && !controller.lastError && !controller.store.context.hasChanges,
+    LBMenuCommand(lists, @selector(save:));
+    LBCheck(@"saved", !controller.lastError && !controller.store.context.hasChanges,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
+
+    /* A rate added, then Edit > Delete with its list focused: removed, as
+       the - under the list removes it. */
+    LBClick(lists, @"addExchangeRate");
+    LBTypeInRow(lists, @"a rate to delete's currency", @"GBP");
+    /* What was typed kept, then the list focused, as a click on it does. */
+    [lists makeFirstResponder:nil];
+    [lists makeFirstResponder:owner.exchangeRatesTable];
+    LBCheck(@"the rates' list has the focus", lists.firstResponder == owner.exchangeRatesTable, lists.firstResponder);
+    LBMenuCommand(lists, @selector(delete:));
+    NSArray *left = [owner.exchangeRates.arrangedObjects valueForKey:NSStringFromSelector(@selector(baseCurrency))];
+    LBCheck(@"Edit > Delete: the focused list's chosen row removed", ![left containsObject:@"GBP"] && [left containsObject:@"USD"], left);
+    /* A rate added, then File > Revert to Saved: let go, no longer listed. */
+    LBClick(lists, @"addExchangeRate");
+    LBTypeInRow(lists, @"a rate to let go's currency", @"EUR");
+    LBMenuCommand(lists, @selector(revertChanges:));
+    NSArray *bases = [owner.exchangeRates.arrangedObjects valueForKey:NSStringFromSelector(@selector(baseCurrency))];
+    LBCheck(@"Revert to Saved: the rate not saved let go, the saved one kept, the one listed",
+            !controller.store.context.hasChanges && [bases isEqualToArray:@[ @"USD" ]], bases);
 
     NSString *name = NSStringFromSelector(@selector(name));
     LBCheck(@"the server has the kind",
@@ -522,7 +613,7 @@ static void LBListSteps(LBMainWindowController *controller) {
     LBCheck(@"nor removed: refused, and said", [owner.exchangeRates.arrangedObjects count] == 1
                 && [controller.lastError.localizedDescription containsString:@"kept once saved"],
             controller.lastError);
-    [lists close];
+    [[LBWorkspace current].lists close];
     NSPopUpButton *kinds = (NSPopUpButton *)LBControl(controller.window.contentView, @"scheduleExpenseKind");
     NSPopUpButton *checklists = (NSPopUpButton *)LBControl(controller.window.contentView, @"scheduleChecklist");
     LBCheck(@"a schedule's form offers both", [kinds indexOfItemWithTitle:@"Car wash"] >= 0
@@ -699,7 +790,7 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
             [controller reminderWarnings]);
     LBType(window, @"ServiceMileageValue", @"13000");
     LBType(window, @"ServiceMileageUnit", @"km");
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     LBCheck(@"the service saved", !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
     [tabs selectTabViewItemWithIdentifier:@"reminders"];
@@ -786,10 +877,10 @@ static void LBReminderSteps(LBMainWindowController *controller, Vehicle *kept) {
     LBClick(window, @"changeChecklistEdit");
     NSWindow *lists = LBListsWindow();
     LBCheck(@"Edit… beside the checklists shows them", lists
-                && [((LBListsController *)lists.windowController).tabs.selectedTabViewItem.identifier isEqual:@"checklists"],
+                && [[LBWorkspace current].lists.tabs.selectedTabViewItem.identifier isEqual:@"checklists"],
             nil);
-    [lists close];
-    [window makeKeyAndOrderFront:nil];
+    [[LBWorkspace current].lists close];
+    [controller.workspace showLogbook];
     LBType(window, @"changeTask", @"Oil and filter");
     LBType(window, @"changeMonths", @"6");
     LBClick(window, @"changeSave");
@@ -840,7 +931,7 @@ static Record *LBAddRecord(LBMainWindowController *controller, Class kind) {
 
 /* Saved as a user saves, and what the server has of the record. */
 static id LBSaved(LBMainWindowController *controller, Record *record, NSString *what) {
-    LBClick(controller.window, @"save");
+    LBMenuCommand(controller.window, @selector(save:));
     LBCheck(what, !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
     LBCheck(@"still the one chosen", [controller.records.selectedObjects isEqualToArray:@[ record ]], controller.records.selectedObjects);
@@ -886,11 +977,10 @@ static NSDecimalNumber *LBN10(void) {
     return [NSDecimalNumber decimalNumberWithString:@"10"];
 }
 
+/* The stock's screen's window, while it is the one shown. */
 static NSWindow *LBStockWindow(void) {
-    for (NSWindow *window in NSApp.windows) {
-        if (window.isVisible && [window.windowController isKindOfClass:[LBStockWindowController class]]) return window;
-    }
-    return nil;
+    LBStockWindowController *stock = [LBWorkspace current].stock;
+    return stock.isShown ? stock.window : nil;
 }
 
 /* What the server has of the class whose key is the object's. */
@@ -902,13 +992,13 @@ static id LBServerOf(NSManagedObject *object) {
 static id LBOpened(LBStockWindowController *stock, Class cls) {
     LBSpin();
     LBStockEditor *editor = [stock windowOfClass:cls];
-    LBCheck([NSString stringWithFormat:@"a %@ open", NSStringFromClass(cls)], editor.window.isVisible, nil);
+    LBCheck([NSString stringWithFormat:@"a %@ open", NSStringFromClass(cls)], editor.isShown, nil);
     return editor;
 }
 
 /* Saved, as a user does, and nothing refused. */
 static BOOL LBSavedIn(LBStockEditor *editor, NSString *what) {
-    LBClick(editor.window, @"save");
+    LBMenuCommand(editor.window, @selector(save:));
     BOOL saved = !editor.context.hasChanges && !editor.lastError;
     LBCheck(what, saved, editor.lastError.localizedRecoverySuggestion ?: editor.lastError);
     return saved;
@@ -930,6 +1020,29 @@ static void LBTypeInCell(NSWindow *window, NSString *table, NSInteger column, NS
    category; a supplier and a customer, its address typed before anything
    is saved (the new contact and its new address refer to each other, sent
    in one change set). Saved, the server's, and the stock window told. */
+/* The settings' page of that identifier chosen in the sidebar, under the
+   catalog's row: shown alone, the sidebar's row titled so, and the other
+   pages' controls not shown. */
+static void LBSettingsPage(LBCatalogSettingsWindowController *settings, NSString *page, NSString *title) {
+    LBWorkspace *workspace = [LBWorkspace current];
+    NSOutlineView *sidebar = workspace.sidebar;
+    NSInteger row = -1;
+    for (NSInteger r = 0; r < sidebar.numberOfRows; r++) {
+        id item = [sidebar itemAtRow:r];
+        if ([[item valueForKey:@"title"] isEqual:title] && [[item valueForKey:@"tab"] isEqual:page]
+            && [[[item valueForKey:@"object"] objectID] isEqual:settings.catalog.objectID]) row = r;
+    }
+    LBCheck([NSString stringWithFormat:@"the sidebar has %@ under the catalog", title], row >= 0, nil);
+    if (row < 0) return;
+    [sidebar selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
+    LBSpin();
+    NSView *other = LBControl(settings.window.contentView, [page isEqual:@"settings"] ? @"addWarehouse" : @"catalogName");
+    LBCheck([NSString stringWithFormat:@"%@ chosen in the sidebar: its page shown alone, the row chosen", title],
+            workspace.shownScreen == settings && [settings.tabs.selectedTabViewItem.identifier isEqual:page] && sidebar.selectedRow == row && !other,
+            [NSString stringWithFormat:@"shown %@, page %@, row %ld (%ld), another page's control %@", workspace.shownScreen,
+                                       settings.tabs.selectedTabViewItem.identifier, (long)sidebar.selectedRow, (long)row, other]);
+}
+
 static void LBStockSettingsSteps(LBStockWindowController *stock, LBCatalogSettingsWindowController *settings) {
     NSWindow *window = settings.window;
     settings.quiet = YES;
@@ -937,6 +1050,9 @@ static void LBStockSettingsSteps(LBStockWindowController *stock, LBCatalogSettin
     LBType(window, @"catalogCurrency", @"USD");
     LBType(window, @"catalogPrefix", @"GAR");
     LBChoose(window, @"catalogSizeUnit", @"cm");
+    /* Its pages, each a row of the sidebar under the catalog: chosen
+       there (as they are here), each shown alone. */
+    LBSettingsPage(settings, @"warehouses", @"Warehouses");
     LBClick(window, @"addWarehouse");
     LBTypeInRow(window, @"the warehouse's name", @"Garage");
     LBClick(window, @"addLocation");
@@ -947,8 +1063,10 @@ static void LBStockSettingsSteps(LBStockWindowController *stock, LBCatalogSettin
     if (LBAppStore.local) [[NSNotificationCenter defaultCenter] postNotificationName:LBLocalStoreDidSyncNotification object:LBAppStore.local];
     LBSpin();
     LBTypeInRow(window, @"a location's name, a sync done meanwhile,", @"Shelf B");
+    LBSettingsPage(settings, @"categories", @"Categories");
     LBClick(window, @"addCategory");
     LBTypeInRow(window, @"the category's name", @"Fasteners");
+    LBSettingsPage(settings, @"contacts", @"Contacts");
     LBClick(window, @"addContact");
     LBTypeInRow(window, @"the contact's name", @"Parts Ltd");
     /* Its Supplier box ticked, as a click in the table's cell does. */
@@ -996,7 +1114,7 @@ static void LBStockSettingsSteps(LBStockWindowController *stock, LBCatalogSettin
 
 /* A new item, in its window, named so, saved: its window. */
 static LBStockItemWindowController *LBAddStockItem(LBStockWindowController *stock, NSString *name) {
-    LBClick(stock.window, @"addItem");
+    LBClick(LBShown(stock), @"addItem");
     LBStockItemWindowController *card = LBOpened(stock, [LBStockItemWindowController class]);
     card.quiet = YES;
     LBType(card.window, @"itemNameField", name);
@@ -1028,8 +1146,8 @@ static void LBStockCardSteps(LBStockItemWindowController *card) {
     [card.supplierItemList setSelectedObjects:bought ? @[ bought ] : @[]];
     LBTypeInCell(window, @"supplierItemsTable", 1, @"PL-778");
     LBTypeInCell(window, @"supplierItemsTable", 3, @"0.2");
-    LBTypeInCell(window, @"supplierItemsTable", 4, @"50");
-    LBTypeInCell(window, @"supplierItemsTable", 5, @"100");
+    LBTypeInCell(window, @"supplierItemsTable", 5, @"50");
+    LBTypeInCell(window, @"supplierItemsTable", 6, @"100");
     LBSavedIn(card, @"its supplier item saved");
     NSPredicate *ofBolt = [NSPredicate predicateWithFormat:@"stockItem.id == %@", bolt.id];
     SupplierItem *keptBought = [LBServerObjects([SupplierItem class], ofBolt) firstObject];
@@ -1076,14 +1194,12 @@ static void LBStockCardSteps(LBStockItemWindowController *card) {
             rule);
 }
 
-/* Window > Tasks, shown, as a user chooses it. */
+/* Go > Tasks, shown, as a user chooses it. */
 static LBTasksWindowController *LBTasksWindow(void) {
     [NSApp sendAction:@selector(showTasks:) to:nil from:nil];
     LBSpin();
-    for (NSWindow *window in NSApp.windows) {
-        if ([window.windowController isKindOfClass:[LBTasksWindowController class]] && window.isVisible) return window.windowController;
-    }
-    return nil;
+    LBTasksWindowController *tasks = [LBWorkspace current].tasks;
+    return tasks.isShown ? tasks : nil;
 }
 
 /* The names of the open tasks about the order, once they are as expected
@@ -1092,8 +1208,23 @@ static LBTasksWindowController *LBTasksWindow(void) {
 static NSArray<NSString *> *LBTasksOf(LBTasksWindowController *tasks, NSManagedObject *order, NSArray<NSString *> *expected) {
     NSString *key = [[order valueForKey:@"id"] UUIDString];
     NSArray<NSString *> *names = nil;
+    /* Gone to Tasks, as a user goes, and Back to where they were after. */
+    LBWorkspace *workspace = [LBWorkspace current];
+    LBScreen *was = workspace.shownScreen;
+    /* Nothing of its own to save: File's Save and Revert to Saved not
+       enabled there. */
+    NSWindow *shownIn = LBShown(tasks);
+    for (NSMenuItem *top in NSApp.mainMenu.itemArray) {
+        for (NSMenuItem *item in top.submenu.itemArray) {
+            if (!LBSameSelector(item.action, @selector(save:)) && !LBSameSelector(item.action, @selector(revertChanges:))) continue;
+            /* As the menu asks the window's controller (no key window
+               needed: the app may not be active). */
+            BOOL enabled = [(id)shownIn.windowController validateMenuItem:item];
+            LBCheck([NSString stringWithFormat:@"Tasks shown: the menu's %@ not enabled", item.title], shownIn && !enabled, nil);
+        }
+    }
     for (int i = 0; i < 25; i++) {
-        LBClick(tasks.window, @"refresh");
+        LBClick(LBShown(tasks), @"refresh");
         NSMutableArray *found = [NSMutableArray array];
         for (LBTask *task in tasks.openTasks) {
             if ([task.businessKey isEqualToString:key]) [found addObject:task.name];
@@ -1101,6 +1232,10 @@ static NSArray<NSString *> *LBTasksOf(LBTasksWindowController *tasks, NSManagedO
         names = found;
         if ([names isEqualToArray:expected]) break;
         LBSpin();
+    }
+    if (was != tasks) {
+        if (was && [workspace.keptScreens containsObject:was]) LBShown(was);
+        else if (!was) [workspace showLogbook];
     }
     return names;
 }
@@ -1119,19 +1254,18 @@ static NSArray<NSString *> *LBTasksOf(LBTasksWindowController *tasks, NSManagedO
 @end
 
 /* Offline: a step's form saved here while the server cannot be reached
-   waits, kept as after a relaunch, in Window > Tasks in its task's place;
+   waits, kept as after a relaunch, in Go > Tasks in its task's place;
    Start Again forgets it and opens its order for its task, Submit sends it
    once the server is reached again. */
 static LBPendingSubmission *LBWaitingRow(LBTasksWindowController *tasks, NSString *expected) {
-    [tasks.window makeKeyAndOrderFront:nil];
-    LBClick(tasks.window, @"refresh");
+    LBClick(LBShown(tasks), @"refresh");
     NSInteger row = (NSInteger)tasks.openTasks.count;
     NSTableColumn *taskColumn = [tasks.table tableColumnWithIdentifier:@"task"];
     NSString *listed = tasks.waiting.count == 1 ? [tasks tableView:tasks.table objectValueForTableColumn:taskColumn row:row] : nil;
     LBPendingSubmission *waiting = tasks.waiting.firstObject;
     BOOL taskListed = NO;
     for (LBTask *task in tasks.openTasks) taskListed = taskListed || [task.businessKey isEqualToString:waiting.businessKey];
-    LBCheck([NSString stringWithFormat:@"Window > Tasks: %@ waits, saved here, in its task's place", expected],
+    LBCheck([NSString stringWithFormat:@"Go > Tasks: %@ waits, saved here, in its task's place", expected],
             [listed isEqualToString:[expected stringByAppendingString:@" — saved here, not submitted"]] && !taskListed,
             listed ?: tasks.messageLabel.stringValue);
     [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
@@ -1142,7 +1276,7 @@ static LBPendingSubmission *LBWaitingRow(LBTasksWindowController *tasks, NSStrin
 static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowController *tasks) {
     ODataSyncRemote *remote = stock.store.local.engine.remotes.firstObject;
     id<ODataTransport> network = remote.transport;
-    LBClick(stock.window, @"newPurchase");
+    LBClick(LBShown(stock), @"newPurchase");
     LBStockOrderWindowController *purchase = LBOpened(stock, [LBStockOrderWindowController class]);
     purchase.quiet = YES;
     NSWindow *window = purchase.window;
@@ -1157,7 +1291,7 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
 
     /* Confirmed offline, then started again. */
     remote.transport = [[LBUnreachable alloc] init];
-    [window makeKeyAndOrderFront:nil];
+    LBShown(purchase);
     LBClick(window, @"confirmOrder");
     LBClick(purchase.confirmPanel, @"submitConfirm");
     LBCheck(@"offline: confirmed here, the sheet gone, its step saved and waiting", [order.orderState isEqualToString:@"Confirmed"]
@@ -1168,16 +1302,16 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
                                    purchase.flow.step.name]);
     [purchase close];
     LBWaitingRow(tasks, @"Confirm the order");
-    NSButton *submit = (NSButton *)LBControl(tasks.window.contentView, @"submitWaiting");
-    LBCheck(@"Submit and Start Again for it", submit.isEnabled && ((NSButton *)LBControl(tasks.window.contentView, @"startAgain")).isEnabled, nil);
-    LBClick(tasks.window, @"startAgain");
+    NSButton *submit = (NSButton *)LBControl(LBShown(tasks).contentView, @"submitWaiting");
+    LBCheck(@"Submit and Start Again for it", submit.isEnabled && ((NSButton *)LBControl(LBShown(tasks).contentView, @"startAgain")).isEnabled, nil);
+    LBClick(LBShown(tasks), @"startAgain");
     remote.transport = network;
     LBStockOrderWindowController *again = tasks.orderWindow;
     again.quiet = YES;
     LBCheck(@"Start Again: forgotten, its order opened for its task", tasks.waiting.count == 0
-                && stock.store.local.appState.pendingSubmissions.count == 0 && again.window.isVisible
-                && [again.window.title isEqualToString:@"PO-GAR-0003 — Confirm the order"],
-            again.window.title ?: tasks.messageLabel.stringValue);
+                && stock.store.local.appState.pendingSubmissions.count == 0 && again.isShown
+                && [again.title isEqualToString:@"PO-GAR-0003 — Confirm the order"],
+            again.title ?: tasks.messageLabel.stringValue);
     window = again.window;
     LBCheck(@"its Confirm the order's sheet at once", window.attachedSheet == again.confirmPanel, again.lastError ?: again.flow.step.formName);
     LBChoose(again.confirmPanel, @"confirmState", @"Confirmed");
@@ -1189,10 +1323,24 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
     /* Received offline: waiting, kept, and submitted once the server is
        reached. */
     remote.transport = [[LBUnreachable alloc] init];
-    [window makeKeyAndOrderFront:nil];
+    LBShown(again);
     LBClick(window, @"receiveGoods");
     LBChoose(again.receivePanel, @"receiveAt", @"Main / Default");
+    /* The HIG's dialog keys, as loaded (GNUstep too): Escape dismisses,
+       Return does the sheet's action, named for what it does. */
+    NSButton *dismiss = (NSButton *)LBControl(again.receivePanel.contentView, @"dismissReceive");
+    NSButton *receive = (NSButton *)LBControl(again.receivePanel.contentView, @"submitReceive");
+    /* A sheet shown, AppKit makes its Return button the window's default
+       button cell (the button then says no key: the window answers Return). */
+    BOOL returns = [receive.keyEquivalent isEqualToString:@"\r"] || again.receivePanel.defaultButtonCell == receive.cell;
+    LBCheck(@"the Receive sheet: Cancel answers Escape, Receive answers Return", [dismiss.keyEquivalent isEqualToString:@"\e"] && returns
+                && [receive.title isEqualToString:@"Receive"],
+            [NSString stringWithFormat:@"Cancel's key %@, %@'s key %@", [dismiss.keyEquivalent dataUsingEncoding:NSUTF8StringEncoding],
+                                       receive.title, [receive.keyEquivalent dataUsingEncoding:NSUTF8StringEncoding]]);
     LBClick(again.receivePanel, @"submitReceive");
+    /* Said in the sync's status, not an alert that only informs (HIG). */
+    LBCheck(@"offline: the step waiting said in the sync's status", [again.store.local.status containsString:@"1 step waiting in Tasks."],
+            again.store.local.status);
     LBCheck(@"offline: received here, the sheet gone, its step waiting", [order.lbFilled isEqualToString:@"Received"] && !window.attachedSheet
                 && [again.waiting.formName isEqualToString:@"ReceiveGoods"],
             again.lastError ?: order.lbFilled);
@@ -1205,13 +1353,13 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
                 && [kept.instance containsString:@"<moved>5</moved>"],
             kept.instance ?: file);
     LBWaitingRow(tasks, @"Receive the goods");
-    LBClick(tasks.window, @"submitWaiting");
+    LBClick(LBShown(tasks), @"submitWaiting");
     LBCheck(@"Submit, still offline: not submitted, and said; it still waits", tasks.waiting.count == 1
                 && [tasks.messageLabel.stringValue containsString:@"cannot be reached"],
             tasks.messageLabel.stringValue);
     remote.transport = network;
     LBWaitingRow(tasks, @"Receive the goods");
-    LBClick(tasks.window, @"submitWaiting");
+    LBClick(LBShown(tasks), @"submitWaiting");
     LBCheck(@"online again, Submit: submitted, waiting no more", tasks.waiting.count == 0 && [tasks.messageLabel.stringValue hasSuffix:@"submitted."],
             tasks.messageLabel.stringValue);
     names = LBTasksOf(tasks, order, @[]);
@@ -1225,10 +1373,10 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
 /* Sales and purchases, each in its window, as a user writes them: a sale
    to Bob of three bolts, numbered, confirmed with ConfirmSaleOrder,
    shipped in two from Shelf A with ShipGoods, its process (order to cash)
-   asking each step in Window > Tasks and closing it;
+   asking each step in Go > Tasks and closing it;
    a purchase from Parts Ltd of ten brackets at a cost of 1, confirmed,
    received in two at Default, a damaged one sent back. Each the server's.
-   The purchase's process (Server/LBWorkflow.h) in Window > Tasks:
+   The purchase's process (Server/LBWorkflow.h) in Go > Tasks:
    Confirm the order, then Receive the goods, then nothing, each step done
    in the order's window with its form (ConfirmPurchaseOrder,
    ReceiveGoods), saved and submitted to its task. Another
@@ -1237,7 +1385,7 @@ static void LBWaitingSteps(LBStockWindowController *stock, LBTasksWindowControll
 static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, StockItem *bracket) {
     [stock.tabs selectTabViewItemWithIdentifier:@"saleOrders"];
     LBSpin();
-    LBClick(stock.window, @"newSale");
+    LBClick(LBShown(stock), @"newSale");
     LBStockOrderWindowController *sale = LBOpened(stock, [LBStockOrderWindowController class]);
     sale.quiet = YES;
     NSWindow *window = sale.window;
@@ -1260,7 +1408,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBTasksWindowController *tasks = LBTasksWindow();
     NSArray *names = LBTasksOf(tasks, order, @[ @"Confirm the order" ]);
     LBCheck(@"order to cash started: its Confirm the order", [names isEqualToArray:@[ @"Confirm the order" ]], tasks.messageLabel.stringValue ?: names);
-    [window makeKeyAndOrderFront:nil];
+    LBShown(sale);
     LBClick(window, @"confirmOrder");
     LBCheck(@"Confirm: its sheet, ConfirmSaleOrder over the order, Confirmed chosen", window.attachedSheet == sale.confirmPanel
                 && [sale.flow.step.formName isEqualToString:@"ConfirmSaleOrder"] && [[sale.confirmForm valueForKey:@"orderState"] isEqualToString:@"Confirmed"],
@@ -1269,7 +1417,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBCheck(@"confirmed", [order.orderState isEqualToString:@"Confirmed"] && !sale.lastError && !window.attachedSheet, sale.lastError ?: order.orderState);
     names = LBTasksOf(tasks, order, @[ @"Ship the goods" ]);
     LBCheck(@"its task done with its form, submitted: Ship the goods", [names isEqualToArray:@[ @"Ship the goods" ]], names);
-    [window makeKeyAndOrderFront:nil];
+    LBShown(sale);
     LBChoose(window, @"moveAt", @"Garage / Shelf A");
     [sale.lineList setSelectedObjects:@[ line ]];
     LBTypeStaying(window, @"moveQuantity", @"2");
@@ -1287,7 +1435,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
             shipped.source.lbTitle ?: shipped);
     names = LBTasksOf(tasks, order, @[ @"Ship the goods" ]);
     LBCheck(@"partly shipped: Ship the goods again", [names isEqualToArray:@[ @"Ship the goods" ]], names);
-    [window makeKeyAndOrderFront:nil];
+    LBShown(sale);
     LBClick(window, @"moveOutstanding");
     LBClick(sale.shipPanel, @"submitShip");
     LBCheck(@"the rest shipped: fully, in two shipments", [order.lbFilled isEqualToString:@"Shipped"] && sale.documents.count == 2,
@@ -1304,7 +1452,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     NSDecimalNumber *bracketsBefore = [LBServerOf(bracket) totalQuantity];
     [stock.tabs selectTabViewItemWithIdentifier:@"purchaseOrders"];
     LBSpin();
-    LBClick(stock.window, @"newPurchase");
+    LBClick(LBShown(stock), @"newPurchase");
     LBStockOrderWindowController *purchase = LBOpened(stock, [LBStockOrderWindowController class]);
     purchase.quiet = YES;
     window = purchase.window;
@@ -1320,7 +1468,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     PurchaseLine *uncosted = purchase.lines.lastObject;
     uncosted.lineUnitCostAmount = nil;
     uncosted.lineUnitCostCurrency = nil;
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     NSString *refusal = purchase.lastError.localizedRecoverySuggestion ?: purchase.lastError.localizedDescription;
     LBCheck(@"saved with no unit cost: refused, saying the purchase line's unit cost is missing",
             [refusal containsString:@"Purchase line of Bracket: its line unit cost amount is missing."],
@@ -1328,8 +1476,8 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     LBTypeInCell(window, @"linesTable", 2, @"1");
     LBSavedIn(purchase, @"its line, 10 brackets at 1, saved");
     names = LBTasksOf(tasks, bought, @[ @"Confirm the order" ]);
-    LBCheck(@"Window > Tasks: its Confirm the order", [names isEqualToArray:@[ @"Confirm the order" ]], tasks.messageLabel.stringValue ?: names);
-    [window makeKeyAndOrderFront:nil];
+    LBCheck(@"Go > Tasks: its Confirm the order", [names isEqualToArray:@[ @"Confirm the order" ]], tasks.messageLabel.stringValue ?: names);
+    LBShown(purchase);
     LBCheck(@"its window the model's EditPurchaseOrder", [purchase.orderForm.session.form.name isEqualToString:@"EditPurchaseOrder"],
             purchase.orderForm);
     LBCheck(@"Model/Purchasing.flow: at the order, EditPurchaseOrder", [purchase.flow.step.formName isEqualToString:@"EditPurchaseOrder"]
@@ -1406,9 +1554,9 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
         if ([tasks.openTasks[i].businessKey isEqualToString:sent.id.UUIDString]) sending = i;
     }
     if (sending != NSNotFound) {
-        [tasks.window makeKeyAndOrderFront:nil];
+        LBShown(tasks);
         [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:sending] byExtendingSelection:NO];
-        LBClick(tasks.window, @"open");
+        LBClick(LBShown(tasks), @"open");
         LBStockOrderWindowController *sender = tasks.orderWindow;
         sender.quiet = YES;
         LBCheck(@"opened in the order's window, SendSupplierReturn's sheet at once", sender.window.attachedSheet == sender.returnDoPanel
@@ -1428,11 +1576,11 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
         LBCheck(@"and its task done", names.count == 0, names);
         [sender close];
     }
-    [window makeKeyAndOrderFront:nil];
+    LBShown(purchase);
     LBSnapshot(window, @"stock-purchase");
     [purchase close];
 
-    LBClick(stock.window, @"newPurchase");
+    LBClick(LBShown(stock), @"newPurchase");
     LBStockOrderWindowController *another = LBOpened(stock, [LBStockOrderWindowController class]);
     another.quiet = YES;
     PurchaseOrder *second = (PurchaseOrder *)another.order;
@@ -1445,14 +1593,14 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
     }
     LBCheck(@"its Confirm the order listed", row != NSNotFound, names);
     if (row != NSNotFound) {
-        [tasks.window makeKeyAndOrderFront:nil];
+        LBShown(tasks);
         [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
-        LBClick(tasks.window, @"open");
+        LBClick(LBShown(tasks), @"open");
         LBStockOrderWindowController *step = tasks.orderWindow;
         step.quiet = YES;
-        LBCheck(@"opened in the order's window, titled with the task", step.window.isVisible
-                    && [step.window.title isEqualToString:@"PO-GAR-0002 — Confirm the order"],
-                step.window.title);
+        LBCheck(@"opened in the order's window, titled with the task", step.isShown
+                    && [step.title isEqualToString:@"PO-GAR-0002 — Confirm the order"],
+                step.title);
         LBSnapshot(tasks.window, @"tasks");
         LBCheck(@"its step's sheet at once: the flow's Confirm entry, on the order", step.window.attachedSheet == step.confirmPanel
                     && [step.flow.step.formName isEqualToString:@"ConfirmPurchaseOrder"] && step.flow.steps.count == 1
@@ -1461,9 +1609,9 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
         LBChoose(step.confirmPanel, @"confirmState", @"Cancelled");
         LBClick(step.confirmPanel, @"submitConfirm");
         LBCheck(@"cancelled there: the title says the task no more; the flow at the order again",
-                [[step.order valueForKey:@"orderState"] isEqualToString:@"Cancelled"] && [step.window.title isEqualToString:@"PO-GAR-0002"]
+                [[step.order valueForKey:@"orderState"] isEqualToString:@"Cancelled"] && [step.title isEqualToString:@"PO-GAR-0002"]
                     && [step.flow.step.formName isEqualToString:@"EditPurchaseOrder"] && !step.window.attachedSheet,
-                step.lastError ?: step.window.title);
+                step.lastError ?: step.title);
         names = LBTasksOf(tasks, second, @[]);
         LBCheck(@"and its task gone from the list", names.count == 0, names);
         [step close];
@@ -1481,7 +1629,7 @@ static void LBStockOrderSteps(LBStockWindowController *stock, StockItem *bolt, S
    window, a bolt found of two and four brackets not expected, posted; the
    overview, what it holds weighs and takes up, its rule due ordered. */
 static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *bolt, StockItem *bracket) {
-    NSWindow *window = stock.window;
+    NSWindow *window = LBShown(stock);
     [stock.tabs selectTabViewItemWithIdentifier:@"changes"];
     LBSpin();
     NSUInteger all = [stock.changeList.arrangedObjects count];
@@ -1500,6 +1648,20 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
     LBCheck(@"and by Shipment: the sale's two", shown.count == 2 && [[NSSet setWithArray:[shown valueForKeyPath:@"move.lbKind"]] isEqualToSet:
                                                                          [NSSet setWithObject:@"Shipment"]],
             [shown valueForKeyPath:@"move.lbWhat"]);
+    /* Open: what made the shipment, its sale, shown in the main pane;
+       Back to the changelog. */
+    [stock.changeList setSelectionIndex:0];
+    LBClick(window, @"openChange");
+    LBScreen *opened = [LBWorkspace current].shownScreen;
+    NSManagedObject *shippedFor = ((LBChange *)shown.firstObject).move.shipment.saleOrder;
+    LBCheck(@"Open: the shipment's sale, in its screen", [opened isKindOfClass:[LBStockOrderWindowController class]] && shippedFor
+                && [((LBStockOrderWindowController *)opened).order.objectID isEqual:shippedFor.objectID],
+            opened.title);
+    [[LBWorkspace current] goBack:nil];
+    LBSpin();
+    LBCheck(@"Back: the changelog again", stock.isShown && [stock.tabs.selectedTabViewItem.identifier isEqual:@"changes"],
+            [LBWorkspace current].shownScreen.title);
+    if (opened != stock) [opened close];
     LBChoose(window, @"changeKind", @"Transfer");
     LBChange *transfer = [stock.changeList.arrangedObjects firstObject];
     LBCheck(@"the transfer, before and after at each end", [transfer.fromTitle isEqualToString:@"Main / Default: 20 → 15"]
@@ -1512,7 +1674,7 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
 
     [stock.tabs selectTabViewItemWithIdentifier:@"counts"];
     LBSpin();
-    LBClick(window, @"newCount");
+    LBClick(LBShown(stock), @"newCount");
     LBStockCountWindowController *counting = LBOpened(stock, [LBStockCountWindowController class]);
     counting.quiet = YES;
     NSWindow *sheet = counting.window;
@@ -1551,9 +1713,9 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
         if ([tasks.openTasks[i].businessKey isEqualToString:count.id.UUIDString]) row = i;
     }
     if (row != NSNotFound) {
-        [tasks.window makeKeyAndOrderFront:nil];
+        LBShown(tasks);
         [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
-        LBClick(tasks.window, @"open");
+        LBClick(LBShown(tasks), @"open");
         LBStockCountWindowController *review = (LBStockCountWindowController *)tasks.stepWindow;
         review.quiet = YES;
         LBCheck(@"opened in the count's window, its review's sheet at once: ReviewStockCount, its two lines",
@@ -1579,7 +1741,7 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
        submitted and posted all the same. */
     [stock.tabs selectTabViewItemWithIdentifier:@"counts"];
     LBSpin();
-    LBClick(window, @"newCount");
+    LBClick(LBShown(stock), @"newCount");
     LBStockCountWindowController *recount = LBOpened(stock, [LBStockCountWindowController class]);
     recount.quiet = YES;
     sheet = recount.window;
@@ -1602,9 +1764,9 @@ static void LBStockLookingBackSteps(LBStockWindowController *stock, StockItem *b
     }
     LBCheck(@"its Review the count", row != NSNotFound, names);
     if (row != NSNotFound) {
-        [tasks.window makeKeyAndOrderFront:nil];
+        LBShown(tasks);
         [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
-        LBClick(tasks.window, @"open");
+        LBClick(LBShown(tasks), @"open");
         LBStockCountWindowController *review = (LBStockCountWindowController *)tasks.stepWindow;
         review.quiet = YES;
         LBChoose(review.reviewPanel, @"reviewState", @"Posted");
@@ -1658,25 +1820,27 @@ static void LBStockSteps(LBMainWindowController *controller) {
     [NSApp sendAction:@selector(showStock:) to:nil from:nil];
     LBSpin();
     NSWindow *window = LBStockWindow();
-    LBStockWindowController *stock = window.windowController;
-    LBCheck(@"the stock window", window != nil, nil);
+    LBStockWindowController *stock = [LBWorkspace current].stock;
+    LBCheck(@"the stock's screen", window != nil, nil);
     if (!window) return;
     stock.quiet = YES;
     /* With no catalog, what needs one cannot be clicked; with one, can. */
     NSMutableArray *ofCatalog = [NSMutableArray array];
-    for (NSString *name in @[ @"showSettings", @"addItem", @"newSale", @"newPurchase", @"newCount" ]) {
+    for (NSString *name in @[ @"addItem", @"newSale", @"newPurchase", @"newCount" ]) {
         /* On a tab not shown too: each tab's view. */
         NSButton *button = (NSButton *)LBControl(window.contentView, name);
         for (NSTabViewItem *tab in stock.tabs.tabViewItems) button = button ?: (NSButton *)LBControl(tab.view, name);
         if (button) [ofCatalog addObject:button];
     }
-    LBCheck(@"Settings, Add, New Sale, New Purchase, New Count there", ofCatalog.count == 5, [ofCatalog valueForKey:@"identifier"]);
+    LBCheck(@"Add, New Sale, New Purchase, New Count there", ofCatalog.count == 4, [ofCatalog valueForKey:@"identifier"]);
     NSMutableArray *enabled = [NSMutableArray array];
     for (NSButton *button in ofCatalog) {
         if (button.isEnabled) [enabled addObject:button.identifier];
     }
     LBCheck(@"no catalog yet: they are not enabled", stock.catalog || !enabled.count, enabled);
-    LBClick(window, @"newCatalog");
+    /* The sidebar's +: New Catalog. */
+    [NSApp sendAction:@selector(newCatalog:) to:[LBWorkspace current] from:nil];
+    LBSpin();
     [enabled removeAllObjects];
     for (NSButton *button in ofCatalog) {
         if (!button.isEnabled) [enabled addObject:button.identifier];
@@ -1694,11 +1858,15 @@ static void LBStockSteps(LBMainWindowController *controller) {
     LBStockItemWindowController *card = LBAddStockItem(stock, @"Bolt");
     StockItem *bolt = card.item;
     NSWindow *boltWindow = card.window;
-    LBType(boltWindow, @"itemPrice", @"0.5");
+    LBType(boltWindow, @"itemPriceValue", @"0.5");
     LBChoose(boltWindow, @"itemCategory", @"Fasteners");
     LBChoose(boltWindow, @"itemSupplier", @"Parts Ltd");
     LBSavedIn(card, @"its price, category and supplier saved");
     StockItem *keptBolt = LBServerOf(bolt);
+    UDQuantityField *price = (UDQuantityField *)LBControl(boltWindow.contentView, @"itemPrice");
+    LBCheck(@"its price's currency beside it, to choose from: the catalog's USD, saved", [price isKindOfClass:[UDQuantityField class]]
+                && [price.unitBox.stringValue isEqualToString:@"USD"] && price.unitBox.numberOfItems > 1,
+            price.unitBox.stringValue);
     LBCheck(@"its price kept, in the catalog's currency; its category; its SKU given, GAR-00001", LBIs(keptBolt.priceAmount, @"0.5")
                 && [keptBolt.priceCurrency isEqualToString:@"USD"] && [keptBolt.category.categoryName isEqualToString:@"Fasteners"]
                 && [keptBolt.sku isEqualToString:@"GAR-00001"],
@@ -1736,9 +1904,9 @@ static void LBStockSteps(LBMainWindowController *controller) {
         if ([tasks.openTasks[i].businessKey isEqualToString:transfer.id.UUIDString]) row = i;
     }
     if (row != NSNotFound) {
-        [tasks.window makeKeyAndOrderFront:nil];
+        LBShown(tasks);
         [tasks.table selectRowIndexes:[NSIndexSet indexSetWithIndex:row] byExtendingSelection:NO];
-        LBClick(tasks.window, @"open");
+        LBClick(LBShown(tasks), @"open");
         LBStockItemWindowController *mover = (LBStockItemWindowController *)tasks.stepWindow;
         mover.quiet = YES;
         LBCheck(@"opened in the item's window, MoveStock's sheet at once", [mover isKindOfClass:[LBStockItemWindowController class]]
@@ -1751,7 +1919,7 @@ static void LBStockSteps(LBMainWindowController *controller) {
         [mover close];
     }
     [tasks close];
-    [boltWindow makeKeyAndOrderFront:nil];
+    LBShown(card);
     [card readAgain];
     LBCheck(@"5 moved to Garage / Shelf A: two holdings, 20 on hand still", card.holdings.count == 2 && LBIs(bolt.totalQuantity, @"20"),
             card.lastError ?: [card.holdings valueForKey:@"lbLocationTitle"]);
@@ -1803,7 +1971,7 @@ static void LBStockSteps(LBMainWindowController *controller) {
     [stock search:nil];
     LBSnapshot(window, @"stock-items");
     LBPartsSteps(controller, stock, bolt);
-    [window close];
+    [stock close];
 }
 
 /* A service's parts on the desktop: in the logbook's window, a service of a
@@ -1814,17 +1982,20 @@ static void LBStockSteps(LBMainWindowController *controller) {
 static void LBPartsSteps(LBMainWindowController *controller, LBStockWindowController *stock, StockItem *bolt) {
     NSWindow *window = controller.window;
     controller.quiet = YES;
+    /* Back to the logbook: the vehicle's page. */
+    [controller.workspace showLogbook];
+    LBSpin();
     NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
     if (![controller.vehicles.arrangedObjects count]) {
         [tabs selectTabViewItemWithIdentifier:@"vehicle"];
         LBSpin();
-        LBClick(window, @"addVehicle");
+        LBAddVehicle(window);
         LBType(window, @"vehicleName", @"Workshop van");
         LBType(window, @"make", @"Ford");
         LBType(window, @"carModel", @"Transit");
         LBType(window, @"manufactureYear", @"2019");
         LBType(window, @"fuel", @"Diesel");
-        LBClick(window, @"save");
+        LBMenuCommand(window, @selector(save:));
     }
     [tabs selectTabViewItemWithIdentifier:@"records"];
     LBSpin();
@@ -1897,10 +2068,10 @@ static void LBPartsSteps(LBMainWindowController *controller, LBStockWindowContro
     LBType(parts.window, @"partQuantity", @"100");
     LBClick(parts.window, @"usePart");
     LBClick(parts.window, @"partsDone");
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     LBCheck(@"100 bolts used, of the few there: refused at saving, in the procedure's words",
             controller.lastError && [controller.lastError.localizedDescription containsString:@"holds"], controller.lastError);
-    LBClick(window, @"revert");
+    LBMenuCommand(window, @selector(revertChanges:));
 }
 
 static void LBKindSteps(LBMainWindowController *controller) {
@@ -2118,7 +2289,7 @@ static void LBKindSteps(LBMainWindowController *controller) {
         [deleting addObject:[NSString stringWithFormat:@"%@%@", object.entity.name,
                                                        [object isKindOfClass:[Answer class]] ? [NSString stringWithFormat:@" of %@", ((Answer *)object).inspection.entity.name] : @""]];
     }
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     /* Signed in, the permissions apply: a file is read through its record
        (Logbook.permissions.plist), so the orphan is no longer the user's
        to see; with no sign-in, it is there. */
@@ -2616,7 +2787,7 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
                                                                                  && vehicles.managedObjectContext == controller.context,
             [NSString stringWithFormat:@"%@ %@ canAdd %d", vehicles.entityName, vehicles.managedObjectContext, vehicles.canAdd]);
 
-    LBClick(window, @"addVehicle");
+    LBAddVehicle(window);
     LBCheck(@"a new vehicle, chosen", [controller.vehicles.arrangedObjects count] == before + 1
                                           && controller.vehicles.selectedObjects.count == 1,
             [NSString stringWithFormat:@"%lu listed (%lu before), %lu chosen", (unsigned long)[controller.vehicles.arrangedObjects count],
@@ -2646,7 +2817,7 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
     Vehicle *chosen = controller.vehicles.selectedObjects.firstObject;
     LBCheck(@"what was typed is the vehicle's", [chosen.vehicleName isEqualToString:@"Family Golf"] && chosen.manufactureYear == 2016,
             chosen.vehicleName);
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     LBCheck(@"saved", !controller.store.context.hasChanges && !controller.lastError,
             [NSString stringWithFormat:@"%@ / %@ / %@", controller.lastError, controller.store.context.updatedObjects,
                                        controller.store.context.insertedObjects]);
@@ -2748,7 +2919,7 @@ static void LBBicycleSteps(LBMainWindowController *controller) {
     NSTabView *tabs = (NSTabView *)LBControl(window.contentView, @"tabs");
     [tabs selectTabViewItemWithIdentifier:@"vehicle"];
     LBSpin();
-    LBClick(window, @"addVehicle");
+    LBAddVehicle(window);
     Vehicle *bike = controller.vehicles.selectedObjects.firstObject;
     LBCheck(@"a new vehicle, a car until said otherwise", [bike.vehicleKind isEqualToString:@"Car"], bike.vehicleKind);
     LBType(window, @"vehicleName", @"Self-test Bicycle");
@@ -2756,7 +2927,7 @@ static void LBBicycleSteps(LBMainWindowController *controller) {
     LBType(window, @"carModel", @"Long Haul Trucker");
     LBChoose(window, @"vehicleKind", @"Bicycle");
     LBCheck(@"its Kind chosen: a bicycle", [bike.vehicleKind isEqualToString:@"Bicycle"], bike.vehicleKind);
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     LBCheck(@"a bicycle saved with no fuel and no year", !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
     Vehicle *kept = LBVehicleNamed(@"Self-test Bicycle");
@@ -2834,7 +3005,7 @@ static void LBBicycleSteps(LBMainWindowController *controller) {
     LBType(window, @"FillUpTotalValue", @"2");
     BOOL quiet = controller.quiet;
     controller.quiet = YES;
-    LBClick(window, @"save");
+    LBMenuCommand(window, @selector(save:));
     controller.quiet = quiet;
     NSString *said = controller.lastError.localizedRecoverySuggestion ?: controller.lastError.localizedDescription ?: @"";
     LBCheck(@"a fill-up of a bicycle refused, in the model's words", controller.store.context.hasChanges && controller.lastError
@@ -2938,7 +3109,7 @@ static void LBInvenTreeSteps(LBMainWindowController *controller) {
     if (LBAppStore.local) {
         NSTextField *line = controller.syncStatusField;
         LBCheck(@"the window's sync line: connected, \"Synced …\", not red", line && ![line isHidden] && [line.stringValue hasPrefix:@"Synced"]
-                    && [line isDescendantOf:controller.window.contentView] && !LBAppStore.local.signInRefused,
+                    && line.window == controller.window && !LBAppStore.local.signInRefused,
                 line ? line.stringValue : @"not connected");
     }
     Catalog *there = nil;
@@ -2969,7 +3140,7 @@ static void LBInvenTreeSteps(LBMainWindowController *controller) {
     Location *held = [(Holding *)[LBServerObjects([Holding class], [NSPredicate predicateWithFormat:@"stockItem.id == %@", mini.id]) firstObject] location];
     LBCatalogSettingsWindowController *places = [[LBCatalogSettingsWindowController alloc] initWithStore:LBAppStore catalog:there];
     places.quiet = YES;
-    [places showWindow:nil];
+    [places showTab:@"warehouses"];
     LBSpin();
     for (Warehouse *each in places.warehouseList.arrangedObjects) {
         if ([each.id isEqual:held.warehouse.id]) [places.warehouseList setSelectedObjects:@[ each ]];
@@ -3019,12 +3190,14 @@ static void LBInvenTreeSteps(LBMainWindowController *controller) {
 static void LBTimingSteps(LBMainWindowController *controller) {
     LBMainTrackSteps(controller);
     LBSpin();
-    NSTableView *table = (NSTableView *)LBControl(controller.window.contentView, @"vehiclesTable");
-    LBTimingNote(@"vehicles: %ld", (long)table.numberOfRows);
+    /* The sidebar: Vehicles' heading, then each vehicle. */
+    NSOutlineView *table = (NSOutlineView *)LBControl(controller.window.contentView, @"sidebar");
+    NSInteger count = (NSInteger)[controller.vehicles.arrangedObjects count];
+    LBTimingNote(@"vehicles: %ld", (long)count);
     for (int pass = 0; pass < 2; pass++) {
-        for (NSInteger row = 0; row < table.numberOfRows; row++) {
+        for (NSInteger row = 1; row <= count; row++) {
             LBTimingNote(@"--- choose row %ld, %@", (long)row,
-                         [[controller.vehicles.arrangedObjects objectAtIndex:(NSUInteger)row] valueForKey:@"vehicleName"]);
+                         [[controller.vehicles.arrangedObjects objectAtIndex:(NSUInteger)row - 1] valueForKey:@"vehicleName"]);
             LBTimed(@"chosen, drawn and settled", ^{
                 [table selectRowIndexes:[NSIndexSet indexSetWithIndex:(NSUInteger)row] byExtendingSelection:NO];
                 [controller.window displayIfNeeded];
@@ -3034,11 +3207,69 @@ static void LBTimingSteps(LBMainWindowController *controller) {
     }
 }
 
+/* The menu bar as the HIG (2014) has it: its menus in order, each with its
+   expected items; Go > Stock then Go > Back, and View > Hide Sidebar, as a
+   user chooses them. */
+static void LBMenuSteps(LBMainWindowController *controller) {
+    NSWindow *window = controller.window;
+    NSArray *titles = [NSApp.mainMenu.itemArray valueForKey:@"title"];
+    NSArray *expected = @[ @"File", @"Edit", @"View", @"Go", @"Window", @"Help" ];
+    NSUInteger at = 0;
+    for (NSString *title in titles) {
+        if (at < expected.count && [title isEqualToString:expected[at]]) at++;
+    }
+    LBCheck(@"the menus: File, Edit, View, Go, Window, Help, in that order", at == expected.count, titles);
+    NSDictionary<NSString *, NSArray<NSString *> *> *items = @{
+        @"File": @[ @"newVehicle:", @"newCatalog:", @"performClose:", @"save:", @"revertChanges:" ],
+        @"Edit": @[ @"undo:", @"redo:", @"cut:", @"copy:", @"paste:", @"delete:", @"selectAll:", @"findInScreen:" ],
+        @"View": @[ @"toggleToolbarShown:", @"runToolbarCustomizationPalette:", @"toggleSidebarPane:", @"toggleInspectorPane:",
+                    @"toggleFullScreen:" ],
+        @"Go": @[ @"goBack:", @"goForward:", @"showLogbook:", @"showStock:", @"showTasks:", @"showExpenseKinds:", @"showChecklists:",
+                  @"showExchangeRates:" ],
+        @"Window": @[ @"performMiniaturize:", @"performZoom:", @"arrangeInFront:" ],
+        @"Help": @[ @"showHelp:" ],
+    };
+    for (NSString *menu in items) {
+        NSMutableArray *missing = [items[menu] mutableCopy];
+        for (NSMenuItem *item in [NSApp.mainMenu itemWithTitle:menu].submenu.itemArray) {
+            if (item.action) [missing removeObject:NSStringFromSelector(item.action)];
+        }
+        LBCheck([NSString stringWithFormat:@"%@ has its items", menu], missing.count == 0, missing);
+    }
+    NSMenu *appMenu = [NSApp.mainMenu itemAtIndex:0].submenu;
+    NSMutableArray *names = [NSMutableArray array];
+    for (NSMenuItem *item in appMenu.itemArray) if (item.action) [names addObject:NSStringFromSelector(item.action)];
+    LBCheck(@"the app menu: Hide Others and Show All, no lists in it", [names containsObject:@"hideOtherApplications:"]
+                && [names containsObject:@"unhideAllApplications:"] && ![names containsObject:@"showExpenseKinds:"],
+            names);
+    /* Go > Stock, then Go > Back: the logbook's page again. */
+    LBWorkspace *workspace = controller.workspace;
+    [workspace showLogbook];
+    LBMenuCommand(window, @selector(showStock:));
+    LBCheck(@"Go > Stock: the stock's screen shown", workspace.shownScreen == workspace.stock, workspace.shownScreen);
+    LBMenuCommand(window, @selector(goBack:));
+    LBCheck(@"Go > Back: the logbook's page again", workspace.shownScreen == nil, workspace.shownScreen);
+    /* View > Hide Sidebar, then Show Sidebar: the item says which. */
+    NSMenuItem *toggle = nil;
+    for (NSMenuItem *item in [NSApp.mainMenu itemWithTitle:@"View"].submenu.itemArray) {
+        if (item.action && LBSameSelector(item.action, @selector(toggleSidebarPane:))) toggle = item;
+    }
+    [controller validateMenuItem:toggle];
+    BOOL shown = [workspace.paneSplit isPaneVisible:LBSidebarPane];
+    LBCheck(@"View: Hide Sidebar while it is shown", shown && [toggle.title isEqualToString:@"Hide Sidebar"], toggle.title);
+    LBMenuCommand(window, @selector(toggleSidebarPane:));
+    [controller validateMenuItem:toggle];
+    LBCheck(@"View > Hide Sidebar: hidden, the item Show Sidebar", ![workspace.paneSplit isPaneVisible:LBSidebarPane]
+                && [toggle.title isEqualToString:@"Show Sidebar"], toggle.title);
+    LBMenuCommand(window, @selector(toggleSidebarPane:));
+    LBCheck(@"View > Show Sidebar: shown again", [workspace.paneSplit isPaneVisible:LBSidebarPane], nil);
+}
+
 static void LBSteps(LBMainWindowController *controller) {
     NSWindow *window = controller.window;
-    NSTableView *vehiclesTable = (NSTableView *)LBControl(window.contentView, @"vehiclesTable");
-    LBCheck(@"the vehicle list's delegate the window's controller (MainWindow.xib), for LB_TIMING's clicks",
-            vehiclesTable.delegate == (id)controller, vehiclesTable.delegate);
+    NSOutlineView *sidebar = (NSOutlineView *)LBControl(window.contentView, @"sidebar");
+    LBCheck(@"the sidebar's delegate and data source the workspace (MainWindow.xib), for its rows and LB_TIMING's clicks",
+            sidebar && sidebar.delegate == (id)controller.workspace && sidebar.dataSource == (id)controller.workspace, sidebar.delegate);
     if ([[NSProcessInfo processInfo].environment[@"LB_STEPS"] isEqualToString:@"timing"]) {
         controller.quiet = YES;
         [window makeKeyAndOrderFront:nil];
@@ -3053,6 +3284,7 @@ static void LBSteps(LBMainWindowController *controller) {
         LBPictureSteps(controller);
         return;
     }
+    LBMenuSteps(controller);
     if (LBRuns(@"logbook")) LBLogbookSteps(controller);
     if (LBRuns(@"stock")) LBStockSteps(controller);
     LBCheck(@"the user's saved settings as they were (the server, the user)", [LBSavedSettingsNow()[@"LBServer"] ?: @"" isEqual:LBSavedSettings[@"LBServer"] ?: @""]

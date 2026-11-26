@@ -272,7 +272,7 @@ stock's.
   return**: `Model/CustomerReturn.bpmn`, `SupplierReturn.bpmn`), gives the
   catalog's keepers Receive the return (Send the return), the flow
   Selling's ReceiveReturn (Purchasing's SendReturn: ReceiveCustomerReturn,
-  SendSupplierReturn), opened from Window > Tasks in the order's window:
+  SendSupplierReturn), opened from Go > Tasks in the order's window:
   the day, and where it comes back to (goes from), **returned**, its moves
   made as it saves, as `Return` makes them; or **cancelled**. The order's
   window lists its returns. The server's `Return` action on a sale or a
@@ -324,7 +324,7 @@ model's form RequestTransfer, saved as a `StockTransfer` **requested**
 yet. Its process, **transfer stock** (`Model/TransferStock.bpmn`), gives
 the keepers of where it goes from (`keeperAt:<warehouse>`) Move the stock
 (the flow Transferring's Move, MoveStock, a sheet over the item's window,
-opened from Window > Tasks): **moved**, its move made as it saves, as
+opened from Go > Tasks): **moved**, its move made as it saves, as
 `Transfer` makes it (refused where less is held), made by who moved it;
 or **cancelled**. A keeper of where it goes from makes its move, wherever
 it goes.
@@ -358,7 +358,7 @@ holds shown if the counter asks; submitted, it is saved as **counted**,
 and nothing is adjusted yet. Its process, **count review**
 (`Model/CountReview.bpmn`), gives a manager of its catalog Review the
 count (the flow Counting's Review, ReviewStockCount, a sheet over the
-count, opened from Window > Tasks): **posted**, its differences adjusted
+count, opened from Go > Tasks): **posted**, its differences adjusted
 as it saves, against what is held then (what is held where it counts
 and no line found, none); or **rejected**, to be counted again. A count
 reviewed stays as it was. The server's `Count` action still counts and
@@ -398,7 +398,7 @@ docs/FORMS.md, Flows): the order's window is its EditPurchaseOrder screen;
 sheet over the order (on the order, or given it), and the sheet's Submit
 and Cancel close it back to the order. Its entries Confirm and Receive are
 what the tasks are done with (`ormkit:flow:Purchasing.flow#Confirm`): a
-task opened from Window > Tasks opens its order's window with its step's
+task opened from Go > Tasks opens its order's window with its step's
 sheet at once. `make check` checks that the window's views have each
 screen's form and each trigger (`Tests/contract-check.py`). Each step is
 done with its form: what the form enters is saved as the logbook's facts
@@ -421,9 +421,9 @@ order a form confirms is confirmed as `Confirm` does it, wherever it is
 saved: refused with no lines, a sale's phantom kits expanded. A shipment's
 moves are worked out as it is saved: each of its line's item, from where it
 went, made by who recorded it, when.
-**Window > Tasks** lists the open tasks, the oldest first, each with its
-order; Open shows the order in its own window, titled with the task, where
-its step is done. Its API is the server's
+**Tasks** (the sidebar's Work, or Go > Tasks) lists the open tasks,
+the oldest first, each with its order; Open shows the order in the main
+pane, titled with the task, where its step is done. Its API is the server's
 `workflow/` (WorkflowKit's `WFODataService.h`); with no one signed in, a
 trial user may work every task. `Tests/process-check.py` runs it over
 HTTP. Stock counts, and picking and packing, are to follow: what a count
@@ -534,15 +534,24 @@ devices make it.
   | `Reorder` | a warehouse | `Day` | the drafts |
 
   An order or a count posted with no number is given the next.
-- **The desktop app** has a window for each thing stock is made of. The
-  Stock window lists: the catalog's items, sales, purchases, the
-  changelog (each move with what its locations held before and after),
-  counts, and the overview (with what is held weighs and takes up, in the
-  catalog's units). What it lists opens in a window of its own, which
-  edits it: an item (its stock, recipe, suppliers, codes, size, reorder
-  rules), an order, a count being taken, the catalog's settings. Each
-  window has its own context and reads only what it shows; after a save
-  or an action it says stock changed, and the others read theirs again.
+- **The desktop app** shows stock in its one window: the sidebar lists
+  each catalog's Overview (with what is held weighs and takes up, in the
+  catalog's units), Items, Purchases, Sales, Counts, Changelog (each move
+  with what its locations held before and after), and its settings, a
+  row a page: Warehouses (and the chosen one's locations), Contacts (its
+  customers and suppliers), Categories, and Settings (its name,
+  currency, prefix and units); one save saves them all. File > Save
+  and File > Revert to Saved act on the screen shown (the logbook's
+  page, an item, an order, a catalog's settings, the lists); the
+  screens have no buttons of their own for them. What a
+  list shows opens in the main pane, which edits it: an item (its stock,
+  recipe, suppliers, codes, units, size, reorder rules), an order, a
+  count being taken; Back returns to the list. A move opens what made it
+  (Open, or a double click, in an item's moves and the changelog): its
+  order, its count, a part's record on the vehicle's page. Amounts are
+  in a currency chosen beside them. Each screen has its own context and
+  reads only what it shows; after a save or an action it says stock
+  changed, and the others read theirs again.
   The actions are the server's, as the Reminders tab calls them.
 - **The iOS app** shows stock in place of the logbook when asked (the
   Vehicle tab's Stock row; Settings' row back, and it stays so across
@@ -724,4 +733,5 @@ it. FIFO costing needs lots, and comes after them.
 4. Numbers: the app's prefix for the kind of document, the catalog's own
    prefix that its owner types in, and a running number
    ([Changes](#changes-to-the-model), 5).
-5. The desktop app's stock is a window of its own.
+5. The desktop app's stock is a place of its one window (the sidebar's
+   Stock).

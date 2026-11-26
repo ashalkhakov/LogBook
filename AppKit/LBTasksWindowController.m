@@ -17,7 +17,7 @@
 }
 
 - (instancetype)initWithStore:(LBStore *)store {
-    if ((self = [super initWithWindowNibName:@"TasksWindow"])) {
+    if ((self = [super initWithNibName:@"TasksWindow" bundle:nil])) {
         _store = store;
         _tasks = [[LBTasks alloc] initWithServiceRoot:store.serviceRoot signIn:store.signIn];
         _openTasks = @[];
@@ -37,14 +37,16 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void)windowDidLoad {
-    [super windowDidLoad];
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"Tasks";
     self.table.target = self;
     self.table.doubleAction = @selector(openTask:);
     [self refresh:nil];
 }
 
-- (void)windowDidBecomeKey:(NSNotification *)notification {
+- (void)screenDidShow {
+    [super screenDidShow];
     [self refresh:nil];
 }
 

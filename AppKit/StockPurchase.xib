@@ -7,7 +7,7 @@
   <objects>
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockOrderWindowController">
       <connections>
-        <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="view" destination="content" id="windowOutlet"/>
         <outlet property="returnAskPanel" destination="returnAskPanel" id="returnAskPanelOutlet"/>
         <outlet property="returnDoPanel" destination="returnDoPanel" id="returnDoPanelOutlet"/>
         <outlet property="lineList" destination="lineList" id="lineListOutlet"/>
@@ -74,7 +74,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnAskLineLabel">
             <rect key="frame" x="14" y="176" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Line" id="returnAskLineLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Line:" id="returnAskLineLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -97,7 +97,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnAskQuantityLabel">
             <rect key="frame" x="14" y="146" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many" id="returnAskQuantityLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many:" id="returnAskQuantityLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -119,7 +119,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnAskReasonLabel">
             <rect key="frame" x="14" y="116" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason" id="returnAskReasonLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason:" id="returnAskReasonLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -141,7 +141,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnAskNoteLabel">
             <rect key="frame" x="14" y="86" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="returnAskNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="returnAskNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -165,6 +165,9 @@
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissReturnAskCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="dismissForm:" target="-2" id="dismissReturnAskAction"/>
@@ -173,7 +176,7 @@
           <button verticalHuggingPriority="750" identifier="submitReturnAsk" id="submitReturnAsk">
             <rect key="frame" x="315" y="12" width="95" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitReturnAskCell">
+            <buttonCell key="cell" type="push" title="Return" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitReturnAskCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -195,7 +198,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoItemLabel">
             <rect key="frame" x="14" y="266" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item" id="returnDoItemLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item:" id="returnDoItemLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -216,7 +219,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoQuantityLabel">
             <rect key="frame" x="14" y="236" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many" id="returnDoQuantityLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many:" id="returnDoQuantityLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -237,7 +240,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoReasonLabel">
             <rect key="frame" x="14" y="206" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason" id="returnDoReasonLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason:" id="returnDoReasonLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -258,7 +261,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoNoteLabel">
             <rect key="frame" x="14" y="176" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="returnDoNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="returnDoNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -279,7 +282,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoDayLabel">
             <rect key="frame" x="14" y="146" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Sent on" id="returnDoDayLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Sent on:" id="returnDoDayLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -301,7 +304,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoAtLabel">
             <rect key="frame" x="14" y="116" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From" id="returnDoAtLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From:" id="returnDoAtLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -324,7 +327,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnDoStateLabel">
             <rect key="frame" x="14" y="86" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Returned" id="returnDoStateLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Returned:" id="returnDoStateLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -349,6 +352,9 @@
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissReturnDoCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="dismissForm:" target="-2" id="dismissReturnDoAction"/>
@@ -357,7 +363,7 @@
           <button verticalHuggingPriority="750" identifier="submitReturnDone" id="submitReturnDone">
             <rect key="frame" x="315" y="12" width="95" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitReturnDoneCell">
+            <buttonCell key="cell" type="push" title="Send" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitReturnDoneCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -394,7 +400,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="confirmSupplierLabel">
             <rect key="frame" x="14" y="303" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier" id="confirmSupplierLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier:" id="confirmSupplierLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -415,7 +421,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="confirmOrderedLabel">
             <rect key="frame" x="14" y="273" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Placed on" id="confirmOrderedLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Placed on:" id="confirmOrderedLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -499,7 +505,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="confirmStateLabel">
             <rect key="frame" x="14" y="59" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State" id="confirmStateLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State:" id="confirmStateLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -524,6 +530,9 @@
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissConfirmCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="dismissForm:" target="-2" id="dismissConfirmAction"/>
@@ -532,8 +541,7 @@
           <button verticalHuggingPriority="750" identifier="submitConfirm" id="submitConfirm">
             <rect key="frame" x="315" y="12" width="95" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="
-" id="submitConfirmCell">
+            <buttonCell key="cell" type="push" title="Confirm" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitConfirmCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -555,7 +563,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="receiveDayLabel">
             <rect key="frame" x="14" y="363" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Received on" id="receiveDayLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Received on:" id="receiveDayLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -577,7 +585,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="receiveAtLabel">
             <rect key="frame" x="14" y="331" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At" id="receiveAtLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At:" id="receiveAtLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -598,10 +606,10 @@
             </connections>
           </popUpButton>
           <scrollView autohidesScrollers="YES" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="receiveMovesTableScroll">
-            <rect key="frame" x="14" y="110" width="492" height="200"/>
+            <rect key="frame" x="14" y="134" width="492" height="176"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <clipView key="contentView" id="receiveMovesTableClip">
-              <rect key="frame" x="1" y="1" width="490" height="198"/>
+              <rect key="frame" x="1" y="1" width="490" height="174"/>
               <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
               <subviews>
                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" columnSelection="YES" multipleSelection="NO" autosaveColumns="NO" headerView="receiveMovesTableHeader" identifier="receiveMovesTable" id="receiveMovesTable">
@@ -667,7 +675,7 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             </scroller>
             <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="receiveMovesTableVScroller">
-              <rect key="frame" x="476" y="1" width="15" height="198"/>
+              <rect key="frame" x="476" y="1" width="15" height="174"/>
               <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
             </scroller>
             <tableHeaderView key="headerView" id="receiveMovesTableHeader">
@@ -678,7 +686,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="receiveLineLabel">
             <rect key="frame" x="14" y="79" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Line" id="receiveLineLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Line:" id="receiveLineLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -698,10 +706,10 @@
               <binding destination="receiveMoves" name="selectedObject" keyPath="selection.purchaseLine" id="receiveLineSelectedObject"/>
             </connections>
           </popUpButton>
-          <button verticalHuggingPriority="750" identifier="removeReceived" id="removeReceived">
-            <rect key="frame" x="365" y="70" width="140" height="32"/>
+          <button toolTip="Remove Line" verticalHuggingPriority="750" identifier="removeReceived" id="removeReceived">
+            <rect key="frame" x="14" y="111" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Remove Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeReceivedCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeReceivedCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -715,6 +723,9 @@
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissReceiveCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="dismissForm:" target="-2" id="dismissReceiveAction"/>
@@ -723,8 +734,7 @@
           <button verticalHuggingPriority="750" identifier="submitReceive" id="submitReceive">
             <rect key="frame" x="415" y="12" width="95" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="
-" id="submitReceiveCell">
+            <buttonCell key="cell" type="push" title="Receive" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitReceiveCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -735,26 +745,21 @@
         </subviews>
       </view>
     </window>
-    <window title="Purchase" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookStockPurchase" animationBehavior="default" id="window">
-      <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-      <rect key="contentRect" x="180" y="140" width="680" height="620"/>
-      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
-      <value key="minSize" type="size" width="680" height="620"/>
-      <view key="contentView" id="content">
-        <rect key="frame" x="0" y="0" width="680" height="620"/>
-        <autoresizingMask key="autoresizingMask"/>
+    <customView userLabel="Screen" id="content">
+        <rect key="frame" x="0" y="0" width="680" height="582"/>
+        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
         <subviews>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderPartyLabel">
-            <rect key="frame" x="14" y="589" width="90" height="17"/>
+            <rect key="frame" x="14" y="551" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier" id="orderPartyLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier:" id="orderPartyLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="orderParty" id="orderParty">
-            <rect key="frame" x="110" y="583" width="220" height="26"/>
+            <rect key="frame" x="110" y="545" width="220" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="orderPartyCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -773,16 +778,16 @@
             </connections>
           </popUpButton>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderPlacedLabel">
-            <rect key="frame" x="345" y="589" width="80" height="17"/>
+            <rect key="frame" x="345" y="551" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Placed on" id="orderPlacedLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Placed on:" id="orderPlacedLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="orderPlaced" id="orderPlaced">
-            <rect key="frame" x="430" y="586" width="236" height="22"/>
+            <rect key="frame" x="430" y="548" width="236" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="orderPlacedCell">
               <dateFormatter key="formatter" formatterBehavior="custom10_4" dateStyle="medium" timeStyle="none" id="orderPlacedFormatter"/>
@@ -795,16 +800,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderReferenceLabel">
-            <rect key="frame" x="14" y="559" width="90" height="17"/>
+            <rect key="frame" x="14" y="521" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Their number" id="orderReferenceLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Their number:" id="orderReferenceLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="orderReference" id="orderReference">
-            <rect key="frame" x="110" y="556" width="220" height="22"/>
+            <rect key="frame" x="110" y="518" width="220" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="orderReferenceCell">
               <font key="font" metaFont="system"/>
@@ -816,16 +821,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderStateLabel">
-            <rect key="frame" x="345" y="559" width="80" height="17"/>
+            <rect key="frame" x="345" y="521" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State" id="orderStateLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State:" id="orderStateLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="orderState" id="orderState">
-            <rect key="frame" x="430" y="556" width="236" height="22"/>
+            <rect key="frame" x="430" y="518" width="236" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="orderStateCell">
               <font key="font" metaFont="system"/>
@@ -837,16 +842,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="orderNoteLabel">
-            <rect key="frame" x="14" y="529" width="90" height="17"/>
+            <rect key="frame" x="14" y="491" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="orderNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="orderNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="orderNote" id="orderNote">
-            <rect key="frame" x="110" y="526" width="556" height="22"/>
+            <rect key="frame" x="110" y="488" width="556" height="22"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="orderNoteCell">
               <font key="font" metaFont="system"/>
@@ -858,7 +863,7 @@
             </connections>
           </textField>
           <button verticalHuggingPriority="750" identifier="confirmOrder" id="confirmOrder">
-            <rect key="frame" x="10" y="488" width="100" height="32"/>
+            <rect key="frame" x="10" y="450" width="100" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <buttonCell key="cell" type="push" title="Confirm" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="confirmOrderCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -869,7 +874,7 @@
             </connections>
           </button>
           <button verticalHuggingPriority="750" identifier="closeOrder" id="closeOrder">
-            <rect key="frame" x="110" y="488" width="100" height="32"/>
+            <rect key="frame" x="110" y="450" width="100" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <buttonCell key="cell" type="push" title="Close" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="closeOrderCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -880,18 +885,21 @@
             </connections>
           </button>
           <button verticalHuggingPriority="750" identifier="cancelOrder" id="cancelOrder">
-            <rect key="frame" x="210" y="488" width="100" height="32"/>
+            <rect key="frame" x="210" y="450" width="100" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="cancelOrderCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="cancelOrder:" target="-2" id="cancelOrderAction"/>
             </connections>
           </button>
           <button verticalHuggingPriority="750" identifier="reopenOrder" id="reopenOrder">
-            <rect key="frame" x="310" y="488" width="100" height="32"/>
+            <rect key="frame" x="310" y="450" width="100" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <buttonCell key="cell" type="push" title="Reopen" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="reopenOrderCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -902,14 +910,14 @@
             </connections>
           </button>
           <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="linesTableScroll">
-            <rect key="frame" x="14" y="240" width="652" height="240"/>
+            <rect key="frame" x="14" y="226" width="652" height="216"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <clipView key="contentView" id="linesTableClip">
-              <rect key="frame" x="1" y="1" width="650" height="238"/>
+              <rect key="frame" x="1" y="1" width="650" height="214"/>
               <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
               <subviews>
                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="linesTableHeader" identifier="linesTable" id="linesTable">
-                  <rect key="frame" x="0" y="0" width="650" height="215"/>
+                  <rect key="frame" x="0" y="0" width="650" height="191"/>
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <size key="intercellSpacing" width="3" height="2"/>
                   <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -959,16 +967,16 @@
                         <binding destination="lineList" name="value" keyPath="arrangedObjects.lineUnitCostAmount" id="linesTablePriceValue"/>
                       </connections>
                     </tableColumn>
-                    <tableColumn identifier="priceCurrency" width="50" minWidth="30" maxWidth="1000" id="linesTableCurrencyColumn">
-                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="">
+                    <tableColumn identifier="priceCurrency" width="70" minWidth="30" maxWidth="1000" id="linesTableCurrencyColumn">
+                      <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Currency">
                         <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
                       </tableHeaderCell>
-                      <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="linesTableCurrencyCell">
+                      <comboBoxCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" alignment="left" completes="YES" numberOfVisibleItems="8" id="linesTableCurrencyCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                      </textFieldCell>
+                      </comboBoxCell>
                       <connections>
                         <binding destination="lineList" name="value" keyPath="arrangedObjects.lineUnitCostCurrency" id="linesTableCurrencyValue"/>
                       </connections>
@@ -1027,7 +1035,7 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             </scroller>
             <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="linesTableVScroller">
-              <rect key="frame" x="636" y="1" width="15" height="238"/>
+              <rect key="frame" x="636" y="1" width="15" height="214"/>
               <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
             </scroller>
             <tableHeaderView key="headerView" id="linesTableHeader">
@@ -1036,16 +1044,16 @@
             </tableHeaderView>
           </scrollView>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="lineItemLabel">
-            <rect key="frame" x="14" y="209" width="40" height="17"/>
+            <rect key="frame" x="14" y="171" width="40" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item" id="lineItemLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item:" id="lineItemLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="lineItem" id="lineItem">
-            <rect key="frame" x="59" y="203" width="220" height="26"/>
+            <rect key="frame" x="59" y="165" width="220" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="lineItemCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -1058,10 +1066,10 @@
               <binding destination="lineList" name="selectedObject" keyPath="selection.stockItem" previousBinding="lineItemValues" id="lineItemChosen"/>
             </connections>
           </popUpButton>
-          <button verticalHuggingPriority="750" identifier="addLine" id="addLine">
-            <rect key="frame" x="285" y="200" width="100" height="32"/>
+          <button toolTip="Add Line" verticalHuggingPriority="750" identifier="addLine" id="addLine">
+            <rect key="frame" x="14" y="203" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Add Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addLineCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addLineCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -1069,10 +1077,10 @@
               <action selector="addLine:" target="-2" id="addLineAction"/>
             </connections>
           </button>
-          <button verticalHuggingPriority="750" identifier="removeLine" id="removeLine">
-            <rect key="frame" x="385" y="200" width="115" height="32"/>
+          <button toolTip="Remove Line" verticalHuggingPriority="750" identifier="removeLine" id="removeLine">
+            <rect key="frame" x="37" y="203" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Remove Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeLineCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeLineCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -1082,16 +1090,16 @@
             </connections>
           </button>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveQuantityLabel">
-            <rect key="frame" x="14" y="175" width="60" height="17"/>
+            <rect key="frame" x="14" y="137" width="60" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity" id="moveQuantityLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity:" id="moveQuantityLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="moveQuantity" id="moveQuantity">
-            <rect key="frame" x="79" y="172" width="70" height="22"/>
+            <rect key="frame" x="79" y="134" width="70" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="moveQuantityCell">
               <font key="font" metaFont="system"/>
@@ -1103,16 +1111,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveAtLabel">
-            <rect key="frame" x="154" y="175" width="40" height="17"/>
+            <rect key="frame" x="154" y="137" width="40" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At" id="moveAtLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At:" id="moveAtLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="moveAt" id="moveAt">
-            <rect key="frame" x="199" y="169" width="200" height="26"/>
+            <rect key="frame" x="199" y="131" width="200" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="moveAtCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -1126,7 +1134,7 @@
             </connections>
           </popUpButton>
           <button verticalHuggingPriority="750" identifier="receiveGoods" id="receiveGoods">
-            <rect key="frame" x="529" y="200" width="125" height="32"/>
+            <rect key="frame" x="529" y="162" width="125" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <buttonCell key="cell" type="push" title="Receive…" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="receiveGoodsCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1137,16 +1145,16 @@
             </connections>
           </button>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="returnReasonLabel">
-            <rect key="frame" x="14" y="145" width="60" height="17"/>
+            <rect key="frame" x="14" y="107" width="60" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason" id="returnReasonLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason:" id="returnReasonLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="returnReason" id="returnReason">
-            <rect key="frame" x="79" y="139" width="200" height="26"/>
+            <rect key="frame" x="79" y="101" width="200" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="returnReasonCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -1160,7 +1168,7 @@
             </connections>
           </popUpButton>
           <button verticalHuggingPriority="750" identifier="returnLine" id="returnLine">
-            <rect key="frame" x="284" y="136" width="125" height="32"/>
+            <rect key="frame" x="284" y="98" width="125" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <buttonCell key="cell" type="push" title="Return Line" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="returnLineCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
@@ -1172,7 +1180,7 @@
             </connections>
           </button>
           <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="documentsTableScroll">
-            <rect key="frame" x="14" y="48" width="322" height="84"/>
+            <rect key="frame" x="14" y="10" width="322" height="84"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxY="YES"/>
             <clipView key="contentView" id="documentsTableClip">
               <rect key="frame" x="1" y="1" width="320" height="82"/>
@@ -1246,7 +1254,7 @@
             </tableHeaderView>
           </scrollView>
           <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="returnsTableScroll">
-            <rect key="frame" x="344" y="48" width="322" height="84"/>
+            <rect key="frame" x="344" y="10" width="322" height="84"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
             <clipView key="contentView" id="returnsTableClip">
               <rect key="frame" x="1" y="1" width="320" height="82"/>
@@ -1318,33 +1326,11 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
             </tableHeaderView>
           </scrollView>
-          <button verticalHuggingPriority="750" identifier="revert" id="revert">
-            <rect key="frame" x="470" y="10" width="95" height="32"/>
-            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Revert" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="revertCell">
-              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-              <font key="font" metaFont="system"/>
-            </buttonCell>
-            <connections>
-              <action selector="revertChanges:" target="-2" id="revertAction"/>
-            </connections>
-          </button>
-          <button verticalHuggingPriority="750" identifier="save" id="save">
-            <rect key="frame" x="565" y="10" width="100" height="32"/>
-            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="saveCell">
-              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-              <font key="font" metaFont="system"/>
-            </buttonCell>
-            <connections>
-              <action selector="save:" target="-2" id="saveAction"/>
-            </connections>
-          </button>
         </subviews>
-      </view>
-      <connections>
-        <outlet property="delegate" destination="-2" id="windowDelegate"/>
-      </connections>
-    </window>
+    </customView>
   </objects>
+    <resources>
+        <image name="NSAddTemplate" width="14" height="13"/>
+        <image name="NSRemoveTemplate" width="14" height="4"/>
+    </resources>
 </document>

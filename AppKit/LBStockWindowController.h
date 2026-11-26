@@ -39,6 +39,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSArray<Move *> *catalogMoves;
 @property (nonatomic, readonly, copy) NSArray<LBChange *> *catalogChanges;
 @property (nonatomic, strong) IBOutlet NSArrayController *changeList;
+// What made the change chosen opened (Open, a double click): its order,
+// its count, the record it was fitted by.
+@property (nonatomic, strong) IBOutlet NSTableView *changesTable;
+- (IBAction)openChange:(nullable id)sender;
 @property (nonatomic, readonly, copy) NSArray<Location *> *locations;
 @property (nonatomic, readonly, copy) NSArray<NSString *> *changeKinds;
 @property (nonatomic, strong, nullable) StockItem *changeItem;

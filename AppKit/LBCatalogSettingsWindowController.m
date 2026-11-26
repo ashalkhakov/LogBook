@@ -19,7 +19,7 @@ static void *LBWarehouseChosen = &LBWarehouseChosen;
 }
 
 - (instancetype)initWithStore:(LBStore *)store catalog:(Catalog *)catalog {
-    if ((self = [super initWithStore:store windowNibName:@"CatalogSettings"])) {
+    if ((self = [super initWithStore:store nibName:@"CatalogSettings"])) {
         self.catalog = [self own:catalog];
         _warehouses = @[];
         _warehouseLocations = @[];
@@ -32,14 +32,20 @@ static void *LBWarehouseChosen = &LBWarehouseChosen;
     return self;
 }
 
+- (void)showTab:(NSString *)identifier {
+    [self view];
+    [_tabs selectTabViewItemWithIdentifier:identifier];
+    [self showWindow:nil];
+}
+
 - (void)dealloc {
     if (self.isWindowLoaded) [_warehouseList removeObserver:self forKeyPath:@"selectionIndexes" context:LBWarehouseChosen];
 }
 
-- (void)windowDidLoad {
+- (void)viewDidLoad {
     [_warehouseList addObserver:self forKeyPath:@"selectionIndexes" options:0 context:LBWarehouseChosen];
-    [super windowDidLoad];
-    [self.window bind:NSTitleBinding toObject:self withKeyPath:@"catalog.catalogName" options:nil];
+    [super viewDidLoad];
+    self.titleKeyPath = @"catalog.catalogName";
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {

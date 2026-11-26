@@ -6,6 +6,13 @@
 #import "LBTasks.h"
 #import "LBConflicts.h"
 #import "LBFormValues.h"
+#import "LBCurrencies.h"
+#import "LBWorkspace.h"
+#import "LBMainWindowController.h"
+#import "LBStockOrderWindowController.h"
+#import "LBStockCountWindowController.h"
+#import "ComponentChange+CoreDataClass.h"
+#import "LBAlerts.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 
@@ -27,8 +34,8 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 
 @synthesize task = _task, tasks = _tasks, waiting = _waiting;
 
-- (instancetype)initWithStore:(LBStore *)store windowNibName:(NSString *)name {
-    if ((self = [super initWithWindowNibName:name])) {
+- (instancetype)initWithStore:(LBStore *)store nibName:(NSString *)name {
+    if ((self = [super initWithNibName:name bundle:nil])) {
         _store = store;
         _context = [store newContext];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stockDidChange:) name:LBStockDidChangeNotification
@@ -44,13 +51,50 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void)windowDidLoad {
-    [super windowDidLoad];
-    self.window.delegate = (id<NSWindowDelegate>)self;
+- (void)viewDidLoad {
+    [super viewDidLoad];
     [self readAgain];
     /* The rules what is edited breaks, at its fields. */
-    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.window.contentView];
+    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.view];
     [_fieldIssues setNeedsRefresh];
+    [self offerCurrenciesUnder:self.view];
+}
+
+/* The currencies a money field picks from (LBCurrencies'): its catalog's
+   and the user's first. */
+- (NSArray<NSString *> *)currencyCodes {
+    NSMutableArray<NSString *> *codes = [[[LBCurrencies alloc] init].codes mutableCopy];
+    for (NSString *own in @[ self.user.currency ?: @"", _catalog.currency ?: @"" ]) {
+        if (!own.length) continue;
+        [codes removeObject:own];
+        [codes insertObject:own atIndex:0];
+    }
+    return codes;
+}
+
+/* Each currency's combo box (its identifier ...Currency), and each table's
+   currency column (its combo box cells), offered the currencies. */
+- (void)offerCurrenciesUnder:(NSView *)view {
+    NSArray<NSString *> *codes = nil;
+    if ([view isKindOfClass:[NSComboBox class]] && [view.identifier hasSuffix:@"Currency"]) {
+        NSComboBox *box = (NSComboBox *)view;
+        [box removeAllItems];
+        [box addItemsWithObjectValues:codes = [self currencyCodes]];
+    }
+    if ([view isKindOfClass:[NSTableView class]]) {
+        for (NSTableColumn *column in ((NSTableView *)view).tableColumns) {
+            if (![column.identifier hasSuffix:@"Currency"] || ![column.dataCell isKindOfClass:[NSComboBoxCell class]]) continue;
+            NSComboBoxCell *cell = column.dataCell;
+            [cell removeAllItems];
+            [cell addItemsWithObjectValues:codes ?: (codes = [self currencyCodes])];
+        }
+    }
+    for (NSView *each in view.subviews) [self offerCurrenciesUnder:each];
+    if ([view isKindOfClass:[NSTabView class]]) {
+        for (NSTabViewItem *item in ((NSTabView *)view).tabViewItems) {
+            if (item.view.superview != view) [self offerCurrenciesUnder:item.view];
+        }
+    }
 }
 
 - (User *)user {
@@ -214,6 +258,38 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     return quantity;
 }
 
+- (BOOL)openSourceOfMove:(Move *)move {
+    NSManagedObject *order = move.receipt.purchaseOrder ?: move.purchaseLine.purchaseOrder ?: move.returnedPurchaseLine.purchaseOrder
+                             ?: move.supplierReturn.purchaseOrder ?: move.shipment.saleOrder ?: move.saleLine.saleOrder
+                             ?: move.returnedSaleLine.saleOrder ?: move.customerReturn.saleOrder;
+    NSManagedObject *of = order ?: move.stockCount;
+    LBWorkspace *workspace = [LBWorkspace current];
+    if (of) {
+        /* Its screen open already: shown again. */
+        for (LBScreen *screen in workspace.keptScreens) {
+            NSManagedObject *shown = [screen isKindOfClass:[LBStockOrderWindowController class]] ? ((LBStockOrderWindowController *)screen).order
+                                     : [screen isKindOfClass:[LBStockCountWindowController class]] ? ((LBStockCountWindowController *)screen).stockCount
+                                                                                                  : nil;
+            if ([shown.objectID isEqual:of.objectID]) {
+                [screen showWindow:self];
+                return YES;
+            }
+        }
+        LBStockEditor *screen = order ? [[LBStockOrderWindowController alloc] initWithStore:self.store order:order]
+                                      : [[LBStockCountWindowController alloc] initWithStore:self.store count:move.stockCount];
+        screen.quiet = self.quiet;
+        [screen showWindow:self];
+        return YES;
+    }
+    if (move.componentChange && [workspace.windowController showRecord:move.componentChange]) return YES;
+    NSBeep();
+    return NO;
+}
+
+- (BOOL)savable {
+    return YES;
+}
+
 - (IBAction)save:(id)sender {
     [self saveChanges];
 }
@@ -227,12 +303,8 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 - (BOOL)shouldClose {
     if (![self commitEdits]) return NO;
     if (!_context.hasChanges) return YES;
-    NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Save the changes before closing?";
-    [alert addButtonWithTitle:@"Save"];
-    [alert addButtonWithTitle:@"Cancel"];
-    [alert addButtonWithTitle:@"Don't Save"];
-    NSModalResponse answer = [alert runModal];
+    NSAlert *alert = LBSaveChangesAlert(self.title.length ? [NSString stringWithFormat:@"“%@”", self.title] : nil);
+    NSModalResponse answer = LBAskInSheet(alert, self.window);
     if (answer == NSAlertSecondButtonReturn) return NO;
     if (answer == NSAlertThirdButtonReturn) {
         [_context rollback];
@@ -241,7 +313,8 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     return [self saveChanges];
 }
 
-- (BOOL)windowShouldClose:(NSWindow *)sender {
+/* Left for another screen as it would close: its changes saved or let go. */
+- (BOOL)shouldLeave {
     return [self shouldClose];
 }
 
@@ -293,7 +366,7 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
         return NO;
     }
     [self saveChanges];
-    /* The server's tasks, where it has some: opened from Window > Tasks,
+    /* The server's tasks, where it has some: opened from Go > Tasks,
        those; from the stock's window, asked here. */
     if (!_tasks && self.store.serviceRoot) _tasks = [[LBTasks alloc] initWithServiceRoot:self.store.serviceRoot signIn:self.store.signIn];
     NSString *formName = now.session.form.name;
@@ -301,7 +374,7 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     NSString *instance = [LBTasks instanceOf:now.session];
     /* What the form saved, at the server before its task is told: the
        process goes on with the facts. Offline first, where the server
-       cannot be reached, the step waits, saved (Window > Tasks), and is
+       cannot be reached, the step waits, saved (Go > Tasks), and is
        submitted after a sync. */
     if (![self.store syncAndWait:&error]) {
         if (self.store.local) return [self wait:formName about:about instance:instance task:_task.name];
@@ -321,6 +394,7 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     for (LBPendingSubmission *waiting in [self.store.local.appState pendingSubmissions]) {
         if (task && [waiting.formName isEqualToString:formName] && [waiting.businessKey isEqualToString:about]) [self.store.local.appState removeSubmission:waiting];
     }
+    [self.store.local statusChanged];
     _waiting = nil;
     [self stepDone:formName];
     return YES;
@@ -330,13 +404,9 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
    quiet. */
 - (BOOL)wait:(NSString *)formName about:(NSString *)about instance:(NSString *)instance task:(NSString *)taskName {
     _waiting = [self.store.local.appState keepSubmissionOfForm:formName about:about taskName:taskName instance:instance];
-    if (!self.quiet) {
-        NSAlert *alert = [[NSAlert alloc] init];
-        alert.messageText = @"Saved here, not submitted yet";
-        alert.informativeText = [NSString stringWithFormat:@"The server cannot be reached. %@ waits in Window > Tasks, and is submitted "
-                                                           @"after the next sync.", taskName.length ? taskName : @"The step"];
-        [alert beginSheetModalForWindow:self.window completionHandler:nil];
-    }
+    /* Said in the sync's status (the toolbar): "1 step waiting in Tasks";
+       not an alert, which would only inform (HIG). */
+    [self.store.local statusChanged];
     return YES;
 }
 

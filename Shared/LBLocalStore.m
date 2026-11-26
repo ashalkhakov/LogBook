@@ -143,6 +143,28 @@ static NSString *LBCount(NSUInteger n) {
     [self sync];
 }
 
+- (void)statusChanged {
+    if (!_syncing) [self say:[self restingStatus]];
+}
+
+/* The status between syncs: off, the last one failed, or when it was and
+   what waits. */
+- (NSString *)restingStatus {
+    if (!_syncEnabled) return [@"Sync is off: changes wait here." stringByAppendingString:[self waitingSteps]];
+    if (!_lastOK && _lastFailure) {
+        return [[NSString stringWithFormat:@"Not synced: %@ Changes wait here.", _lastFailure.localizedDescription ?: @"no answer."]
+            stringByAppendingString:[self waitingSteps]];
+    }
+    return [self syncedStatus];
+}
+
+/* " 1 step waiting in Tasks.": a process's step saved here while the server
+   could not be reached, sent after a sync; "" when none. */
+- (NSString *)waitingSteps {
+    NSUInteger steps = self.appState.pendingSubmissions.count;
+    return steps ? [NSString stringWithFormat:@" %lu step%@ waiting in Tasks.", (unsigned long)steps, steps == 1 ? @"" : @"s"] : @"";
+}
+
 - (void)say:(NSString *)status {
     _status = [status copy];
     [[NSNotificationCenter defaultCenter] postNotificationName:LBLocalStoreDidChangeNotification object:self
@@ -179,7 +201,7 @@ static BOOL LBRefusedSignIn(NSError *error, NSUInteger depth) {
 }
 
 - (NSString *)syncedStatus {
-    if (!_lastSync) return @"Not synced yet.";
+    if (!_lastSync) return [@"Not synced yet." stringByAppendingString:[self waitingSteps]];
     NSDateFormatter *said = [[NSDateFormatter alloc] init];
     said.dateStyle = NSDateFormatterNoStyle;
     said.timeStyle = NSDateFormatterShortStyle;
@@ -187,6 +209,9 @@ static BOOL LBRefusedSignIn(NSError *error, NSUInteger depth) {
     NSUInteger waiting = [self pendingCount], refused = _engine.issues.count;
     if (waiting > refused) [status appendFormat:@" %lu change%@ waiting.", (unsigned long)(waiting - refused), waiting - refused == 1 ? @"" : @"s"];
     if (refused) [status appendFormat:@" %lu refused.", (unsigned long)refused];
+    /* A process's step saved here while the server could not be reached:
+       it waits in Tasks, sent after a sync (said here, not in an alert). */
+    [status appendString:[self waitingSteps]];
     return status;
 }
 
@@ -224,7 +249,7 @@ static BOOL LBRefusedSignIn(NSError *error, NSUInteger depth) {
     for (NSManagedObject *object in _context.registeredObjects.allObjects) [_context refreshObject:object mergeChanges:YES];
     if (_user.isDeleted || _user.managedObjectContext == nil) _user = nil;
     if (error) {
-        [self say:[NSString stringWithFormat:@"Not synced: %@ Changes wait here.", error.localizedDescription ?: @"no answer."]];
+        [self say:[self restingStatus]];
         [[NSNotificationCenter defaultCenter] postNotificationName:LBLocalStoreSyncDidFailNotification object:self];
     } else {
         _lastSync = [NSDate date];

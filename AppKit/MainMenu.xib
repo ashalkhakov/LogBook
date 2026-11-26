@@ -25,7 +25,7 @@
                             </menuItem>
                             <menuItem title="Check for Updates…" tag="1001" id="checkForUpdatesItem">
                                 <connections>
-                                    <action selector="checkForUpdates:" target="appController" id="checkForUpdatesAction"/>
+                                    <action selector="checkForUpdates:" target="appController" id="checkForUpdatesItemAction"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="separator1"/>
@@ -34,27 +34,28 @@
                                     <action selector="showPreferences:" target="appController" id="preferencesAction"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Expense Kinds…" id="expenseKindsItem">
-                                <connections>
-                                    <action selector="showExpenseKinds:" target="appController" id="expenseKindsItemAction"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Checklists…" id="checklistsItem">
-                                <connections>
-                                    <action selector="showChecklists:" target="appController" id="checklistsItemAction"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem title="Exchange Rates…" id="exchangeRatesItem">
-                                <connections>
-                                    <action selector="showExchangeRates:" target="appController" id="exchangeRatesItemAction"/>
-                                </connections>
-                            </menuItem>
                             <menuItem isSeparatorItem="YES" id="separator2"/>
+                            <menuItem title="Services" id="servicesMenuItem">
+                                <menu key="submenu" title="Services" systemMenu="services" id="servicesMenu"/>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator3"/>
                             <menuItem title="Hide Logbook" keyEquivalent="h" id="hide">
                                 <connections>
                                     <action selector="hide:" target="-1" id="hideAction"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Hide Others" keyEquivalent="h" id="hideOthers">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="hideOtherApplications:" target="-1" id="hideOthersAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Show All" id="showAll">
+                                <connections>
+                                    <action selector="unhideAllApplications:" target="-1" id="showAllAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator4"/>
                             <menuItem title="Quit Logbook" keyEquivalent="q" id="quit">
                                 <connections>
                                     <action selector="terminate:" target="-1" id="quitAction"/>
@@ -66,6 +67,18 @@
                 <menuItem title="File" id="fileMenuItem">
                     <menu key="submenu" title="File" id="fileMenu">
                         <items>
+                            <menuItem title="New Vehicle" keyEquivalent="n" id="newVehicleItem">
+                                <connections>
+                                    <action selector="newVehicle:" target="-1" id="newVehicleItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="New Catalog" keyEquivalent="n" id="newCatalogItem">
+                                <modifierMask key="keyEquivalentModifierMask" shift="YES" command="YES"/>
+                                <connections>
+                                    <action selector="newCatalog:" target="-1" id="newCatalogItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator5"/>
                             <menuItem title="Connect to a Server…" id="connect">
                                 <connections>
                                     <action selector="connect:" target="appController" id="connectAction"/>
@@ -76,7 +89,12 @@
                                     <action selector="signOut:" target="appController" id="signOutAction"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="separator3"/>
+                            <menuItem isSeparatorItem="YES" id="separator6"/>
+                            <menuItem title="Close" keyEquivalent="w" id="close">
+                                <connections>
+                                    <action selector="performClose:" target="-1" id="closeAction"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Save" keyEquivalent="s" id="saveItem">
                                 <connections>
                                     <action selector="save:" target="-1" id="saveItemAction"/>
@@ -87,7 +105,7 @@
                                     <action selector="revertChanges:" target="-1" id="revertItemAction"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="separatorImport"/>
+                            <menuItem isSeparatorItem="YES" id="separator7"/>
                             <menuItem title="Import…" id="importItem">
                                 <connections>
                                     <action selector="importRecords:" target="-1" id="importItemAction"/>
@@ -96,12 +114,6 @@
                             <menuItem title="Import from InvenTree…" id="importInvenTreeItem">
                                 <connections>
                                     <action selector="importFromInvenTree:" target="-1" id="importInvenTreeItemAction"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="separator4"/>
-                            <menuItem title="Close" keyEquivalent="w" id="close">
-                                <connections>
-                                    <action selector="performClose:" target="-1" id="closeAction"/>
                                 </connections>
                             </menuItem>
                         </items>
@@ -121,7 +133,7 @@
                                     <action selector="redo:" target="-1" id="redoAction"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="separator5"/>
+                            <menuItem isSeparatorItem="YES" id="separator8"/>
                             <menuItem title="Cut" keyEquivalent="x" id="cut">
                                 <connections>
                                     <action selector="cut:" target="-1" id="cutAction"/>
@@ -137,9 +149,105 @@
                                     <action selector="paste:" target="-1" id="pasteAction"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="Delete" id="deleteItem">
+                                <connections>
+                                    <action selector="delete:" target="-1" id="deleteItemAction"/>
+                                </connections>
+                            </menuItem>
                             <menuItem title="Select All" keyEquivalent="a" id="selectAll">
                                 <connections>
                                     <action selector="selectAll:" target="-1" id="selectAllAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator9"/>
+                            <menuItem title="Find…" keyEquivalent="f" id="findItem">
+                                <connections>
+                                    <action selector="findInScreen:" target="-1" id="findItemAction"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="View" id="viewMenuItem">
+                    <menu key="submenu" title="View" id="viewMenu">
+                        <items>
+                            <menuItem title="Show Toolbar" keyEquivalent="t" id="toggleToolbarItem">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleToolbarShown:" target="-1" id="toggleToolbarItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Customize Toolbar…" id="customizeToolbarItem">
+                                <connections>
+                                    <action selector="runToolbarCustomizationPalette:" target="-1" id="customizeToolbarItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator10"/>
+                            <menuItem title="Show Sidebar" keyEquivalent="s" id="toggleSidebarItem">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleSidebarPane:" target="-1" id="toggleSidebarItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Show Inspector" keyEquivalent="0" id="toggleInspectorItem">
+                                <modifierMask key="keyEquivalentModifierMask" option="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleInspectorPane:" target="-1" id="toggleInspectorItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator11"/>
+                            <menuItem title="Enter Full Screen" keyEquivalent="f" id="fullScreenItem">
+                                <modifierMask key="keyEquivalentModifierMask" control="YES" command="YES"/>
+                                <connections>
+                                    <action selector="toggleFullScreen:" target="-1" id="fullScreenItemAction"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Go" id="goMenuItem">
+                    <menu key="submenu" title="Go" id="goMenu">
+                        <items>
+                            <menuItem title="Back" keyEquivalent="[" id="backItem">
+                                <connections>
+                                    <action selector="goBack:" target="-1" id="backItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Forward" keyEquivalent="]" id="forwardItem">
+                                <connections>
+                                    <action selector="goForward:" target="-1" id="forwardItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator12"/>
+                            <menuItem title="Logbook" keyEquivalent="1" id="logbookItem">
+                                <connections>
+                                    <action selector="showLogbook:" target="appController" id="logbookItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Stock" keyEquivalent="2" id="stockItem">
+                                <connections>
+                                    <action selector="showStock:" target="appController" id="stockItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Tasks" keyEquivalent="3" id="tasksItem">
+                                <connections>
+                                    <action selector="showTasks:" target="appController" id="tasksItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem isSeparatorItem="YES" id="separator13"/>
+                            <menuItem title="Expense Kinds" id="expenseKindsItem">
+                                <connections>
+                                    <action selector="showExpenseKinds:" target="appController" id="expenseKindsItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Checklists" id="checklistsItem">
+                                <connections>
+                                    <action selector="showChecklists:" target="appController" id="checklistsItemAction"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Exchange Rates" id="exchangeRatesItem">
+                                <connections>
+                                    <action selector="showExchangeRates:" target="appController" id="exchangeRatesItemAction"/>
                                 </connections>
                             </menuItem>
                         </items>
@@ -153,15 +261,26 @@
                                     <action selector="performMiniaturize:" target="-1" id="minimizeAction"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="windowSeparator1"/>
-                            <menuItem title="Stock" keyEquivalent="2" id="stockItem">
+                            <menuItem title="Zoom" id="zoom">
                                 <connections>
-                                    <action selector="showStock:" target="appController" id="stockItemAction"/>
+                                    <action selector="performZoom:" target="-1" id="zoomAction"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Tasks" keyEquivalent="3" id="tasksItem">
+                            <menuItem isSeparatorItem="YES" id="separator14"/>
+                            <menuItem title="Bring All to Front" id="bringAllToFront">
                                 <connections>
-                                    <action selector="showTasks:" target="appController" id="tasksItemAction"/>
+                                    <action selector="arrangeInFront:" target="-1" id="bringAllToFrontAction"/>
+                                </connections>
+                            </menuItem>
+                        </items>
+                    </menu>
+                </menuItem>
+                <menuItem title="Help" id="helpMenuItem">
+                    <menu key="submenu" title="Help" systemMenu="help" id="helpMenu">
+                        <items>
+                            <menuItem title="Logbook Help" keyEquivalent="?" id="helpItem">
+                                <connections>
+                                    <action selector="showHelp:" target="appController" id="helpItemAction"/>
                                 </connections>
                             </menuItem>
                         </items>

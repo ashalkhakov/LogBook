@@ -1,5 +1,5 @@
 // The open tasks of the server's processes (LBTasks.h), in a window of
-// their own (TasksWindow.xib; Window > Tasks): each a person's step --
+// their own (TasksWindow.xib; the sidebar's Tasks, Go > Tasks): each a person's step --
 // Confirm the order, Receive the goods, Ship the goods, Review the count
 // -- with the order or count it is about.
 // Open (or a double-click) shows its order in the order's window
@@ -7,7 +7,7 @@
 // or Cancel for ConfirmPurchaseOrder (ConfirmSaleOrder), Receive for
 // ReceiveGoods, Ship for ShipGoods; the server
 // completes the task as the order changes, wherever it is changed. Asked
-// again as a step is done, as the window becomes key, and on Refresh.
+// again as a step is done, as it is shown, and on Refresh.
 //
 // Offline first, after them the steps done here and saved that wait to be
 // submitted (the server not reached: LBAppState's), each in the place of
@@ -16,12 +16,13 @@
 // each sync too (LBAppController), and kept across launches.
 
 #import <AppKit/AppKit.h>
+#import "LBScreen.h"
 
 @class LBStore, LBTasks, LBTask, LBStockOrderWindowController, LBStockEditor, LBPendingSubmission;
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface LBTasksWindowController : NSWindowController <NSTableViewDataSource, NSTableViewDelegate, NSWindowDelegate>
+@interface LBTasksWindowController : LBScreen <NSTableViewDataSource, NSTableViewDelegate>
 
 - (instancetype)initWithStore:(LBStore *)store;
 @property (nonatomic, readonly, strong) LBTasks *tasks;

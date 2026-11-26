@@ -1,4 +1,5 @@
-// The owner's window (MainWindow.xib): the vehicles, and of the one chosen
+// The one window (MainWindow.xib; its places, LBWorkspace.h): the
+// vehicles, and of the one chosen
 // its details and what is recorded of it, each record in a form of its
 // kind; its schedules and reminders (LBRemindersController.h); reports. What it shows and edits is bound in the XIB to array controllers
 // of the model's entities over the store's context (entity mode); this
@@ -13,7 +14,7 @@
 
 @class LBPartsPanelController;
 
-@class LBImport, LBFieldIssues;
+@class LBImport, LBFieldIssues, LBWorkspace;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -23,7 +24,15 @@ NS_ASSUME_NONNULL_BEGIN
 // What the XIB's controllers bind to.
 @property (nonatomic, readonly, strong) NSManagedObjectContext *context;
 @property (nonatomic, strong) IBOutlet NSArrayController *vehicles;
-// The sync's state, under the forms: when it last synced, what waits, and
+// The window's places: the sidebar, the screen shown, Back and Forward.
+@property (nonatomic, strong) IBOutlet LBWorkspace *workspace;
+// The logbook's page shown at the chosen vehicle's Vehicle tab (a new
+// vehicle's details to fill in).
+- (void)showVehicleTab;
+// The record (of any context) shown: its vehicle chosen, the logbook's
+// page at Records, the record chosen. NO where it is no vehicle's here.
+- (BOOL)showRecord:(Record *)record;
+// The sync's state, in the toolbar: when it last synced, what waits, and
 // why it did not ("Not synced: The token is not for this service"), red.
 @property (nonatomic, strong, nullable) IBOutlet NSTextField *syncStatusField;
 // The chosen vehicle's records.
@@ -141,6 +150,9 @@ NS_ASSUME_NONNULL_BEGIN
 // is the export's), what the export says not; hidden otherwise.
 @property (nonatomic, strong, nullable) IBOutlet NSTextField *importMakeField;
 @property (nonatomic, strong, nullable) IBOutlet NSTextField *importYearField;
+// Its currency: what the export's amounts are in, where it says none (a
+// Drivvo export, MainTrack's store); the user's at first.
+@property (nonatomic, strong, nullable) IBOutlet NSPopUpButton *importCurrencyField;
 // The signed-in user's unit of distance, else kilometres.
 - (nullable DistanceUnit *)distanceUnit;
 // What is being typed kept: NO when a field holds what cannot be.
@@ -171,10 +183,33 @@ NS_ASSUME_NONNULL_BEGIN
 // (LBPartsPanelController); its window while it is open.
 - (IBAction)showParts:(nullable id)sender;
 @property (nonatomic, readonly, strong, nullable) LBPartsPanelController *partsPanel;
-// The changes sent; the rules' refusals and the warnings said.
+// The menus' commands of the one window's places (View, Go, File > New),
+// sent on to its workspace (LBWorkspace.h), as its toolbar sends them.
+- (IBAction)goBack:(nullable id)sender;
+- (IBAction)goForward:(nullable id)sender;
+- (IBAction)toggleSidebarPane:(nullable id)sender;
+- (IBAction)toggleInspectorPane:(nullable id)sender;
+- (IBAction)newVehicle:(nullable id)sender;
+- (IBAction)newCatalog:(nullable id)sender;
+// File's Save and Revert to Saved, Edit's Delete and Find, and the
+// workspace's commands enabled as they apply now.
+- (BOOL)validateMenuItem:(NSMenuItem *)item;
+// Edit > Delete: the chosen row of the list that has the focus removed, as
+// the - under that list does (none there: not enabled).
+- (IBAction)delete:(nullable id)sender;
+// Edit > Find…: the search field of what is shown, ready to type in (none
+// there: not enabled).
+- (IBAction)findInScreen:(nullable id)sender;
+// File > Save and File > Revert to Saved: the screen shown's (LBScreen),
+// or, the logbook's page shown, the logbook's own (below).
 - (IBAction)save:(nullable id)sender;
 - (IBAction)revertChanges:(nullable id)sender;
-// Whether it may close: nothing unsaved, or the user says so.
+// The logbook's changes sent, the rules' refusals and the warnings said;
+// or let go. The lists' and the preferences' too, made in its context.
+- (void)saveLogbook;
+- (void)revertLogbook;
+// Whether it may close: nothing unsaved, or the user says so; each screen
+// kept closed, each asked.
 - (BOOL)shouldClose;
 @end
 

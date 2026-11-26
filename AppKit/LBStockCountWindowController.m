@@ -20,7 +20,7 @@
 }
 
 - (instancetype)initWithStore:(LBStore *)store catalog:(Catalog *)catalog {
-    if ((self = [super initWithStore:store windowNibName:@"StockCount"])) {
+    if ((self = [super initWithStore:store nibName:@"StockCount"])) {
         self.catalog = [self own:catalog];
         _countPlaces = @[];
         NSError *error = nil;
@@ -62,16 +62,16 @@
     if (_stockCount && !_stockCount.isInserted && !self.window.attachedSheet) [self openCountForm];
 }
 
-- (void)windowDidLoad {
-    [super windowDidLoad];
+- (void)viewDidLoad {
+    [super viewDidLoad];
     _countRows.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:@"stockItem.itemName" ascending:YES],
                                     [NSSortDescriptor sortDescriptorWithKey:@"location.lbTitle" ascending:YES] ];
     [self setShowsExpected:_showsExpected];
 }
 
 /* Opened for its review's task: its sheet over the count at once. */
-- (void)showWindow:(id)sender {
-    [super showWindow:sender];
+- (void)screenDidShow {
+    [super screenDidShow];
     if (!_stockCount || !self.task.entryName || ![self.task.flowName isEqualToString:@"Counting"] || self.window.attachedSheet) return;
     NSError *error = nil;
     ORMFlowStep *step = [_flow beginAt:self.task.entryName key:_stockCount.id.UUIDString error:&error];
@@ -162,7 +162,7 @@
     LBFormValues *now = [self valuesOfForm:@"CountStock" given:_countForm.session.given object:_stockCount];
     NSError *error = nil;
     if (!now || ![now.session save:&error]) {
-        if (now) [self refuseForm:now error:error under:self.window.contentView];
+        if (now) [self refuseForm:now error:error under:self.view];
         return;
     }
     _submitted = _stockCount;

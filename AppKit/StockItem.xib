@@ -7,7 +7,7 @@
   <objects>
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockItemWindowController">
       <connections>
-        <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="view" destination="content" id="windowOutlet"/>
         <outlet property="requestPanel" destination="requestPanel" id="requestPanelOutlet"/>
         <outlet property="movePanel" destination="movePanel" id="movePanelOutlet"/>
         <outlet property="cardTabs" destination="cardTabs" id="cardTabsOutlet"/>
@@ -18,12 +18,15 @@
         <outlet property="stockUnitsTable" destination="stockUnitsTable" id="stockUnitsTableOutlet"/>
         <outlet property="reorderRuleList" destination="reorderRuleList" id="reorderRuleListOutlet"/>
         <outlet property="supplierItemsTable" destination="supplierItemsTable" id="supplierItemsTableOutlet"/>
+        <outlet property="moveList" destination="moveList" id="moveListOutlet"/>
+        <outlet property="movesTable" destination="movesTable" id="movesTableOutlet"/>
         <outlet property="itemCodesTable" destination="itemCodesTable" id="itemCodesTableOutlet"/>
         <outlet property="reorderRulesTable" destination="reorderRulesTable" id="reorderRulesTableOutlet"/>
       </connections>
     </customObject>
     <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
     <customObject id="-3" userLabel="Application" customClass="NSObject"/>
+    <customObject id="currencies" userLabel="Currencies" customClass="LBCurrencies"/>
     <objectController objectClassName="StockTransfer" userLabel="Transfer Form" id="RequestTransferForm">
       <connections>
         <binding destination="-2" name="contentObject" keyPath="requestForm" id="RequestTransferFormContent"/>
@@ -45,7 +48,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestQuantityLabel">
             <rect key="frame" x="14" y="176" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many" id="requestQuantityLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many:" id="requestQuantityLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -67,7 +70,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestFromLabel">
             <rect key="frame" x="14" y="146" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From" id="requestFromLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From:" id="requestFromLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -90,7 +93,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestToLabel">
             <rect key="frame" x="14" y="116" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To" id="requestToLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To:" id="requestToLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -113,7 +116,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="requestNoteLabel">
             <rect key="frame" x="14" y="86" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="requestNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="requestNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -137,6 +140,9 @@
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissRequestCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="dismissForm:" target="-2" id="dismissRequestAction"/>
@@ -145,7 +151,7 @@
           <button verticalHuggingPriority="750" identifier="submitRequest" id="submitRequest">
             <rect key="frame" x="315" y="12" width="95" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitRequestCell">
+            <buttonCell key="cell" type="push" title="Transfer" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitRequestCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -167,7 +173,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveItemLabel">
             <rect key="frame" x="14" y="266" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item" id="moveItemLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item:" id="moveItemLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -188,7 +194,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveQuantityLabel">
             <rect key="frame" x="14" y="236" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many" id="moveQuantityLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="How many:" id="moveQuantityLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -209,7 +215,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveFromLabel">
             <rect key="frame" x="14" y="206" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From" id="moveFromLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="From:" id="moveFromLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -230,7 +236,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveToLabel">
             <rect key="frame" x="14" y="176" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To" id="moveToLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To:" id="moveToLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -251,7 +257,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveAskedByLabel">
             <rect key="frame" x="14" y="146" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Asked by" id="moveAskedByLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Asked by:" id="moveAskedByLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -272,7 +278,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveNoteLabel">
             <rect key="frame" x="14" y="116" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="moveNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="moveNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -293,7 +299,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="moveStateLabel">
             <rect key="frame" x="14" y="86" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Moved" id="moveStateLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Moved:" id="moveStateLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -318,6 +324,9 @@
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissMoveCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="dismissForm:" target="-2" id="dismissMoveAction"/>
@@ -326,7 +335,7 @@
           <button verticalHuggingPriority="750" identifier="submitMove" id="submitMove">
             <rect key="frame" x="315" y="12" width="95" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitMoveCell">
+            <buttonCell key="cell" type="push" title="Move" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitMoveCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -372,26 +381,21 @@
         <binding destination="-2" name="contentArray" keyPath="reorderRules" id="reorderRuleListContent"/>
       </connections>
     </arrayController>
-    <window title="Item" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookStockItem" animationBehavior="default" id="window">
-      <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-      <rect key="contentRect" x="180" y="140" width="660" height="620"/>
-      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
-      <value key="minSize" type="size" width="660" height="620"/>
-      <view key="contentView" id="content">
-        <rect key="frame" x="0" y="0" width="660" height="620"/>
-        <autoresizingMask key="autoresizingMask"/>
+    <customView userLabel="Screen" id="content">
+        <rect key="frame" x="0" y="0" width="660" height="582"/>
+        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
         <subviews>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemNameFieldLabel">
-            <rect key="frame" x="14" y="589" width="80" height="17"/>
+            <rect key="frame" x="14" y="551" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Name" id="itemNameFieldLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Name:" id="itemNameFieldLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemNameField" id="itemNameField">
-            <rect key="frame" x="98" y="586" width="220" height="22"/>
+            <rect key="frame" x="98" y="548" width="220" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemNameFieldCell">
               <font key="font" metaFont="system"/>
@@ -403,16 +407,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCategoryLabel">
-            <rect key="frame" x="330" y="589" width="80" height="17"/>
+            <rect key="frame" x="330" y="551" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Category" id="itemCategoryLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Category:" id="itemCategoryLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="itemCategory" id="itemCategory">
-            <rect key="frame" x="414" y="583" width="232" height="26"/>
+            <rect key="frame" x="414" y="545" width="232" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="itemCategoryCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -431,16 +435,16 @@
             </connections>
           </popUpButton>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemDescriptionLabel">
-            <rect key="frame" x="14" y="559" width="80" height="17"/>
+            <rect key="frame" x="14" y="521" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Description" id="itemDescriptionLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Description:" id="itemDescriptionLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemDescription" id="itemDescription">
-            <rect key="frame" x="98" y="556" width="220" height="22"/>
+            <rect key="frame" x="98" y="518" width="220" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemDescriptionCell">
               <font key="font" metaFont="system"/>
@@ -452,16 +456,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemSupplierLabel">
-            <rect key="frame" x="330" y="559" width="80" height="17"/>
+            <rect key="frame" x="330" y="521" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier" id="itemSupplierLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier:" id="itemSupplierLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <popUpButton verticalHuggingPriority="750" identifier="itemSupplier" id="itemSupplier">
-            <rect key="frame" x="414" y="553" width="232" height="26"/>
+            <rect key="frame" x="414" y="515" width="232" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="itemSupplierCell">
               <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
@@ -480,16 +484,16 @@
             </connections>
           </popUpButton>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemSKULabel">
-            <rect key="frame" x="14" y="529" width="80" height="17"/>
+            <rect key="frame" x="14" y="491" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="SKU" id="itemSKULabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="SKU:" id="itemSKULabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemSKU" id="itemSKU">
-            <rect key="frame" x="98" y="526" width="220" height="22"/>
+            <rect key="frame" x="98" y="488" width="220" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemSKUCell">
               <font key="font" metaFont="system"/>
@@ -501,16 +505,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCountUnitLabel">
-            <rect key="frame" x="330" y="529" width="80" height="17"/>
+            <rect key="frame" x="330" y="491" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Count unit" id="itemCountUnitLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Count unit:" id="itemCountUnitLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemCountUnit" id="itemCountUnit">
-            <rect key="frame" x="414" y="526" width="232" height="22"/>
+            <rect key="frame" x="414" y="488" width="232" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemCountUnitCell">
               <font key="font" metaFont="system"/>
@@ -522,60 +526,62 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemPriceLabel">
-            <rect key="frame" x="14" y="499" width="80" height="17"/>
+            <rect key="frame" x="14" y="461" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Price" id="itemPriceLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Price:" id="itemPriceLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
-          <textField verticalHuggingPriority="750" identifier="itemPrice" id="itemPrice">
-            <rect key="frame" x="98" y="496" width="220" height="22"/>
+          <customView identifier="itemPrice" id="itemPrice" customClass="UDQuantityField">
+            <rect key="frame" x="98" y="456" width="220" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemPriceCell">
-              <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemPriceFormatter"/>
-              <font key="font" metaFont="system"/>
-              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-            </textFieldCell>
+            <userDefinedRuntimeAttributes>
+              <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                <real key="value" value="80"/>
+              </userDefinedRuntimeAttribute>
+            </userDefinedRuntimeAttributes>
             <connections>
+              <outlet property="units" destination="currencies" id="itemPriceUnits"/>
               <binding destination="-2" name="value" keyPath="item.priceAmount" id="itemPriceValue"/>
+              <binding destination="-2" name="unit" keyPath="item.priceCurrency" id="itemPriceCurrencyValue"/>
             </connections>
-          </textField>
+          </customView>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemUnitCostLabel">
-            <rect key="frame" x="330" y="499" width="80" height="17"/>
+            <rect key="frame" x="330" y="461" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Unit cost" id="itemUnitCostLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Unit cost:" id="itemUnitCostLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
-          <textField verticalHuggingPriority="750" identifier="itemUnitCost" id="itemUnitCost">
-            <rect key="frame" x="414" y="496" width="232" height="22"/>
+          <customView identifier="itemUnitCost" id="itemUnitCost" customClass="UDQuantityField">
+            <rect key="frame" x="414" y="456" width="232" height="26"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemUnitCostCell">
-              <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemUnitCostFormatter"/>
-              <font key="font" metaFont="system"/>
-              <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-              <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
-            </textFieldCell>
+            <userDefinedRuntimeAttributes>
+              <userDefinedRuntimeAttribute type="number" keyPath="unitWidth">
+                <real key="value" value="80"/>
+              </userDefinedRuntimeAttribute>
+            </userDefinedRuntimeAttributes>
             <connections>
+              <outlet property="units" destination="currencies" id="itemUnitCostUnits"/>
               <binding destination="-2" name="value" keyPath="item.unitCostAmount" id="itemUnitCostValue"/>
+              <binding destination="-2" name="unit" keyPath="item.unitCostCurrency" id="itemUnitCostCurrencyValue"/>
             </connections>
-          </textField>
+          </customView>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemNoteLabel">
-            <rect key="frame" x="14" y="469" width="80" height="17"/>
+            <rect key="frame" x="14" y="431" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="itemNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="itemNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemNote" id="itemNote">
-            <rect key="frame" x="98" y="466" width="548" height="22"/>
+            <rect key="frame" x="98" y="428" width="548" height="22"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" state="on" borderStyle="bezel" drawsBackground="YES" id="itemNoteCell">
               <font key="font" metaFont="system"/>
@@ -587,16 +593,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemTotalQuantityLabel">
-            <rect key="frame" x="14" y="439" width="80" height="17"/>
+            <rect key="frame" x="14" y="401" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="On hand" id="itemTotalQuantityLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="On hand:" id="itemTotalQuantityLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemTotalQuantity" id="itemTotalQuantity">
-            <rect key="frame" x="98" y="436" width="90" height="22"/>
+            <rect key="frame" x="98" y="398" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemTotalQuantityCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemTotalQuantityFormatter"/>
@@ -609,16 +615,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemAvailableLabel">
-            <rect key="frame" x="230" y="439" width="80" height="17"/>
+            <rect key="frame" x="230" y="401" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Available" id="itemAvailableLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Available:" id="itemAvailableLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemAvailable" id="itemAvailable">
-            <rect key="frame" x="314" y="436" width="90" height="22"/>
+            <rect key="frame" x="314" y="398" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemAvailableCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemAvailableFormatter"/>
@@ -631,16 +637,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCommittedLabel">
-            <rect key="frame" x="446" y="439" width="80" height="17"/>
+            <rect key="frame" x="446" y="401" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Committed" id="itemCommittedLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Committed:" id="itemCommittedLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemCommitted" id="itemCommitted">
-            <rect key="frame" x="530" y="436" width="90" height="22"/>
+            <rect key="frame" x="530" y="398" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemCommittedCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemCommittedFormatter"/>
@@ -653,16 +659,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemIncomingLabel">
-            <rect key="frame" x="14" y="415" width="80" height="17"/>
+            <rect key="frame" x="14" y="377" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Incoming" id="itemIncomingLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Incoming:" id="itemIncomingLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemIncoming" id="itemIncoming">
-            <rect key="frame" x="98" y="412" width="90" height="22"/>
+            <rect key="frame" x="98" y="374" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemIncomingCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemIncomingFormatter"/>
@@ -675,16 +681,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemShortageLabel">
-            <rect key="frame" x="230" y="415" width="80" height="17"/>
+            <rect key="frame" x="230" y="377" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Short" id="itemShortageLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Short:" id="itemShortageLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemShortage" id="itemShortage">
-            <rect key="frame" x="314" y="412" width="90" height="22"/>
+            <rect key="frame" x="314" y="374" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemShortageCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemShortageFormatter"/>
@@ -697,16 +703,16 @@
             </connections>
           </textField>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemMakeableLabel">
-            <rect key="frame" x="446" y="415" width="80" height="17"/>
+            <rect key="frame" x="446" y="377" width="80" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Can make" id="itemMakeableLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Can make:" id="itemMakeableLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
             </textFieldCell>
           </textField>
           <textField verticalHuggingPriority="750" identifier="itemMakeable" id="itemMakeable">
-            <rect key="frame" x="530" y="412" width="90" height="22"/>
+            <rect key="frame" x="530" y="374" width="90" height="22"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
             <textFieldCell key="cell" scrollable="YES" lineBreakMode="clipping" selectable="YES" sendsActionOnEndEditing="YES" alignment="right" title="" id="itemMakeableCell">
               <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="itemMakeableFormatter"/>
@@ -719,7 +725,7 @@
             </connections>
           </textField>
           <tabView identifier="cardTabs" id="cardTabs">
-            <rect key="frame" x="13" y="48" width="634" height="330"/>
+            <rect key="frame" x="13" y="10" width="634" height="330"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <font key="font" metaFont="system"/>
             <tabViewItems>
@@ -729,7 +735,7 @@
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="holdingsTableScroll">
-                      <rect key="frame" x="10" y="84" width="240" height="190"/>
+                      <rect key="frame" x="10" y="112" width="240" height="162"/>
                       <autoresizingMask key="autoresizingMask" heightSizable="YES" flexibleMaxX="YES"/>
                       <clipView key="contentView" id="holdingsTableClip">
                         <rect key="frame" x="1" y="1" width="238" height="188"/>
@@ -788,8 +794,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
+                    <button toolTip="Open what made the move chosen: its order, its count, its record" verticalHuggingPriority="750" identifier="openMove" id="openMove">
+                      <rect key="frame" x="256" y="82" width="90" height="28"/>
+                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                      <buttonCell key="cell" type="push" title="Open" bezelStyle="rounded" alignment="center" controlSize="small" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="openMoveCell">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="smallSystem"/>
+                      </buttonCell>
+                      <connections>
+                        <action selector="openMove:" target="-2" id="openMoveAction"/>
+                      </connections>
+                    </button>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="movesTableScroll">
-                      <rect key="frame" x="260" y="84" width="344" height="190"/>
+                      <rect key="frame" x="260" y="112" width="344" height="162"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="movesTableClip">
                         <rect key="frame" x="1" y="1" width="342" height="188"/>
@@ -894,7 +911,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockQuantityLabel">
                       <rect key="frame" x="10" y="51" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity" id="stockQuantityLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Quantity:" id="stockQuantityLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -915,7 +932,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockAtLabel">
                       <rect key="frame" x="150" y="51" width="65" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At / from" id="stockAtLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At / from:" id="stockAtLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -938,7 +955,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockToLabel">
                       <rect key="frame" x="395" y="51" width="25" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To" id="stockToLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="To:" id="stockToLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -961,7 +978,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="stockReasonLabel">
                       <rect key="frame" x="10" y="17" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason" id="stockReasonLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Reason:" id="stockReasonLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1036,7 +1053,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemYieldLabel">
                       <rect key="frame" x="10" y="257" width="40" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Yield" id="itemYieldLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Yield:" id="itemYieldLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1181,14 +1198,14 @@
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="supplierItemsTableScroll">
-                      <rect key="frame" x="10" y="48" width="594" height="226"/>
+                      <rect key="frame" x="10" y="72" width="594" height="202"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="supplierItemsTableClip">
-                        <rect key="frame" x="1" y="1" width="592" height="224"/>
+                        <rect key="frame" x="1" y="1" width="592" height="200"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="supplierItemsTableHeader" identifier="supplierItemsTable" id="supplierItemsTable">
-                            <rect key="frame" x="0" y="0" width="592" height="201"/>
+                            <rect key="frame" x="0" y="0" width="592" height="177"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <size key="intercellSpacing" width="3" height="2"/>
                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1249,6 +1266,21 @@
                                 </textFieldCell>
                                 <connections>
                                   <binding destination="supplierItemList" name="value" keyPath="arrangedObjects.supplierCostAmount" id="supplierItemsTableCostValue"/>
+                                </connections>
+                              </tableColumn>
+                              <tableColumn identifier="costCurrency" width="65" minWidth="30" maxWidth="1000" id="supplierItemsTableCurrencyColumn">
+                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Currency">
+                                  <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                </tableHeaderCell>
+                                <comboBoxCell key="dataCell" scrollable="YES" lineBreakMode="clipping" selectable="YES" editable="YES" sendsActionOnEndEditing="YES" borderStyle="bezel" alignment="left" completes="YES" numberOfVisibleItems="8" id="supplierItemsTableCurrencyCell">
+                                  <font key="font" metaFont="system"/>
+                                  <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </comboBoxCell>
+                                <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
+                                <connections>
+                                  <binding destination="supplierItemList" name="value" keyPath="arrangedObjects.supplierCostCurrency" id="supplierItemsTableCurrencyValue"/>
                                 </connections>
                               </tableColumn>
                               <tableColumn identifier="packSize" width="45" minWidth="30" maxWidth="1000" id="supplierItemsTablePackSizeColumn">
@@ -1318,7 +1350,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="supplierItemsTableVScroller">
-                        <rect key="frame" x="578" y="1" width="15" height="224"/>
+                        <rect key="frame" x="578" y="1" width="15" height="200"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="supplierItemsTableHeader">
@@ -1329,7 +1361,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="supplierItemSupplierLabel">
                       <rect key="frame" x="10" y="17" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier" id="supplierItemSupplierLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Supplier:" id="supplierItemSupplierLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1349,10 +1381,10 @@
                         <binding destination="supplierItemList" name="selectedObject" keyPath="selection.supplier" previousBinding="supplierItemSupplierValues" id="supplierItemSupplierChosen"/>
                       </connections>
                     </popUpButton>
-                    <button verticalHuggingPriority="750" identifier="addSupplierItem" id="addSupplierItem">
-                      <rect key="frame" x="281" y="8" width="80" height="32"/>
+                    <button toolTip="Add" verticalHuggingPriority="750" identifier="addSupplierItem" id="addSupplierItem">
+                      <rect key="frame" x="10" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addSupplierItemCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addSupplierItemCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1360,10 +1392,10 @@
                         <action selector="addSupplierItem:" target="-2" id="addSupplierItemAction"/>
                       </connections>
                     </button>
-                    <button verticalHuggingPriority="750" identifier="removeSupplierItem" id="removeSupplierItem">
-                      <rect key="frame" x="361" y="8" width="90" height="32"/>
+                    <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeSupplierItem" id="removeSupplierItem">
+                      <rect key="frame" x="33" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeSupplierItemCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeSupplierItemCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1381,14 +1413,14 @@
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="itemCodesTableScroll">
-                      <rect key="frame" x="10" y="48" width="594" height="226"/>
+                      <rect key="frame" x="10" y="72" width="594" height="202"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="itemCodesTableClip">
-                        <rect key="frame" x="1" y="1" width="592" height="224"/>
+                        <rect key="frame" x="1" y="1" width="592" height="200"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="itemCodesTableHeader" identifier="itemCodesTable" id="itemCodesTable">
-                            <rect key="frame" x="0" y="0" width="592" height="201"/>
+                            <rect key="frame" x="0" y="0" width="592" height="177"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <size key="intercellSpacing" width="3" height="2"/>
                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1446,7 +1478,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="itemCodesTableVScroller">
-                        <rect key="frame" x="578" y="1" width="15" height="224"/>
+                        <rect key="frame" x="578" y="1" width="15" height="200"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="itemCodesTableHeader">
@@ -1457,7 +1489,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemCodeKindLabel">
                       <rect key="frame" x="10" y="17" width="40" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Kind" id="itemCodeKindLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Kind:" id="itemCodeKindLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1477,10 +1509,10 @@
                         <binding destination="itemCodeList" name="selectedObject" keyPath="selection.codeKind" previousBinding="itemCodeKindValues" id="itemCodeKindChosen"/>
                       </connections>
                     </popUpButton>
-                    <button verticalHuggingPriority="750" identifier="addItemCode" id="addItemCode">
-                      <rect key="frame" x="211" y="8" width="80" height="32"/>
+                    <button toolTip="Add" verticalHuggingPriority="750" identifier="addItemCode" id="addItemCode">
+                      <rect key="frame" x="10" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addItemCodeCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addItemCodeCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1488,10 +1520,10 @@
                         <action selector="addItemCode:" target="-2" id="addItemCodeAction"/>
                       </connections>
                     </button>
-                    <button verticalHuggingPriority="750" identifier="removeItemCode" id="removeItemCode">
-                      <rect key="frame" x="291" y="8" width="90" height="32"/>
+                    <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeItemCode" id="removeItemCode">
+                      <rect key="frame" x="33" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeItemCodeCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeItemCodeCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1581,10 +1613,10 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
                       </tableHeaderView>
                     </scrollView>
-                    <button verticalHuggingPriority="750" identifier="addStockUnit" id="addStockUnit">
-                      <rect key="frame" x="4" y="8" width="80" height="32"/>
+                    <button toolTip="Add" verticalHuggingPriority="750" identifier="addStockUnit" id="addStockUnit">
+                      <rect key="frame" x="10" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addStockUnitCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addStockUnitCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1592,10 +1624,10 @@
                         <action selector="addStockUnit:" target="-2" id="addStockUnitAction"/>
                       </connections>
                     </button>
-                    <button verticalHuggingPriority="750" identifier="removeStockUnit" id="removeStockUnit">
-                      <rect key="frame" x="84" y="8" width="90" height="32"/>
+                    <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeStockUnit" id="removeStockUnit">
+                      <rect key="frame" x="33" y="25" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeStockUnitCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeStockUnitCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1615,7 +1647,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemWeightLabel">
                       <rect key="frame" x="10" y="249" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Weight" id="itemWeightLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Weight:" id="itemWeightLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1656,7 +1688,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemLengthLabel">
                       <rect key="frame" x="10" y="217" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Length" id="itemLengthLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Length:" id="itemLengthLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1697,7 +1729,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemWidthLabel">
                       <rect key="frame" x="10" y="185" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Width" id="itemWidthLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Width:" id="itemWidthLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1738,7 +1770,7 @@
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="itemHeightLabel">
                       <rect key="frame" x="10" y="153" width="60" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Height" id="itemHeightLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Height:" id="itemHeightLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1785,14 +1817,14 @@
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <subviews>
                     <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="reorderRulesTableScroll">
-                      <rect key="frame" x="10" y="48" width="594" height="226"/>
+                      <rect key="frame" x="10" y="72" width="594" height="202"/>
                       <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                       <clipView key="contentView" id="reorderRulesTableClip">
-                        <rect key="frame" x="1" y="1" width="592" height="224"/>
+                        <rect key="frame" x="1" y="1" width="592" height="200"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                           <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="reorderRulesTableHeader" identifier="reorderRulesTable" id="reorderRulesTable">
-                            <rect key="frame" x="0" y="0" width="592" height="201"/>
+                            <rect key="frame" x="0" y="0" width="592" height="177"/>
                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                             <size key="intercellSpacing" width="3" height="2"/>
                             <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1865,7 +1897,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
                       </scroller>
                       <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="reorderRulesTableVScroller">
-                        <rect key="frame" x="578" y="1" width="15" height="224"/>
+                        <rect key="frame" x="578" y="1" width="15" height="200"/>
                         <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
                       </scroller>
                       <tableHeaderView key="headerView" id="reorderRulesTableHeader">
@@ -1874,9 +1906,9 @@
                       </tableHeaderView>
                     </scrollView>
                     <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reorderWarehouseLabel">
-                      <rect key="frame" x="10" y="17" width="75" height="17"/>
+                      <rect key="frame" x="5" y="17" width="80" height="17"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Warehouse" id="reorderWarehouseLabelCell">
+                      <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Warehouse:" id="reorderWarehouseLabelCell">
                         <font key="font" metaFont="system"/>
                         <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
                         <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -1896,10 +1928,10 @@
                         <binding destination="reorderRuleList" name="selectedObject" keyPath="selection.warehouse" previousBinding="reorderWarehouseValues" id="reorderWarehouseChosen"/>
                       </connections>
                     </popUpButton>
-                    <button verticalHuggingPriority="750" identifier="addReorderRule" id="addReorderRule">
-                      <rect key="frame" x="296" y="8" width="80" height="32"/>
+                    <button toolTip="Add" verticalHuggingPriority="750" identifier="addReorderRule" id="addReorderRule">
+                      <rect key="frame" x="10" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Add" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addReorderRuleCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addReorderRuleCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1907,10 +1939,10 @@
                         <action selector="addReorderRule:" target="-2" id="addReorderRuleAction"/>
                       </connections>
                     </button>
-                    <button verticalHuggingPriority="750" identifier="removeReorderRule" id="removeReorderRule">
-                      <rect key="frame" x="376" y="8" width="90" height="32"/>
+                    <button toolTip="Remove" verticalHuggingPriority="750" identifier="removeReorderRule" id="removeReorderRule">
+                      <rect key="frame" x="33" y="49" width="24" height="23"/>
                       <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                      <buttonCell key="cell" type="push" title="Remove" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeReorderRuleCell">
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeReorderRuleCell">
                         <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
                         <font key="font" metaFont="system"/>
                       </buttonCell>
@@ -1924,33 +1956,11 @@
               </tabViewItem>
             </tabViewItems>
           </tabView>
-          <button verticalHuggingPriority="750" identifier="revert" id="revert">
-            <rect key="frame" x="450" y="10" width="95" height="32"/>
-            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Revert" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="revertCell">
-              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-              <font key="font" metaFont="system"/>
-            </buttonCell>
-            <connections>
-              <action selector="revertChanges:" target="-2" id="revertAction"/>
-            </connections>
-          </button>
-          <button verticalHuggingPriority="750" identifier="save" id="save">
-            <rect key="frame" x="545" y="10" width="100" height="32"/>
-            <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Save" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="saveCell">
-              <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-              <font key="font" metaFont="system"/>
-            </buttonCell>
-            <connections>
-              <action selector="save:" target="-2" id="saveAction"/>
-            </connections>
-          </button>
         </subviews>
-      </view>
-      <connections>
-        <outlet property="delegate" destination="-2" id="windowDelegate"/>
-      </connections>
-    </window>
+    </customView>
   </objects>
+    <resources>
+        <image name="NSAddTemplate" width="14" height="13"/>
+        <image name="NSRemoveTemplate" width="14" height="4"/>
+    </resources>
 </document>

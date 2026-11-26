@@ -1,5 +1,8 @@
 #import "LBMainWindowController.h"
 #import "LBTiming.h"
+#import "LBWorkspace.h"
+#import "LBScreen.h"
+#import "LBCurrencies.h"
 #import "LBStore.h"
 #import "LBLocalStore.h"
 #import "LBDisplay.h"
@@ -31,6 +34,8 @@
 #import "LBStockEditor.h"
 #import "LBStockProcedures.h"
 #import "LBFormValues.h"
+#import "LBSelectors.h"
+#import "LBAlerts.h"
 #import <ORMRuntime/ORMForm.h>
 #import <ORMRuntime/ORMFormSession.h>
 
@@ -128,17 +133,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     if (_store.local) [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(showSyncStatus)
                                                                    name:LBLocalStoreDidChangeNotification object:_store.local];
     [self showSyncStatus];
-    self.window.title = [NSString stringWithFormat:@"Logbook — %@", _store.serviceRoot.host ?: @""];
     _vehicles.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(vehicleName)) ascending:YES
                                                                   selector:@selector(localizedCaseInsensitiveCompare:)] ];
-    /* No smaller than drawn in MainWindow.xib (a frame saved before may
-       be): the forms' fields keep their widths. */
-    NSSize drawn = NSMakeSize(1060, 680);
-    NSSize now = [self.window.contentView frame].size;
-    self.window.contentMinSize = drawn;
-    if (now.width < drawn.width || now.height < drawn.height) {
-        [self.window setContentSize:NSMakeSize(MAX(now.width, drawn.width), MAX(now.height, drawn.height))];
-    }
     _records.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(lbDate)) ascending:NO] ];
     /* A vehicle's schedules and reminders are the Reminders tab's. */
     NSString *kind = [NSString stringWithFormat:@"%@.%@", NSStringFromSelector(@selector(entity)), NSStringFromSelector(@selector(name))];
@@ -156,8 +152,9 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     /* Reference data, the model's: read once. */
     self.serviceKinds = [CostKind lbServiceKindsInContext:self.context];
     _attachments.sortDescriptors = @[ [NSSortDescriptor sortDescriptorWithKey:NSStringFromSelector(@selector(fileName)) ascending:YES] ];
-    /* The rules a record or a vehicle breaks, at its fields. */
-    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.window.contentView];
+    /* The rules a record or a vehicle breaks, at its fields (the logbook's
+       page's: a screen has its own). */
+    _fieldIssues = [[LBFieldIssues alloc] initWithView:_workspace.logbookPage ?: self.window.contentView];
     [_fieldIssues setNeedsRefresh];
     /* A day of the model (bought on, issued, expires) is a UTC day: its
        field reads and says it so, whatever the zone here. */
@@ -174,6 +171,35 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [_records addObserver:self forKeyPath:selection options:NSKeyValueObservingOptionInitial context:LBRecordChosen];
     [_records addObserver:self forKeyPath:NSStringFromSelector(@selector(arrangedObjects)) options:NSKeyValueObservingOptionInitial
                   context:LBRecordsChanged];
+    /* The sidebar, the screen shown, the window's size (no smaller than
+       the logbook's page was drawn: the forms' fields keep their widths),
+       its title. */
+    /* Read now, not at the end of the event: the sidebar lists them. */
+    [_vehicles fetchWithRequest:nil merge:NO error:NULL];
+    [_workspace windowDidLoad];
+}
+
+/* The vehicle's tabs (MainWindow.xib's delegate): the Reports tab's report
+   worked out as it is shown. */
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)item {
+    if ([item.identifier isEqual:@"reports"]) LBTimed(@"reports shown", ^{ [self->_reports tabShown]; });
+}
+
+- (BOOL)showRecord:(Record *)record {
+    Record *mine = record.objectID ? (Record *)[self.context existingObjectWithID:record.objectID error:NULL] : nil;
+    Vehicle *vehicle = mine.vehicle;
+    if (!vehicle || ![_vehicles.arrangedObjects containsObject:vehicle]) return NO;
+    _vehicles.selectedObjects = @[ vehicle ];
+    if (![_workspace showLogbook]) return NO;
+    NSTabView *tabs = (NSTabView *)[self controlOf:@"tabs" in:_workspace.logbookPage];
+    [tabs selectTabViewItemWithIdentifier:@"records"];
+    _records.selectedObjects = @[ mine ];
+    return [_records.selectedObjects containsObject:mine];
+}
+
+- (void)showVehicleTab {
+    NSTabView *tabs = (NSTabView *)[self controlOf:@"tabs" in:_workspace.logbookPage];
+    [tabs selectTabViewItemWithIdentifier:@"vehicle"];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -224,17 +250,6 @@ static void *LBRecordsChanged = &LBRecordsChanged;
     [self.window displayIfNeeded];
     LBTimingNote(@"window up to date, %.1f ms after the change began", -[_timingSince timeIntervalSinceNow] * 1000);
     _timingSince = nil;
-}
-
-/* LB_TIMING: a click on the vehicle list, as it asks to change the
-   selection and as it has (the list's delegate, MainWindow.xib). */
-- (BOOL)selectionShouldChangeInTableView:(NSTableView *)tableView {
-    LBTimingNote(@"click asks to change the vehicles' selection (row %ld clicked)", (long)tableView.clickedRow);
-    return YES;
-}
-
-- (void)tableViewSelectionDidChange:(NSNotification *)note {
-    LBTimingNote(@"the vehicles' selection changed: row %ld", (long)[note.object selectedRow]);
 }
 
 - (void)vehicleChosenParts {
@@ -471,7 +486,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         alert.informativeText = @"Discarding the record deletes that reminder too, and what you changed of it.";
         [alert addButtonWithTitle:@"Delete It Too"];
         [alert addButtonWithTitle:@"Cancel"];
-        if ([alert runModal] != NSAlertFirstButtonReturn) return;
+        if (LBAskInSheet(alert, self.window) != NSAlertFirstButtonReturn) return;
         error = nil;
         if ([self call:@"Discard" on:record parameters:@{ @"KeepNextReminder": @NO } error:&error]) return;
     }
@@ -715,7 +730,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         alert.informativeText = [alert.informativeText stringByAppendingString:@" Logbook has no place for these, or takes them so:"];
     [alert addButtonWithTitle:@"Import"];
     [alert addButtonWithTitle:@"Cancel"];
-    if (import.leftOut.count || import.makesStock || import.makesItsVehicle) {
+    if (import.leftOut.count || import.makesStock || import.makesItsVehicle || import.takesACurrency) {
         NSArray *objects = nil;
         NSNib *nib = [[NSNib alloc] initWithNibNamed:@"ImportSummary" bundle:nil];
         if ([nib instantiateWithOwner:self topLevelObjects:&objects] && _importSummaryView) {
@@ -736,7 +751,27 @@ static void *LBRecordsChanged = &LBRecordsChanged;
                 view.hidden = !import.makesItsVehicle || import.exportYear > 0;
         }
     }
+    /* Its amounts' currency, which the export says not: asked, the user's
+       at first (MainTrack's of 2019 in UAH, the user's KZT now). */
+    if (_importCurrencyField && import.takesACurrency) {
+        NSString *mine = _store.user.currency;
+        NSMutableArray<NSString *> *codes = [[[LBCurrencies alloc] init].codes mutableCopy];
+        if (mine.length && ![codes containsObject:mine]) [codes insertObject:mine atIndex:0];
+        [_importCurrencyField removeAllItems];
+        for (NSString *code in codes) {
+            [_importCurrencyField addItemWithTitle:[LBCurrencies nameOfCode:code]];
+            _importCurrencyField.lastItem.representedObject = code;
+        }
+        NSInteger at = mine.length ? [_importCurrencyField indexOfItemWithRepresentedObject:mine] : -1;
+        if (at >= 0) [_importCurrencyField selectItemAtIndex:at];
+        for (NSView *view in _importCurrencyField.superview.subviews) {
+            if (view == _importCurrencyField || [view.identifier isEqualToString:@"importCurrencyLabel"]) view.hidden = NO;
+        }
+        alert.informativeText = [alert.informativeText stringByAppendingString:@" The export says no currency: say the one its amounts are in."];
+    }
     [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse response) {
+        if (import.takesACurrency) import.currency = self.importCurrencyField.selectedItem.representedObject;
+        self.importCurrencyField = nil;
         NSString *catalog = [self.importCatalogField.stringValue stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
         if (import.makesItsVehicle) {
             import.madeVehicleMake = self.importMakeField.stringValue;
@@ -756,6 +791,8 @@ static void *LBRecordsChanged = &LBRecordsChanged;
         dispatch_async(dispatch_get_main_queue(), ^{
             NSAlert *said = [[NSAlert alloc] init];
             said.messageText = [NSString stringWithFormat:@"%lu made, %lu there already.", (unsigned long)made, (unsigned long)skipped];
+            if (import.recurrenced)
+                said.messageText = [said.messageText stringByAppendingFormat:@" %lu of those in %@ now.", (unsigned long)import.recurrenced, import.currency];
             said.informativeText = @"They are synced with the rest of your logbook.";
             [said beginSheetModalForWindow:self.window completionHandler:nil];
         });
@@ -940,6 +977,98 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 }
 
 - (IBAction)save:(id)sender {
+    LBScreen *screen = _workspace.shownScreen;
+    if (screen) [screen save:sender];
+    else [self saveLogbook];
+}
+
+- (IBAction)revertChanges:(id)sender {
+    LBScreen *screen = _workspace.shownScreen;
+    if (screen) [screen revertChanges:sender];
+    else [self revertLogbook];
+}
+
+- (IBAction)goBack:(id)sender {
+    [_workspace goBack:sender];
+}
+
+- (IBAction)goForward:(id)sender {
+    [_workspace goForward:sender];
+}
+
+- (IBAction)toggleSidebarPane:(id)sender {
+    [_workspace toggleSidebarPane:sender];
+}
+
+- (IBAction)toggleInspectorPane:(id)sender {
+    [_workspace toggleInspectorPane:sender];
+}
+
+- (IBAction)newVehicle:(id)sender {
+    [_workspace newVehicle:sender];
+}
+
+- (IBAction)newCatalog:(id)sender {
+    [_workspace newCatalog:sender];
+}
+
+/* The - under the list that has the focus: a button named remove...
+   flush under its scroll view's bottom edge (MainWindow.xib and the
+   screens' XIBs put them so). */
+- (nullable NSButton *)removeButtonOfFocusedList {
+    NSResponder *focused = self.window.firstResponder;
+    if (![focused isKindOfClass:[NSTableView class]]) return nil;
+    NSScrollView *scroll = ((NSTableView *)focused).enclosingScrollView;
+    for (NSView *view in scroll.superview.subviews) {
+        if (![view isKindOfClass:[NSButton class]] || view.isHidden) continue;
+        NSButton *button = (NSButton *)view;
+        if (![button.identifier hasPrefix:@"remove"]) continue;
+        NSRect b = button.frame, s = scroll.frame;
+        BOOL under = scroll.superview.isFlipped ? fabs(NSMinY(b) - NSMaxY(s)) <= 2 : fabs(NSMaxY(b) - NSMinY(s)) <= 2;
+        if (under && NSMinX(b) >= NSMinX(s) - 2 && NSMinX(b) < NSMaxX(s)) return button;
+    }
+    return nil;
+}
+
+- (IBAction)delete:(id)sender {
+    NSButton *remove = [self removeButtonOfFocusedList];
+    if (remove.isEnabled) [remove performClick:sender];
+}
+
+/* The first search field shown in the main pane. */
+- (nullable NSSearchField *)searchFieldIn:(NSView *)view {
+    if (view.isHidden) return nil;
+    if ([view isKindOfClass:[NSSearchField class]]) return (NSSearchField *)view;
+    for (NSView *sub in view.subviews) {
+        NSSearchField *found = [self searchFieldIn:sub];
+        if (found) return found;
+    }
+    return nil;
+}
+
+- (IBAction)findInScreen:(id)sender {
+    NSSearchField *field = [self searchFieldIn:_workspace.shownScreen ? _workspace.screenHost : _workspace.logbookPage];
+    if (field) [self.window makeFirstResponder:field];
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)item {
+    SEL action = item.action;
+    if (LBSameSelector(action, @selector(save:)) || LBSameSelector(action, @selector(revertChanges:))) {
+        LBScreen *screen = _workspace.shownScreen;
+        return !screen || screen.savable;
+    }
+    if (LBSameSelector(action, @selector(delete:))) return [self removeButtonOfFocusedList].isEnabled;
+    if (LBSameSelector(action, @selector(findInScreen:))) {
+        return [self searchFieldIn:_workspace.shownScreen ? _workspace.screenHost : _workspace.logbookPage] != nil;
+    }
+    /* The workspace's own: as it says (Back, Forward, Show/Hide Sidebar). */
+    for (NSString *name in @[ @"goBack:", @"goForward:", @"toggleSidebarPane:", @"toggleInspectorPane:", @"newVehicle:", @"newCatalog:" ]) {
+        if (LBSameSelector(action, NSSelectorFromString(name))) return [_workspace validateMenuItem:item];
+    }
+    return [self respondsToSelector:action];
+}
+
+- (void)saveLogbook {
     if (![self commitEdits]) return;
     [self completeReadings];
     NSArray<NSError *> *warnings = [[_store warnings] arrayByAddingObjectsFromArray:[self reminderWarnings]];
@@ -952,11 +1081,13 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 /* The deontic rules a change breaks: what ought not to be, but may. */
 - (BOOL)proceedDespite:(NSArray<NSError *> *)warnings {
     NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = warnings.count == 1 ? @"This ought not to be so" : @"These ought not to be so";
-    alert.informativeText = [[warnings valueForKey:NSStringFromSelector(@selector(localizedDescription))] componentsJoinedByString:@"\n"];
+    alert.messageText = warnings.count == 1 ? @"The logbook's rules advise against this change. Save it anyway?"
+                                            : @"The logbook's rules advise against these changes. Save them anyway?";
+    alert.informativeText = [[[warnings valueForKey:NSStringFromSelector(@selector(localizedDescription))] componentsJoinedByString:@"\n"]
+        stringByAppendingString:@"\n\nThe rules allow it: it is saved as it is, if you say so."];
     [alert addButtonWithTitle:@"Save Anyway"];
     [alert addButtonWithTitle:@"Cancel"];
-    return [alert runModal] == NSAlertFirstButtonReturn;
+    return LBAskInSheet(alert, self.window) == NSAlertFirstButtonReturn;
 }
 
 /* A save's refusal, each violation said: Core Data's message names none. */
@@ -968,7 +1099,7 @@ static void *LBRecordsChanged = &LBRecordsChanged;
                                        NSLocalizedRecoverySuggestionErrorKey: said }];
 }
 
-- (IBAction)revertChanges:(id)sender {
+- (void)revertLogbook {
     [self.window makeFirstResponder:nil];
     [_store.context rollback];
     [self answersChanged];
@@ -976,17 +1107,13 @@ static void *LBRecordsChanged = &LBRecordsChanged;
 
 - (BOOL)shouldClose {
     if (![self commitEdits]) return NO;
-    if (!_store.context.hasChanges) return YES;
-    NSAlert *alert = [[NSAlert alloc] init];
-    alert.messageText = @"Save the changes before closing?";
-    [alert addButtonWithTitle:@"Save"];
-    [alert addButtonWithTitle:@"Cancel"];
-    [alert addButtonWithTitle:@"Don't Save"];
-    NSModalResponse answer = [alert runModal];
+    if (!_store.context.hasChanges) return [_workspace closeScreensAsking:YES];
+    NSAlert *alert = LBSaveChangesAlert(@"the logbook");
+    NSModalResponse answer = LBAskInSheet(alert, self.window);
     if (answer == NSAlertSecondButtonReturn) return NO;
-    if (answer == NSAlertThirdButtonReturn) return YES;
+    if (answer == NSAlertThirdButtonReturn) return [_workspace closeScreensAsking:YES];
     NSError *error = nil;
-    if ([_store save:&error]) return YES;
+    if ([_store save:&error]) return [_workspace closeScreensAsking:YES];
     [self presentError:[self willPresentError:error]];
     return NO;
 }

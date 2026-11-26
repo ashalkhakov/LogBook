@@ -42,7 +42,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 // A step of a process's done here with its form and saved, not yet
 // submitted to its task at the server (it could not be reached): kept,
-// across launches, until it is (after a sync, or Submit in Window > Tasks),
+// across launches, until it is (after a sync, or Submit in Go > Tasks),
 // or until the user starts the step again. One per form and object.
 @interface LBPendingSubmission : NSManagedObject
 // The form ("ConfirmPurchaseOrder"), and what its process is of (an

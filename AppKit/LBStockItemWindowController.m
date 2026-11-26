@@ -34,7 +34,7 @@
 }
 
 - (instancetype)initWithStore:(LBStore *)store item:(StockItem *)item catalog:(Catalog *)catalog {
-    if ((self = [super initWithStore:store windowNibName:@"StockItem"])) {
+    if ((self = [super initWithStore:store nibName:@"StockItem"])) {
         self.catalog = [self own:catalog];
         _item = [self own:item];
         if (!_item) {
@@ -85,8 +85,8 @@
 }
 
 /* Opened for a transfer's Move the stock: its sheet at once. */
-- (void)showWindow:(id)sender {
-    [super showWindow:sender];
+- (void)screenDidShow {
+    [super screenDidShow];
     if (!_transfer || !self.task.entryName || ![self.task.flowName isEqualToString:@"Transferring"] || self.window.attachedSheet) return;
     NSError *error = nil;
     ORMFlowStep *step = [_flow beginAt:self.task.entryName key:_transfer.id.UUIDString error:&error];
@@ -101,9 +101,11 @@
     if (_moveForm) [self.window beginSheet:_movePanel completionHandler:nil];
 }
 
-- (void)windowDidLoad {
-    [super windowDidLoad];
-    [self.window bind:NSTitleBinding toObject:self withKeyPath:@"item.itemName" options:nil];
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.titleKeyPath = @"item.itemName";
+    _movesTable.target = self;
+    _movesTable.doubleAction = @selector(openMove:);
 }
 
 #pragma mark Reading
@@ -387,6 +389,14 @@ static NSPredicate *LBOf(NSString *key, id object) {
 
 - (IBAction)removeReorderRule:(id)sender {
     [self remove:_reorderRuleList list:@"reorderRules"];
+}
+
+/* What made the move chosen, shown. */
+- (IBAction)openMove:(id)sender {
+    NSInteger row = sender == _movesTable ? _movesTable.clickedRow : -1;
+    Move *move = row >= 0 && row < (NSInteger)[_moveList.arrangedObjects count] ? _moveList.arrangedObjects[(NSUInteger)row]
+                                                                              : _moveList.selectedObjects.firstObject;
+    if (move) [self openSourceOfMove:move];
 }
 
 @end

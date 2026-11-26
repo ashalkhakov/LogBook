@@ -57,7 +57,10 @@ def expand(text):
 # The GNUmakefile's, but each platform's half of a file split so (the
 # updater, AppKit/LBUpdater.h) the Apple one.
 APP_SOURCES = [f.replace("-GNUstep.m", "-Apple.m") for f in expand(make_value("GNUmakefile", "Logbook_OBJC_FILES"))]
-APP_RESOURCES = expand(make_value("GNUmakefile", "Logbook_RESOURCE_FILES"))
+# GNUstep's resources, but for its stand-ins of the system's symbols
+# (Images/GNUstep: macOS has the symbols), and with the Mac's icon.
+APP_RESOURCES = [r for r in expand(make_value("GNUmakefile", "Logbook_RESOURCE_FILES")) if not r.startswith("Images/GNUstep/")] \
+                + ["AppKit/Assets.xcassets"]
 SERVER_SOURCES = expand(make_value("GNUmakefile", "logbook-server_OBJC_FILES"))
 PROCEDURES_SOURCES = expand(make_value("GNUmakefile", "lb-procedures-check_OBJC_FILES"))
 SYNC_SOURCES = expand(make_value("GNUmakefile", "lb-sync-check_OBJC_FILES"))
@@ -142,7 +145,7 @@ ALL_FILES = sorted(set(APP_SOURCES + APP_RESOURCES + SERVER_SOURCES + PROCEDURES
                        + [MODEL_CODE, "AppKit/Info.plist", "iOS/Info.plist", "iOS/Logbook-iOS.xcconfig",
                           "iOS/Assets.xcassets", "Model/Logbook.orm"]
                        + [os.path.relpath(h, ROOT) for d in ("AppKit", "Shared", "Server", "iOS", "UDCalendar",
-                                                             "UDQuantity", "Tests")
+                                                             "UDQuantity", "UDWorkbench", "Tests")
                           for h in glob.glob(os.path.join(ROOT, d, "*.h"))]
                        + [os.path.relpath(r, ROOT) for r in glob.glob(os.path.join(ROOT, "UD*", "README.md"))]))
 refs = {f: fileref(f) for f in ALL_FILES}
@@ -278,7 +281,7 @@ def settings(d):
     return "{\n" + "".join("\t\t\t\t%s = %s;\n" % (k, v) for k, v in sorted(d.items())) + "\t\t\t}"
 
 
-HEADERS = '("$(SRCROOT)/Shared", "$(SRCROOT)/AppKit", "$(SRCROOT)/UDCalendar", "$(SRCROOT)/UDQuantity", ' \
+HEADERS = '("$(SRCROOT)/Shared", "$(SRCROOT)/AppKit", "$(SRCROOT)/UDCalendar", "$(SRCROOT)/UDQuantity", "$(SRCROOT)/UDWorkbench", ' \
           '"$(SRCROOT)/Server", "$(SRCROOT)/iOS", "$(SRCROOT)/build/Model/Constraints", "$(SRCROOT)/build/Generated")'
 COMMON = {
     "ALWAYS_SEARCH_USER_PATHS": "NO",
@@ -308,6 +311,7 @@ TARGET_SETTINGS = {
     "Logbook": {
         "GENERATE_INFOPLIST_FILE": "NO",
         "INFOPLIST_FILE": q("AppKit/Info.plist"),
+        "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
         "LD_RUNPATH_SEARCH_PATHS": '("$(inherited)", "@executable_path/../Frameworks")',
         "PRODUCT_BUNDLE_IDENTIFIER": "io.github.ashalkhakov.Logbook",
         "PRODUCT_NAME": "Logbook",

@@ -1,7 +1,7 @@
-// A catalog's settings (CatalogSettings.xib; docs/STOCK.md, Setup): its
-// name, currency, prefix and units; its warehouses and their locations;
-// its categories; its contacts, which are its customers and suppliers. It
-// reads the catalog and what is of it.
+// A catalog's settings (CatalogSettings.xib; docs/STOCK.md, Setup), a page
+// each: its warehouses and their locations; its contacts, which are its
+// customers and suppliers; its categories; its name, currency, prefix and
+// units. One Save saves them all. It reads the catalog and what is of it.
 
 #import "LBStockEditor.h"
 
@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 @interface LBCatalogSettingsWindowController : LBStockEditor
 
 - (instancetype)initWithStore:(LBStore *)store catalog:(Catalog *)catalog;
+// Shown in the main pane, at its page of that identifier.
+- (void)showTab:(NSString *)identifier;
 
 // Its warehouses, the chosen one's locations, its categories, its
 // contacts; each by title.
@@ -27,6 +29,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) IBOutlet NSTableView *locationsTable;
 @property (nonatomic, strong) IBOutlet NSTableView *categoriesTable;
 @property (nonatomic, strong) IBOutlet NSTableView *contactsTable;
+// Its pages, each shown alone (the sidebar's rows under a catalog):
+// warehouses (and the chosen one's locations), contacts, categories, and
+// settings (the catalog's name, currency, prefix and units).
+@property (nonatomic, strong) IBOutlet NSTabView *tabs;
 // The units its weights and sizes are given in.
 @property (nonatomic, readonly, copy) NSArray<WeightUnit *> *weightUnits;
 @property (nonatomic, readonly, copy) NSArray<SizeUnit *> *sizeUnits;

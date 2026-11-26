@@ -1,4 +1,5 @@
 #import "LBStockControllers.h"
+#import "LBSyncStatus.h"
 #import "LBDisplay.h"
 
 static void LBStockTell(UIViewController *controller, NSString *title, NSArray<NSString *> *lines) {
@@ -135,7 +136,7 @@ static void LBOffer(UIViewController *over, UITableViewCell *cell, NSString *tit
 - (void)reload {
     _items = [_phone itemsMatching:_searchText];
     self.navigationItem.title = _phone.catalog.lbTitle ?: @"Items";
-    self.navigationItem.prompt = _phone.store.status;
+    [self lb_showSyncStatus:_phone.store];
     if (self.isViewLoaded) [self.tableView reloadData];
 }
 
@@ -689,7 +690,7 @@ UIViewController *LBStockScreenOfMove(Move *move, LBStockPhone *phone) {
 
 - (void)reload {
     _orders = _showsSales ? (NSArray *)[_phone saleOrders] : (NSArray *)[_phone purchaseOrders];
-    self.navigationItem.prompt = _phone.store.status;
+    [self lb_showSyncStatus:_phone.store];
     if (self.isViewLoaded) [self.tableView reloadData];
 }
 
@@ -767,7 +768,7 @@ static NSString *LBPartyOf(NSManagedObject *order) {
     _lines = [[lines.allObjects filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"isDeleted == NO"]] sortedArrayUsingDescriptors:@[ inOrder ]];
     NSSet *documents = [_order valueForKey:_sale ? @"shipments" : @"receipts"];
     _documents = [documents.allObjects sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"runningNumber" ascending:NO] ]];
-    self.navigationItem.prompt = _phone.store.status;
+    [self lb_showSyncStatus:_phone.store];
     if (self.isViewLoaded) [self.tableView reloadData];
 }
 
@@ -952,7 +953,7 @@ static NSString *LBPartyOf(NSManagedObject *order) {
                   @[ @"Volume", figures.totals.volumeText ] ];
     _due = [_phone rulesDue];
     _open = [_phone ordersOpen];
-    self.navigationItem.prompt = _phone.store.status;
+    [self lb_showSyncStatus:_phone.store];
     if (self.isViewLoaded) [self.tableView reloadData];
 }
 

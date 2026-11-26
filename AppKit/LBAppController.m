@@ -11,6 +11,8 @@
 #import "LBListsController.h"
 #import "LBStockWindowController.h"
 #import "LBUpdater.h"
+#import "LBWorkspace.h"
+#import "LBSelectors.h"
 
 /* Logbook > Check for Updates… (MainMenu.xib), gone where there is no
    updater (LBUpdater.h). */
@@ -21,9 +23,6 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     ODataSignIn *_signIn;
     LBMainWindowController *_window;
     LBPreferencesController *_preferences;
-    LBListsController *_lists;
-    LBStockWindowController *_stock;
-    LBTasksWindowController *_tasks;
     LBUpdater *_updater;
     /* The steps saved here that wait, submitted after each sync. */
     LBTasks *_waitingTasks;
@@ -60,7 +59,6 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
-    if (_stock && ![_stock shouldClose]) return NSTerminateCancel;
     return !_window || [_window shouldClose] ? NSTerminateNow : NSTerminateCancel;
 }
 
@@ -90,10 +88,10 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     [_preferences showWindow:sender];
 }
 
+/* The lists' screen, in the window (the sidebar's Lists). */
 - (void)showLists:(NSString *)tab {
     if (!_window) return;
-    if (!_lists) _lists = [[LBListsController alloc] initWithLogbook:_window];
-    [_lists showTab:tab];
+    [_window.workspace showListsTab:tab];
 }
 
 - (IBAction)showExpenseKinds:(id)sender {
@@ -111,36 +109,40 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
 /* The processes' open tasks (LBTasksWindowController.h). */
 - (IBAction)showTasks:(id)sender {
     if (!_window) return;
-    if (!_tasks) _tasks = [[LBTasksWindowController alloc] initWithStore:_store];
-    [_tasks showWindow:sender];
+    [_window.workspace showTasks];
 }
 
+- (IBAction)showLogbook:(id)sender {
+    if (!_window) return;
+    [_window showWindow:sender];
+    [_window.workspace showLogbook];
+}
+
+- (IBAction)showHelp:(id)sender {
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:@"https://github.com/ashalkhakov/LogBook#readme"]];
+}
+
+/* The stock's screen, in the window (the sidebar's Stock). */
 - (IBAction)showStock:(id)sender {
     if (!_window) return;
-    if (!_stock) _stock = [[LBStockWindowController alloc] initWithStore:_store];
-    [_stock showWindow:sender];
+    [_window.workspace showStockTab:nil ofCatalog:nil];
 }
 
 /* Preferences and lists only while there is a logbook, whose user they
    are; updates while the updater can look for them. */
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
     SEL action = item.action;
-    if (action == @selector(checkForUpdates:)) return _updater.canCheckForUpdates;
-    BOOL needsLogbook = action == @selector(showPreferences:) || action == @selector(showExpenseKinds:) || action == @selector(showChecklists:)
-                        || action == @selector(showExchangeRates:) || action == @selector(showStock:)
-                        || action == @selector(showTasks:);
+    if (LBSameSelector(action, @selector(checkForUpdates:))) return _updater.canCheckForUpdates;
+    BOOL needsLogbook = LBSameSelector(action, @selector(showPreferences:)) || LBSameSelector(action, @selector(showExpenseKinds:)) || LBSameSelector(action, @selector(showChecklists:))
+                        || LBSameSelector(action, @selector(showExchangeRates:)) || LBSameSelector(action, @selector(showStock:))
+                        || LBSameSelector(action, @selector(showTasks:)) || LBSameSelector(action, @selector(showLogbook:));
     return !needsLogbook || _window != nil;
 }
 
 - (void)closeLogbook {
     [_preferences close];
     _preferences = nil;
-    [_lists close];
-    _lists = nil;
-    [_stock close];
-    _stock = nil;
-    [_tasks close];
-    _tasks = nil;
+    [_window.workspace closeScreensAsking:NO];
     if (_store.local) [[NSNotificationCenter defaultCenter] removeObserver:self name:LBLocalStoreDidSyncNotification object:_store.local];
     if (_store.local) [[NSNotificationCenter defaultCenter] removeObserver:self name:LBLocalStoreSyncDidFailNotification object:_store.local];
     _askedToSignIn = NO;
@@ -166,6 +168,7 @@ static const NSInteger LBCheckForUpdatesTag = 1001;
     _submittingWaiting = YES;
     if ([_waitingTasks submitWaitingIn:state]) [_waitingTasks noteChange];
     _submittingWaiting = NO;
+    [_store.local statusChanged];
 }
 
 /* The server refused who is signed in (a token for another audience,

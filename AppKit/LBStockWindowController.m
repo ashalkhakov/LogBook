@@ -1,4 +1,5 @@
 #import "LBStockWindowController.h"
+#import "LBWorkspace.h"
 #import "LBStore.h"
 #import "LBStockDisplay.h"
 #import "LBStockItemWindowController.h"
@@ -39,7 +40,7 @@
 }
 
 - (instancetype)initWithStore:(LBStore *)store {
-    if ((self = [super initWithStore:store windowNibName:@"StockWindow"])) {
+    if ((self = [super initWithStore:store nibName:@"StockWindow"])) {
         _read = [NSMutableSet set];
         _opened = [NSMutableArray array];
         _catalogs = @[];
@@ -59,8 +60,9 @@
     return self;
 }
 
-- (void)windowDidLoad {
-    self.window.title = [NSString stringWithFormat:@"Stock — %@", self.store.serviceRoot.host ?: @""];
+- (void)viewDidLoad {
+    /* Its title its catalog's name, as it is renamed too. */
+    self.titleKeyPath = @"catalog.catalogName";
     _itemsTable.doubleAction = @selector(openItem:);
     _itemsTable.target = self;
     _salesTable.doubleAction = @selector(openSale:);
@@ -69,7 +71,9 @@
     _purchasesTable.target = self;
     _openOrdersTable.doubleAction = @selector(showOrder:);
     _openOrdersTable.target = self;
-    [super windowDidLoad];
+    _changesTable.doubleAction = @selector(openChange:);
+    _changesTable.target = self;
+    [super viewDidLoad];
 }
 
 - (NSArray<NSSortDescriptor *> *)byItem {
@@ -94,6 +98,7 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
     BOOL other = catalog != self.catalog;
     [super setCatalog:catalog];
     if (!other) return;
+    [[LBWorkspace current] screenChangedPlace:self];
     [_read removeAllObjects];
     self.changeItem = nil;
     self.changeLocation = nil;
@@ -102,6 +107,7 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
 
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)item {
     [self readShown];
+    [[LBWorkspace current] screenChangedPlace:self];
 }
 
 - (void)readShown {
@@ -240,16 +246,16 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
     editor.quiet = self.quiet;
     if (![_opened containsObject:editor]) {
         [_opened addObject:editor];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(openedWillClose:) name:NSWindowWillCloseNotification
-                                                   object:editor.window];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(openedWillClose:) name:LBScreenWillCloseNotification
+                                                   object:editor];
     }
     [editor showWindow:self];
 }
 
 - (void)openedWillClose:(NSNotification *)note {
     for (LBStockEditor *editor in [_opened copy]) {
-        if (editor.window == note.object) {
-            [[NSNotificationCenter defaultCenter] removeObserver:self name:NSWindowWillCloseNotification object:editor.window];
+        if (editor == note.object) {
+            [[NSNotificationCenter defaultCenter] removeObserver:self name:LBScreenWillCloseNotification object:editor];
             [_opened removeObject:editor];
         }
     }
@@ -277,8 +283,11 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
 
 - (IBAction)showSettings:(id)sender {
     if (!self.catalog) return;
-    LBStockEditor *editor = [self windowOfClass:[LBCatalogSettingsWindowController class]]
-                            ?: [[LBCatalogSettingsWindowController alloc] initWithStore:self.store catalog:self.catalog];
+    LBCatalogSettingsWindowController *editor = (LBCatalogSettingsWindowController *)[self windowOfClass:[LBCatalogSettingsWindowController class]]
+                                                ?: [[LBCatalogSettingsWindowController alloc] initWithStore:self.store catalog:self.catalog];
+    /* At its own page: the catalog's name, currency, prefix and units. */
+    [editor view];
+    [editor.tabs selectTabViewItemWithIdentifier:@"settings"];
     [self show:editor];
 }
 
@@ -375,6 +384,14 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
 
 - (IBAction)showOrder:(id)sender {
     [self openOrder:_openList.selectedObjects.firstObject];
+}
+
+/* What made the change chosen, shown. */
+- (IBAction)openChange:(id)sender {
+    NSInteger row = sender == _changesTable ? _changesTable.clickedRow : -1;
+    LBChange *change = row >= 0 && row < (NSInteger)[self.changeList.arrangedObjects count] ? self.changeList.arrangedObjects[(NSUInteger)row]
+                                                                                         : self.changeList.selectedObjects.firstObject;
+    if (change) [self openSourceOfMove:change.move];
 }
 
 @end

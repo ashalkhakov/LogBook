@@ -1,5 +1,6 @@
 #import "LBListsController.h"
 #import "LBMainWindowController.h"
+#import "LBWorkspace.h"
 #import "LBStore.h"
 #import "LBDisplay.h"
 #import "LBProcedures.h"
@@ -12,7 +13,7 @@
 }
 
 - (instancetype)initWithLogbook:(LBMainWindowController *)logbook {
-    if ((self = [super initWithWindowNibName:@"Lists"])) _logbook = logbook;
+    if ((self = [super initWithNibName:@"Lists" bundle:nil])) _logbook = logbook;
     return self;
 }
 
@@ -24,8 +25,9 @@
     return _logbook.byTitle;
 }
 
-- (void)windowDidLoad {
-    [super windowDidLoad];
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    self.title = @"Lists";
     /* The user's own checklists: drivers go through their owners'. */
     User *user = _logbook.store.user;
     if (user) _checklists.fetchPredicate = [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(user)), user];
@@ -58,8 +60,17 @@
 }
 
 - (void)showTab:(NSString *)identifier {
-    [self showWindow:nil];
-    [_tabs selectTabViewItemWithIdentifier:identifier];
+    [[LBWorkspace current] showListsTab:identifier];
+}
+
+/* Left: what was typed kept, saved with the logbook's other changes. */
+- (BOOL)shouldLeave {
+    if (!self.isViewLoaded) return YES;
+    if (![self.window makeFirstResponder:nil]) return NO;
+    for (NSArrayController *controller in @[ _expenseKinds, _checklists, _questions, _options, _exchangeRates ]) {
+        if (![controller commitEditing]) return NO;
+    }
+    return YES;
 }
 
 /* What cannot be done, said as the logbook says it. */
@@ -255,17 +266,34 @@ static int32_t LBNextPosition(NSSet *objects) {
         [self refuse:@"This rate is saved: exchange rates are kept once saved, as costs are counted at them."];
         return;
     }
-    [self.context deleteObject:rate];
+    /* Through the list (entity mode: deleted from the context too), so it
+       is no longer listed at once, not after the context's pending
+       changes are processed. */
+    [_exchangeRates removeObject:rate];
 }
 
-/* What was typed kept, then saved with the logbook's other changes. */
-- (IBAction)done:(id)sender {
+/* Save: what was typed kept, then saved with the logbook's other
+   changes; the lists stay shown. */
+- (IBAction)save:(id)sender {
     if (![self.window makeFirstResponder:nil]) return;
     for (NSArrayController *controller in @[ _expenseKinds, _checklists, _questions, _options, _exchangeRates ]) {
         if (![controller commitEditing]) return;
     }
-    [_logbook save:sender];
-    if (!_logbook.lastError) [self close];
+    [_logbook saveLogbook];
+}
+
+- (IBAction)revertChanges:(id)sender {
+    [_logbook revertLogbook];
+    /* Each list read again: what was added and let go no longer in it
+       (GNUstep's controllers keep a rolled-back object listed). */
+    NSError *error = nil;
+    for (NSArrayController *controller in @[ _expenseKinds, _checklists, _exchangeRates ]) {
+        if (![controller fetchWithRequest:nil merge:NO error:&error]) [_logbook reportError:error];
+    }
+}
+
+- (BOOL)savable {
+    return YES;
 }
 
 @end

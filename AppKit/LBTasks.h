@@ -66,7 +66,7 @@ FOUNDATION_EXPORT NSNotificationName const LBTasksDidChangeNotification;
 - (BOOL)submitWaiting:(LBPendingSubmission *)waiting in:(LBAppState *)state error:(NSError **)error;
 // Each not held by another (-hold:).
 - (NSUInteger)submitWaitingIn:(LBAppState *)state;
-// Held while one submits it (a sync first, Window > Tasks's Submit): no
+// Held while one submits it (a sync first, Go > Tasks's Submit): no
 // other does meanwhile. NO where another holds it.
 + (BOOL)hold:(LBPendingSubmission *)waiting;
 + (void)letGo:(LBPendingSubmission *)waiting;

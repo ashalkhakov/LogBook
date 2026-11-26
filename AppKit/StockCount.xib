@@ -7,7 +7,7 @@
   <objects>
     <customObject id="-2" userLabel="File's Owner" customClass="LBStockCountWindowController">
       <connections>
-        <outlet property="window" destination="window" id="windowOutlet"/>
+        <outlet property="view" destination="content" id="windowOutlet"/>
         <outlet property="countRows" destination="countRows" id="countRowsOutlet"/>
         <outlet property="countRowsTable" destination="countRowsTable" id="countRowsTableOutlet"/>
         <outlet property="reviewPanel" destination="reviewPanel" id="reviewPanelOutlet"/>
@@ -46,7 +46,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reviewCounterLabel">
             <rect key="frame" x="14" y="303" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted by" id="reviewCounterLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted by:" id="reviewCounterLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -67,7 +67,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reviewCountedOnLabel">
             <rect key="frame" x="14" y="273" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted on" id="reviewCountedOnLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted on:" id="reviewCountedOnLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -179,7 +179,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="reviewStateLabel">
             <rect key="frame" x="14" y="59" width="90" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Review" id="reviewStateLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Review:" id="reviewStateLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -204,6 +204,9 @@
             <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="dismissReviewCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
+                <string key="keyEquivalent" base64-UTF8="YES">
+Gw
+</string>
             </buttonCell>
             <connections>
               <action selector="dismissForm:" target="-2" id="dismissReviewAction"/>
@@ -212,8 +215,7 @@
           <button verticalHuggingPriority="750" identifier="submitReview" id="submitReview">
             <rect key="frame" x="315" y="12" width="95" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="
-" id="submitReviewCell">
+            <buttonCell key="cell" type="push" title="Post Count" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitReviewCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -224,19 +226,14 @@
         </subviews>
       </view>
     </window>
-    <window title="Count" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" frameAutosaveName="LogbookStockCount" animationBehavior="default" id="window">
-      <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
-      <rect key="contentRect" x="180" y="140" width="660" height="520"/>
-      <rect key="screenRect" x="0" y="0" width="1920" height="1080"/>
-      <value key="minSize" type="size" width="660" height="520"/>
-      <view key="contentView" id="content">
+    <customView userLabel="Screen" id="content">
         <rect key="frame" x="0" y="0" width="660" height="520"/>
-        <autoresizingMask key="autoresizingMask"/>
+        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
         <subviews>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countPlaceLabel">
             <rect key="frame" x="14" y="489" width="30" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Of" id="countPlaceLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Of:" id="countPlaceLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -279,9 +276,9 @@
             </connections>
           </button>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countDayLabel">
-            <rect key="frame" x="14" y="455" width="70" height="17"/>
+            <rect key="frame" x="2" y="455" width="82" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted on" id="countDayLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Counted on:" id="countDayLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -301,9 +298,9 @@
             </connections>
           </datePicker>
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countNoteLabel">
-            <rect key="frame" x="220" y="455" width="35" height="17"/>
+            <rect key="frame" x="215" y="455" width="40" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note" id="countNoteLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Note:" id="countNoteLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -322,14 +319,14 @@
             </connections>
           </textField>
           <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="countRowsTableScroll">
-            <rect key="frame" x="14" y="90" width="632" height="352"/>
+            <rect key="frame" x="14" y="114" width="632" height="328"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <clipView key="contentView" id="countRowsTableClip">
-              <rect key="frame" x="1" y="1" width="630" height="350"/>
+              <rect key="frame" x="1" y="1" width="630" height="326"/>
               <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
               <subviews>
                 <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="countRowsTableHeader" identifier="countRowsTable" id="countRowsTable">
-                  <rect key="frame" x="0" y="0" width="630" height="327"/>
+                  <rect key="frame" x="0" y="0" width="630" height="303"/>
                   <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                   <size key="intercellSpacing" width="3" height="2"/>
                   <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -402,7 +399,7 @@
               <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
             </scroller>
             <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="countRowsTableVScroller">
-              <rect key="frame" x="616" y="1" width="15" height="350"/>
+              <rect key="frame" x="616" y="1" width="15" height="326"/>
               <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
             </scroller>
             <tableHeaderView key="headerView" id="countRowsTableHeader">
@@ -413,7 +410,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countRowItemLabel">
             <rect key="frame" x="14" y="55" width="40" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item" id="countRowItemLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Item:" id="countRowItemLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -436,7 +433,7 @@
           <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="countRowLocationLabel">
             <rect key="frame" x="284" y="55" width="25" height="17"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At" id="countRowLocationLabelCell">
+            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="At:" id="countRowLocationLabelCell">
               <font key="font" metaFont="system"/>
               <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
               <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
@@ -456,10 +453,10 @@
               <binding destination="countRows" name="selectedObject" keyPath="selection.location" previousBinding="countRowLocationValues" id="countRowLocationChosen"/>
             </connections>
           </popUpButton>
-          <button verticalHuggingPriority="750" identifier="addCountRow" id="addCountRow">
-            <rect key="frame" x="10" y="8" width="100" height="32"/>
+          <button toolTip="Add Row" verticalHuggingPriority="750" identifier="addCountRow" id="addCountRow">
+            <rect key="frame" x="14" y="91" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Add Row" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addCountRowCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addCountRowCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -467,10 +464,10 @@
               <action selector="addCountRow:" target="-2" id="addCountRowAction"/>
             </connections>
           </button>
-          <button verticalHuggingPriority="750" identifier="removeCountRow" id="removeCountRow">
-            <rect key="frame" x="110" y="8" width="115" height="32"/>
+          <button toolTip="Remove Row" verticalHuggingPriority="750" identifier="removeCountRow" id="removeCountRow">
+            <rect key="frame" x="37" y="91" width="24" height="23"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Remove Row" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeCountRowCell">
+            <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removeCountRowCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -482,7 +479,7 @@
           <button verticalHuggingPriority="750" identifier="submitCount" id="submitCount">
             <rect key="frame" x="535" y="8" width="115" height="32"/>
             <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="submitCountCell">
+            <buttonCell key="cell" type="push" title="Submit" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" keyEquivalent="&#13;" id="submitCountCell">
               <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
               <font key="font" metaFont="system"/>
             </buttonCell>
@@ -492,10 +489,10 @@
             </connections>
           </button>
         </subviews>
-      </view>
-      <connections>
-        <outlet property="delegate" destination="-2" id="windowDelegate"/>
-      </connections>
-    </window>
+    </customView>
   </objects>
+    <resources>
+        <image name="NSAddTemplate" width="14" height="13"/>
+        <image name="NSRemoveTemplate" width="14" height="4"/>
+    </resources>
 </document>

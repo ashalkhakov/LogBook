@@ -1,4 +1,6 @@
 #import "LBiOSControllers.h"
+#import "LBSyncStatus.h"
+#import <objc/runtime.h>
 #import "LBDisplay.h"
 #import "LBProcedures.h"
 #import "LBSignIn.h"
@@ -248,8 +250,7 @@ static NSComparisonResult LBByName(Vehicle *a, Vehicle *b, void *unused) {
 
 #pragma mark - Sync status and conflicts, on every tab
 
-/* What each list says over it: the sync's status, and the conflicts that
-   wait (a button to them). */
+/* What each list says of the sync (LBSyncStatus.h). */
 @interface UIViewController (LBStatus)
 - (void)lb_showStatusOf:(LBPhone *)phone;
 @end
@@ -257,27 +258,39 @@ static NSComparisonResult LBByName(Vehicle *a, Vehicle *b, void *unused) {
 @implementation UIViewController (LBStatus)
 
 - (void)lb_showStatusOf:(LBPhone *)phone {
-    self.navigationItem.prompt = phone.store.status;
-    NSUInteger conflicts = [phone.store pendingConflicts].count;
-    self.navigationItem.leftBarButtonItem = conflicts
-        ? [[UIBarButtonItem alloc] initWithTitle:[NSString stringWithFormat:@"⚠︎ %lu", (unsigned long)conflicts] style:UIBarButtonItemStylePlain
-                                          target:self action:@selector(lb_showConflicts:)]
-        : nil;
+    [self lb_showSyncStatus:phone.store];
 }
 
-- (void)lb_showConflicts:(id)sender {
-    LBMainViewController *main = (LBMainViewController *)self.tabBarController;
-    if (![main isKindOfClass:[LBMainViewController class]]) return;
-    [self.navigationController pushViewController:[[LBConflictsViewController alloc] initWithPhone:main.phone] animated:YES];
+@end
+
+static char LBSyncedStoreKey;
+
+@implementation UIViewController (LBSyncStatus)
+
+- (void)lb_showSyncStatus:(LBLocalStore *)store {
+    if (!store) return;
+    objc_setAssociatedObject(self, &LBSyncedStoreKey, store, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    UITableViewController *list = [self isKindOfClass:[UITableViewController class]] ? (UITableViewController *)self : nil;
+    if (list && !list.refreshControl) {
+        list.refreshControl = [[UIRefreshControl alloc] init];
+        [list.refreshControl addTarget:self action:@selector(lb_pullToSync:) forControlEvents:UIControlEventValueChanged];
+    }
+    NSString *status = store.status;
+    list.refreshControl.attributedTitle = status.length ? [[NSAttributedString alloc] initWithString:status] : nil;
+    BOOL failed = store.lastSyncError && !store.isSyncing;
+    self.navigationItem.prompt = failed ? @"Not synced. Pull down to try again." : nil;
+}
+
+- (void)lb_pullToSync:(UIRefreshControl *)control {
+    [(LBLocalStore *)objc_getAssociatedObject(self, &LBSyncedStoreKey) sync];
+    [control endRefreshing];
 }
 
 @end
 
 #pragma mark - The tabs and the +
 
-@implementation LBMainViewController {
-    UIButton *_plus;
-}
+@implementation LBMainViewController
 
 + (NSArray<NSString *> *)loggedKinds {
     return @[ @"FillUp", @"Service", @"Expense", @"Trip", @"MeterReading", @"Inspection" ];
@@ -293,6 +306,14 @@ static NSComparisonResult LBByName(Vehicle *a, Vehicle *b, void *unused) {
         UINavigationController *vehicle = [[UINavigationController alloc] initWithRootViewController:[[LBVehicleViewController alloc] initWithPhone:phone]];
         vehicle.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"Vehicle" image:[UIImage systemImageNamed:@"car"] tag:2];
         self.viewControllers = @[ timeline, reminders, vehicle ];
+        /* Log a record: the navigation bar's +, as iOS has Add (HIG), on
+           each tab. */
+        for (UINavigationController *tab in self.viewControllers) {
+            UIBarButtonItem *add = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self
+                                                                                  action:@selector(log:)];
+            add.accessibilityLabel = @"Log";
+            tab.viewControllers.firstObject.navigationItem.rightBarButtonItem = add;
+        }
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(changed:) name:LBLocalStoreDidChangeNotification
                                                    object:phone.store];
     }
@@ -305,25 +326,6 @@ static NSComparisonResult LBByName(Vehicle *a, Vehicle *b, void *unused) {
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    /* The +, prominent, over the tab bar: what is logged most, fastest. */
-    _plus = [UIButton buttonWithType:UIButtonTypeSystem];
-    _plus.translatesAutoresizingMaskIntoConstraints = NO;
-    _plus.backgroundColor = self.view.tintColor;
-    _plus.tintColor = [UIColor whiteColor];
-    [_plus setImage:[UIImage systemImageNamed:@"plus" withConfiguration:[UIImageSymbolConfiguration configurationWithPointSize:24
-                                                                                                                       weight:UIImageSymbolWeightBold]]
-           forState:UIControlStateNormal];
-    _plus.layer.cornerRadius = 28;
-    _plus.layer.shadowOpacity = 0.25;
-    _plus.layer.shadowRadius = 4;
-    _plus.layer.shadowOffset = CGSizeMake(0, 2);
-    _plus.accessibilityLabel = @"Log";
-    [_plus addTarget:self action:@selector(log:) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:_plus];
-    [NSLayoutConstraint activateConstraints:@[
-        [_plus.widthAnchor constraintEqualToConstant:56], [_plus.heightAnchor constraintEqualToConstant:56],
-        [_plus.trailingAnchor constraintEqualToAnchor:self.view.safeAreaLayoutGuide.trailingAnchor constant:-20],
-        [_plus.bottomAnchor constraintEqualToAnchor:self.tabBar.topAnchor constant:-16] ]];
     [self changed:nil];
 }
 
@@ -353,8 +355,11 @@ static NSComparisonResult LBByName(Vehicle *a, Vehicle *b, void *unused) {
                                                 }]];
     }
     [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
-    sheet.popoverPresentationController.sourceView = _plus;
-    sheet.popoverPresentationController.sourceRect = _plus.bounds;
+    if ([sender isKindOfClass:[UIBarButtonItem class]]) sheet.popoverPresentationController.barButtonItem = sender;
+    else {
+        sheet.popoverPresentationController.sourceView = self.view;
+        sheet.popoverPresentationController.sourceRect = CGRectMake(CGRectGetMidX(self.view.bounds), CGRectGetMidY(self.view.bounds), 1, 1);
+    }
     [self presentViewController:sheet animated:YES completion:nil];
 }
 
@@ -626,7 +631,7 @@ static NSComparisonResult LBByName(Vehicle *a, Vehicle *b, void *unused) {
             if (![weakSelf cancel:reminder problems:&problems]) LBTell(weakSelf, @"Not Cancelled", problems ?: @[]);
         }]];
     }
-    [sheet addAction:[UIAlertAction actionWithTitle:@"Close" style:UIAlertActionStyleCancel handler:nil]];
+    [sheet addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
     sheet.popoverPresentationController.sourceView = cell;
     sheet.popoverPresentationController.sourceRect = cell.bounds;
@@ -707,7 +712,7 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
     [sections addObjectsFromArray:@[ @(LBVehicleSectionSync), @(LBVehicleSectionStock), @(LBVehicleSectionAccount) ]];
     _sections = sections;
     _summary = _phone.vehicle ? [[LBVehicleSummary alloc] initWithVehicle:_phone.vehicle] : nil;
-    self.navigationItem.prompt = _phone.store.status;
+    [self lb_showSyncStatus:_phone.store];
     if ([self isViewLoaded]) [self.tableView reloadData];
 }
 
@@ -958,7 +963,7 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
         for (ODataSyncIssue *issue in store.issues) [store.engine discardIssue:issue];
         [weakSelf reload];
     }]];
-    [alert addAction:[UIAlertAction actionWithTitle:@"Close" style:UIAlertActionStyleCancel handler:nil]];
+    [alert addAction:[UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:nil]];
     [self presentViewController:alert animated:YES completion:nil];
 }
 
