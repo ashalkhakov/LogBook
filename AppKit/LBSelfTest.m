@@ -1951,6 +1951,14 @@ static void LBStockSteps(LBMainWindowController *controller) {
     LBChoose(boltWindow, @"itemCategory", @"Fasteners");
     LBChoose(boltWindow, @"itemSupplier", @"Parts Ltd");
     LBSavedIn(card, @"its price, category and supplier saved");
+    /* The card's save merged into Stock's screen (its context the main
+       one's child too): the price there as saved, and nothing there to
+       save, though its bindings observe what the new objects reached. */
+    {
+        StockItem *listed = (StockItem *)[stock.context existingObjectWithID:bolt.objectID error:NULL];
+        LBCheck(@"the card's save merged into Stock's screen: the bolt's price there, nothing there to save",
+                LBIs(listed.priceAmount, @"0.5") && !stock.context.lb_hasUnsavedChanges, stock.context.lb_unsavedChanges);
+    }
     StockItem *keptBolt = LBServerOf(bolt);
     UDQuantityField *price = (UDQuantityField *)LBControl(boltWindow.contentView, @"itemPrice");
     LBCheck(@"its price's currency beside it, to choose from: the catalog's USD, saved", [price isKindOfClass:[UDQuantityField class]]

@@ -16,6 +16,8 @@
     NSPersistentStoreCoordinator *_coordinator;
     User *_user;
     NSURL *_directory;
+    /* Offline first, the screens' contexts (the main one's children). */
+    NSHashTable<NSManagedObjectContext *> *_screens;
 }
 
 + (NSManagedObjectModel *)model {
@@ -61,6 +63,9 @@
         _local.syncInterval = 60;
         _context = _local.context;
         _context.undoManager = [[NSUndoManager alloc] init];
+        _screens = [NSHashTable weakObjectsHashTable];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(storeSaved:)
+                                                     name:NSManagedObjectContextDidSaveNotification object:nil];
         /* What the server has, once, where it answers; else what was kept. */
         NSError *unsynced = nil;
         if (![_local syncAndWait:&unsynced]) NSLog(@"Logbook: working offline: %@", unsynced.localizedDescription);
@@ -87,11 +92,51 @@
     return YES;
 }
 
+- (void)dealloc {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+
+/* Offline first, a context of the store's own saved into it (the sync's,
+   bringing the server's changes; the conflicts'): what it updated merged
+   into the main one, then into each screen's. A screen's merges only what
+   is saved into the main one (automaticallyMergesChangesFromParent), not
+   what the main one merges or reads again. Not what it inserted or
+   deleted: a merged deletion stays in the context's deletedObjects, to be
+   saved (the sync's outbox entries, as it sends them, each screen's
+   unsaved change); the lists fetched again after a sync have them. The
+   IDs only, taken on the saving context's thread; merged on the main
+   one's. */
+- (void)storeSaved:(NSNotification *)note {
+    NSManagedObjectContext *saved = note.object;
+    NSPersistentStoreCoordinator *coordinator = _context.persistentStoreCoordinator;
+    if (saved == _context || saved.parentContext || !coordinator || saved.persistentStoreCoordinator != coordinator) return;
+    NSArray *updated = [[note.userInfo[NSUpdatedObjectsKey] allObjects] valueForKey:@"objectID"];
+    if (!updated.count) return;
+    NSDictionary *changes = @{ NSUpdatedObjectsKey: updated };
+    __weak LBStore *weakSelf = self;
+    void (^merge)(void) = ^{
+        LBStore *store = weakSelf;
+        if (!store || !store->_context) return;
+        NSArray *contexts = [@[ store->_context ] arrayByAddingObjectsFromArray:store->_screens.allObjects];
+        [NSManagedObjectContext mergeChangesFromRemoteContextSave:changes intoContexts:contexts];
+    };
+    if ([NSThread isMainThread]) merge();
+    else dispatch_async(dispatch_get_main_queue(), merge);
+}
+
 - (NSManagedObjectContext *)newContext {
     NSManagedObjectContext *context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSMainQueueConcurrencyType];
     /* Offline first, the main one's child: saved into it, then as it is. */
-    if (_local) context.parentContext = _context;
-    else context.persistentStoreCoordinator = _coordinator;
+    if (_local) {
+        context.parentContext = _context;
+        /* The other screens' saves merged in as they go into the main
+           one: what this screen shows, through any relationship, as
+           saved. */
+        context.automaticallyMergesChangesFromParent = YES;
+        [_screens addObject:context];
+    } else {
+        context.persistentStoreCoordinator = _coordinator;
+    }
     context.undoManager = [[NSUndoManager alloc] init];
     /* What the server stamps as it saves (the sync's bookkeeping: a
        version, a last change), and what it settles (a reminder an event
@@ -140,7 +185,7 @@
 
 - (BOOL)saveContext:(NSManagedObjectContext *)context error:(NSError **)error {
     if (_local && context == _context) return [_local save:error];
-    if (!context.hasChanges) return YES;
+    if (!context.lb_hasUnsavedChanges) return YES;
     for (NSManagedObject *object in context.insertedObjects) {
         if ([object respondsToSelector:@selector(setId:)] && !((id<LBIdentified>)object).id) {
             ((id<LBIdentified>)object).id = [NSUUID UUID];
@@ -195,6 +240,29 @@
         }
     }
     return warnings;
+}
+
+@end
+
+@implementation NSManagedObjectContext (LBUnsaved)
+
+- (BOOL)lb_hasUnsavedChanges {
+    if (!self.hasChanges) return NO;
+    if (self.insertedObjects.count || self.deletedObjects.count) return YES;
+    for (NSManagedObject *object in self.updatedObjects) {
+        if (object.hasPersistentChangedValues) return YES;
+    }
+    return NO;
+}
+
+- (NSArray<NSString *> *)lb_unsavedChanges {
+    NSMutableArray *said = [NSMutableArray array];
+    for (NSManagedObject *each in self.updatedObjects) {
+        if (each.hasPersistentChangedValues) [said addObject:[NSString stringWithFormat:@"%@ %@", each.entity.name, each.changedValues]];
+    }
+    for (NSManagedObject *each in self.insertedObjects) [said addObject:[NSString stringWithFormat:@"new %@", each.entity.name]];
+    for (NSManagedObject *each in self.deletedObjects) [said addObject:[NSString stringWithFormat:@"deleted %@", each.entity.name]];
+    return said;
 }
 
 @end

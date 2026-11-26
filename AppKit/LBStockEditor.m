@@ -38,8 +38,6 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     if ((self = [super initWithNibName:name bundle:nil])) {
         _store = store;
         _context = [store newContext];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextDidSave:)
-                                                     name:NSManagedObjectContextDidSaveNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(stockDidChange:) name:LBStockDidChangeNotification
                                                    object:nil];
         /* Offline first: what a sync brought down, read again. */
@@ -123,40 +121,18 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 - (NSArray *)fetch:(Class)cls where:(NSPredicate *)predicate sortedBy:(NSArray<NSSortDescriptor *> *)order {
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(cls)];
     request.predicate = predicate;
+    /* The rows fetched read into the objects already here (kept what this
+       screen changed), as the fetch brings them: not each object turned
+       back into a fault, which the bindings observing it would read while
+       Core Data fills it in. */
+    request.shouldRefreshRefetchedObjects = YES;
     NSError *error = nil;
     NSArray *found = [_context executeFetchRequest:request error:&error];
     if (!found) {
         [self reportError:error];
         return @[];
     }
-    /* The fetch brought the server's rows: those already here are read
-       from them again, as they fault. */
-    for (NSManagedObject *object in found) {
-        if (!object.isInserted) [_context refreshObject:object mergeChanges:object.hasChanges];
-    }
     return order.count ? [found sortedArrayUsingDescriptors:order] : found;
-}
-
-/* Another screen's context saved: what it changed that is here read again
-   (kept what this screen is editing), not only what its lists fetch again:
-   one reached through a relationship (an item's supplier item, the reorder's
-   cost) would stay as it was. The IDs only (the saving context may be
-   another thread's); read again on the main thread, this screen's. */
-- (void)contextDidSave:(NSNotification *)note {
-    NSManagedObjectContext *saved = note.object;
-    if (saved == _context || !_context || saved.persistentStoreCoordinator != _context.persistentStoreCoordinator) return;
-    NSArray *changed = [[note.userInfo[NSUpdatedObjectsKey] allObjects] valueForKey:@"objectID"];
-    if (!changed.count) return;
-    __weak LBStockEditor *weakSelf = self;
-    void (^refresh)(void) = ^{
-        NSManagedObjectContext *context = weakSelf.context;
-        for (NSManagedObjectID *objectID in changed) {
-            NSManagedObject *here = [context objectRegisteredForID:objectID];
-            if (here && !here.isFault && !here.hasChanges) [context refreshObject:here mergeChanges:NO];
-        }
-    };
-    if ([NSThread isMainThread]) refresh();
-    else dispatch_async(dispatch_get_main_queue(), refresh);
 }
 
 - (void)stockDidChange:(NSNotification *)note {
@@ -223,7 +199,7 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 - (BOOL)saveHere {
     /* Nothing left to save (a form saved it): saved, what was refused
        before no longer so. */
-    if (!_context.hasChanges) {
+    if (!_context.lb_hasUnsavedChanges) {
         _lastError = nil;
         return YES;
     }
@@ -328,14 +304,11 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 
 - (BOOL)shouldClose {
     if (![self commitEdits]) return NO;
-    if (!_context.hasChanges) return YES;
+    if (!_context.lb_hasUnsavedChanges) return YES;
     /* Quiet (a self-test): no alert, which nobody would answer; refused,
        what is unsaved said. */
     if (self.quiet) {
-        NSMutableArray *said = [NSMutableArray array];
-        for (NSManagedObject *each in _context.updatedObjects) [said addObject:[NSString stringWithFormat:@"%@ %@", each.entity.name, each.changedValues]];
-        for (NSManagedObject *each in _context.insertedObjects) [said addObject:[NSString stringWithFormat:@"new %@", each.entity.name]];
-        for (NSManagedObject *each in _context.deletedObjects) [said addObject:[NSString stringWithFormat:@"deleted %@", each.entity.name]];
+        NSArray *said = [_context lb_unsavedChanges];
         [self refuse:[NSString stringWithFormat:@"%@ would ask to save its changes: %@", self.title ?: NSStringFromClass([self class]),
                                                 [said componentsJoinedByString:@"; "]]];
         NSLog(@"%@", self.lastError.localizedDescription);

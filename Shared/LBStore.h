@@ -86,4 +86,16 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nullable, nonatomic, copy) NSUUID *id;
 @end
 
+@interface NSManagedObjectContext (LBUnsaved)
+/* What the user would lose: objects inserted or deleted here, or changed
+   from what was saved (hasPersistentChangedValues). Not hasChanges: a
+   screen's context merges the others' saves
+   (automaticallyMergesChangesFromParent), and Core Data marks a new object
+   merged into it as updated, with nothing changed, when bindings here
+   observe a relationship that reaches it. */
+@property (nonatomic, readonly) BOOL lb_hasUnsavedChanges;
+/* Those objects, for a message. */
+- (NSArray<NSString *> *)lb_unsavedChanges;
+@end
+
 NS_ASSUME_NONNULL_END
