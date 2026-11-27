@@ -74,6 +74,7 @@
     _changesTable.doubleAction = @selector(openChange:);
     _changesTable.target = self;
     [super viewDidLoad];
+    if (_tabs.selectedTabViewItem) [self.inspectorPages selectTabViewItemWithIdentifier:_tabs.selectedTabViewItem.identifier];
 }
 
 - (NSArray<NSSortDescriptor *> *)byItem {
@@ -108,6 +109,8 @@ static NSArray<NSSortDescriptor *> *LBLatestNumberFirst(void) {
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)item {
     [self readShown];
     [[LBWorkspace current] screenChangedPlace:self];
+    /* The inspector: a quick look at the list's chosen row. */
+    [self inspectorFollowTab:item];
 }
 
 - (void)readShown {

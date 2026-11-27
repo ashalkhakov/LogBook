@@ -55,9 +55,11 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
     [super viewDidLoad];
     [self readAgain];
     /* The rules what is edited breaks, at its fields. */
-    _fieldIssues = [[LBFieldIssues alloc] initWithView:self.view];
+    _fieldIssues = self.inspectorView ? [[LBFieldIssues alloc] initWithViews:@[ self.view, self.inspectorView ]]
+                                      : [[LBFieldIssues alloc] initWithView:self.view];
     [_fieldIssues setNeedsRefresh];
     [self offerCurrenciesUnder:self.view];
+    if (self.inspectorView) [self offerCurrenciesUnder:self.inspectorView];
 }
 
 /* The currencies a money field picks from (LBCurrencies'): its catalog's
@@ -119,16 +121,16 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 - (NSArray *)fetch:(Class)cls where:(NSPredicate *)predicate sortedBy:(NSArray<NSSortDescriptor *> *)order {
     NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass(cls)];
     request.predicate = predicate;
+    /* The rows fetched read into the objects already here (kept what this
+       screen changed), as the fetch brings them: not each object turned
+       back into a fault, which the bindings observing it would read while
+       Core Data fills it in. */
+    request.shouldRefreshRefetchedObjects = YES;
     NSError *error = nil;
     NSArray *found = [_context executeFetchRequest:request error:&error];
     if (!found) {
         [self reportError:error];
         return @[];
-    }
-    /* The fetch brought the server's rows: those already here are read
-       from them again, as they fault. */
-    for (NSManagedObject *object in found) {
-        if (!object.isInserted) [_context refreshObject:object mergeChanges:object.hasChanges];
     }
     return order.count ? [found sortedArrayUsingDescriptors:order] : found;
 }
@@ -197,7 +199,7 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 - (BOOL)saveHere {
     /* Nothing left to save (a form saved it): saved, what was refused
        before no longer so. */
-    if (!_context.hasChanges) {
+    if (!_context.lb_hasUnsavedChanges) {
         _lastError = nil;
         return YES;
     }
@@ -302,7 +304,16 @@ NSString *const LBStockCatalogKey = @"LBStockCatalog";
 
 - (BOOL)shouldClose {
     if (![self commitEdits]) return NO;
-    if (!_context.hasChanges) return YES;
+    if (!_context.lb_hasUnsavedChanges) return YES;
+    /* Quiet (a self-test): no alert, which nobody would answer; refused,
+       what is unsaved said. */
+    if (self.quiet) {
+        NSArray *said = [_context lb_unsavedChanges];
+        [self refuse:[NSString stringWithFormat:@"%@ would ask to save its changes: %@", self.title ?: NSStringFromClass([self class]),
+                                                [said componentsJoinedByString:@"; "]]];
+        NSLog(@"%@", self.lastError.localizedDescription);
+        return NO;
+    }
     NSAlert *alert = LBSaveChangesAlert(self.title.length ? [NSString stringWithFormat:@"“%@”", self.title] : nil);
     NSModalResponse answer = LBAskInSheet(alert, self.window);
     if (answer == NSAlertSecondButtonReturn) return NO;

@@ -9,7 +9,9 @@
   colon (Use a Colon to Connect a Label with Controls);
 - an image-only pull-down (a + with a menu) has its arrow beside the image,
   not drawn over it;
-- the menu bar: File, Edit, View, Go, Window, Help, in that order.
+- the menu bar: File, Edit, View, Go, Window, Help, in that order;
+- (both platforms) no scroll view's document view written as
+  key="documentView": GNUstep's XIB loader leaves it out.
 
     python3 Tests/hig-check.py AppKit/*.xib
 """
@@ -37,6 +39,10 @@ for path in sys.argv[1:]:
     for m in re.finditer(r'keyEquivalent="(\s+)"', text):
         line = text.count("\n", 0, m.start()) + 1
         problems.append("%s:%d: a key equivalent that is %r (Return is &#13;)" % (name, line, m.group(1)))
+    for m in re.finditer(r'<(?:view|customView)\b[^>]*key="documentView"', text):
+        line = text.count("\n", 0, m.start()) + 1
+        problems.append("%s:%d: a scroll view's document view keyed documentView: GNUstep's XIB loader leaves it out "
+                        "(put it in the clip view's subviews, as a table is)" % (name, line))
     root = ET.fromstring(text)
     for cell in root.iter("buttonCell"):
         if cell.get("type") == "push" and cell.get("title") == "Cancel":

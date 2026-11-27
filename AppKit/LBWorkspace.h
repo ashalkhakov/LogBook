@@ -13,7 +13,13 @@
 //   Work       Tasks (LBTasksWindowController)
 //   Lists      Expense Kinds, Checklists, Exchange Rates (LBListsController)
 // with + (New Vehicle, New Catalog) and - (the vehicle chosen removed)
-// under it. What a screen opens (an item, an order, a count) is shown in
+// under it.
+//
+// The inspector (shown at first, unlike Xcode's; View > Hide Inspector)
+// holds what the logbook's page edits of its selection: Records' chosen
+// record's form, Reminders' actions and forms; their lists take the
+// page. Nothing chosen, or a screen shown: "No Selection"
+// (LBMainWindowController -showInspectorPage). What a screen opens (an item, an order, a count) is shown in
 // the main pane too (LBScreen.h); Back goes to where it was opened from.
 
 #import <AppKit/AppKit.h>

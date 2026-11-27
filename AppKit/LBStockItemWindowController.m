@@ -106,6 +106,8 @@
     self.titleKeyPath = @"item.itemName";
     _movesTable.target = self;
     _movesTable.doubleAction = @selector(openMove:);
+    /* The inspector's page, the item's tab's at first. */
+    [self.inspectorPages selectTabViewItemWithIdentifier:self.cardTabs.selectedTabViewItem.identifier ?: @"stock"];
 }
 
 #pragma mark Reading
@@ -397,6 +399,19 @@ static NSPredicate *LBOf(NSString *key, id object) {
     Move *move = row >= 0 && row < (NSInteger)[_moveList.arrangedObjects count] ? _moveList.arrangedObjects[(NSUInteger)row]
                                                                               : _moveList.selectedObjects.firstObject;
     if (move) [self openSourceOfMove:move];
+}
+
+
+/* The inspector's page as the item's tab: its chosen row's form. */
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)item {
+    if (tabView == self.cardTabs) [self inspectorFollowTab:item];
+}
+
+
+/* A location's stock chosen: the Stock tab's form, which moves it. */
+- (NSString *)inspectorPageForList:(NSTableView *)list {
+    if ([list.identifier isEqual:@"holdingsTable"]) return @"stock";
+    return [super inspectorPageForList:list];
 }
 
 @end

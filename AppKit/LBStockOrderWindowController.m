@@ -155,7 +155,7 @@
 /* An order's changes saved by its form (EditPurchaseOrder, EditSaleOrder),
    opened on it as it is now; what else changed, with it. */
 - (BOOL)saveChanges {
-    if (!_orderForm || !self.context.hasChanges) return [super saveChanges];
+    if (!_orderForm || !self.context.lb_hasUnsavedChanges) return [super saveChanges];
     if (![self commitEdits]) return NO;
     [self completeMoney];
     LBFormValues *now = [self valuesOfForm:self.orderFormName given:_orderForm.session.given object:_order];

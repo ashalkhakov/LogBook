@@ -32,6 +32,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, copy) NSArray<LBPendingSubmission *> *waiting;
 // Whether the row chosen is a step waiting (Submit, Start Again).
 @property (nonatomic, readonly) BOOL waitingChosen;
+// The row chosen, as its inspector shows it (TasksWindow.xib): task, about,
+// since, process, form, status, lastError; nil, none chosen.
+@property (nonatomic, readonly, copy, nullable) NSDictionary<NSString *, NSString *> *chosen;
 @property (nonatomic, strong) IBOutlet NSTableView *table;
 @property (nonatomic, strong) IBOutlet NSTextField *messageLabel;
 // The window the last task opened was shown in.

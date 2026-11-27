@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface LBStockItemWindowController : LBStockEditor
+@interface LBStockItemWindowController : LBStockEditor <NSTabViewDelegate>
 
 // The item's window; a new item of the catalog's (its SKU the next, named
 // "New Item" to be typed over) for none.

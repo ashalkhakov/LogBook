@@ -46,6 +46,8 @@ static void *LBWarehouseChosen = &LBWarehouseChosen;
     [_warehouseList addObserver:self forKeyPath:@"selectionIndexes" options:0 context:LBWarehouseChosen];
     [super viewDidLoad];
     self.titleKeyPath = @"catalog.catalogName";
+    /* The inspector's page, its tab's at first. */
+    if (self.tabs.selectedTabViewItem) [self.inspectorPages selectTabViewItemWithIdentifier:self.tabs.selectedTabViewItem.identifier];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -154,6 +156,13 @@ static void *LBWarehouseChosen = &LBWarehouseChosen;
         contact.lb_isSupplier = NO;
     }
     [self remove:_contactList list:@"contacts"];
+}
+
+
+/* The inspector's page as its tab: the chosen row's form, where the tab
+   has one. */
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)item {
+    if (tabView == self.tabs) [self inspectorFollowTab:item];
 }
 
 @end

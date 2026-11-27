@@ -12,6 +12,8 @@ NS_ASSUME_NONNULL_BEGIN
 // names has its label red, and a ⚠ beside it, the rules said as its tip.
 @interface LBFieldIssues : NSObject
 - (instancetype)initWithView:(NSView *)root;
+// Over several views of a window (the logbook's page and the inspector).
+- (instancetype)initWithViews:(NSArray<NSView *> *)roots;
 - (instancetype)init NS_UNAVAILABLE;
 // Checked again (soon: what changes at once, checked once): the context
 // changed, a selection or a tab.

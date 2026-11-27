@@ -33,7 +33,7 @@ static NSArray *LBWasOf(NSTextField *label) {
 }
 
 @implementation LBFieldIssues {
-    __weak NSView *_root;
+    NSPointerArray *_roots;
     /* The controllers whose selection is watched. (Each label's text as
        the window has it, and each field's ⚠, are theirs: associated, so
        gone with them; GNUstep's weak-keyed tables keep a freed key's
@@ -45,8 +45,13 @@ static NSArray *LBWasOf(NSTextField *label) {
 }
 
 - (instancetype)initWithView:(NSView *)root {
+    return [self initWithViews:@[ root ]];
+}
+
+- (instancetype)initWithViews:(NSArray<NSView *> *)roots {
     if ((self = [super init])) {
-        _root = root;
+        _roots = [NSPointerArray weakObjectsPointerArray];
+        for (NSView *root in roots) [_roots addPointer:(__bridge void *)root];
         _watched = [NSMutableArray array];
         _issues = @{};
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(contextChanged:)
@@ -72,10 +77,10 @@ static void LBChosenTabs(NSView *view, NSMutableArray *into) {
 }
 
 - (void)windowUpdated:(NSNotification *)note {
-    NSView *root = _root;
-    if (!root || note.object != root.window) return;
+    NSArray<NSView *> *roots = _roots.allObjects;
+    if (!roots.count || note.object != roots.firstObject.window) return;
     NSMutableArray *tabs = [NSMutableArray array];
-    LBChosenTabs(root, tabs);
+    for (NSView *root in roots) LBChosenTabs(root, tabs);
     if ([tabs isEqualToArray:_tabs]) return;
     _tabs = tabs;
     [self setNeedsRefresh];
@@ -172,10 +177,10 @@ static void LBChosenTabs(NSView *view, NSMutableArray *into) {
 }
 
 - (void)refreshIssues {
-    NSView *root = _root;
-    if (!root) return;
+    NSArray<NSView *> *roots = _roots.allObjects;
+    if (!roots.count) return;
     NSMutableArray<LBIssueField *> *fields = [NSMutableArray array];
-    [self collectFieldsIn:root into:fields];
+    for (NSView *root in roots) [self collectFieldsIn:root into:fields];
     /* Each object checked once: its sentences by key. */
     NSMapTable *byObject = [NSMapTable strongToStrongObjectsMapTable];
     NSMutableDictionary *issues = [NSMutableDictionary dictionary];

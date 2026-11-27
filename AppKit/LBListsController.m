@@ -49,6 +49,8 @@
     [[_exchangeRatesTable tableColumnWithIdentifier:NSStringFromSelector(@selector(factor))].dataCell setFormatter:factor];
     _expenseKindsTable.delegate = self;
     _exchangeRatesTable.delegate = self;
+    /* The inspector's page, its tab's at first. */
+    if (self.tabs.selectedTabViewItem) [self.inspectorPages selectTabViewItemWithIdentifier:self.tabs.selectedTabViewItem.identifier];
 }
 
 /* A kind of expense or an exchange rate is typed over only before it is
@@ -294,6 +296,13 @@ static int32_t LBNextPosition(NSSet *objects) {
 
 - (BOOL)savable {
     return YES;
+}
+
+
+/* The inspector's page as its tab: the chosen row's form, where the tab
+   has one. */
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)item {
+    if (tabView == self.tabs) [self inspectorFollowTab:item];
 }
 
 @end

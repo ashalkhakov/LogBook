@@ -40,6 +40,16 @@ NS_ASSUME_NONNULL_BEGIN
 // A form for each kind of record, each tab's identifier its entity's name
 // ("none": no record chosen).
 @property (nonatomic, strong) IBOutlet NSTabView *recordForms;
+// The inspector's pages (MainWindow.xib), one shown: none ("No Selection"),
+// record (the chosen record's form, Records' tab), reminder (the
+// reminders' actions and forms, Reminders' tab).
+@property (nonatomic, strong) IBOutlet NSTabView *inspectorPages;
+// The inspector's page as what the window shows says: the logbook's page
+// at Records (a record chosen) or Reminders; else none.
+- (void)showInspectorPage;
+// The inspector's page of the screen shown (MainWindow.xib): its document,
+// the screen's inspectorView in it.
+@property (nonatomic, strong) IBOutlet NSView *screenInspectorDocument;
 // Add's pull-down: an item for each kind of record.
 @property (nonatomic, strong) IBOutlet NSPopUpButton *addRecordButton;
 // The Reports tab's.
