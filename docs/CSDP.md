@@ -7,10 +7,13 @@ sync, the code that checks the constraints, and the schema's listing.
 
 ## Scope
 
-- **Vehicles:** one person's cars, motorcycles and bicycles; a motorised
-  one diesel or petrol (no electric or hybrid for now). The owner is the
-  signed-in user and a driver too. Other drivers may drive a vehicle, and
-  then keep its data as the owner does.
+- **Assets:** what one person keeps and maintains (ISO 55000's assets):
+  cars, motorcycles and bicycles, a motorised one diesel or petrol (no
+  electric or hybrid for now); and generators, power stations, tools, of
+  classes of their own (ISO 14224's taxonomy). A unit bought through Stock
+  may be made an asset, and a component fitted to one may be an asset too.
+  The owner is the signed-in user. Others with whom the owner shares an
+  asset (a vehicle's drivers) keep its data as the owner does.
   Everything syncs between devices and people, as SimpleNotes does.
 - **What it records:**
   - meter readings;
@@ -25,9 +28,15 @@ sync, the code that checks the constraints, and the schema's listing.
   - incomes: paid rides, freight, refunds, the car's sale;
   - inspections: going through a checklist the users write, item by item;
   - schedules of work the users plan, and the reminders they mark done.
+  - maintenance as a CMMS keeps it: work requests, work orders (a service
+    planned, then done), corrective or preventive (EN 13306), failures
+    (ISO 14224), downtime and labour, condition-based work raised by an
+    inspection, warranties.
 - **Every record of an event** says when it happened, to the minute, and
   who was driving. It may carry a note and attached files.
-- **Reports** per vehicle, and per kind of event.
+- **Reports** per asset, and per kind of event; maintenance indicators
+  (EN 15341): preventive share, MTBF, MTTR, availability, cost per usage,
+  backlog, schedule compliance.
 - **Units** (distance, volume) are set for the app. Amounts may be entered
   in any currency and are reported in the preferred one.
 
@@ -485,10 +494,279 @@ entered in error: these are things the app does as it records what
 happened, not facts derived from others. [PROCESSES.md](PROCESSES.md)
 describes them.
 
+### Assets
+
+> Anna also keeps a Honda EU22i generator in the garage, bought on
+> 2024-04-10 for 1,150 EUR, run for 212 hours since. It takes petrol, and
+> its oil is changed every 100 hours or every 12 months.
+
+- Asset 'Generator' is of EquipmentClass 'Generator'.
+- Asset 'Generator' is of Make 'Honda'.
+- Asset 'Generator' is of Model 'EU22i'.
+- Asset 'Generator' is metered in UsageUnit 'h'.
+- Asset 'Generator' uses Fuel 'Petrol 95'.
+- Asset 'Generator' is owned by User 'anna@example.org'.
+- Asset 'Generator' was acquired on Date 2024-04-10.
+- Asset 'Generator' was acquired for Money 1150 EUR.
+- Asset 'Generator' was acquired at Usage 0 h.
+- MeterReading 40 is of Asset 'Generator'.
+- MeterReading 40 shows Usage 212 h.
+- FillUp 41 is of Asset 'Generator'; FillUp 41 was of Volume 3.6 L.
+- Schedule 'Generator oil' is of Asset 'Generator', for Task 'Oil change'.
+- Schedule 'Generator oil' recurs every Usage 100 h.
+- Schedule 'Generator oil' recurs every Duration 12 months.
+
+An **asset** is anything a user keeps, uses and maintains: what ISO 55000
+calls an asset (an item of value to its owner), and ISO 14224 an equipment
+unit. A vehicle is one kind of asset; a generator, a power station, a
+boiler, a tool are others. Everything a vehicle had that is not about
+driving is an asset's: its name, its owner and who it is shared with, its
+make and model, what it was acquired and sold for and is worth, and every
+record (readings, fill-ups, services, expenses, incomes, inspections,
+documents, schedules, reminders, component changes). A fill-up is of any
+asset that uses a fuel: a generator is filled up as a car is, and its
+consumption is per hour, not per distance.
+
+What stays a vehicle's is what only vehicles have: a VIN, a registration,
+the year built, trips, tyre sets and tyre changes.
+
+- Vehicle 'Blue Golf' is an Asset.
+- Vehicle 'Blue Golf' is of VehicleKind 'Car'.
+- VehicleKind 'Car' is an EquipmentClass, of EquipmentCategory 'Vehicles'.
+
+So step 1's examples of a vehicle above read "Asset" wherever the fact is
+an asset's: Asset 'Blue Golf' was acquired at Usage 84210 km, Record is of
+Asset.
+
+### Meters
+
+> The Golf's odometer counts kilometres; the generator's hour meter, hours;
+> the power station counts charge cycles.
+
+- Asset 'Blue Golf' is metered in UsageUnit 'km'.
+- Asset 'Generator' is metered in UsageUnit 'h'.
+- Asset 'River power' is metered in UsageUnit 'cycles'.
+- UsageUnit 'km' is of Dimension 'distance'; UsageUnit 'mi' too.
+- UsageUnit 'h' is of Dimension 'time'.
+- UsageUnit 'cycles' is of Dimension 'cycles'.
+- UsageUnit 'kWh' is of Dimension 'energy'.
+- UsageUnit 'mi' is worth Factor 1.609344 of UsageUnit 'km'.
+
+A **usage** is what a meter shows: a quantity in a unit, as a distance was
+(152,300 km; 212 h; 340 cycles). Wherever a reading was a distance it is a
+usage: what an event was at, what an asset was acquired at and is expected
+to be used more, what a schedule recurs after and a reminder is due at.
+An asset's readings are all in its meter's dimension, each in the unit it
+was read in: a US car read in miles, shown in km. A trip's length is still
+a distance: only vehicles make trips.
+
+### A unit made an asset
+
+> Anna bought an EcoFlow River 2 Pro power station through Stock, serial
+> R2P-0042, and put it in service at home as 'River power'.
+
+- StockUnit u7 is of StockItem 'EcoFlow River 2 Pro', made by Manufacturer
+  'EcoFlow'.
+- StockUnit u7 has SerialNumber 'R2P-0042'.
+- Asset 'River power' is StockUnit u7.
+- Asset 'River power' is of EquipmentClass 'Power station'.
+- Move m9 moved StockUnit u7 out of Location 'Garage / Shelf', for
+  AdjustmentReason 'Put in service'; Move m9 is made for Asset 'River
+  power'.
+
+An asset bought through Stock **is** that unit: one thing, seen as stock
+while it is on a shelf and as an asset once in service, as IBM Maximo's
+rotating items and SAP's equipment with a material and serial number are.
+Its make, model and serial are the unit's (its item's manufacturer, the
+item, the unit's serial), not entered again. Putting it in service moves it
+out of stock, as fitting a component does. An asset need not be a unit: a
+car bought privately is an asset only.
+
+### Components that are assets
+
+> The power station's extra battery, a River 2 Pro Extra Battery, serial
+> EB-0107, is fitted to it; it has a warranty of its own and counts its own
+> cycles. Its chain is no asset: just a unit fitted to the bicycle.
+
+- StockUnit u8 has SerialNumber 'EB-0107'.
+- Asset 'River battery' is StockUnit u8.
+- Asset 'River battery' is metered in UsageUnit 'cycles'.
+- ComponentChange 50 fitted StockUnit u8 on Asset 'River power'.
+- *(derived)* Asset 'River battery' is fitted in Asset 'River power'.
+
+Any unit may be made an asset, where its own history matters: a battery
+pack, an engine, a wheel set. It is then both: a component of the asset
+it is fitted in, and an asset with its records, readings, warranty and
+failures. This is the equipment hierarchy of ISO 14224 (an equipment unit,
+its subunits, its maintainable items) and of SAP's and Maximo's installed
+equipment. Its history follows it: moved to another power station, or back
+to the shelf, it keeps its records. And the asset it is fitted in sees it
+too: a record of the battery is about the power station as well, while it
+is fitted, so the station's costs, failures and indicators count it. A
+component asset with no meter of its own wears by its parent's meter while
+fitted, as any component does.
+
+### Equipment classes
+
+> A generator is of class 'Generator', in the category 'Electrical'; its
+> rated power is 2.2 kW. Cars, motorcycles and bicycles are classes in
+> 'Vehicles'. Chains are maintainable items of bicycles.
+
+- EquipmentClass 'Generator' is of EquipmentCategory 'Electrical'.
+- EquipmentClass 'Generator' has ClassAttribute 'Rated power' in Unit 'kW'.
+- Asset 'Generator' has Value 2.2 for ClassAttribute 'Rated power'.
+- Category 'Chain' is a maintainable item of EquipmentClass 'Bicycle'.
+
+An **equipment class** is ISO 14224's taxonomy: classes in categories,
+each with the attributes its assets are described by, so assets of a
+class compare (MTBF of every generator), and the failure modes that apply
+to it. A vehicle's kind is its class. A stock item's category says which
+maintainable item a unit is (a chain, brake pads), and of which classes.
+
+### States and criticality
+
+> The generator is critical: the house has no other power in a cut. The
+> old lawnmower was scrapped on 2026-05-02.
+
+- Asset 'Generator' has Criticality 'High'.
+- Asset 'Lawnmower' was disposed of on Date 2026-05-02.
+- *(derived)* Asset 'Lawnmower' is in AssetState 'Disposed'.
+
+An asset is in service, out of service (a downtime open), in stock (a unit
+asset on a shelf) or disposed (sold, or disposed of): its state is worked
+out, never set. Its **criticality** says how much depends on it, for the
+risk-based planning ISO 55001 asks for: high, medium, low.
+
+### Work requests and work orders
+
+> The generator won't start. Anna asks for it to be looked at, urgently.
+> Ben plans the repair for Saturday, reserves a spark plug from the
+> garage's stock, and does it: he finds the plug fouled, replaces it in 45
+> minutes, and the generator runs again.
+
+- WorkRequest 60 is of Asset 'Generator'.
+- WorkRequest 60 was made by User 'anna@example.org' at Moment 2026-11-20
+  18:00.
+- WorkRequest 60 has Title 'Won't start'.
+- WorkRequest 60 has Priority 'Urgent'.
+- Service 61 was raised from WorkRequest 60.
+- Service 61 is of MaintenanceType 'Corrective, immediate'.
+- Service 61 is in WorkState 'Planned'.
+- Service 61 is planned for Date 2026-11-22.
+- Service 61 is assigned to User 'ben@example.org'.
+- Service 61 reserves Quantity 1 of StockItem 'NGK BPR6ES'.
+- *(then)* Service 61 is in WorkState 'Done'.
+- Service 61 was at Moment 2026-11-22 10:00, at Usage 214 h.
+- Labour 62 is of Service 61, by User 'ben@example.org', took WorkTime
+  0.75 h.
+- Service 61 repaired Failure 63.
+
+A **service is the work order**. EN 13460 names a request, an order and a
+report; the order and its report are one record at two stages, as SAP's
+maintenance order with its confirmations and Maximo's work order with its
+actuals are. Planned, it says what is to be done, when, by whom, and the
+parts it reserves (committed, as a sale order's lines are); done, it says
+when and at what reading it was done, its tasks and their costs, its
+labour, and the failure it repaired. A service recorded after the fact, as
+every one so far, is one made done. Its states: draft, planned, released,
+in progress, done, closed, cancelled. A **work request** is someone asking
+for work: it may become an order, or be turned down. A reminder falling
+due may raise an order too. The order's way through these states is a
+process, as an order to cash is (MaintenanceOrder.bpmn).
+
+**Corrective or preventive** (EN 13306): each service says which. 
+Preventive work is done before a failure, predetermined (by a schedule: a
+date, a usage) or condition-based (an inspection, a measurement said it
+was time); corrective work is done after one, at once or deferred. A
+service's kind of cost follows: preventive is 'Maintenance', corrective is
+'Repair', as the two kinds were.
+
+**Labour** is the hours worked, by a user or a garage, and what they cost:
+counted in the service's cost as its items are.
+
+### A failure
+
+> The generator failed to start (found when Anna tried to run it). The
+> spark plug was fouled: an operation cause, it had idled for too long. It
+> could not run at all.
+
+- Failure 63 is of Asset 'Generator'.
+- Failure 63 was at Moment 2026-11-20 17:50, at Usage 212 h.
+- Failure 63 is of FailureMode 'Fails to start on demand'.
+- Failure 63 has FailureMechanism 'Contamination'.
+- Failure 63 has FailureCause 'Operation'.
+- Failure 63 was found by DetectionMethod 'On demand'.
+- Failure 63 had FailureImpact 'Critical'.
+- Failure 63 was of StockUnit u12 (the spark plug).
+- FailureMode 'Fails to start on demand' applies to EquipmentClass
+  'Generator'.
+
+A **failure** is ISO 14224's failure event: of an asset, when and at what
+reading it happened, its mode (what was seen), its mechanism (how it came
+about), its cause (why: design, fabrication, installation, operation,
+maintenance), how it was found, its impact on the asset's function
+(critical: it stopped; degraded; incipient: not yet), and the maintainable
+item that failed, when one is known. All are coded lists, so failures can
+be counted: the users extend them, from a start ISO 14224's tables give.
+
+### Downtime
+
+> The generator was out of service from the failure until the repair was
+> done.
+
+- Downtime 64 is of Asset 'Generator'.
+- Downtime 64 started at Moment 2026-11-20 17:50.
+- Downtime 64 ended at Moment 2026-11-22 10:45.
+- Downtime 64 was for Failure 63.
+
+A **downtime** is a time the asset could not do its work (EN 13306's down
+state): unplanned, after a failure, or planned, for preventive work.
+Uptime is the rest of the asset's time in service. With failures and
+corrective services, they give MTBF, MTTR and availability.
+
+### Condition-based work
+
+> The power station's monthly check asks its battery health, in %: below
+> 80%, a battery replacement is called for. Anna reads 76%.
+
+- Question 'Battery health' is of AnswerKind 'Measurement'.
+- Question 'Battery health' measures in Unit '%'.
+- Question 'Battery health' has lower limit Quantity 80.
+- Question 'Battery health' calls for Task 'Battery replacement' when out
+  of limits.
+- Answer 70 to Question 'Battery health' is Quantity 76.
+- *(then)* WorkRequest 71 was raised from Answer 70.
+
+An inspection's answer can raise work: a measurement out of its limits,
+or an option that calls for a task ('Leaking: yes'). Saving it raises a
+work request for the task, as a reading reaching a reminder's usage makes
+it due. Readings from a device (a power station's own report, later) are
+measurements the same way.
+
+### Warranties and documents
+
+> The power station has a 5-year warranty, to 2031-11-01, and its manual.
+> The extra battery's warranty runs to 2028-11-01 or 800 cycles.
+
+- Document 'River warranty' is of Asset 'River power', of DocumentKind
+  'Warranty', expires on Date 2031-11-01.
+- Document 'River manual' is of Asset 'River power', of DocumentKind
+  'Manual'; it has Attachment 'manual.pdf'.
+- Document 'Battery warranty' is of Asset 'River battery', expires on Date
+  2028-11-01, is valid until Usage 800 cycles.
+- Document 'Chain warranty' covers StockUnit u1. *(a unit that is no
+  asset)*
+
+A warranty, a manual, a drawing are documents of the asset, with what
+documents have: dates, a cost, attachments. A warranty may end at a usage
+as well as a date, whichever comes first. A unit that is no asset may
+have a warranty too.
+
 ### Reports
 
-Reports are information outputs too: each says derived facts. Per vehicle,
-over a period:
+Reports are information outputs too: each says derived facts. Per asset
+(a vehicle's driving ones only for vehicles; fuel for assets that use a
+fuel, per their meter's unit), over a period:
 
 1. **Balance:** incomes minus costs; per day; in the preferred currency
    per distance unit. Every view is offered, for the user to choose:
@@ -529,6 +807,22 @@ over a period:
     fill-up before.
 13. **Each inspection in the history:** its answers, in the checklist's
     order, and the questions left unanswered.
+14. **Maintenance indicators** (EN 15341), per asset, per equipment class
+    and per maintainable item (a stock item's category), over the period;
+    an asset counts its components' records while they were fitted:
+    - **preventive share:** preventive services' cost (and labour hours) ÷
+      all services';
+    - **MTBF:** uptime ÷ the failures in the period;
+    - **MTTR:** the downtime after failures ÷ those failures;
+    - **availability:** uptime ÷ (uptime + downtime);
+    - **cost per usage:** services' and their parts' cost ÷ the usage, in
+      the meter's unit;
+    - **backlog:** work orders not done at the period's end, by count and
+      by planned labour, weighted by criticality;
+    - **schedule compliance:** the reminders due in the period done by
+      their date or usage ÷ all those due.
+15. **Failures:** counted by mode, by cause, by maintainable item, by
+    class; each failure in the history with its downtime and its repair.
 
 There are the same reports per kind of event (fill-ups, services,
 expenses, incomes, trips, meter readings, inspections), as tabs.
@@ -540,6 +834,8 @@ As facts, for example:
   2026-09.
 - Costs of Kind 'Fuel' for Vehicle 'Blue Golf' were Money 410 USD in Period
   2026-09.
+- Asset 'Generator' was available Percentage 98.4 in Period 2026-11.
+- EquipmentClass 'Generator' had MTBF WorkTime 610 h in Period 2026.
 
 Every one is derived, from events' amounts, dates and distances, and from
 rates. Distance driven is the meter's difference over the period, from the
