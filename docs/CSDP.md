@@ -63,38 +63,46 @@ elementary facts it holds. Still a draft.
 > 84,210 km on it.
 
 - Asset 'Blue Golf' is a Vehicle, of VehicleKind 'Car'.
-- Asset 'Blue Golf' is of Make 'Volkswagen'.
-- Asset 'Blue Golf' is of Model 'Golf 1.4 TSI'.
+- Asset 'Blue Golf' is StockUnit u30.
+- StockUnit u30 is of StockItem 'Golf 1.4 TSI', made by Manufacturer
+  'Volkswagen'.
+- StockUnit u30 has SerialNumber 'WVWZZZ1KZEW000001'. *(its VIN)*
+- PurchaseOrder PO-GAR-0001 is from Supplier 'Previous owner', of 1 'Golf
+  1.4 TSI' for Money 9500 EUR; received on Date 2019-05-02.
 - Asset 'Blue Golf' uses Fuel 'Petrol 95'.
 - Asset 'Blue Golf' is metered in UsageUnit 'km'.
-- Asset 'Blue Golf' was acquired on Date 2019-05-02.
 - Asset 'Blue Golf' was acquired at Usage 84210 km.
-- Asset 'Blue Golf' was acquired for Money 9500 EUR.
 - Vehicle 'Blue Golf' was built in Year 2014.
-- Vehicle 'Blue Golf' has VIN 'WVWZZZ1KZEW000001'.
 - Vehicle 'Blue Golf' has Registration '123 ABC'.
+- *(derived)* Asset 'Blue Golf' is of Make 'Volkswagen', of Model 'Golf
+  1.4 TSI', has VIN 'WVWZZZ1KZEW000001', was acquired on Date 2019-05-02
+  for Money 9500 EUR.
 
 > Anna also keeps a Honda EU22i generator in the garage, bought on
 > 2024-04-10 for 1,150 EUR, its hour meter at 0. It runs on petrol and is
 > rated at 2.2 kW.
 
 - Asset 'Generator' is of EquipmentClass 'Generator'.
-- Asset 'Generator' is of Make 'Honda'.
-- Asset 'Generator' is of Model 'EU22i'.
+- Asset 'Generator' is StockUnit u31, of StockItem 'EU22i', made by
+  Manufacturer 'Honda'; bought for Money 1150 EUR, received on Date
+  2024-04-10.
 - Asset 'Generator' uses Fuel 'Petrol 95'.
 - Asset 'Generator' is metered in UsageUnit 'h'.
-- Asset 'Generator' was acquired on Date 2024-04-10.
 - Asset 'Generator' was acquired at Usage 0 h.
-- Asset 'Generator' was acquired for Money 1150 EUR.
 - Asset 'Generator' has Value 2.2 for ClassAttribute 'Rated power'.
 
 An **asset** is anything a user keeps and maintains. A vehicle is one,
 with what only vehicles have: a kind (car, motorcycle, bicycle), the year
-built, a VIN, a registration, trips and tyres. Everything else is any
-asset's: its name, owner and who shares it, its make and model, the fuel
-it uses, its meter, what it was acquired for and at, what it is expected
-to last and sell for, its valuations and its sale, and every record of
-it. A generator is filled up and serviced as a car is.
+built, a registration, trips and tyres. Everything else is any asset's:
+its name, owner and who shares it, the fuel it uses, its meter, the
+reading it was acquired at, what it is expected to last and sell for, its
+valuations and its sale, and every record of it. A generator is filled up
+and serviced as a car is.
+
+Every asset is a **unit** of a product in Stock (see A unit that is an
+asset): its make and model are the product's (its manufacturer, its
+name), its serial (a vehicle's VIN) the unit's, and when and for how much
+it was acquired its purchase's. None of them is the asset's own.
 
 Every asset is of an **equipment class**: a vehicle's is its kind, others'
 a class of their own ('Generator', 'Power station', 'Boiler'). A class is
@@ -490,10 +498,9 @@ before vehicles had kinds says none, and is taken as motorised.
 - Asset 'River battery' is metered in UsageUnit 'cycles'.
 - ComponentChange 50 fitted StockUnit u8 on Asset 'River power'.
 
-An asset bought through Stock **is** that unit: one thing, seen as stock
-while it is on a shelf and as an asset once in service, as IBM Maximo's
-rotating items and SAP's equipment with a material and a serial number
-are. Its make, model and serial are the unit's (its item's manufacturer,
+An asset **is** a unit: one thing, seen as stock while it is on a shelf
+and as an asset once in service, as IBM Maximo's rotating items and SAP's
+equipment with a material and a serial number are. Its make, model and serial are the unit's (its item's manufacturer,
 the item, the unit's serial: a vehicle's VIN is its serial), and when and
 for how much it was acquired are its purchase's (the receipt's date, the
 line's cost): none is entered again. Putting it in service moves it out of
@@ -511,12 +518,50 @@ stock, as fitting a component does; taking it out of service puts it back.
 A new asset is always made this way, through Stock. Adding a vehicle (or
 any asset) right away is a shortcut of the forms, not another way of
 being: it makes the product (a stock item, its manufacturer and name the
-make and model), its maintenance plan (below), and a purchase of one from
-the seller, received and put in service, in one go. The order is received
-at once; no task of purchasing's process waits for it. The assets stored
-before Stock was there, and those imported (Drivvo, MainTrack), are assets
-only: nothing says what product they were, so they have their own make,
-model and acquisition.
+make and model) unless the catalog has it, its maintenance plan (below),
+and a purchase of one from the seller, received and put in service, in
+one go. The order is received at once; no task of purchasing's process
+waits for it. Bought for a price not known (a gift, an inheritance), the
+unit comes in by a move of reason 'Opening stock' on the day instead: a
+purchase line has a cost. The catalog is the owner's; one who has none is
+given 'My assets', with a warehouse and a location.
+
+> The logbooks kept before assets were units: the Golf stored as a
+> vehicle with its make, model, VIN and purchase, and its oil schedule.
+> And a second Golf 1.4 TSI, Ben's, with an oil schedule every 20,000 km.
+
+- *(migrated)* StockItem 'Golf 1.4 TSI' made by Manufacturer 'Volkswagen'
+  is made once, in Anna's catalog, and found for Ben's in his.
+- *(migrated)* StockUnit u30 is made, its serial the VIN; PurchaseOrder
+  PO-GAR-0001 received for it, for the price and on the date it was
+  acquired; Asset 'Blue Golf' is StockUnit u30.
+- *(migrated)* PlanTask pt10 is of StockItem 'Golf 1.4 TSI', for Task 'Oil
+  change', recurs every Usage 15000 km and Duration 12 months; Schedule
+  'Oil' of Asset 'Blue Golf' follows PlanTask pt10.
+
+What was stored before assets were units is **migrated** so: each asset
+becomes a unit of its product, found in its owner's catalog by its make
+and model, else made there; its serial is its VIN, if it has one; it
+comes in by a purchase received on the day it was acquired, for what it
+cost (from a supplier 'Previous owner'), or by an opening-stock move where
+the cost is not known; and it is put in service, keeping its id, records
+and reminders. Its schedules become its product's plan: the plan tasks
+are made from them, and each schedule then follows its plan task, its
+reminders kept. Two assets of one product merge their schedules into one
+plan, a task with the same intervals once; the same task at other
+intervals (the Golfs' oil, 15,000 km and 20,000 km) is a conflict, kept as
+two plan tasks, each asset following its own, and said. The imports
+(Drivvo, MainTrack, InvenTree) make products, units and purchases the same
+way as they import.
+
+A migration cannot know which schedules were the maker's and which the
+owner's own, nor whether every planned service done was entered. So it
+ends with a **review**, for the owner to line it up: the products made,
+the plans merged and their conflicts; a schedule to take off the plan, as
+the asset's own; and each asset's open and overdue reminders, for the
+services already done to be entered. The migration is done once, by the
+server as it updates its store; devices get its result by the sync, so
+no two make the same product.
 
 Any unit may be made an asset where its own history matters (a battery
 pack, an engine, a wheel set), and a unit fitted to an asset may be one.
@@ -945,7 +990,7 @@ The rest are identified by what they are:
 | Entity type | Identified by |
 | --- | --- |
 | User | email |
-| Make, Model, Fuel, Garage, Station, Place, TyreModel, ClassAttribute | name |
+| Fuel, Garage, Station, Place, TyreModel, ClassAttribute | name |
 | ExpenseKind, IncomeKind, DocumentKind, Purpose, Season, Task, PaymentMethod | name, from a list |
 | EquipmentClass, EquipmentCategory, FailureMode, FailureMechanism, DetectionMethod | name, from a list the users extend, seeded from ISO 14224 |
 | Title, Note, ChecklistName, QuestionText, OptionText | text |
@@ -1001,9 +1046,13 @@ User has PersonName                             anna@example.org | 'Anna'
 Asset has AssetName                             v1 | 'Blue Golf'
                                                 v2 | "Ben's van"
                                                 a1 | 'Generator'
-Asset is of Make                                v1 | 'Volkswagen'
+Asset is StockUnit                              v1 | u30
+                                                a1 | u31
+                                                a3 | u7
+                                                a4 | u8
+Asset is of Make *                              v1 | 'Volkswagen'
                                                 a1 | 'Honda'
-Asset is of Model                               v1 | 'Golf 1.4 TSI'
+Asset is of Model *                             v1 | 'Golf 1.4 TSI'
                                                 a1 | 'EU22i'
 Asset uses Fuel                                 v1 | 'Petrol 95'
                                                 a1 | 'Petrol 95'
@@ -1011,14 +1060,15 @@ Asset is of EquipmentClass                      a1 | 'Generator'
                                                 a3 | 'Power station'
 Asset has Criticality                           a1 | 'High'
 Asset was disposed of on Date                   a5 | 2026-05-02
-Asset is StockUnit                              a3 | u7
-                                                a4 | u8
 Vehicle is of VehicleKind                       v1 | 'Car'
                                                 v3 | 'Bicycle'
 Vehicle was built in Year                       v1 | 2014
-Vehicle has VIN                                 v1 | 'WVWZZZ1KZEW000001'
+Vehicle has VIN *                               v1 | 'WVWZZZ1KZEW000001'
 Vehicle has RegistrationNumber                  v1 | '123 ABC'
 ```
+
+\* Derived: an asset's make and model are its unit's item's manufacturer
+and name, a vehicle's VIN its unit's serial number (step 5).
 
 ### Classes
 
@@ -1039,10 +1089,10 @@ classes in 'Vehicles' (step 6, a subtype).
 ### What an asset cost, and is worth
 
 ```
-Asset was acquired on Date                      v1 | 2019-05-02
+Asset was acquired on Date *                    v1 | 2019-05-02
 Asset was acquired at Usage                     v1 | 84210 km
                                                 a1 | 0 h
-Asset was acquired for Money                    v1 | 9500 EUR
+Asset was acquired for Money *                  v1 | 9500 EUR
 Asset is expected to be kept for Duration       v1 | 96
 Asset is expected to be used Usage more         v1 | 120000 km
 Asset is expected to sell for Money             v1 | 2500 EUR
@@ -1052,7 +1102,9 @@ Asset was sold on Date *                        v1 | 2027-08-30
 Asset was sold for Money *                      v1 | 3000 EUR
 ```
 
-\* Derived, from the asset's income of kind 'Sale' (step 5).
+\* Derived: when and for how much it was acquired, from its unit's
+purchase (the receipt's date, the line's cost) or opening-stock move (its
+date); its sale, from its income of kind 'Sale' (step 5).
 
 ### Money and preferences
 
@@ -1279,8 +1331,6 @@ PlanTask recurs every Duration                  pt1 | 6
 PlanTask has Note                               pt2 | 'From the app'
 Schedule follows PlanTask                       sc20 | pt1
                                                 sc22 | pt3
-Asset was acquired on Date *  (a unit's)        v4 | 2026-11-25
-Asset was acquired for Money *  (a unit's)      v4 | 18500 EUR
 Asset is fitted in Asset *                      a4 | a3
 Record concerns Asset *                         d83 | a4
                                                 d83 | a3
@@ -1545,7 +1595,8 @@ kind of thing.
 What stays apart:
 - **Garage, Station and Place:** they play different roles, and nothing
   compares a garage with a trip's destination.
-- **Model and TyreModel.**
+- **A product (a stock item) and TyreModel:** a tyre set is no unit of a
+  product; its model is a name.
 - **Note and Title:** text, but nothing compares one with the other.
 - **IncomeKind:** incomes aren't costs, and their kinds are a list of
   their own.
@@ -1600,9 +1651,10 @@ Each in the user's preferred units and currency, unless it says otherwise.
     removed it; and what that is fitted in, in turn.
 11. *What a record concerns* (`Record concerns Asset`): the asset it is
     of, and every asset that one was fitted in at the record's moment.
-12. *A unit asset's make, model, serial and acquisition:* its item's
-    manufacturer, its item, its unit's serial number; the date of the
-    receipt that brought its unit in, and its purchase line's unit cost.
+12. *An asset's make, model, serial and acquisition:* its unit's item's
+    manufacturer, its item, its unit's serial number (a vehicle's VIN);
+    the date of the receipt that brought its unit in and its purchase
+    line's unit cost, or the date of the opening-stock move that did.
 13. *An asset's state:* 'Disposed' if it was sold or disposed of; else
     'Out of service' if a downtime of it has started and not ended; else
     'In stock' if it is a unit at a location; else 'In service'.
@@ -1711,8 +1763,8 @@ n − 1 rule).
 Most fact types say one thing about one record, so the record's role is
 unique. Each asset, record or user has at most one of each of these:
 
-- **Asset:** owner, name, make, model, fuel, class, criticality, meter
-  unit, the unit it is, date, usage and price acquired, expected
+- **Asset:** owner, name, the unit it is, fuel, class, criticality, meter
+  unit, the usage acquired at, expected
   duration, expected further usage, expected sale price, date and price
   sold, date disposed of.
 - **Vehicle:** kind, year built, VIN, registration.
@@ -1858,7 +1910,7 @@ honestly be missing, and each such case is listed with why.
 
 | Record | Must have | May lack, and why |
 | --- | --- | --- |
-| Asset | owner, name; a meter unit or no meter | make and model (a home-made one; a unit asset's are derived); class (a vehicle has its kind instead); fuel (a bicycle, a power station use none); criticality (not yet assessed); the unit it is (an asset bought privately); what it was bought for, the expectations, valuations, the sale, the disposal (each balance view needs only some) |
+| Asset | owner, name, the unit it is; a meter unit or no meter | class (a vehicle has its kind instead); fuel (a bicycle, a power station use none); criticality (not yet assessed); the usage acquired at, the expectations, valuations, the sale, the disposal (each balance view needs only some); its price (an opening-stock unit's is not known) |
 | Vehicle | (an asset's) | its kind (none: one stored before kinds, a motorised one); year (a bicycle has none: a motorised one has it, by rule); VIN and registration (not every car has them to hand, a bicycle none) |
 | EquipmentClass | category | attributes, failure modes (not yet described) |
 | User | email | name and preferences (preferences default to km, L and the device's currency) |
@@ -1913,7 +1965,11 @@ be changed when someone else did it.
 is 'Done', and preventive or corrective as its kind was ('Maintenance':
 'Preventive, predetermined'; 'Repair': 'Corrective, immediate'); its
 'Labour' items stay items. Every vehicle is an asset, metered in km, or
-in the unit its readings were in, or with no meter as it had none.
+in the unit its readings were in, or with no meter as it had none. And
+every asset is made a unit, its product found or made, its schedules its
+product's plan, and reviewed by its owner (step 1, A unit that is an
+asset). The make, model, VIN, date and price acquired it stored go to its
+product, unit and purchase, and are no longer its own.
 
 ### Logical derivations
 
@@ -1970,8 +2026,8 @@ Facts worked out from others by rules, not arithmetic:
     the service (see Permissions).
 13. **What an asset is fitted in, and what a record concerns** (step 3,
     10 and 11): from the component changes, never entered.
-14. **A unit asset's make, model, serial and acquisition** (step 3, 12):
-    its unit's, and its purchase's.
+14. **An asset's make, model, serial and acquisition** (step 3, 12): its
+    unit's, and its purchase's or opening move's.
 15. **An asset's state** (step 3, 13).
 16. **Which answers call for work:** an answer choosing an option that
     calls for a task, or measuring a quantity outside its question's
@@ -2056,9 +2112,11 @@ vehicle has a class that is no vehicle kind (below).
 **FuelledAsset** is an asset that uses a fuel: *each FuelledAsset is by
 definition an Asset that uses some Fuel*. Only those are filled up.
 
-**ComponentAsset** is an asset that is a unit: *each ComponentAsset is by
-definition an Asset that is some StockUnit*. Its make, model and serial
-are its unit's (step 5, derivation 14), so it enters none.
+**Every asset is a unit** (*Asset is StockUnit*, mandatory and one to one),
+not a subtype of StockUnit: a unit that is no asset (a chain, a spare on
+the shelf) is common, and an asset has facts a unit has not. Its make,
+model, serial and acquisition are its unit's (step 5, derivation 14), so
+it enters none.
 
 **Record** is every kind of thing users enter, with an id: MeterReading,
 Trip, FillUp, Service, TyreChange, ComponentChange, Expense, Income,
@@ -2183,9 +2241,7 @@ derivation 7) is read from it.
   asset then, or the asset's own unit;
 - *Schedule follows PlanTask* only where the plan task is of the item of
   the schedule's asset's unit, or of a unit fitted in that asset (a join
-  subset);
-- *Asset was acquired on Date* and *for Money*, as entered, only for an
-  asset that is no unit (a unit asset's are its purchase's).
+  subset).
 
 **Exclusion** (not both):
 - a tyre change doesn't fit and remove the same set (a set already on
@@ -2200,8 +2256,6 @@ derivation 7) is read from it.
 - an asset's class is a vehicle kind only for a vehicle: *Asset is of
   EquipmentClass* names no VehicleKind, and a vehicle says *Vehicle is of
   VehicleKind* instead;
-- *Asset is of Make* and *Asset is of Model*, as entered, and *Asset is
-  StockUnit*: a unit asset's are derived;
 - *Document covers StockUnit* only for a unit that is no asset;
 - *WorkRequest was turned down on Date* and *Service was raised from
   WorkRequest*: a request is turned down or ordered, not both;
@@ -2212,7 +2266,7 @@ derivation 7) is read from it.
 ### For ORMKit
 
 - **Subtypes defined by a rule** (Cost, AssetSale, FuelledAsset,
-  ComponentAsset, DoneService, the kinds): each is run by a derivation
+  DoneService, the kinds): each is run by a derivation
   query of the subtype, as a fact type's is
   ([DERIVATION.md](https://github.com/ashalkhakov/ORMKit/blob/master/docs/DERIVATION.md#subtypes)).
 - **An asserted subtype with a supertype that is not a record** (Vehicle
@@ -2347,8 +2401,9 @@ Each derivable fact is derived, unless kept for a reason:
   longer disagree with the changes.
 - **A service's kind of cost** was stored; it follows from its
   maintenance type now (step 5, derivation 1), and can't disagree with it.
-- **A unit asset's make, model, serial and acquisition** are its unit's
-  and its purchase's, never entered again (derivation 14).
+- **An asset's make, model, serial and acquisition** were stored; they
+  are its unit's and its purchase's now, never entered twice (derivation
+  14), and the migration moves what was stored there.
 - **A plan's schedules' work and intervals** are the plan task's, never
   copied: the plan revised, every asset follows the revision.
 - **What is fitted in what, what a record concerns, an asset's state:**
@@ -2396,7 +2451,7 @@ chosen options or a quantity; labour by a user or a garage; a class or a
 vehicle kind) each leave every role a case of its own, and every subtype
 a member (Vehicle: v1; MeteredEvent: a fill-up; DoneService: s61, while
 planned it is none; Cost: a fill-up; AssetSale: n41; FuelledAsset: a1;
-ComponentAsset: a3; OpenReminder: m6). A schedule follows a plan task
+OpenReminder: m6). A schedule follows a plan task
 (sc20) or has work of its own (sc23): both cases are there.
 
 ### For ORMKit
@@ -2461,10 +2516,13 @@ they had (`distanceQuantity`, `keepDistanceQuantity`, `driver`), so a
 store kept on a device and the server's database migrate by Core Data's
 lightweight migration, Asset added as Vehicle's parent entity, and the
 sync carries what it carried. New attributes are named after their new
-roles.
+roles. That migrates the schema; the data's migration (every asset made a
+unit, its make, model, VIN and acquisition moved to its product, unit and
+purchase, its schedules to its product's plan) is a step the server runs
+once after it, and the attributes it emptied are then dropped.
 
 Currency codes and VINs have patterns, ORMKit's own (NORMA has none):
-Core Data checks them.
+Core Data checks them, a VIN on a vehicle's unit's serial number.
 
 What each unit is worth in its dimension's base is reference data: facts
 of the app's own, which every store starts with (`LogbookReferenceData`
@@ -2556,8 +2614,7 @@ The subtypes defined by a rule keep it as NORMA keeps a subtype's
 derivation rule, and run it as a query: a Cost is a record that cost
 some money (`CostRule`), a MeteredEvent an event at some usage
 (`MeteredEventRule`), a DoneService a service done or closed, a
-FuelledAsset an asset that uses a fuel, a ComponentAsset an asset that is
-a unit, an AssetSale an income of kind 'Sale' (`CarSaleRule`), a
+FuelledAsset an asset that uses a fuel, an AssetSale an income of kind 'Sale' (`CarSaleRule`), a
 ServiceKind a cost kind that is 'Maintenance' or 'Repair'
 (`ServiceKindRule`, one of a list). A derived subtype is no entity of its
 own in Core Data: its fact types are its supertype's, so every record has
