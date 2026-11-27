@@ -1559,6 +1559,41 @@ show:
 - dates and durations (days in a period, months between dates);
 - grouping by month.
 
+### The CMMS's entity types, and what is worked out
+
+**Combined.** Vehicle's facts that any asset has are Asset's, once (step
+2). CarModel is Model. ServiceKind is no longer chosen: a service's kind
+of cost follows its maintenance type. "User drives Vehicle" and the new
+"User shares Asset" are one fact type.
+
+**Worked out, not stored:**
+
+25. *An asset's reading at a moment:* derivation 6, of any asset, in its
+    meter's unit (converted within its dimension).
+26. *Which asset a unit is fitted in:* the asset (or the unit's asset)
+    its latest component change fitted it on or into, while no later
+    change removed it; *Asset is fitted in Asset* where the unit is an
+    asset. And transitively: what the parent is fitted in.
+27. *What a record concerns:* the asset it is of, and every asset that one
+    was fitted in at the record's moment.
+28. *A unit asset's make, model and serial:* its item's manufacturer, its
+    item, its serial number.
+29. *An asset's state:* disposed if sold or disposed of; else out of
+    service if a downtime of it has started and not ended; else in stock
+    if it is a unit at a location; else in service.
+30. *A component asset's usage, with no meter of its own:* as derivation
+    9 and a component's wear: what its parent covered while it was fitted.
+31. *A service's cost:* its items' and its labour's, less its discount.
+32. *A service's kind of cost:* 'Maintenance' if preventive, 'Repair' if
+    corrective.
+33. *Uptime in a period:* the period's time while in service, less its
+    downtime in the period.
+34. *Indicators* (report 14): preventive share, MTBF, MTTR,
+    availability, cost per usage, backlog, schedule compliance, as defined
+    there; per class and per maintainable item, over the assets and units
+    of that class or category.
+35. *Consumption:* derivation 13 per the meter's unit (L/100 km, L/h).
+
 ## Step 4: uniqueness, and whether each fact type is elementary
 
 A uniqueness constraint says which roles' values occur at most once
@@ -1667,6 +1702,33 @@ over the years, a record has many attachments.
   "Expense was charged Money 41.60 EUR". One binary, with the factor
   derived (41.60 ÷ 40). Steps 1 to 3 now say it so.
 
+### The CMMS's
+
+**At most one, each way:** Asset is StockUnit (a unit is one asset, an
+asset at most one unit).
+
+**At most one per left role:** an asset's owner, name, make, model, fuel,
+class, criticality, meter unit, acquisition usage, disposal date; a
+vehicle's kind; a usage's quantity and unit; a unit's dimension and
+factor; a work request's moment, maker, title, priority, refusal date,
+answer; a service's request, reminder, maintenance type, state, planned
+date, assignee; a labour's service, user or garage, work time, cost; a
+failure's mode, mechanism, cause, detection, impact, unit; a downtime's
+end, failure, service; a question's unit, lower and upper limit, task; an
+option's task; an answer's quantity; a document's usage limit, unit;
+an equipment class's category.
+
+**Many to many:** User shares Asset; FailureMode applies to
+EquipmentClass; Category is a maintainable item of EquipmentClass; Service
+repaired Failure (one visit may repair two failures, a failure need more
+than one).
+
+**More than two roles:** *Service reserves Quantity of StockItem* (unique
+on service and item: one reservation of an item per order); *EquipmentClass
+has ClassAttribute in Unit* (unique on class and attribute); *Asset has
+Value for ClassAttribute* (unique on asset and attribute). Each is
+elementary: a quantity, a unit, a value is about the pair.
+
 ## Step 5: what must be there, and logical derivations
 
 ### What every one must have
@@ -1765,6 +1827,25 @@ Facts worked out from others by rules, not arithmetic:
 12. **Which records a driver may change:** none. The owner may change any
    of their vehicles' records. That's a permission, from the facts of who
    owns and who entered, enforced by the service (see Permissions).
+
+### The CMMS's
+
+**A must:** every asset has a name, an owner and either an equipment class
+or (a vehicle) a vehicle kind; a metered asset (one not "has no meter")
+a meter unit; every usage a quantity and a unit; every work request its
+moment, maker and title; every labour its service, a user or a garage,
+and its work time; every failure its moment, mode and impact; every
+downtime its start; every service its state and maintenance type (a
+stored one with none migrates: 'Done', and 'Preventive, predetermined'
+if it did a reminder, else 'Corrective, immediate' for a 'Repair' and
+'Preventive, predetermined' for a 'Maintenance').
+
+**Only once done:** a service's moment and usage (MeteredEvent) are a must
+when its state is 'Done' or 'Closed', and only then may it do a reminder
+or repair a failure. A planned one has its planned date.
+
+**Logical derivations:** 25–35 (step 3), and *Asset was sold on Date / for
+Money* from its 'Sale' income (was 'Car sale').
 
 ## Step 6: value, set-comparison and subtype constraints
 
@@ -1924,6 +2005,39 @@ the vehicle's side: a vehicle is sold at most once. The vehicle's sale
 - **Value ranges per role** on a shared value type, and **join subsets**,
   NORMA has, and ORMKit with it.
 
+### The CMMS's
+
+**Value constraints:** the fixed lists of step 2 (MaintenanceType,
+WorkState, Priority, Criticality, AssetState, Dimension, FailureCause,
+FailureImpact, AnswerKind); UsageUnit's codes; WorkTime and a Quantity
+limit > 0 where they are amounts.
+
+**Subtypes:**
+- **Vehicle** is an Asset (asserted: a subentity in Core Data, as Event is
+  Record's). VehicleKind is an EquipmentClass: Car, Motorcycle, Bicycle in
+  'Vehicles'.
+- **WorkRequest**, **Downtime** and **Failure** are Records; Downtime and
+  Failure are Events (each at a moment), a Failure a MeteredEvent where
+  its asset is metered.
+- **FuelledAsset:** *each FuelledAsset is an Asset that uses some Fuel*;
+  only those are filled up (was: only motorised vehicles).
+- **ComponentAsset:** *each ComponentAsset is an Asset that is some
+  StockUnit* (derived; no entity of its own).
+
+**Set comparisons:**
+- Exclusive-or: an asset is a Vehicle, or is of an EquipmentClass that is
+  not a VehicleKind.
+- Exclusion: a unit asset's make, model and serial are derived (28), never
+  entered: "Asset is StockUnit" excludes "Asset is of Make" and "Asset is
+  of Model" as stored.
+- Subset: a Trip, a TyreSet, a TyreChange is of a Vehicle; a FillUp of a
+  FuelledAsset.
+- Subset: Service repaired Failure only where both are of the same asset,
+  or the failure's asset was fitted in the service's then.
+- Exclusion: Labour was by User, Labour was by Garage.
+- Exclusion: a Document covers a StockUnit only when the unit is no
+  asset (else it is of the asset).
+
 ## Step 7: other constraints, and the final checks
 
 ### Ring constraints
@@ -2055,6 +2169,38 @@ CarSale: n41; OpenReminder: m6).
   than refuse.
 - **Ordering by moment** ("the change before", "the readings in order")
   is the step 3 gap again, now in constraints too.
+
+### The CMMS's
+
+**Ring constraints:** *Asset is fitted in Asset* is acyclic (and so
+irreflexive): no asset is fitted in itself, or in what is fitted in it. A
+component change that would make it so is refused.
+
+**Value comparisons:** a downtime ends at or after it starts; a question's
+lower limit is below its upper; a failure is at or before the service
+that repaired it, and its downtime starts at or after it; a planned date
+is on or after the request's moment.
+
+**Frequency:** an asset has at most one downtime not ended.
+
+**Deontic (ought, said, not refused):** a corrective service ought to say
+the failure it repaired; a failure of a critical asset ought to have its
+downtime; a work request ought to be answered (an order or turned down)
+within a week; a high-criticality asset ought to have a schedule.
+
+**Final checks:**
+1. *Examples against the constraints:* step 1's generator, power station,
+   battery, work order, failure, downtime and measurement each satisfy
+   steps 4–7 (the battery's cycles are its own; the chain is no asset).
+2. *Nothing stored that can be derived:* a unit asset's make, model and
+   serial, the hierarchy, the state, the costs' kinds and every
+   indicator are derived.
+3. *Every report from the facts:* the indicators from services, their
+   types, labour, failures, downtime, reminders and readings.
+4. *Every fact type can be populated:* by the forms of the asset, the
+   work request, the work order (planned, done), the failure, the
+   downtime, the question and the document, and by Stock's 'Put in
+   service'.
 
 ## The model
 
