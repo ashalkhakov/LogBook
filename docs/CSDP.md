@@ -868,19 +868,31 @@ to.
 Records made on a device and synced need ids that don't clash. So the
 things Logbook records are identified by an id the app makes (a UUID,
 written `v1`, `t3` here):
-- Vehicle, Trip, FillUp, Service, ServiceItem, MeterReading, TyreSet,
-  TyreChange, Document, Expense, Income, Schedule, Reminder, Attachment,
-  Checklist, Question, Option, Inspection, Answer.
+- Asset (and so Vehicle, its subtype), Trip, FillUp, Service, ServiceItem,
+  MeterReading, TyreSet, TyreChange, Document, Expense, Income, Schedule,
+  Reminder, Attachment, Checklist, Question, Option, Inspection, Answer,
+  WorkRequest, Labour, Failure, Downtime.
 
 The rest are identified by what they are:
 
 | Entity type | Identified by |
 | --- | --- |
 | User | email |
-| Make, CarModel, Fuel, Garage, Station, Place, TyreModel | name |
+| Make, Fuel, Garage, Station, Place, TyreModel | name |
 | ServiceKind, ExpenseKind, IncomeKind, DocumentKind, Purpose, Season, Task, PaymentMethod | name, from a list |
 | Title, Note, ChecklistName, QuestionText, OptionText | text |
-| AnswerKind | name, from a fixed list: 'Yes or no', 'Any of' |
+| AnswerKind | name, from a fixed list: 'Yes or no', 'Any of', 'Measurement' |
+| Model, AssetName, ClassAttribute | name |
+| EquipmentClass, EquipmentCategory, FailureMode, FailureMechanism, DetectionMethod | name, from a list the users extend (seeded from ISO 14224) |
+| FailureCause | name, from a fixed list: 'Design', 'Fabrication', 'Installation', 'Operation', 'Maintenance', 'Unknown' |
+| FailureImpact | name, from a fixed list: 'Critical', 'Degraded', 'Incipient' |
+| MaintenanceType | name, from a fixed list (EN 13306): 'Preventive, predetermined', 'Preventive, condition-based', 'Corrective, immediate', 'Corrective, deferred' |
+| WorkState | name, from a fixed list: 'Draft', 'Planned', 'Released', 'In progress', 'Done', 'Closed', 'Cancelled' |
+| Priority, Criticality | name, from a fixed list: 'Urgent', 'High', 'Normal', 'Low'; 'High', 'Medium', 'Low' |
+| AssetState | name, from a fixed list: 'In service', 'Out of service', 'In stock', 'Disposed' |
+| Dimension | name, from a fixed list: 'distance', 'time', 'cycles', 'energy' |
+| UsageUnit | code, from a list: 'km', 'mi', 'h', 'cycles', 'kWh' |
+| WorkTime | hours |
 | YesNo | from a fixed list: 'Yes', 'No' |
 | Position | a count, 1 or more |
 | Instalments | a count, 1 or more |
@@ -891,6 +903,7 @@ The rest are identified by what they are:
 | Tread | mm |
 | Money | its Amount and its Currency together (74.10 EUR) |
 | Distance | its Quantity and its DistanceUnit together (152300 km) |
+| Usage | its Quantity and its UsageUnit together (212 h, 152300 km) |
 | Volume | its Quantity and its VolumeUnit together (42.5 L) |
 
 Money, distances and volumes have no identity of their own. Two fill-ups
@@ -1241,6 +1254,148 @@ Trip was entered by User                        t3 | anna@example.org
 FillUp was entered by User                      f1 | ben@example.org
 ...                                             (every record the same)
 ```
+
+### Assets, classes and meters
+
+What step 2 said above of a vehicle's name, owner, drivers, make, model,
+acquisition, expectations, valuations and sale is said of an Asset (its
+role player changes, the facts stay); "Record is of Asset". A vehicle is
+an asset that is a vehicle (step 6, a subtype).
+
+```
+Asset is owned by User                          a1 | anna@example.org
+User shares Asset                               ben@example.org | v1
+Asset has AssetName                             a1 | 'Generator'
+                                                v1 | 'Blue Golf'
+Asset is of Make                                a1 | 'Honda'
+Asset is of Model                               a1 | 'EU22i'
+Asset uses Fuel                                 a1 | 'Petrol 95'
+                                                v1 | 'Petrol 95'
+Asset is of EquipmentClass                      a1 | 'Generator'
+                                                a3 | 'Power station'
+Vehicle is of VehicleKind                       v1 | 'Car'
+EquipmentClass is of EquipmentCategory          'Generator' | 'Electrical'
+                                                'Car' | 'Vehicles'
+EquipmentClass has ClassAttribute in Unit       'Generator' | 'Rated power' | 'kW'
+Asset has Value for ClassAttribute              a1 | 2.2 | 'Rated power'
+Category is a maintainable item of EquipmentClass  'Chain' | 'Bicycle'
+Asset has Criticality                           a1 | 'High'
+Asset was disposed of on Date                   a5 | 2026-05-02
+Asset is metered in UsageUnit                   v1 | 'km'
+                                                a1 | 'h'
+                                                a3 | 'cycles'
+Asset has no meter                              v3
+Asset was acquired at Usage                     a1 | 0 h
+                                                v1 | 84210 km
+Asset is expected to be used Usage more         v1 | 120000 km
+Usage has Quantity                              (212 h) | 212
+Usage is in UsageUnit                           (212 h) | 'h'
+                                                (152300 km) | 'km'
+UsageUnit is of Dimension                       'km' | 'distance'
+                                                'mi' | 'distance'
+                                                'h' | 'time'
+                                                'cycles' | 'cycles'
+                                                'kWh' | 'energy'
+UsageUnit is worth Factor of its Dimension's base  'mi' | 1.609344
+                                                'km' | 1
+```
+
+"User shares Asset" is "User drives Vehicle" said of any asset: for a
+vehicle, its drivers. A UsageUnit's factor replaces DistanceUnit's: the
+base of distance is the km; the others' base is themselves.
+
+Distance becomes Usage in: Event was at, MeterReading shows, Schedule
+recurs every, Schedule was last done at, Reminder is due at, is counted
+from, was done at, Rescheduling moved from and to. Distance stays in Trip
+ended at, Trip covered, and the user's preferred distance unit.
+
+### Units made assets, and what is fitted in what
+
+```
+Asset is StockUnit                              a3 | u7
+                                                a4 | u8
+Move is made for Asset                          m9 | a3
+ComponentChange fitted StockUnit                cc50 | u8
+ComponentChange is of Asset                     cc50 | a3      (Record is of Asset)
+Asset is fitted in Asset *                      a4 | a3
+Record concerns Asset *                         r80 | a4
+                                                r80 | a3
+Asset is of Make *  (a unit's)                  a3 | 'EcoFlow'
+Asset has SerialNumber *                        a3 | 'R2P-0042'
+Asset is in AssetState *                        a1 | 'In service'
+                                                a5 | 'Disposed'
+```
+
+\* Derived (step 5). The new AdjustmentReason 'Put in service' (and its
+way back, 'Taken out of service') joins 'Fitted' and 'Removed'.
+
+### Work requests and work orders
+
+```
+WorkRequest is of Asset                         wr60 | a1        (Record is of Asset)
+WorkRequest was made at Moment                  wr60 | 2026-11-20 18:00
+WorkRequest was made by User                    wr60 | anna@example.org
+WorkRequest has Title                           wr60 | "Won't start"
+WorkRequest has Priority                        wr60 | 'Urgent'
+WorkRequest was turned down on Date             wr65 | 2026-11-21
+WorkRequest was raised from Answer              wr71 | an70
+Service was raised from WorkRequest             s61 | wr60
+Service was raised from Reminder                s66 | m5
+Service is of MaintenanceType                   s61 | 'Corrective, immediate'
+                                                s7 | 'Preventive, predetermined'
+Service is in WorkState                         s61 | 'Done'
+Service is planned for Date                     s61 | 2026-11-22
+Service is assigned to User                     s61 | ben@example.org
+Service reserves Quantity of StockItem          s61 | 1 | 'NGK BPR6ES'
+Labour is of Service                            l62 | s61
+Labour was by User                              l62 | ben@example.org
+Labour was by Garage                            l67 | 'Garage Müller'
+Labour took WorkTime                            l62 | 0.75 h
+Labour cost Money                               l67 | 165 EUR
+Service repaired Failure                        s61 | f63
+```
+
+A service's moment and usage (Event was at) are a must once it is done,
+not while it is planned (step 5). Its kind of cost, 'Maintenance' or
+'Repair', is derived from its maintenance type.
+
+### Failures and downtime
+
+```
+Failure is of Asset                             f63 | a1          (Record is of Asset)
+Failure was at Moment                           f63 | 2026-11-20 17:50   (Event)
+Failure was at Usage                            f63 | 212 h
+Failure is of FailureMode                       f63 | 'Fails to start on demand'
+Failure has FailureMechanism                    f63 | 'Contamination'
+Failure has FailureCause                        f63 | 'Operation'
+Failure was found by DetectionMethod            f63 | 'On demand'
+Failure had FailureImpact                       f63 | 'Critical'
+Failure was of StockUnit                        f63 | u12
+FailureMode applies to EquipmentClass           'Fails to start on demand' | 'Generator'
+Downtime is of Asset                            d64 | a1          (Record is of Asset)
+Downtime started at Moment                      d64 | 2026-11-20 17:50   (Event)
+Downtime ended at Moment                        d64 | 2026-11-22 10:45
+Downtime was for Failure                        d64 | f63
+Downtime was for Service                        d68 | s7
+Downtime was planned                            d68
+```
+
+### Condition-based work and warranties
+
+```
+Question is answered by AnswerKind              q9 | 'Measurement'
+Question measures in Unit                       q9 | '%'
+Question has lower limit Quantity               q9 | 80
+Question has upper limit Quantity               q10 | 4.5
+Question calls for Task when out of limits      q9 | 'Battery replacement'
+Option calls for Task                           o7 | 'Leak repair'
+Answer is Quantity                              an70 | 76
+Document is valid until Usage                   d81 | 800 cycles
+Document covers StockUnit                       d82 | u1
+```
+
+A warranty, a manual and a drawing are DocumentKinds; the documents are
+of their asset as every record is.
 
 ### What's left for later steps
 
