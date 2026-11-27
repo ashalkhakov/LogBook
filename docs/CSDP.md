@@ -494,10 +494,29 @@ An asset bought through Stock **is** that unit: one thing, seen as stock
 while it is on a shelf and as an asset once in service, as IBM Maximo's
 rotating items and SAP's equipment with a material and a serial number
 are. Its make, model and serial are the unit's (its item's manufacturer,
-the item, the unit's serial), not entered again. Putting it in service
-moves it out of stock, as fitting a component does; taking it out of
-service puts it back. An asset need not be a unit: a car bought privately
-is an asset only.
+the item, the unit's serial: a vehicle's VIN is its serial), and when and
+for how much it was acquired are its purchase's (the receipt's date, the
+line's cost): none is entered again. Putting it in service moves it out of
+stock, as fitting a component does; taking it out of service puts it back.
+
+> Ben buys a used Transit from a dealer and adds it as a new vehicle.
+
+- StockItem 'Ford Transit 2.0 EcoBlue' is made by Manufacturer 'Ford'.
+- PurchaseOrder PO-GAR-0009 is from Supplier 'Van dealer', of 1 'Ford
+  Transit 2.0 EcoBlue' for Money 18500 EUR; received on Date 2026-11-25.
+- StockUnit u20 has SerialNumber 'WF0XXXTTGXLA12345'.
+- Asset "Ben's Transit" is StockUnit u20; Move m21 is made for it, 'Put in
+  service'.
+
+A new asset is always made this way, through Stock. Adding a vehicle (or
+any asset) right away is a shortcut of the forms, not another way of
+being: it makes the product (a stock item, its manufacturer and name the
+make and model), its maintenance plan (below), and a purchase of one from
+the seller, received and put in service, in one go. The order is received
+at once; no task of purchasing's process waits for it. The assets stored
+before Stock was there, and those imported (Drivvo, MainTrack), are assets
+only: nothing says what product they were, so they have their own make,
+model and acquisition.
 
 Any unit may be made an asset where its own history matters (a battery
 pack, an engine, a wheel set), and a unit fitted to an asset may be one.
@@ -511,6 +530,46 @@ battery is fitted, so the station's costs, failures and indicators count
 it. A component that is an asset with no meter of its own wears by its
 parent's, as any component does. A chain is no asset: a unit fitted, no
 more.
+
+### A maintenance plan
+
+> EcoFlow says of the River 2 Pro: check the battery every 6 months, and
+> update its firmware every 12. KMC says of the X9 chain: replace it every
+> 3,000 km. Anna adds one of her own for the River: clean its vents every
+> 3 months.
+
+- PlanTask pt1 is of StockItem 'EcoFlow River 2 Pro'.
+- PlanTask pt1 is for Checklist 'Battery check'; recurs every Duration 6
+  months.
+- PlanTask pt2 is of StockItem 'EcoFlow River 2 Pro', for Task 'Firmware
+  update', recurs every Duration 12 months.
+- PlanTask pt3 is of StockItem 'KMC X9', for Task 'Chain', recurs every
+  Usage 3000 km.
+- Schedule 20 of Asset 'River power' follows PlanTask pt1.
+- Schedule 21 of Asset 'River power' follows PlanTask pt2.
+- Schedule 22 of Asset 'Commuter' follows PlanTask pt3. *(the chain fitted
+  to it)*
+- Schedule 23 of Asset 'River power' is for Task 'Vent cleaning', recurs
+  every Duration 3 months. *(her own)*
+
+A product's **maintenance plan** is the manufacturer's: its plan tasks,
+each work (a task or a checklist) and how often, by usage, by time or
+both, as EN 13460 has a maker supply what an item's maintenance needs
+before it is put in service. It is the product's, in Stock, written by
+whoever keeps the catalog, and revised there. An asset that is a unit of
+it follows it: each plan task gives the asset a schedule that follows it,
+whose work and intervals are the plan task's, always as the plan says now
+(as Maximo's master PMs drive their assets' PMs, and SAP's general task
+lists are referenced by their equipment). The asset's owner cannot change
+or remove such a schedule; they add schedules of their own beside it. A
+unit fitted to an asset brings its item's plan to that asset while it is
+fitted: the bicycle gets the chain's schedule from the chain, counted
+from when it was fitted.
+
+The reminders of a plan's schedule are the asset's, as any are: done,
+moved or cancelled on it. Moving or cancelling one departs from the
+maker's plan: it is recorded (a rescheduling, a cancellation), and the
+app warns of it; it is not refused.
 
 ### A document
 
@@ -739,7 +798,10 @@ A **schedule** is planned work, the preventive maintenance of EN 13306
 predetermined by it: which work, and how often, by usage, by time, or
 both, whichever comes first. The work is a task (what a service does), a
 kind of expense (what an expense pays for) or a checklist (what an
-inspection goes through). It is never done itself.
+inspection goes through). It is never done itself. A schedule is the
+user's own, or follows a plan task of its asset's product (or of a unit
+fitted to it), and then its work and intervals are the plan's (see A
+maintenance plan).
 
 A **reminder** is one time the work is due. The work it's for is its
 schedule's, or, set once by hand with no schedule, its own. It is open,
@@ -853,6 +915,9 @@ what, for the service and the apps to enforce:
   remove any record, but for moving a work order assigned to them through
   its states.
 
+- A product's maintenance plan is changed only by who keeps its catalog;
+  an asset's owner cannot change the schedules that follow it.
+
 So every record says who entered it:
 
 > Ben entered the fill-up.
@@ -872,8 +937,8 @@ things Logbook records are identified by an id the app makes (a UUID,
 written `v1`, `t3` here):
 - Asset (a vehicle by its asset's), Trip, FillUp, Service, ServiceItem,
   Labour, WorkRequest, Failure, Downtime, MeterReading, TyreSet,
-  TyreChange, Document, Expense, Income, Schedule, Reminder, Attachment,
-  Checklist, Question, Option, Inspection, Answer.
+  TyreChange, Document, Expense, Income, Schedule, Reminder, PlanTask,
+  Attachment, Checklist, Question, Option, Inspection, Answer.
 
 The rest are identified by what they are:
 
@@ -1202,12 +1267,28 @@ ComponentChange removed StockUnit               cc31 | u0
 ComponentChange skips virtual trips             cc33
 Move is made for ComponentChange                m2 | cc31
 Move is made for Asset                          m9 | a3
+                                                m21 | v4
+PlanTask is of StockItem                        pt1 | 'EcoFlow River 2 Pro'
+                                                pt3 | 'KMC X9'
+PlanTask is for Task                            pt2 | 'Firmware update'
+                                                pt3 | 'Chain'
+PlanTask is for Checklist                       pt1 | 'Battery check'
+PlanTask recurs every Usage                     pt3 | 3000 km
+PlanTask recurs every Duration                  pt1 | 6
+                                                pt2 | 12
+PlanTask has Note                               pt2 | 'From the app'
+Schedule follows PlanTask                       sc20 | pt1
+                                                sc22 | pt3
+Asset was acquired on Date *  (a unit's)        v4 | 2026-11-25
+Asset was acquired for Money *  (a unit's)      v4 | 18500 EUR
 Asset is fitted in Asset *                      a4 | a3
 Record concerns Asset *                         d83 | a4
                                                 d83 | a3
 ```
 
-\* Derived (step 5). A unit that is an asset is put in service with a move
+\* Derived (step 5). A schedule that follows a plan task has its work and
+intervals from it (derived), none of its own. A unit that is an asset is
+put in service with a move
 of reason 'Put in service' made for it, and taken out with 'Taken out of
 service', beside 'Fitted' and 'Removed'.
 
@@ -1455,8 +1536,11 @@ kind of thing.
 - **Moment** is one type for when every event happened, a trip's start
   and end, a downtime's start and end, when a request was made and when a
   reminder was done. They are compared to put records in order.
-- **Task** is one type for what a service does, what a schedule or a
-  reminder is for, and what an answer calls for.
+- **Task** is one type for what a service does, what a schedule, a plan
+  task or a reminder is for, and what an answer calls for.
+- **A plan task is not a schedule.** It is the product's, of no asset,
+  never due: an asset's schedule follows it. One plan task, many
+  schedules (one per asset that is, or carries, a unit of the product).
 
 What stays apart:
 - **Garage, Station and Place:** they play different roles, and nothing
@@ -1516,8 +1600,9 @@ Each in the user's preferred units and currency, unless it says otherwise.
     removed it; and what that is fitted in, in turn.
 11. *What a record concerns* (`Record concerns Asset`): the asset it is
     of, and every asset that one was fitted in at the record's moment.
-12. *A unit asset's make, model and serial:* its item's manufacturer, its
-    item, its unit's serial number.
+12. *A unit asset's make, model, serial and acquisition:* its item's
+    manufacturer, its item, its unit's serial number; the date of the
+    receipt that brought its unit in, and its purchase line's unit cost.
 13. *An asset's state:* 'Disposed' if it was sold or disposed of; else
     'Out of service' if a downtime of it has started and not ended; else
     'In stock' if it is a unit at a location; else 'In service'.
@@ -1525,7 +1610,8 @@ Each in the user's preferred units and currency, unless it says otherwise.
 **Reminders and work orders**
 
 14. *When a schedule's next reminder is due:* the usage and date its last
-    reminder was done + the schedule's intervals. Before any was done,
+    reminder was done + the schedule's intervals (a schedule that follows
+    a plan task: the plan task's, and its work likewise). Before any was done,
     counted from when the schedule was set up: its first reminder's due
     usage and date are given then.
 15. *Whether a reminder is due, or overdue:* open, and the asset's
@@ -1673,6 +1759,9 @@ unique. Each asset, record or user has at most one of each of these:
 - **Reminder:** asset, schedule, task, kind of expense or checklist,
   note, due usage, due date, done moment, done usage, the record it was
   done by.
+- **PlanTask:** item, task or checklist, usage interval, time interval,
+  note.
+- **Schedule** (as well): the plan task it follows.
 - **Attachment:** the record it is of, file name.
 - **Every record:** who entered it, note.
 
@@ -1687,6 +1776,8 @@ one order but a reminder's order is one of many over the years.
 - **Service was raised from WorkRequest:** a request becomes at most one
   order. And from a reminder: one order per reminder.
 - **WorkRequest was raised from Answer:** an answer raises at most one.
+- **A schedule's asset and the plan task it follows:** an asset follows
+  each plan task once, an external uniqueness over the two.
 - **Income was for Trip:** a trip is paid by at most one income.
 - **An answer's inspection and question:** an inspection answers each
   question at most once. An external uniqueness over the two, so the
@@ -1794,8 +1885,9 @@ honestly be missing, and each such case is listed with why.
 | Option | question, text, position | the task it calls for |
 | Inspection | asset, checklist, moment, usage, who it was by | answers (a question may be left unanswered) |
 | Answer | inspection, question | yes or no (only for a yes-or-no question); options chosen (none may apply); quantity (only for a measurement); note |
-| Schedule | asset; its work: a task, a kind of expense or a checklist, exactly one (exclusive-or); at least one interval | the other interval: it may recur by usage only, by time only, or both (inclusive-or); note |
+| Schedule | asset; its work: a task, a kind of expense or a checklist, exactly one, or a plan task it follows (exclusive-or over the four); at least one interval of its own, or the plan task's | the other interval: it may recur by usage only, by time only, or both (inclusive-or); note |
 | Reminder | asset; a due usage or a due date or both (inclusive-or); its schedule or work of its own, a task, a kind of expense or a checklist, exactly one of the four (exclusive-or) | note; the done moment, done usage and the event that did it, until it is done; then the moment is a must, the usage and the event optional (an event with no usage, or done by hand); the date it was cancelled, until it is (not both done and cancelled); the reminder it replaces, and the one replacing it |
+| PlanTask | item; a task or a checklist, exactly one (exclusive-or); at least one interval | the other interval; note |
 | Rescheduling | the reminder, when and by whom it was made; what the reminder was due at before, a date or a usage or both (inclusive-or) | note |
 | Every record | who entered it | note; attachments (any number, none included) |
 | Money, Usage, Distance, Volume | amount and currency; quantity and unit | |
@@ -1878,7 +1970,8 @@ Facts worked out from others by rules, not arithmetic:
     the service (see Permissions).
 13. **What an asset is fitted in, and what a record concerns** (step 3,
     10 and 11): from the component changes, never entered.
-14. **A unit asset's make, model and serial** (step 3, 12): its unit's.
+14. **A unit asset's make, model, serial and acquisition** (step 3, 12):
+    its unit's, and its purchase's.
 15. **An asset's state** (step 3, 13).
 16. **Which answers call for work:** an answer choosing an option that
     calls for a task, or measuring a quantity outside its question's
@@ -1886,6 +1979,14 @@ Facts worked out from others by rules, not arithmetic:
     answer, enters a work request raised from it, for the task; the owner
     may turn it down. And a reminder near its due date or usage raises a
     service planned for it the same way ([PROCESSES.md](PROCESSES.md)).
+17. **Which plan tasks an asset follows:** those of its unit's item, and of
+    the items of the units fitted in it, while they are. *Not a
+    derivation* of the schedules themselves: the service layer, putting a
+    unit in service or fitting one, makes a schedule that follows each
+    such plan task, counted from then, and, taking it out or removing it,
+    cancels that schedule's open reminder; a plan task added later gives
+    each such asset its schedule the same way ([PROCESSES.md](PROCESSES.md)).
+    What the schedule's work and intervals are is derived (14).
 
 ## Step 6: value, set-comparison and subtype constraints
 
@@ -2079,7 +2180,12 @@ derivation 7) is read from it.
 - *FillUp is of Asset* only for a FuelledAsset; *Trip*, *TyreSet*,
   *TyreChange* only of a Vehicle;
 - *Failure was of StockUnit* only for a unit fitted in the failure's
-  asset then, or the asset's own unit.
+  asset then, or the asset's own unit;
+- *Schedule follows PlanTask* only where the plan task is of the item of
+  the schedule's asset's unit, or of a unit fitted in that asset (a join
+  subset);
+- *Asset was acquired on Date* and *for Money*, as entered, only for an
+  asset that is no unit (a unit asset's are its purchase's).
 
 **Exclusion** (not both):
 - a tyre change doesn't fit and remove the same set (a set already on
@@ -2098,7 +2204,10 @@ derivation 7) is read from it.
   StockUnit*: a unit asset's are derived;
 - *Document covers StockUnit* only for a unit that is no asset;
 - *WorkRequest was turned down on Date* and *Service was raised from
-  WorkRequest*: a request is turned down or ordered, not both.
+  WorkRequest*: a request is turned down or ordered, not both;
+- *Schedule follows PlanTask* and the schedule's own work and intervals:
+  a schedule that follows a plan has none of its own, so there is nothing
+  of it for the owner to change.
 
 ### For ORMKit
 
@@ -2186,6 +2295,10 @@ afterwards, so the rules about the meter and time are deontic:
   a week; a work order ought to be done by its planned date.
 - **A critical asset ought to have a schedule:** preventive work planned
   for it, as ISO 55001's risk-based planning asks.
+- **The maker's plan ought to be kept:** a reminder of a schedule that
+  follows a plan task ought not to be moved (rescheduled) or cancelled.
+  Doing so is recorded, as any reminder's is, and the app warns that it
+  departs from the plan.
 
 Trips may overlap and leave gaps (step 1): no constraint at all.
 
@@ -2214,12 +2327,16 @@ but the example was wrong; it is now 151,600 km. The rest hold:
 2026-11-15      212 h    meter reading r40
 2026-11-20      212 h    failure f63; downtime d64 starts; request wr60
 2026-11-22      214 h    service s61 done, corrective, repairs f63; d64 ends
+2026-11-25               PO-GAR-0009 received; u20 put in service as v4 (the shortcut)
 2027-05-20   162400 km   reminder m5 done by s12 (due 163000 km, 2027-06-01)
 2027-08-30   171020 km   sale n41
 ```
 
 The battery a4 is fitted in the power station a3 (cc50): the hierarchy is
-acyclic, and a4's documents concern a3 as well. The chain u1 is no asset;
+acyclic, and a4's documents concern a3 as well. The power station follows
+its product's plan (sc20, sc21, from pt1, pt2) and has one of its own
+(sc23); the bicycle follows the chain's (sc22, from pt3) while it is
+fitted. The chain u1 is no asset;
 its warranty covers the unit.
 
 ### Final check 2: nothing stored that can be derived
@@ -2230,8 +2347,10 @@ Each derivable fact is derived, unless kept for a reason:
   longer disagree with the changes.
 - **A service's kind of cost** was stored; it follows from its
   maintenance type now (step 5, derivation 1), and can't disagree with it.
-- **A unit asset's make, model and serial** are its unit's, never
-  entered again (derivation 14).
+- **A unit asset's make, model, serial and acquisition** are its unit's
+  and its purchase's, never entered again (derivation 14).
+- **A plan's schedules' work and intervals** are the plan task's, never
+  copied: the plan revised, every asset follows the revision.
 - **What is fitted in what, what a record concerns, an asset's state:**
   derived from component changes, downtime, sales and disposals.
 - **A reminder's asset,** for one from a schedule, is the schedule's.
@@ -2277,7 +2396,8 @@ chosen options or a quantity; labour by a user or a garage; a class or a
 vehicle kind) each leave every role a case of its own, and every subtype
 a member (Vehicle: v1; MeteredEvent: a fill-up; DoneService: s61, while
 planned it is none; Cost: a fill-up; AssetSale: n41; FuelledAsset: a1;
-ComponentAsset: a3; OpenReminder: m6).
+ComponentAsset: a3; OpenReminder: m6). A schedule follows a plan task
+(sc20) or has work of its own (sc23): both cases are there.
 
 ### For ORMKit
 
@@ -2384,9 +2504,11 @@ in the schema as its outline:
   (`EventsWhileKept`, `EventsBeforeSale`, deontic);
 - a tyre set is bought no later than the day it is fitted
   (`TyresBoughtBeforeFitted`);
+- a schedule that follows a plan task has no work or intervals of its
+  own, and only an asset carrying the plan's product follows it;
 - the deontic rules of maintenance: a corrective service names its
   failure, a request is answered within a week, a critical asset has a
-  schedule.
+  schedule, a plan's reminder is not moved nor cancelled.
 
 Some of what is worked out is computed by queries, with value nodes
 ([EXPRESSIONS.md](https://github.com/ashalkhakov/ORMKit/blob/master/docs/EXPRESSIONS.md)): a trip's
@@ -2447,7 +2569,8 @@ Vehicle, asserted, is an entity of its own under Asset.
 
 The Core Data model, the OData service and the checks are generated from
 the model, and the apps written around them. For the maintenance part,
-in this order: assets, usage and units that are assets; fuel and the
-hierarchy; classes, states and criticality; failures, downtime and
+in this order: assets, usage and units that are assets, with the new
+asset's shortcut through Stock; fuel and the hierarchy; maintenance
+plans; classes, states and criticality; failures, downtime and
 labour; work orders and their process; condition-based work and
 warranties; the indicators.
