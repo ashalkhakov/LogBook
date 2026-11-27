@@ -1,4 +1,5 @@
 #import "LBLocalStore.h"
+#import "LBAssets.h"
 #import <ODataKit/ODataError.h>
 #import "LogbookValidation.h"
 #import "LBProcedures.h"
@@ -77,9 +78,20 @@ static NSString *LBCount(NSUInteger n) {
     /* History: the outbox is read from it, so no change is missed. */
     NSDictionary *options = @{ NSPersistentHistoryTrackingKey: @YES, NSMigratePersistentStoresAutomaticallyOption: @YES,
                                NSInferMappingModelAutomaticallyOption: @YES };
-    if (![_coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil
-                                              URL:[directory URLByAppendingPathComponent:@"Logbook.sqlite"]
-                                          options:options error:error])
+    NSURL *storeURL = [directory URLByAppendingPathComponent:@"Logbook.sqlite"];
+    /* A store from before assets (v0.7): its vehicles are the server's to
+       make assets of (LBAssets.h), once; this device's copy is set aside,
+       kept as it was, and the logbook synced down again. */
+    if ([[NSFileManager defaultManager] fileExistsAtPath:storeURL.path] && LBIsStoreBeforeAssets(NSSQLiteStoreType, storeURL, options)) {
+        for (NSString *suffix in @[ @"", @"-wal", @"-shm" ]) {
+            NSString *from = [storeURL.path stringByAppendingString:suffix];
+            NSString *to = [[directory URLByAppendingPathComponent:@"Logbook-before-assets.sqlite"].path stringByAppendingString:suffix];
+            [[NSFileManager defaultManager] removeItemAtPath:to error:NULL];
+            [[NSFileManager defaultManager] moveItemAtPath:from toPath:to error:NULL];
+        }
+        NSLog(@"Logbook: the store from before assets set aside (Logbook-before-assets.sqlite); the logbook syncs down anew");
+    }
+    if (![_coordinator addPersistentStoreWithType:NSSQLiteStoreType configuration:nil URL:storeURL options:options error:error])
         return nil;
     _appState = [[LBAppState alloc] initWithStoreURL:[directory URLByAppendingPathComponent:@"AppState.sqlite"] error:error];
     if (!_appState) return nil;

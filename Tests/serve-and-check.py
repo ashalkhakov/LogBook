@@ -181,17 +181,21 @@ def stop(server):
         server.wait()
 
 
-def vehicle_body(owner=None):
-    body = {"Id": str(uuid.uuid4()), "VehicleName": "Golf", "Make": "Volkswagen", "CarModel": "Golf VII",
-            "ManufactureYear": 2016, "Fuel": "Petrol"}
-    if owner:
-        body["Owner@odata.bind"] = "Users('%s')" % owner
-    return body
+def make_vehicle(owner, user=None, name="Golf", make="Volkswagen", model="Golf VII", year=2016, fuel="Petrol"):
+    """The owner's Golf, made as Stock makes an asset (the user's
+    MakeAsset action: its product, a unit of it, bought, put in service). The status (201 when made), the answer,
+    the vehicle's id."""
+    status, body = request("POST", "Users('%s')/Default.MakeAsset" % owner,
+                           {"Name": name, "Make": make, "Model": model, "Kind": "Car", "Year": year, "Fuel": fuel,
+                            "Day": "2000-01-01T00:00:00Z"}, user=user)
+    if status >= 300:
+        return status, body, None
+    return 201, body, body["Id"].lower()
 
 
 def tyre_set(vehicle, name, season, entered_by):
     return {"@odata.type": "#Default.TyreSet", "Id": str(uuid.uuid4()), "TyreSetName": name, "Season": season,
-            "TyreModel": "Primacy 4", "TyreSize": "205/55 R16", "Vehicle@odata.bind": "Vehicles(%s)" % vehicle,
+            "TyreModel": "Primacy 4", "TyreSize": "205/55 R16", "Vehicle@odata.bind": "Assets(%s)" % vehicle,
             "EnteredBy@odata.bind": "Users('%s')" % entered_by}
 
 
@@ -200,12 +204,12 @@ def tyre_change(vehicle, fits, day, km, user):
             "Timestamp": "2026-%sT09:00:00Z" % day, "MileageQuantity": km,
             "MileageDistanceUnit@odata.bind": "DistanceUnits('km')", "Tread": 7,
             "TyreSet@odata.bind": "Records(%s)" % fits["Id"], "Driver@odata.bind": "Users('%s')" % user,
-            "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+            "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Assets(%s)" % vehicle}
 
 
 def the_rules():
     status, units = request("GET", "DistanceUnits")
-    check("the units are there", status == 200 and sorted(u["Code"] for u in units["value"]) == ["km", "mi"], units)
+    check("the units are there", status == 200 and sorted(u["Code"] for u in units["value"]) == ["cycles", "h", "kWh", "km", "mi"], units)
     status, kinds = request("GET", "CostKinds")
     names = sorted(k["Name"] for k in kinds.get("value", [])) if status == 200 else kinds
     check("the kinds of cost are there, the model's", names == ["Documents", "Fuel", "Maintenance", "Repair", "Tyres"], names)
@@ -213,10 +217,8 @@ def the_rules():
           and all(k.get("@odata.type", "#Default.CostKind") == "#Default.CostKind" for k in kinds["value"]), kinds)
     anna = "anna@example.org"
     check("a user", request("POST", "Users", {"Email": anna})[0] == 201)
-    made = vehicle_body(anna)
-    status, body = request("POST", "Vehicles", made)
+    status, body, vehicle = make_vehicle(anna)
     check("a vehicle", status == 201, body)
-    vehicle = made["Id"]
 
     summer, winter = tyre_set(vehicle, "Summer set", "Summer", anna), tyre_set(vehicle, "Winter set", "Winter", anna)
     april, november = tyre_change(vehicle, summer, "04-01", 10000, anna), tyre_change(vehicle, winter, "11-01", 15000, anna)
@@ -282,7 +284,7 @@ def expense(vehicle, kind, moment, user, km=None):
     body = {"@odata.type": "#Default.Expense", "Id": str(uuid.uuid4()), "Timestamp": moment,
             "TotalAmount": 12.5, "TotalCurrency": "EUR", "ExpenseKind@odata.bind": "CostKinds('%s')" % kind,
             "Driver@odata.bind": "Users('%s')" % user, "EnteredBy@odata.bind": "Users('%s')" % user,
-            "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+            "Vehicle@odata.bind": "Assets(%s)" % vehicle}
     if km is not None:
         body.update({"MileageQuantity": km, "MileageDistanceUnit@odata.bind": "DistanceUnits('km')"})
     return body
@@ -293,7 +295,7 @@ def reminder(vehicle, user, **facts):
     Kind (an expense kind), Schedule (a schedule's id, counted from a day
     a year before it is due), else a task."""
     body = {"@odata.type": "#Default.Reminder", "Id": str(uuid.uuid4()), "DueDate": facts.pop("due", "2026-06-01"),
-            "SetAt": facts.pop("set", "2026-04-01T09:00:00Z"), "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+            "SetAt": facts.pop("set", "2026-04-01T09:00:00Z"), "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Assets(%s)" % vehicle}
     kind, schedule = facts.pop("Kind", None), facts.pop("Schedule", None)
     if kind:
         body["ExpenseKind@odata.bind"] = "CostKinds('%s')" % kind
@@ -319,14 +321,14 @@ def mileage_and_reminders(anna, vehicle):
         half = expense(vehicle, "Wash", "2026-05-02T08:00:00Z", anna)
         half[part] = value
         status, body = request("POST", "Records", half)
-        check("half a mileage (%s alone) is refused" % part.split("@")[0], status == 400 and "whole Distance or none" in json.dumps(body),
+        check("half a mileage (%s alone) is refused" % part.split("@")[0], status == 400 and "whole Usage or none" in json.dumps(body),
               (status, body))
     status, body = request("PATCH", "Records(%s)" % without["Id"], {"@odata.type": "#Default.Expense", "MileageQuantity": 12100})
-    check("and changed to half a mileage, too", status == 400 and "whole Distance or none" in json.dumps(body), (status, body))
+    check("and changed to half a mileage, too", status == 400 and "whole Usage or none" in json.dumps(body), (status, body))
     status, body = request("POST", "Records", {"@odata.type": "#Default.MeterReading", "Id": str(uuid.uuid4()),
                                                "Timestamp": "2026-05-03T09:00:00Z", "Driver@odata.bind": "Users('%s')" % anna,
                                                "EnteredBy@odata.bind": "Users('%s')" % anna,
-                                               "Vehicle@odata.bind": "Vehicles(%s)" % vehicle})
+                                               "Vehicle@odata.bind": "Assets(%s)" % vehicle})
     check("a meter reading with none is refused (it is a MeteredEvent)", status == 400 and "MeteredEvent" in json.dumps(body),
           (status, body))
 
@@ -349,9 +351,9 @@ def mileage_and_reminders(anna, vehicle):
     status, body = request("POST", "Records", reminder(vehicle, anna, **{"Replaced@odata.bind": "Records(%s)" % cancelled["Id"]}))
     check("replaced by another of the vehicle", status == 201, (status, body))
 
-    other = vehicle_body(anna)
-    check("another vehicle", request("POST", "Vehicles", other)[0] == 201)
-    elsewhere = reminder(other["Id"], anna, CancelDate="2026-05-02")
+    status, body, other = make_vehicle(anna)
+    check("another vehicle", status == 201, body)
+    elsewhere = reminder(other, anna, CancelDate="2026-05-02")
     check("a reminder of it, cancelled", request("POST", "Records", elsewhere)[0] == 201)
     status, body = request("POST", "Records", reminder(vehicle, anna, **{"Replaced@odata.bind": "Records(%s)" % elsewhere["Id"]}))
     check("a replacement of another vehicle's is refused", status == 400, (status, body))
@@ -362,7 +364,7 @@ def mileage_and_reminders(anna, vehicle):
             request("POST", "CostKinds", {"@odata.type": "#Default.ExpenseKind", "Name": kind})
         schedule = {"@odata.type": "#Default.Schedule", "Id": str(uuid.uuid4()), "Duration": 6,
                     "ExpenseKind@odata.bind": "CostKinds('%s')" % kind, "EnteredBy@odata.bind": "Users('%s')" % anna,
-                    "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+                    "Vehicle@odata.bind": "Assets(%s)" % vehicle}
         status, body = request("POST", "Records", schedule)
         check("a schedule (%s)" % kind, status == 201, (status, body))
         schedules.append(schedule["Id"])
@@ -414,7 +416,7 @@ def months_on(day, months):
 def oil_schedule(vehicle, user):
     return {"@odata.type": "#Default.Schedule", "Id": str(uuid.uuid4()), "Task": "Oil change", "IntervalQuantity": 15000,
             "IntervalDistanceUnit@odata.bind": "DistanceUnits('km')", "Duration": 12,
-            "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+            "EnteredBy@odata.bind": "Users('%s')" % user, "Vehicle@odata.bind": "Assets(%s)" % vehicle}
 
 
 def oil_change(vehicle, user, moment, km, tasks=("Oil change",), as_user=None):
@@ -423,7 +425,7 @@ def oil_change(vehicle, user, moment, km, tasks=("Oil change",), as_user=None):
                "MileageDistanceUnit@odata.bind": "DistanceUnits('km')", "Garage": "Garage Müller",
                "ServiceKind@odata.bind": "CostKinds('Maintenance')", "Currency": "EUR",
                "Driver@odata.bind": "Users('%s')" % user, "EnteredBy@odata.bind": "Users('%s')" % user,
-               "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+               "Vehicle@odata.bind": "Assets(%s)" % vehicle}
     items = [("POST", "ServiceItems", {"Id": str(uuid.uuid4()), "Task": task, "CostAmount": 40, "CostCurrency": "EUR",
                                        "Service@odata.bind": "Records(%s)" % service["Id"]}) for task in tasks]
     global BATCH_USER
@@ -447,9 +449,8 @@ def reminder_of(rid, user=None):
 def procedures(anna):
     """The procedures as the server's actions, and automatic completion,
     with no one signed in (the vehicle's owner acts)."""
-    made = vehicle_body(anna)
-    check("a vehicle for the procedures", request("POST", "Vehicles", made)[0] == 201)
-    vehicle = made["Id"]
+    status, body, vehicle = make_vehicle(anna)
+    check("a vehicle for the procedures", status == 201, body)
     status, kind = request("GET", "CostKinds('Maintenance')")
     check("a kind of service, there from the start", status == 200 and kind.get("Name") == "Maintenance", (status, kind))
     schedule = oil_schedule(vehicle, anna)
@@ -541,9 +542,8 @@ def continued(anna):
     """A schedule changed by the Continue action: a new one going on from
     it, the open reminder due anew in it; the next closing of the work
     closes it there."""
-    made = vehicle_body(anna)
-    check("a vehicle for a changed schedule", request("POST", "Vehicles", made)[0] == 201)
-    vehicle = made["Id"]
+    status, body, vehicle = make_vehicle(anna)
+    check("a vehicle for a changed schedule", status == 201, body)
     schedule = oil_schedule(vehicle, anna)
     request("POST", "Records", schedule)
     sid = schedule["Id"]
@@ -583,7 +583,7 @@ def continued(anna):
 
 def who_may():
     anna, ben, cid = "anna@example.org", "ben@example.org", "cid@example.org"
-    status, body = request("GET", "Vehicles")
+    status, body = request("GET", "Assets")
     check("no one signed in is refused", status == 401, (status, body))
     status, metadata = request("GET", "$metadata")
     check("but reads $metadata, which says where to sign in", status == 200 and ISSUER.url in str(metadata),
@@ -594,24 +594,25 @@ def who_may():
     check("and nothing else of them", status == 403, (status, body))
     status, body = request("PATCH", "Users('%s')" % ben, {"PersonName": "B."}, user=cid)
     check("nor changes them", status == 403, (status, body))
-    # Anna's vehicle, though the request names Ben its owner.
-    made = vehicle_body(ben)
-    status, body = request("POST", "Vehicles", made, user=anna)
+    # Anna makes a vehicle of hers; not one of Ben's.
+    check("Anna adds herself", request("POST", "Users", {"Email": anna, "PersonName": "Anna"}, user=anna)[0] == 201)
+    status, body, vehicle = make_vehicle(ben, user=anna)
+    check("no one makes an asset of another's", status == 403, (status, body))
+    status, body, vehicle = make_vehicle(anna, user=anna)
     check("a vehicle is its maker's", status == 201, body)
-    vehicle = made["Id"]
-    status, owner = request("GET", "Vehicles(%s)/Owner" % vehicle, user=anna)
-    check("whatever the request says", status == 200 and owner.get("Email") == anna, (status, owner))
+    status, owner = request("GET", "Assets(%s)/Owner" % vehicle, user=anna)
+    check("whose it is", status == 200 and owner.get("Email") == anna, (status, owner))
 
-    status, body = request("GET", "Vehicles", user=cid)
+    status, body = request("GET", "Assets", user=cid)
     check("Cid sees no vehicle of Anna's", status == 200 and body["value"] == [], (status, body))
-    status, body = request("GET", "Vehicles(%s)" % vehicle, user=ben)
+    status, body = request("GET", "Assets(%s)" % vehicle, user=ben)
     check("nor Ben, before it is shared", status == 404, (status, body))
-    sharing = {"Vehicle@odata.bind": "Vehicles(%s)" % vehicle, "User@odata.bind": "Users('%s')" % ben}
+    sharing = {"Vehicle@odata.bind": "Assets(%s)" % vehicle, "User@odata.bind": "Users('%s')" % ben}
     status, body = request("POST", "VehicleDrivers", sharing, user=ben)
     check("Ben shares it with no one", status in (400, 403), (status, body))
     status, body = request("POST", "VehicleDrivers", sharing, user=anna)
     check("Anna shares it with Ben", status == 201, (status, body))
-    status, body = request("GET", "Vehicles", user=ben)
+    status, body = request("GET", "Assets", user=ben)
     check("Ben sees it", status == 200 and [v["Id"].lower() for v in body["value"]] == [vehicle], (status, body))
 
     # Ben's record, though the request says Anna entered it.
@@ -818,16 +819,16 @@ def parts_used(ben, cid, cat, bolt, shelf):
     for user, name in ((ben, "Ben's van"), (cid, "Cid's car")):
         if user == cid:
             request("POST", "Users", {"Email": cid}, user=cid)
-        cars[user] = {"Id": str(uuid.uuid4()), "VehicleName": name, "Make": "Ford", "CarModel": "Transit", "ManufactureYear": 2019,
-                      "Fuel": "Diesel", "Owner@odata.bind": "Users('%s')" % user}
-        check(name, request("POST", "Vehicles", cars[user], user=user)[0] == 201)
+        status, body, made = make_vehicle(user, user=user, name=name, make="Ford", model="Transit", year=2019, fuel="Diesel")
+        check(name, status == 201, (status, body))
+        cars[user] = {"Id": made}
 
     def service_with_parts(user):
         """A service of the user's car using 2 bolts of shelf A, in one change set: its sale to its owner."""
         car = cars[user]
         service = {"@odata.type": "#Default.Service", "Id": str(uuid.uuid4()), "Timestamp": "2026-10-12T09:00:00Z",
                    "MileageQuantity": 80000, "MileageDistanceUnit@odata.bind": "DistanceUnits('km')", "Garage": "Anna's garage",
-                   "Currency": "USD", "ServiceKind@odata.bind": "CostKinds('Repair')", "Vehicle@odata.bind": "Vehicles(%s)" % car["Id"],
+                   "Currency": "USD", "ServiceKind@odata.bind": "CostKinds('Repair')", "Vehicle@odata.bind": "Assets(%s)" % car["Id"],
                    "Driver@odata.bind": "Users('%s')" % user, "EnteredBy@odata.bind": "Users('%s')" % user}
         contact = {"Id": str(uuid.uuid4()), "ContactName": user, "User@odata.bind": "Users('%s')" % user, "Catalog@odata.bind": cat}
         customer = {"Id": str(uuid.uuid4()), "Contact@odata.bind": "Contacts(%s)" % contact["Id"], "Catalog@odata.bind": cat}

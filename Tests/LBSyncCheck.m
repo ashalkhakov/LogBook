@@ -43,6 +43,7 @@
 #import "Attachment+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "User+CoreDataClass.h"
+#import "LBStockProcedures.h"
 
 static NSUInteger LBFailures;
 
@@ -297,13 +298,10 @@ int main(int argc, const char *argv[]) {
         LBCheck(@"the kinds of service, as the model's rule finds them", [serviceKinds isEqualToArray:(@[ @"Maintenance", @"Repair" ])],
                 serviceKinds);
 
-        Vehicle *golf = LBInsert([Vehicle class], anna);
+        Vehicle *golf = LBMakeAsset([Vehicle class], anna.user, @"Volkswagen", @"Golf VII", nil, [NSDate dateWithTimeIntervalSince1970:946684800], nil, nil, nil, NULL);
         golf.vehicleName = @"Golf";
-        golf.make = @"Volkswagen";
-        golf.carModel = @"Golf VII";
         golf.manufactureYear = 2016;
         golf.fuel = @"Petrol";
-        golf.owner = anna.user;
         LBSave(anna, @"a vehicle saved");
         LBSync(anna, @"and synced");
         LBCheck(@"nothing waits", [anna pendingCount] == 0, @([anna pendingCount]));

@@ -70,7 +70,7 @@ FOUNDATION_EXPORT NSDate *LBDayIn(NSDate *moment, NSString *_Nullable zone);
 FOUNDATION_EXPORT NSDate *LBEventDay(Event *event);
 // A moment's day where the vehicle's owner lives: today there; the day a
 // reminder was set.
-FOUNDATION_EXPORT NSDate *LBOwnerDay(Vehicle *_Nullable vehicle, NSDate *moment);
+FOUNDATION_EXPORT NSDate *LBOwnerDay(Asset *_Nullable vehicle, NSDate *moment);
 // A day so many months on, as addMonths() has it.
 FOUNDATION_EXPORT NSDate *LBAddMonths(NSDate *day, NSInteger months);
 
@@ -189,9 +189,9 @@ FOUNDATION_EXPORT NSDate *LBAddMonths(NSDate *day, NSInteger months);
 // or else until the vehicle's latest reading; less the virtual trips then
 // where the change skips them. nil: never fitted, or at no reading.
 - (nullable NSDecimalNumber *)lb_wornIn:(DistanceUnit *)unit;
-// The vehicle it is fitted to now (directly, or in a unit fitted to it);
+// The asset it is fitted to now (directly, or in a unit fitted to it);
 // nil: not fitted (in stock, or gone).
-- (nullable Vehicle *)lb_fittedTo;
+- (nullable Asset *)lb_fittedTo;
 @end
 
 @interface Record (LBProcedures)

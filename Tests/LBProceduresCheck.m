@@ -43,6 +43,7 @@
 #import "Category+CoreDataClass.h"
 #import "Trip+CoreDataClass.h"
 #import "ComponentChange+CoreDataClass.h"
+#import "LBStockProcedures.h"
 
 static NSUInteger LBFailures;
 static NSManagedObjectModel *LBModel;
@@ -163,14 +164,11 @@ static BOOL LBIs(NSDecimalNumber *number, NSString *text) {
 @end
 
 static Vehicle *LBVehicle(LBWorld *world, unsigned n, NSString *name) {
-    Vehicle *vehicle = LBInsert([Vehicle class], world.context);
+    Vehicle *vehicle = LBMakeAsset([Vehicle class], world.anna, @"Volkswagen", @"Golf VII", nil, [NSDate dateWithTimeIntervalSince1970:946684800], nil, nil, nil, NULL);
     vehicle.id = LBID(n);
     vehicle.vehicleName = name;
-    vehicle.make = @"Volkswagen";
-    vehicle.carModel = @"Golf VII";
     vehicle.manufactureYear = 2016;
     vehicle.fuel = @"Petrol";
-    vehicle.owner = world.anna;
     return vehicle;
 }
 
@@ -858,13 +856,10 @@ static BOOL LBRefused(NSManagedObjectContext *context) {
 
 static void LBKindsAndComponents(void) {
     LBWorld *world = LBNewWorld();
-    Vehicle *bike = LBInsert([Vehicle class], world.context);
+    Vehicle *bike = LBMakeAsset([Vehicle class], world.anna, @"Surly", @"Long Haul Trucker", nil, [NSDate dateWithTimeIntervalSince1970:946684800], nil, nil, nil, NULL);
     bike.id = LBID(2);
     bike.vehicleName = @"Commuter";
     bike.vehicleKind = @"Bicycle";
-    bike.make = @"Surly";
-    bike.carModel = @"Long Haul Trucker";
-    bike.owner = world.anna;
     LBCheck(@"a bicycle: no fuel, no year", LBSave(world.context, @"a bicycle"), nil);
     bike.fuel = @"Petrol";
     LBCheck(@"a bicycle that uses a fuel: refused", LBRefused(world.context), nil);
@@ -889,6 +884,7 @@ static void LBKindsAndComponents(void) {
        10 km and then 20 km on a trainer, its service between. */
     [world.context rollback];
     bike.hasNoMeter = YES;
+    bike.meterUnit = nil;
     Trip *first = LBInsert([Trip class], world.context);
     LBEvent(world, first, bike, 6, @"2026-06-01 10:00");
     first.moment = LBMoment(@"2026-06-01 11:00");

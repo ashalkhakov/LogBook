@@ -137,16 +137,13 @@ static void LBDrivvoMatchSteps(NSString *export) {
     NSManagedObjectContext *context = LBNewStore();
     User *anna = LBUser(@"anna@example.org", @"Anna Driver", context);
     Vehicle *(^car)(NSString *, NSString *, NSString *) = ^Vehicle *(NSString *name, NSString *model, NSString *plate) {
-        Vehicle *vehicle = LBInsert([Vehicle class], context);
+        Vehicle *vehicle = LBMakeAsset([Vehicle class], anna, @"Volkswagen", model, nil, [NSDate dateWithTimeIntervalSince1970:946684800], nil, nil, nil, NULL);
         vehicle.id = [NSUUID UUID];
         vehicle.vehicleKind = @"Car";
         vehicle.vehicleName = name;
-        vehicle.make = @"Volkswagen";
-        vehicle.carModel = model;
         vehicle.manufactureYear = 2016;
         vehicle.fuel = @"Petrol";
         vehicle.registrationNumber = plate;
-        vehicle.owner = anna;
         return vehicle;
     };
     Vehicle *golf = car(@"Golf '16", @"Golf", nil);
@@ -186,10 +183,10 @@ static void LBDrivvoMatchSteps(NSString *export) {
     done = [import importIntoVehicle:nil by:dan context:context saving:saving made:&made skipped:&skipped error:&error];
     Vehicle *made_ = dan.ownedVehicles.anyObject;
     LBCheck(@"given them: the Golf made (a car, Volkswagen, 2016, its Gasoline), its 4 records in it: 5 made",
-            done && made == 5 && dan.ownedVehicles.count == 1 && [made_.vehicleName isEqualToString:@"Golf"] && [made_.make isEqualToString:@"Volkswagen"]
+            done && made == 5 && dan.ownedVehicles.count == 1 && [made_.vehicleName isEqualToString:@"Golf"] && [made_.lb_make isEqualToString:@"Volkswagen"]
                 && made_.manufactureYear == 2016 && [made_.fuel isEqualToString:@"Gasoline"] && [made_.vehicleKind isEqualToString:@"Car"]
                 && made_.records.count == 4,
-            error ?: [NSString stringWithFormat:@"%lu made; %@ %@ %d %@ %lu records", (unsigned long)made, made_.vehicleName, made_.make,
+            error ?: [NSString stringWithFormat:@"%lu made; %@ %@ %d %@ %lu records", (unsigned long)made, made_.vehicleName, made_.lb_make,
                                                 made_.manufactureYear, made_.fuel, (unsigned long)made_.records.count]);
     import = LBRead(anyone, &error);
     done = [import importIntoVehicle:nil by:dan context:context saving:saving made:&made skipped:&skipped error:&error];
@@ -202,14 +199,11 @@ static void LBDrivvoSteps(NSString *export) {
     NSManagedObjectContext *context = LBNewStore();
     User *anna = LBUser(@"anna@example.org", @"Anna Driver", context);
     User *ben = LBUser(@"ben@example.org", @"Ben Driver", context);
-    Vehicle *golf = LBInsert([Vehicle class], context);
+    Vehicle *golf = LBMakeAsset([Vehicle class], anna, @"Volkswagen", @"Golf", nil, [NSDate dateWithTimeIntervalSince1970:946684800], nil, nil, nil, NULL);
     golf.id = [NSUUID UUID];
     golf.vehicleName = @"Golf";
-    golf.make = @"Volkswagen";
-    golf.carModel = @"Golf";
     golf.manufactureYear = 2016;
     golf.fuel = @"Petrol";
-    golf.owner = anna;
     VehicleDriver *sharing = LBInsert([VehicleDriver class], context);
     sharing.id = [NSUUID UUID];
     sharing.vehicle = golf;
@@ -372,13 +366,13 @@ static void LBMainTrackSteps(NSString *sqlPath) {
         if ([each.vehicleName isEqualToString:@"Old Frame"]) old = each;
     }
     LBCheck(@"Commuter a bicycle, a Surly Long Haul Trucker of 2019, bought for 1200 EUR; Old Frame its name as its make and model",
-            [commuter.vehicleKind isEqualToString:@"Bicycle"] && [commuter.make isEqualToString:@"Surly"]
-                && [commuter.carModel isEqualToString:@"Long Haul Trucker"] && commuter.manufactureYear == 2019
+            [commuter.vehicleKind isEqualToString:@"Bicycle"] && [commuter.lb_make isEqualToString:@"Surly"]
+                && [commuter.lb_model isEqualToString:@"Long Haul Trucker"] && commuter.manufactureYear == 2019
                 && LBIs(commuter.purchasePriceAmount, @"1200") && [commuter.purchasePriceCurrency isEqualToString:@"EUR"] && commuter.purchaseDate
-                && [old.make isEqualToString:@"Old Frame"] && [old.carModel isEqualToString:@"Old Frame"] && !old.fuel
+                && [old.lb_make isEqualToString:@"Old Frame"] && [old.lb_model isEqualToString:@"Old Frame"] && !old.fuel
                 && commuter.hasNoMeter && old.hasNoMeter,
-            [NSString stringWithFormat:@"%@ %@ %@ %d; %@ %@", commuter.vehicleKind, commuter.make, commuter.carModel, commuter.manufactureYear,
-                                       old.make, old.carModel]);
+            [NSString stringWithFormat:@"%@ %@ %@ %d; %@ %@", commuter.vehicleKind, commuter.lb_make, commuter.lb_model, commuter.manufactureYear,
+                                       old.lb_make, old.lb_model]);
     NSArray<Trip *> *trips = LBRecords([Trip class], commuter);
     LBCheck(@"its rides trips, the readings added up: 0-10, 10-30, 30-45 km, the Zwift one virtual",
             trips.count == 3 && LBIs(trips[0].mileageQuantity, @"0") && LBIs(trips[0].distanceQuantity, @"10")

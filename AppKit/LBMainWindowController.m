@@ -1265,8 +1265,11 @@ static CGFloat LBUsedHeight(NSView *view) {
 @implementation LBVehicleController
 
 - (id)newObject {
-    Vehicle *vehicle = [super newObject];
-    vehicle.owner = _windowController.store.user;
+    /* A unit of a product of its own, as Stock makes an asset: its make
+       and model typed next are its product's. */
+    User *user = _windowController.store.user;
+    Vehicle *vehicle = LBMakeNewAsset([Vehicle class], user, @"New vehicle", [NSDate date], NULL);
+    if (!vehicle) return [super newObject];
     /* A car, most likely: the user says otherwise. */
     vehicle.vehicleKind = @"Car";
     return vehicle;

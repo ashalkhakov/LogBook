@@ -3,11 +3,11 @@
 // set, and the build checks it against the model (odatakit-permissions
 // check). A set it does not name is read only (LBPermissions.h).
 //
-// Vehicles (docs/CSDP.md, Permissions): a user sees the vehicles they
-// drive (own, or are entered as a driver of: VehicleDriver), and what is
-// of them. A vehicle is made by anyone signed in, its owner; only its
-// owner changes or removes it, who drives it and its valuations. A record
-// is added by whoever drives its vehicle; only the owner changes or
+// Assets (docs/CSDP.md, Permissions): a user sees the assets they own or
+// are shared with (a vehicle's drivers: VehicleDriver), and what is of
+// them. An asset is made by anyone signed in, its owner; only its owner
+// changes or removes it, who it is shared with and its valuations. A
+// record is added by whoever shares its asset; only the owner changes or
 // removes one. A record's items, attachments and answers go with it:
 // added with a new record (one made in the same change set decides by its
 // own insert), else its owner's. A checklist is its keeper's, seen too by whoever an inspection
@@ -40,7 +40,9 @@
   };
 
   Entities = {
-    Vehicle = {
+    // An asset (a vehicle one kind: its entity is Asset's sub, the same
+    // relations).
+    Asset = {
       owner  = ( { where = "owner.email IN $user"; } );
       Driver = ( { direct = YES; } );
       driver = ( { relation = owner; }, { relation = Driver; } );
@@ -129,6 +131,8 @@
     User = {
       update = ( { where = "email IN $user"; } );
       delete = ( { where = "email IN $user"; } );
+      // A new asset, as Stock makes one (LBStockActions.h): the user's own.
+      "call.MakeAsset" = ( { where = "email IN $user"; } );
     };
     DistanceUnit = { insert = ( ); update = ( ); delete = ( ); };
     VolumeUnit   = { insert = ( ); update = ( ); delete = ( ); };
@@ -171,7 +175,8 @@
     // The owner's: the catalog's items, its contacts and what is of them.
     StockItem = {
       owner  = ( { relation = owner; from = catalog; } );
-      read   = ( { relation = read; from = catalog; } );
+      // Seen too by whoever an asset of it is shared with: its product.
+      read   = ( { relation = read; from = catalog; }, { relation = user; from = stockUnits; } );
       insert = ( { relation = owner; } );
       update = ( { relation = owner; } );
       delete = ( { relation = owner; } );
@@ -315,8 +320,12 @@
 
     // A unit of an item, by its serial number: seen with its item, written
     // by the catalog's owner, as the item is (where it is, its moves say).
+    // A unit is seen by who sees its item, and, where it is an asset, by
+    // whoever its asset is shared with (a vehicle's drivers): its make,
+    // model and serial are the asset's.
     StockUnit = {
-      read   = ( { relation = read; from = stockItem; } );
+      user   = ( { relation = driver; from = asset; } );
+      read   = ( { relation = read; from = stockItem; }, { relation = user; } );
       insert = ( { relation = owner; from = stockItem; } );
       update = ( { relation = owner; from = stockItem; } );
       delete = ( { relation = owner; from = stockItem; } );

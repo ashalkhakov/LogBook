@@ -39,11 +39,14 @@ post() {
 count() {
   curl -s "$root/$1?\$count=true&\$top=0" | python3 -c 'import json, sys; print(json.load(sys.stdin)["@odata.count"])'
 }
-golf=$(python3 -c 'import uuid; print(uuid.uuid4())')
 post Users '{"Email":"anna@example.org","PersonName":"Anna Driver","Currency":"EUR","TimeZone":"Europe/Berlin"}'
 post Users '{"Email":"ben@example.org","PersonName":"Ben Driver"}'
-post Vehicles "{\"Id\":\"$golf\",\"VehicleName\":\"Golf\",\"Make\":\"Volkswagen\",\"CarModel\":\"Golf\",\"ManufactureYear\":2016,\"Fuel\":\"Petrol\",\"Owner@odata.bind\":\"Users('anna@example.org')\"}"
-post VehicleDrivers "{\"Id\":\"$(python3 -c 'import uuid; print(uuid.uuid4())')\",\"Vehicle@odata.bind\":\"Vehicles($golf)\",\"User@odata.bind\":\"Users('ben@example.org')\"}"
+# Anna's Golf, made as Stock makes an asset (her MakeAsset action).
+golf=$(curl -s -X POST -H 'Content-Type: application/json' "$root/Users('anna@example.org')/Default.MakeAsset" \
+  -d '{"Name":"Golf","Make":"Volkswagen","Model":"Golf","Kind":"Car","Year":2016,"Fuel":"Petrol","Day":"2000-01-01T00:00:00Z"}' \
+  | python3 -c 'import json, sys; print(json.load(sys.stdin)["Id"].lower())')
+[ -n "$golf" ] || { echo "FAIL the Golf made"; exit 1; }
+post VehicleDrivers "{\"Id\":\"$(python3 -c 'import uuid; print(uuid.uuid4())')\",\"Vehicle@odata.bind\":\"Assets($golf)\",\"User@odata.bind\":\"Users('ben@example.org')\"}"
 items_before=$(count ServiceItems)
 
 status=0

@@ -9,6 +9,7 @@
 #import "User+CoreDataClass.h"
 #import "VehicleDriver+CoreDataClass.h"
 #import "Rescheduling+CoreDataClass.h"
+#import "LBAssets.h"
 
 NSString * const LBServerDefaultsKey = @"LBServer";
 NSString * const LBEmailDefaultsKey = @"LBEmail";
@@ -754,7 +755,7 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
             NSMutableArray *rows = [NSMutableArray array];
             [rows addObject:@[ vehicle ? vehicle.lbTitle : @"No vehicle", [_phone vehicles].count > 1 ? @"Change" : @"" ]];
             if (vehicle) {
-                [rows addObject:@[ @"Make and model", [NSString stringWithFormat:@"%@ %@", vehicle.make ?: @"", vehicle.carModel ?: @""] ]];
+                [rows addObject:@[ @"Make and model", [NSString stringWithFormat:@"%@ %@", vehicle.lb_make ?: @"", vehicle.lb_model ?: @""] ]];
                 [rows addObject:@[ @"Year", [NSString stringWithFormat:@"%d", vehicle.manufactureYear] ]];
                 [rows addObject:@[ @"Fuel", vehicle.fuel ?: @"" ]];
                 if (vehicle.registrationNumber.length) [rows addObject:@[ @"Registration", vehicle.registrationNumber ]];

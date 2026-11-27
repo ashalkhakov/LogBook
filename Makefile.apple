@@ -143,7 +143,7 @@ $(BUILD)/Logbook.wfdeployment: Model/Logbook.orm $(wildcard Model/*.flow) $(wild
 	$(WFBUILD) -name Logbook -o $@ $(BUILD)/processes
 
 # The procedures checked over a store of the model's own.
-PROCEDURES = Shared/LBProcedures.m Shared/LBPlanned.m $(MODEL)/Constraints/LogbookValidation.m
+PROCEDURES = Shared/LBProcedures.m Shared/LBPlanned.m Shared/LBStockProcedures.m $(MODEL)/Constraints/LogbookValidation.m
 
 $(BUILD)/lb-procedures-check: $(MODEL)/.made Tests/LBProceduresCheck.m $(PROCEDURES) Shared/LBProcedures.h $(GENERATED)/.made \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
@@ -166,7 +166,7 @@ $(BUILD)/lb-sync-check: $(MODEL)/.made $(SYNC_CHECK) $(wildcard Shared/*.h) $(GE
 
 # The model's fill-up form run against a store of its own and against a
 # server (Tests/LBFormCheck.m), as the app's fill-up tab runs it.
-FORM_CHECK = Tests/LBFormCheck.m Shared/LBProcedures.m $(MODEL)/Constraints/LogbookValidation.m
+FORM_CHECK = Tests/LBFormCheck.m Shared/LBProcedures.m Shared/LBStockProcedures.m $(MODEL)/Constraints/LogbookValidation.m
 
 $(BUILD)/lb-form-check: $(MODEL)/.made $(FORM_CHECK) $(GENERATED)/.made $(ORMKIT_PRODUCTS)/ORMRuntime.framework
 	$(CC) $(FLAGS) $(INC) $(FORM_CHECK) $(GENERATED)/*.m $(LIBS) -o $@

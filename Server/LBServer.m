@@ -214,6 +214,13 @@ static NSURL *LBBeside(HSConfiguration *c, NSString *setting, NSString *name) {
         options[NSIgnorePersistentStoreVersioningOption] = @YES;
     }
     __block NSError *failure = nil;
+    /* A store from before assets (v0.7): its vehicles made assets, units of
+       their products, once, before it opens (LBAssets.h). */
+    if (url && !LBMigrateStoreBeforeAssets(type, url, model, options, &failure)) {
+        if (error) *error = LBError(NSPersistentStoreOpenError, [NSString stringWithFormat:@"the %@ store at %@, from before assets, is not migrated: %@",
+                                                                                         type, url, failure.localizedDescription]);
+        return NO;
+    }
     if (![coordinator addPersistentStoreWithType:type configuration:nil URL:url options:options error:&failure]) {
         if (error) *error = LBError(NSPersistentStoreOpenError, [NSString stringWithFormat:@"the %@ store at %@ does not open: %@",
                                                                                          type, url ?: @"(none)", failure.localizedDescription]);

@@ -1,4 +1,7 @@
 #import "LBStockProcedures.h"
+#import "LogbookValidation.h"
+#import "Income+CoreDataClass.h"
+#import "Record+CoreDataClass.h"
 
 NSString * const LBOrderDraft = @"Draft";
 NSString * const LBOrderConfirmed = @"Confirmed";
@@ -1194,3 +1197,286 @@ static BOOL LBLive(NSSet<NSManagedObject *> *objects) {
 }
 
 @end
+
+/* The owner's unit of distance: theirs, else km. */
+static DistanceUnit *LBDistanceUnitOf(User *owner) {
+    if (owner.distanceUnit || !owner.managedObjectContext) return owner.distanceUnit;
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([DistanceUnit class])];
+    fetch.predicate = [NSPredicate predicateWithFormat:@"code == %@", @"km"];
+    return [[owner.managedObjectContext executeFetchRequest:fetch error:NULL] firstObject];
+}
+
+@implementation Asset (LBStock)
+
++ (NSSet *)keyPathsForValuesAffectingLb_make {
+    return [NSSet setWithObject:@"stockUnit.stockItem.manufacturer"];
+}
+
++ (NSSet *)keyPathsForValuesAffectingLb_model {
+    return [NSSet setWithObject:@"stockUnit.stockItem.itemName"];
+}
+
++ (NSSet *)keyPathsForValuesAffectingLb_serial {
+    return [NSSet setWithObject:@"stockUnit.serialNumber"];
+}
+
+- (NSString *)lb_make {
+    return self.stockUnit.stockItem.manufacturer;
+}
+
+- (void)setLb_make:(NSString *)make {
+    self.stockUnit.stockItem.manufacturer = make.length ? make : nil;
+}
+
+- (NSString *)lb_model {
+    return self.stockUnit.stockItem.itemName;
+}
+
+- (void)setLb_model:(NSString *)model {
+    if (model.length) self.stockUnit.stockItem.itemName = model;
+}
+
+- (NSString *)lb_serial {
+    return self.stockUnit.serialNumber;
+}
+
++ (NSSet *)keyPathsForValuesAffectingLb_hasNoMeter {
+    return [NSSet setWithObject:@"hasNoMeter"];
+}
+
+- (BOOL)lb_hasNoMeter {
+    return self.hasNoMeter;
+}
+
+- (void)setLb_hasNoMeter:(BOOL)none {
+    self.hasNoMeter = none;
+    self.meterUnit = none ? nil : self.meterUnit ?: LBDistanceUnitOf(self.owner);
+}
+
+- (void)setLb_serial:(NSString *)serial {
+    self.stockUnit.serialNumber = serial.length ? serial : nil;
+}
+
+@end
+
+/* The catalog an owner's assets are products of: their first, by name;
+   "My assets" made where they have none. */
+static Catalog *LBAssetsCatalog(User *owner) {
+    NSArray *catalogs = [[owner.ownedCatalogs.allObjects filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"isDeleted == NO"]]
+        sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"catalogName" ascending:YES] ]];
+    return catalogs.firstObject ?: [Catalog lb_newCatalogNamed:@"My assets" owner:owner inContext:owner.managedObjectContext];
+}
+
+/* Its first location, by warehouse and then location name. */
+static Location *LBFirstLocation(Catalog *catalog) {
+    NSArray *byName = @[ [NSSortDescriptor sortDescriptorWithKey:@"warehouse.warehouseName" ascending:YES],
+                         [NSSortDescriptor sortDescriptorWithKey:@"locationName" ascending:YES] ];
+    NSMutableArray *locations = [NSMutableArray array];
+    for (Warehouse *warehouse in catalog.warehouses) {
+        for (Location *location in warehouse.locations) if (!location.isDeleted) [locations addObject:location];
+    }
+    return [locations sortedArrayUsingDescriptors:byName].firstObject;
+}
+
+static StockItem *LBNewProduct(Catalog *catalog, NSString *make, NSString *model) {
+    StockItem *item = LBNew([StockItem class], catalog.managedObjectContext, nil);
+    item.catalog = catalog;
+    item.itemName = model;
+    item.manufacturer = make.length ? make : nil;
+    item.created = [NSDate date];
+    item.sku = [catalog lb_nextSKU];
+    return item;
+}
+
+static Asset *LBMakeAssetOf(Class cls, Asset *existing, User *owner, Catalog *catalog, StockItem *item, NSString *serial, NSDate *day,
+                            NSDecimalNumber *price, NSString *currency, NSString *seller, NSError **error);
+
+Asset *LBMakeAsset(Class cls, User *owner, NSString *make, NSString *model, NSString *serial, NSDate *day,
+                   NSDecimalNumber *price, NSString *currency, NSString *seller, NSError **error) {
+    Catalog *catalog = LBAssetsCatalog(owner);
+    StockItem *item = nil;
+    for (StockItem *each in catalog.stockItems) {
+        if (!each.isDeleted && [each.itemName isEqualToString:model] && (each.manufacturer == make || [each.manufacturer isEqualToString:make])) item = each;
+    }
+    return LBMakeAssetOf(cls, nil, owner, catalog, item ?: LBNewProduct(catalog, make, model), serial, day, price, currency, seller, error);
+}
+
+Asset *LBMakeNewAsset(Class cls, User *owner, NSString *name, NSDate *day, NSError **error) {
+    Catalog *catalog = LBAssetsCatalog(owner);
+    return LBMakeAssetOf(cls, nil, owner, catalog, LBNewProduct(catalog, nil, name), nil, day, nil, nil, nil, error);
+}
+
+static Asset *LBMakeAssetOf(Class cls, Asset *existing, User *owner, Catalog *catalog, StockItem *item, NSString *serial, NSDate *day,
+                            NSDecimalNumber *price, NSString *currency, NSString *seller, NSError **error) {
+    NSManagedObjectContext *context = owner.managedObjectContext;
+    Location *location = LBFirstLocation(catalog);
+    if (!location) {
+        return LBRefuse(error, [NSString stringWithFormat:@"%@ has no location to bring the asset in at.", catalog.catalogName]), nil;
+    }
+    StockUnit *unit = LBNew([StockUnit class], context, nil);
+    unit.stockItem = item;
+    unit.serialNumber = serial.length ? serial : nil;
+    /* Midday of the day: its day wherever the owner lives. */
+    NSDate *moment = [LBDay(day) dateByAddingTimeInterval:12 * 3600];
+    Move *in = nil;
+    if (price) {
+        NSString *name = seller.length ? seller : @"Previous owner";
+        Supplier *supplier = nil;
+        for (Supplier *each in catalog.suppliers) {
+            if (!each.isDeleted && [each.contact.contactName isEqualToString:name]) supplier = each;
+        }
+        if (!supplier) {
+            Contact *contact = LBNew([Contact class], context, nil);
+            contact.catalog = catalog;
+            contact.contactName = name;
+            contact.lb_isSupplier = YES;
+            supplier = contact.supplier;
+        }
+        PurchaseOrder *order = [catalog lb_newPurchaseOrderFrom:supplier on:day];
+        PurchaseLine *line = LBNew([PurchaseLine class], context, nil);
+        line.purchaseOrder = order;
+        line.stockItem = item;
+        line.quantity = [NSDecimalNumber one];
+        line.lineUnitCostAmount = price;
+        line.lineUnitCostCurrency = currency ?: catalog.currency;
+        if (![order lb_confirm:error]) return nil;
+        Receipt *receipt = [order lb_receiveLines:@{ line.id: [NSDecimalNumber one] } at:location on:day by:owner at:moment error:error];
+        if (!receipt) return nil;
+        in = receipt.moves.anyObject;
+    } else {
+        in = [item lb_adjust:[NSDecimalNumber one] at:location reason:@"Opening" note:nil by:owner at:moment error:error];
+        if (!in) return nil;
+    }
+    in.stockUnit = unit;
+    Asset *asset = existing ?: LBNew(cls, context, nil);
+    asset.owner = owner;
+    asset.stockUnit = unit;
+    /* A vehicle's meter counts in its owner's unit of distance (km, else);
+       another asset's is the caller's to say. */
+    if (!existing && [asset isKindOfClass:[Vehicle class]]) asset.meterUnit = LBDistanceUnitOf(owner);
+    Move *out = [item lb_adjust:[NSDecimalNumber decimalNumberWithString:@"-1"] at:location reason:@"Put in service" note:nil
+                             by:owner at:[moment dateByAddingTimeInterval:60] error:error];
+    if (!out) return nil;
+    out.stockUnit = unit;
+    out.asset = asset;
+    return asset;
+}
+
+#pragma mark A store from before assets
+
+/* The model a store from before assets is first migrated to: this one,
+   nothing in it a must, and a vehicle's make, model and VIN kept where
+   they were, for the migration to read. */
+static NSManagedObjectModel *LBMigratingModel(NSManagedObjectModel *model) {
+    NSManagedObjectModel *migrating = [model copy];
+    for (NSEntityDescription *entity in migrating.entities) {
+        for (NSPropertyDescription *property in entity.properties) property.optional = YES;
+    }
+    NSEntityDescription *vehicle = migrating.entitiesByName[@"Vehicle"];
+    NSMutableArray *properties = [vehicle.properties mutableCopy];
+    for (NSString *name in @[ @"make", @"carModel", @"vin" ]) {
+        NSAttributeDescription *attribute = [[NSAttributeDescription alloc] init];
+        attribute.name = name;
+        attribute.attributeType = NSStringAttributeType;
+        attribute.optional = YES;
+        [properties addObject:attribute];
+    }
+    vehicle.properties = properties;
+    return migrating;
+}
+
+BOOL LBIsStoreBeforeAssets(NSString *type, NSURL *url, NSDictionary *options) {
+    NSDictionary *metadata = [NSPersistentStoreCoordinator metadataForPersistentStoreOfType:type URL:url options:options error:NULL];
+    NSDictionary *hashes = metadata[NSStoreModelVersionHashesKey];
+    return hashes[@"Vehicle"] != nil && hashes[@"Asset"] == nil;
+}
+
+/* What the migrating model holds made what this one asks: each vehicle a
+   unit of its product, bought as it was (or come in by an opening move),
+   put in service; metered in its readings' unit; the units' dimensions
+   (the reference data); the sale's kind 'Sale'. */
+static BOOL LBFillMigrated(NSManagedObjectContext *context, NSError **error) {
+    NSError * __autoreleasing ignored = nil;
+    if (!error) error = &ignored;
+    if (![LogbookReferenceData seedContext:context error:error]) return NO;
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Vehicle class])];
+    /* In the order of their ids (as text: an NSUUID compares on no platform
+       but Apple's). */
+    NSArray *vehicles = [[context executeFetchRequest:fetch error:error] ?: @[]
+        sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"id.UUIDString" ascending:YES] ]];
+    for (Vehicle *vehicle in vehicles) {
+        if (vehicle.stockUnit) continue;
+        NSString *make = [vehicle valueForKey:@"make"], *model = [vehicle valueForKey:@"carModel"], *vin = [vehicle valueForKey:@"vin"];
+        if (!model.length) model = vehicle.vehicleName.length ? vehicle.vehicleName : @"Vehicle";
+        /* Kept since it was acquired, else since its first record. */
+        NSDate *day = vehicle.purchaseDate;
+        NSDate *first = nil;
+        for (Record *record in vehicle.records) {
+            NSDate *moment = [record isKindOfClass:[Event class]] ? ((Event *)record).timestamp : nil;
+            if (moment && (!first || [moment compare:first] == NSOrderedAscending)) first = moment;
+        }
+        if (!day) day = LBDayIn(first ?: [NSDate date], vehicle.owner.timeZone);
+        Catalog *catalog = LBAssetsCatalog(vehicle.owner);
+        StockItem *item = nil;
+        for (StockItem *each in catalog.stockItems) {
+            if (!each.isDeleted && [each.itemName isEqualToString:model] && (each.manufacturer == make || [each.manufacturer isEqualToString:make])) item = each;
+        }
+        if (!LBMakeAssetOf([Vehicle class], vehicle, vehicle.owner, catalog, item ?: LBNewProduct(catalog, make, model), vin, day,
+                           vehicle.purchasePriceAmount, vehicle.purchasePriceCurrency, nil, error))
+            return NO;
+        /* Its meter: the unit its readings were in, else its owner's. */
+        if (!vehicle.hasNoMeter && !vehicle.meterUnit) {
+            DistanceUnit *unit = vehicle.purchaseMileageDistanceUnit;
+            NSDate *latest = nil;
+            for (Record *record in vehicle.records) {
+                if (![record isKindOfClass:[Event class]]) continue;
+                Event *event = (Event *)record;
+                if (event.mileageDistanceUnit && (!latest || [event.timestamp compare:latest] == NSOrderedDescending)) {
+                    latest = event.timestamp;
+                    unit = event.mileageDistanceUnit;
+                }
+            }
+            vehicle.meterUnit = unit ?: LBDistanceUnitOf(vehicle.owner);
+        }
+        [vehicle setValue:nil forKey:@"make"];
+        [vehicle setValue:nil forKey:@"carModel"];
+        [vehicle setValue:nil forKey:@"vin"];
+    }
+    /* An asset's sale: of kind 'Sale', not 'Car sale'. */
+    NSFetchRequest *sales = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Income class])];
+    sales.predicate = [NSPredicate predicateWithFormat:@"incomeKind == %@", @"Car sale"];
+    for (Income *income in [context executeFetchRequest:sales error:NULL] ?: @[]) income.incomeKind = @"Sale";
+    return [context orm_prepareForSave:error] && [context save:error];
+}
+
+BOOL LBMigrateStoreBeforeAssets(NSString *type, NSURL *url, NSManagedObjectModel *model, NSDictionary *options, NSError **error) {
+    if (!LBIsStoreBeforeAssets(type, url, options)) return YES;
+    NSPersistentStoreCoordinator *coordinator = [[NSPersistentStoreCoordinator alloc] initWithManagedObjectModel:LBMigratingModel(model)];
+    NSMutableDictionary *migrating = [options mutableCopy] ?: [NSMutableDictionary dictionary];
+    migrating[NSMigratePersistentStoresAutomaticallyOption] = @YES;
+    migrating[NSInferMappingModelAutomaticallyOption] = @YES;
+    NSPersistentStore *store = [coordinator addPersistentStoreWithType:type configuration:nil URL:url options:migrating error:error];
+    if (!store) return NO;
+    NSManagedObjectContext *context = [[NSManagedObjectContext alloc] initWithConcurrencyType:NSPrivateQueueConcurrencyType];
+    context.persistentStoreCoordinator = coordinator;
+    __block BOOL done = NO;
+    __block NSError *failure = nil;
+    [context performBlockAndWait:^{
+        NSError *e = nil;
+        done = LBFillMigrated(context, &e);
+        failure = e;
+    }];
+    [coordinator removePersistentStore:store error:NULL];
+    if (!done && error) {
+        /* Each rule it broke said, not "several". */
+        NSMutableArray *said = [NSMutableArray array];
+        for (NSError *each in failure.userInfo[NSDetailedErrorsKey] ?: @[]) {
+            [said addObject:each.localizedRecoverySuggestion ?: each.localizedDescription];
+        }
+        *error = said.count ? [NSError errorWithDomain:failure.domain code:failure.code
+                                              userInfo:@{ NSLocalizedDescriptionKey: [said componentsJoinedByString:@"; "] }]
+                            : failure;
+    }
+    return done;
+}
+

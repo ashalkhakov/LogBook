@@ -23,7 +23,7 @@
 #import "DistanceUnit+CoreDataClass.h"
 #import "VolumeUnit+CoreDataClass.h"
 #import "User+CoreDataClass.h"
-#import "LBStockProcedures.h"
+#import "LBAssets.h"
 #import "LBStockDisplay.h"
 
 /* Defaults: where parts were last taken from (a location's id). */
@@ -185,9 +185,10 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
 }
 
 + (NSManagedObject *)newVehicleForPhone:(LBPhone *)phone {
-    Vehicle *vehicle = (Vehicle *)[NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class])
-                                                                inManagedObjectContext:phone.store.context];
-    vehicle.owner = phone.store.user;
+    /* A unit of a product of its own, as Stock makes an asset: its make
+       and model typed next are its product's. */
+    Vehicle *vehicle = LBMakeNewAsset([Vehicle class], phone.store.user, @"New vehicle", [NSDate date], NULL);
+    if (!vehicle) return nil;
     vehicle.fuel = @"Petrol";
     vehicle.manufactureYear = (int32_t)[[NSCalendar currentCalendar] component:NSCalendarUnitYear fromDate:[NSDate date]];
     return vehicle;
@@ -214,8 +215,8 @@ enum { LBSectionFields, LBSectionItems, LBSectionParts, LBSectionPhotos, LBSecti
     NSManagedObjectContext *context = object.managedObjectContext;
     if ([object isKindOfClass:[Vehicle class]]) {
         [fields addObject:LBMakeField(@"Name", @selector(vehicleName), LBFieldText)];
-        [fields addObject:LBMakeField(@"Make", @selector(make), LBFieldText)];
-        [fields addObject:LBMakeField(@"Model", @selector(carModel), LBFieldText)];
+        [fields addObject:LBMakeField(@"Make", @selector(lb_make), LBFieldText)];
+        [fields addObject:LBMakeField(@"Model", @selector(lb_model), LBFieldText)];
         [fields addObject:LBMakeField(@"Year", @selector(manufactureYear), LBFieldInteger)];
         [fields addObject:LBMakeField(@"Fuel", @selector(fuel), LBFieldText)];
         [fields addObject:LBMakeField(@"Registration", @selector(registrationNumber), LBFieldText)];

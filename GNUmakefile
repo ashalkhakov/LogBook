@@ -92,7 +92,7 @@ logbook-server_CPPFLAGS += '-DLB_STORE_LIBRARY_FORMAT=@"%@-0.dll"'
 endif
 
 # The procedures checked over a store of the model's own.
-lb-procedures-check_OBJC_FILES = Tests/LBProceduresCheck.m Shared/LBProcedures.m Shared/LBPlanned.m $(LB_MODEL)/Constraints/LogbookValidation.m
+lb-procedures-check_OBJC_FILES = Tests/LBProceduresCheck.m Shared/LBProcedures.m Shared/LBPlanned.m Shared/LBStockProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
 lb-procedures-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 lb-procedures-check_COREDATA_CODEGEN = yes
 lb-procedures-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)
@@ -112,7 +112,7 @@ lb-stock-check_TOOL_LIBS += -lORMRuntime $(ODATASYNC_LIBS)
 # The model's fill-up form run against a store of its own and a server
 # (ORMKit's ORMFormSession), as the app's fill-up tab runs it.
 TOOL_NAME += lb-form-check
-lb-form-check_OBJC_FILES = Tests/LBFormCheck.m Shared/LBProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
+lb-form-check_OBJC_FILES = Tests/LBFormCheck.m Shared/LBProcedures.m Shared/LBStockProcedures.m $(LB_MODEL)/Constraints/LogbookValidation.m
 lb-form-check_XCDATAMODELD_FILES = $(LB_MODEL)/Logbook.xcdatamodeld
 lb-form-check_COREDATA_CODEGEN = yes
 lb-form-check_INCLUDE_DIRS = $(logbook-server_INCLUDE_DIRS)

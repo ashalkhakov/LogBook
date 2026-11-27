@@ -407,7 +407,7 @@ static NSString *LBPlate(NSString *plate) {
                 return each;
             }
         }
-        NSArray *ofModel = [mine filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"carModel ==[c] %@", model]];
+        NSArray *ofModel = [mine filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"lb_model ==[c] %@", model]];
         if (ofModel.count == 1) {
             if (how) *how = @"by its model";
             return ofModel.firstObject;
@@ -766,19 +766,34 @@ static NSString *LBPlate(NSString *plate) {
     NSSet *fuels = [NSSet setWithArray:[_sections[@"Refuelling"].rows valueForKey:@"Fuel"] ?: @[]];
     NSMutableSet *named = [NSMutableSet set];
     for (NSString *each in fuels) if ([each isKindOfClass:[NSString class]] && each.length) [named addObject:each];
-    Vehicle *vehicle = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:context];
-    vehicle.id = [NSUUID UUID];
-    vehicle.owner = user;
+    /* A unit of its product, as Stock makes one: kept since its first
+       record, its price not known. */
+    NSDate *first = nil;
+    NSDateFormatter *read = [[NSDateFormatter alloc] init];
+    read.locale = [NSLocale localeWithLocaleIdentifier:@"en_US_POSIX"];
+    read.dateFormat = @"yyyy-MM-dd HH:mm:ss";
+    read.timeZone = user.timeZone.length ? [NSTimeZone timeZoneWithName:user.timeZone] : [NSTimeZone localTimeZone];
+    for (LBSection *section in _sections.allValues) {
+        for (NSDictionary<NSString *, NSString *> *each in section.rows) {
+            NSDate *moment = each[@"Date"].length ? [read dateFromString:each[@"Date"]] : nil;
+            if (moment && (!first || [moment compare:first] == NSOrderedAscending)) first = moment;
+        }
+    }
+    NSError *failure = nil;
+    Vehicle *vehicle = LBMakeAsset([Vehicle class], user, make, row[@"Model"].length ? row[@"Model"] : _madeVehicleName, nil,
+                                   LBDayIn(first ?: [NSDate date], user.timeZone), nil, nil, nil, &failure);
+    if (!vehicle) {
+        [context rollback];
+        if (error) *error = LBImportError(@"The vehicle %@ refused: %@", _madeVehicleName, failure ? LBRefusal(failure) : @"not made");
+        return nil;
+    }
     vehicle.vehicleKind = @"Car";
     vehicle.vehicleName = _madeVehicleName;
-    vehicle.make = make;
-    vehicle.carModel = row[@"Model"].length ? row[@"Model"] : _madeVehicleName;
     vehicle.manufactureYear = (int32_t)year;
     if (row[@"License plate"].length) vehicle.registrationNumber = row[@"License plate"];
     /* Its fuel: the one its fill-ups say; of several, the first's. */
     NSString *fuel = named.count == 1 ? named.anyObject : [_sections[@"Refuelling"].rows.firstObject objectForKey:@"Fuel"];
     vehicle.fuel = fuel.length ? fuel : nil;
-    NSError *failure = nil;
     if (!saving(context, &failure)) {
         [context rollback];
         if (error) *error = LBImportError(@"The vehicle %@ refused: %@", _madeVehicleName, failure ? LBRefusal(failure) : @"not saved");
@@ -1254,34 +1269,43 @@ static NSString *LBDecimal(double value) {
             /* Made before: its price, the bike's, in the export's currency. */
             NSString *currency = [self currencyOf:user];
             if (bike.price && [each.purchasePriceAmount compare:bike.price] == NSOrderedSame && ![each.purchasePriceCurrency isEqualToString:currency]) {
-                each.purchasePriceCurrency = currency;
+                /* What it was bought for is its purchase line's: changed
+                   there, the asset's follows at save. */
+                for (Move *move in each.stockUnit.moves) {
+                    if (move.purchaseLine) move.purchaseLine.lineUnitCostCurrency = currency;
+                }
                 _recurrenced++;
             }
             return each;
         }
     }
-    Vehicle *vehicle = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:context];
-    vehicle.id = [NSUUID UUID];
+    /* A unit of its product, as Stock makes one: bought when and for what
+       the bike says, else kept since its first ride. */
+    NSDate *first = bike.bought;
+    for (LBEntry *entry in _entries) {
+        if ([entry.bike isEqual:bike.pk] && entry.moment && (!first || [entry.moment compare:first] == NSOrderedAscending)) first = entry.moment;
+    }
+    NSError *failure = nil;
+    Vehicle *vehicle = LBMakeAsset([Vehicle class], user, bike.make ?: @"", bike.model.length ? bike.model : bike.name, nil,
+                                   LBDayIn(first ?: [NSDate date], user.timeZone), bike.price,
+                                   bike.price ? [self currencyOf:user] : nil, nil, &failure);
+    if (!vehicle) {
+        [context rollback];
+        if (error) *error = LBImportError(@"Bicycle %@ refused: %@", bike.name, failure ? LBRefusal(failure) : @"not made");
+        return nil;
+    }
     vehicle.vehicleName = bike.name;
     vehicle.vehicleKind = @"Bicycle";
     /* No meter: its readings, its rides added up (LBProcedures). */
     vehicle.hasNoMeter = YES;
+    vehicle.meterUnit = nil;
     if (bike.odometer) {
         NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([DistanceUnit class])];
         fetch.predicate = [NSPredicate predicateWithFormat:@"code == %@", @"km"];
         vehicle.purchaseMileageQuantity = bike.odometer;
         vehicle.purchaseMileageDistanceUnit = [[context executeFetchRequest:fetch error:NULL] firstObject];
     }
-    vehicle.make = bike.make;
-    vehicle.carModel = bike.model;
     if (bike.year) vehicle.manufactureYear = bike.year;
-    if (bike.bought) vehicle.purchaseDate = bike.bought;
-    if (bike.price) {
-        vehicle.purchasePriceAmount = bike.price;
-        vehicle.purchasePriceCurrency = [self currencyOf:user];
-    }
-    vehicle.owner = user;
-    NSError *failure = nil;
     if (!saving(context, &failure)) {
         [context rollback];
         if (error) *error = LBImportError(@"Bicycle %@ refused: %@", bike.name, failure ? LBRefusal(failure) : @"not saved");

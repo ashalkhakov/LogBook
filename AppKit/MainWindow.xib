@@ -423,7 +423,7 @@
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                             <connections>
-                                                <binding destination="vehicles" name="value" keyPath="selection.make" id="makeValue">
+                                                <binding destination="vehicles" name="value" keyPath="selection.lb_make" id="makeValue">
                                                     <dictionary key="options">
                                                         <bool key="NSValidatesImmediately" value="YES"/>
                                                     </dictionary>
@@ -449,7 +449,7 @@
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                             <connections>
-                                                <binding destination="vehicles" name="value" keyPath="selection.carModel" id="carModelValue">
+                                                <binding destination="vehicles" name="value" keyPath="selection.lb_model" id="carModelValue">
                                                     <dictionary key="options">
                                                         <bool key="NSValidatesImmediately" value="YES"/>
                                                     </dictionary>
@@ -527,7 +527,7 @@
                                                 <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                             </textFieldCell>
                                             <connections>
-                                                <binding destination="vehicles" name="value" keyPath="selection.vin" id="vinValue">
+                                                <binding destination="vehicles" name="value" keyPath="selection.lb_serial" id="vinValue">
                                                     <dictionary key="options">
                                                         <bool key="NSValidatesImmediately" value="YES"/>
                                                     </dictionary>
@@ -590,7 +590,7 @@
                                                                     <font key="font" metaFont="system"/>
                                                                 </buttonCell>
                                                                 <connections>
-                                                                    <binding destination="vehicles" name="value" keyPath="selection.hasNoMeter" id="vehicleHasNoMeterValue"/>
+                                                                    <binding destination="vehicles" name="value" keyPath="selection.lb_hasNoMeter" id="vehicleHasNoMeterValue"/>
                                                                 </connections>
                                                             </button>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="driversLabel">

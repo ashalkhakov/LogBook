@@ -45,7 +45,7 @@ static NSDate *LBEarlier(NSDate *a, NSDate *b) {
     return [a compare:b] == NSOrderedDescending ? b : a;
 }
 
-@implementation Vehicle (LBPlanned)
+@implementation Asset (LBPlanned)
 
 /* Its odometer readings: events at a distance, earliest first. */
 - (NSArray<Event *> *)lbReadings {
@@ -109,7 +109,7 @@ static NSDate *LBEarlier(NSDate *a, NSDate *b) {
     Reminder *open = self.lb_openReminder;
     NSMutableArray<LBPlannedReminder *> *planned = [NSMutableArray array];
     if (!open) return planned;
-    Vehicle *vehicle = self.vehicle;
+    Asset *vehicle = self.vehicle;
     NSNumber *rate = [vehicle lbKilometresADayAsOf:now];
     BOOL byDistance = self.intervalQuantity && self.intervalDistanceUnit;
     DistanceUnit *unit = open.dueMileageDistanceUnit ?: self.intervalDistanceUnit;

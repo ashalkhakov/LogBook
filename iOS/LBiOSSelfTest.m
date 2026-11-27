@@ -541,6 +541,9 @@ static BOOL LBSame(id number, NSString *value) {
 
     [app showStock:nil];
     LBStockTabBarController *tabs = app.stockController;
+    /* The workshop chosen, as in stock's Settings: the user's first
+       catalog by name is "My assets", their vehicles' products'. */
+    tabs.phone.catalog = catalog;
     NSArray *titles = [tabs.viewControllers valueForKeyPath:@"tabBarItem.title"];
     LBSay(tabs && app.window.rootViewController == tabs && [titles isEqualToArray:@[ @"Items", @"Orders", @"Overview", @"Settings" ]],
           [NSString stringWithFormat:@"stock shown in place of the logbook: %@", [titles componentsJoinedByString:@", "]]);

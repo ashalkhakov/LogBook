@@ -430,7 +430,7 @@ too: the one on the car before it (step 7). Tyres are vehicles' only.
 
 - Asset 'Commuter' is a Vehicle, of VehicleKind 'Bicycle'.
 - Asset 'Commuter' has no meter.
-- Trip 30 of Vehicle 'Commuter' covered Distance 25 km.
+- Trip 30 of Vehicle 'Commuter' covered Usage 25 km.
 - Trip 32 of Vehicle 'Commuter' is virtual.
 - StockUnit u1 is of StockItem 'KMC X9', of Category 'Chain', made by
   Manufacturer 'KMC'.
@@ -1001,7 +1001,6 @@ The rest are identified by what they are:
 | Position | a count, 1 or more |
 | Instalments | a count, 1 or more |
 | Currency | ISO code ('EUR', 'USD') |
-| DistanceUnit | code, from a list: 'km', 'mi' |
 | UsageUnit | code, from a list: 'km', 'mi', 'h', 'cycles', 'kWh' |
 | Dimension | name, from a fixed list: 'distance', 'time', 'cycles', 'energy' |
 | VolumeUnit | code, from a list: 'L', 'gal (US)', 'gal (imp)' |
@@ -1010,7 +1009,6 @@ The rest are identified by what they are:
 | Tread | mm |
 | Money | its Amount and its Currency together (74.10 EUR) |
 | Usage | its Quantity and its UsageUnit together (152300 km, 212 h) |
-| Distance | its Quantity and its DistanceUnit together (25 km) |
 | Volume | its Quantity and its VolumeUnit together (42.5 L) |
 
 Money, usages, distances and volumes have no identity of their own. Two
@@ -1122,15 +1120,13 @@ UsageUnit is of Dimension                       'km' | 'distance'
                                                 'kWh' | 'energy'
 UsageUnit is worth Factor of its base           'mi' | 1.609344
                                                 'km' | 1
-Distance has Quantity                           (25 km) | 25
-Distance is in DistanceUnit                     (25 km) | 'km'
 Volume has Quantity                             (42.5 L) | 42.5
 Volume is in VolumeUnit                         (42.5 L) | 'L'
                                                 (11.2 gal (US)) | 'gal (US)'
 on Date one Currency was worth Factor Currency  2026-09-14 | 'EUR' | 1.09 | 'USD'
                                                 2026-09-15 | 'EUR' | 1.08 | 'USD'
 User prefers Currency                           anna@example.org | 'USD'
-User measures distance in DistanceUnit          anna@example.org | 'km'
+User measures distance in UsageUnit             anna@example.org | 'km'
 User measures volume in VolumeUnit              anna@example.org | 'L'
 ```
 
@@ -1165,7 +1161,7 @@ Trip started at Moment                          t3 | 2026-09-20 08:10
 Trip ended at Moment                            t3 | 2026-09-20 11:25
 Trip started at Usage                           t3 | 152410 km
 Trip ended at Usage                             t3 | 152700 km
-Trip covered Distance                           t30 | 25 km
+Trip covered Usage                              t30 | 25 km
 Trip is virtual                                 t32
 Trip went from Place                            t3 | 'Berlin'
 Trip went to Place                              t3 | 'Hamburg'
@@ -1555,9 +1551,10 @@ kind of thing.
   and a component's wear is a difference of readings. Comparing and
   subtracting them is the point. A usage compares only with one of its
   dimension: kilometres with miles, never with hours.
-- **Distance** stays a type of its own, for what only is one: a trip's
-  length where its vehicle has no meter, and the user's unit of distance.
-  A vehicle's usages are distances in value, of the dimension 'distance'.
+- **Distance** is Usage too: a trip's length where its vehicle has no
+  meter is a usage of the dimension 'distance', as every reading of a
+  vehicle is, and the user's unit of distance a usage unit of it (km or
+  mi). One type, compared with the readings it adds up to.
 - **Asset** is one type for what step 2 kept apart as vehicles and the
   generator: every record is of an asset, and the same facts are said of
   each. A vehicle is an asset with more (step 6).
@@ -1837,7 +1834,7 @@ one order but a reminder's order is one of many over the years.
   item's could not (two items of a service may name the same task).
 - **A question's checklist and position, an option's question and
   position:** one at each place in a list.
-- **Money, Usage, Distance, Volume:** each has one amount and one currency
+- **Money, Usage, Volume:** each has one amount and one currency
   (or quantity and unit), and the two together identify it: (74.10, 'EUR')
   is one money. That is the reference scheme from step 2, an external
   uniqueness over the two.
@@ -1942,7 +1939,7 @@ honestly be missing, and each such case is listed with why.
 | PlanTask | item; a task or a checklist, exactly one (exclusive-or); at least one interval | the other interval; note |
 | Rescheduling | the reminder, when and by whom it was made; what the reminder was due at before, a date or a usage or both (inclusive-or) | note |
 | Every record | who entered it | note; attachments (any number, none included) |
-| Money, Usage, Distance, Volume | amount and currency; quantity and unit | |
+| Money, Usage, Volume | amount and currency; quantity and unit | |
 | An exchange rate | all four roles | |
 
 Some of these are more than single mandatory roles:
@@ -2085,7 +2082,7 @@ starting ones are data.
 | Amount, of every money | > 0 | a cost of nothing isn't recorded; a free document has no cost |
 | Quantity of a usage, as a reading (acquired at, shows, at, started, ended, due at, done at) | ≥ 0 | a new meter reads 0 |
 | Quantity of a usage, as a length (recurs every, used more, valid until) | > 0 | |
-| Quantity of a distance, a volume | > 0 | |
+| Quantity of a volume | > 0 | |
 | WorkTime | > 0 | |
 | Factor of an exchange rate, of a unit | > 0 | |
 | Duration (kept for, recurs every) | ≥ 1 month | |
@@ -2093,7 +2090,6 @@ starting ones are data.
 | Tread | 0 to 20 mm | |
 | Instalments, Position | ≥ 1 | |
 | Currency | three capital letters, ISO 4217 | |
-| VIN | 17 letters and digits, not I, O or Q | |
 
 A usage is one type (step 3), so its ranges are on the roles, not the
 type: a reading may be 0, an interval may not.
@@ -2521,8 +2517,11 @@ unit, its make, model, VIN and acquisition moved to its product, unit and
 purchase, its schedules to its product's plan) is a step the server runs
 once after it, and the attributes it emptied are then dropped.
 
-Currency codes and VINs have patterns, ORMKit's own (NORMA has none):
-Core Data checks them, a VIN on a vehicle's unit's serial number.
+Currency codes have a pattern, ORMKit's own (NORMA has none): Core Data
+checks it. A VIN is a vehicle's unit's serial number, a serial like any
+other: the pattern a VIN has (17 letters and digits, not I, O or Q) is not
+checked of it for now, a rule over a vehicle's serial being one more
+step for ORMKit's rules.
 
 What each unit is worth in its dimension's base is reference data: facts
 of the app's own, which every store starts with (`LogbookReferenceData`

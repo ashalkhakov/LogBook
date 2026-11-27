@@ -28,6 +28,7 @@
 #import "VehicleDriver+CoreDataClass.h"
 #import "DistanceUnit+CoreDataClass.h"
 #import "VolumeUnit+CoreDataClass.h"
+#import "LBStockProcedures.h"
 
 static NSUInteger LBFailures;
 static NSManagedObjectModel *LBModel;
@@ -78,14 +79,11 @@ static User *LBUser(NSString *email, NSManagedObjectContext *context) {
 }
 
 static Vehicle *LBVehicle(NSString *name, User *owner, NSManagedObjectContext *context) {
-    Vehicle *vehicle = LBInsert([Vehicle class], context);
+    Vehicle *vehicle = LBMakeAsset([Vehicle class], owner, @"Volkswagen", name, nil, [NSDate dateWithTimeIntervalSince1970:946684800], nil, nil, nil, NULL);
     vehicle.id = [NSUUID UUID];
     vehicle.vehicleName = name;
-    vehicle.make = @"Volkswagen";
-    vehicle.carModel = name;
     vehicle.manufactureYear = 2016;
     vehicle.fuel = @"Petrol";
-    vehicle.owner = owner;
     return vehicle;
 }
 
@@ -178,10 +176,11 @@ static void LBStoreSteps(void) {
 
 #pragma mark The server
 
-/* POSTed as JSON: what the server makes of it. */
-static NSDictionary *LBPost(NSURL *root, NSString *set, NSDictionary *body) {
+/* Sent as JSON (POSTed, PATCHed): what the server makes of it; an
+   empty answer, an empty dictionary. */
+static NSDictionary *LBSend(NSURL *root, NSString *method, NSString *set, NSDictionary *body) {
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:set relativeToURL:root]];
-    request.HTTPMethod = @"POST";
+    request.HTTPMethod = method;
     request.HTTPBody = [NSJSONSerialization dataWithJSONObject:body options:0 error:NULL];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     __block NSData *data = nil;
@@ -194,22 +193,28 @@ static NSDictionary *LBPost(NSURL *root, NSString *set, NSDictionary *body) {
     }] resume];
     while (!done) [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.02]];
     if (status >= 300) {
-        LBCheck([NSString stringWithFormat:@"%@ made on the server", set], NO,
+        LBCheck([NSString stringWithFormat:@"%@ %@ on the server", set, [method isEqualToString:@"POST"] ? @"made" : @"changed"], NO,
                 [[NSString alloc] initWithData:data ?: [NSData data] encoding:NSUTF8StringEncoding]);
         return nil;
     }
-    return [NSJSONSerialization JSONObjectWithData:data options:0 error:NULL];
+    return data.length ? [NSJSONSerialization JSONObjectWithData:data options:0 error:NULL] : @{};
+}
+
+static NSDictionary *LBPost(NSURL *root, NSString *set, NSDictionary *body) {
+    return LBSend(root, @"POST", set, body);
 }
 
 static void LBServiceSteps(NSURL *root) {
     /* A vehicle of Anna's, and Ben its other driver. */
-    NSString *golf = [NSUUID UUID].UUIDString;
     LBPost(root, @"Users", @{ @"Email" : @"anna@example.org" });
     LBPost(root, @"Users", @{ @"Email" : @"ben@example.org" });
-    if (!LBPost(root, @"Vehicles", @{ @"Id" : golf, @"VehicleName" : @"Golf", @"Make" : @"Volkswagen", @"CarModel" : @"Golf",
-                                      @"ManufactureYear" : @2016, @"Fuel" : @"Petrol",
-                                      @"Owner@odata.bind" : @"Users('anna@example.org')" })) return;
-    LBPost(root, @"VehicleDrivers", @{ @"Vehicle@odata.bind" : [NSString stringWithFormat:@"Vehicles(%@)", golf],
+    /* Made as Stock makes an asset (her MakeAsset action). */
+    NSDictionary *made = LBPost(root, @"Users('anna@example.org')/Default.MakeAsset",
+                                @{ @"Name" : @"Golf", @"Make" : @"Volkswagen", @"Model" : @"Golf", @"Kind" : @"Car",
+                                   @"Year" : @2016, @"Fuel" : @"Petrol", @"Day" : @"2000-01-01T00:00:00Z" });
+    NSString *golf = [made[@"Id"] lowercaseString];
+    if (!golf) return;
+    LBPost(root, @"VehicleDrivers", @{ @"Vehicle@odata.bind" : [NSString stringWithFormat:@"Assets(%@)", golf],
                                        @"User@odata.bind" : @"Users('ben@example.org')" });
     ORMFormSession *form = [[ORMFormSession alloc] initWithForm:LBForm given:@{ @"vehicle" : golf, @"enteredBy" : @"anna@example.org" }];
     [form useServiceRoot:root model:LBModel transport:nil];

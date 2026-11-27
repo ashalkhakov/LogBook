@@ -82,6 +82,37 @@ static NSDate *LBToday(NSDate *day) {
     return day ?: [NSDate date];
 }
 
+@implementation User (LBStockActions)
+
++ (NSDictionary<NSString *, NSString *> *)ODataOperationTypes {
+    return @{ @"makeAssetWithName:make:model:kind:year:fuel:serial:day:price:currency:seller:reply:.year": @"Edm.Int32" };
+}
+
+- (Asset *)makeAssetWithName:(NSString *)name make:(NSString *)make model:(NSString *)model kind:(NSString *)kind
+                        year:(NSNumber *)year fuel:(NSString *)fuel serial:(NSString *)serial day:(NSDate *)day price:(NSDecimalNumber *)price currency:(NSString *)currency
+                      seller:(NSString *)seller reply:(ODataReply *)reply {
+    NSString *email = LBEmailOf(reply.request);
+    if (email && ![email.lowercaseString isEqualToString:self.email.lowercaseString]) {
+        [reply failWithError:ODataServiceError(403, @"Only the user themselves makes their assets")];
+        return nil;
+    }
+    BOOL vehicle = kind == nil || [@[ @"Car", @"Motorcycle", @"Bicycle" ] containsObject:kind];
+    NSError *error = nil;
+    Asset *asset = LBMakeAsset(vehicle ? [Vehicle class] : [Asset class], self, make, model, serial, LBToday(day),
+                               price ? LBQuantity(price) : nil, currency, seller, &error);
+    if (!asset) {
+        LBRefuse(reply, error);
+        return nil;
+    }
+    asset.vehicleName = name;
+    if (vehicle && kind) ((Vehicle *)asset).vehicleKind = kind;
+    if (vehicle && year) ((Vehicle *)asset).manufactureYear = year.intValue;
+    if (fuel.length) asset.fuel = fuel;
+    return asset;
+}
+
+@end
+
 @implementation SaleOrder (LBStockActions)
 
 - (SaleOrder *)confirm:(ODataReply *)reply {

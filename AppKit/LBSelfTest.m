@@ -2723,14 +2723,11 @@ static void LBCalendarSteps(LBMainWindowController *controller) {
     for (NSManagedObject *object in there.registeredObjects.allObjects) [there refreshObject:object mergeChanges:NO];
     User *user = [LBServerObjects([User class], [NSPredicate predicateWithFormat:@"%K == %@", NSStringFromSelector(@selector(email)),
                                                                   controller.store.user.email]) firstObject];
-    Vehicle *polo = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:there];
+    Vehicle *polo = LBMakeAsset([Vehicle class], user, @"Volkswagen", @"Polo VI", nil, [NSDate dateWithTimeIntervalSince1970:946684800], nil, nil, nil, NULL);
     polo.id = [NSUUID UUID];
     polo.vehicleName = @"Self-test Polo";
-    polo.make = @"Volkswagen";
-    polo.carModel = @"Polo VI";
     polo.manufactureYear = 2019;
     polo.fuel = @"Petrol";
-    polo.owner = user;
     MeterReading *read = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([MeterReading class])
                                                        inManagedObjectContext:there];
     read.id = [NSUUID UUID];
@@ -2936,7 +2933,7 @@ static void LBLogbookSteps(LBMainWindowController *controller) {
             [NSString stringWithFormat:@"%@ / %@ / %@", controller.lastError, controller.store.context.updatedObjects,
                                        controller.store.context.insertedObjects]);
     Vehicle *kept = LBVehicleNamed(@"Family Golf");
-    LBCheck(@"the server has it", [kept.make isEqualToString:@"Volkswagen"] && [kept.carModel isEqualToString:@"Golf VII"], kept);
+    LBCheck(@"the server has it", [kept.lb_make isEqualToString:@"Volkswagen"] && [kept.lb_model isEqualToString:@"Golf VII"], kept);
     LBCheck(@"its owner the user", [kept.owner.email isEqualToString:controller.store.user.email], kept.owner.email);
     LBSharingSteps(controller, kept);
     LBRecordSteps(controller, kept);
@@ -2982,14 +2979,11 @@ static void LBImportSteps(LBMainWindowController *controller) {
     controller.importYearField = nil;
 
     NSManagedObjectContext *context = controller.context;
-    Vehicle *damas = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Vehicle class]) inManagedObjectContext:context];
+    Vehicle *damas = LBMakeAsset([Vehicle class], controller.store.user, @"Daewoo", @"Damas", nil, [NSDate dateWithTimeIntervalSince1970:946684800], nil, nil, nil, NULL);
     damas.id = [NSUUID UUID];
     damas.vehicleName = @"Self-test Damas";
-    damas.make = @"Daewoo";
-    damas.carModel = @"Damas";
     damas.manufactureYear = 2010;
     damas.fuel = @"Petrol";
-    damas.owner = controller.store.user;
     LBCheck(@"a vehicle to import into, saved", [controller saveChanges], controller.lastError);
     NSString *export = @"##Vehicle\n\"Name\",\"Model\",\"License plate\",\"Fuel capacity(L)\",\"Year\",\"Notes\",\"Purchase price\",\"Sale price\"\n"
                        @"\"\",\"Damas\",\"\",\"37.00\",\"0\",\"\",\"0.0\",\"0.0\"\n\n"
@@ -3122,8 +3116,9 @@ static void LBBicycleSteps(LBMainWindowController *controller) {
     LBMenuCommand(window, @selector(save:));
     controller.quiet = quiet;
     NSString *said = controller.lastError.localizedRecoverySuggestion ?: controller.lastError.localizedDescription ?: @"";
+    /* A bicycle uses no fuel: what is never filled up. */
     LBCheck(@"a fill-up of a bicycle refused, in the model's words", controller.store.context.hasChanges && controller.lastError
-                && [said rangeOfString:@"bicycle" options:NSCaseInsensitiveSearch].location != NSNotFound,
+                && [said rangeOfString:@"uses some Fuel"].location != NSNotFound,
             said);
     [controller.store.context rollback];
     [controller readAgain];

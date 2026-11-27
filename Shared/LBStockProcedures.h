@@ -65,6 +65,7 @@
 #import "TyreChange+CoreDataClass.h"
 #import "User+CoreDataClass.h"
 #import "Vehicle+CoreDataClass.h"
+#import "LBAssets.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

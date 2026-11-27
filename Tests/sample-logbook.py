@@ -43,7 +43,7 @@ def day(days_ago):
 
 def record(vehicle, kind, **fields):
     body = {"@odata.type": "#Default." + kind, "Id": str(uuid.uuid4()),
-            "EnteredBy@odata.bind": "Users('%s')" % email, "Vehicle@odata.bind": "Vehicles(%s)" % vehicle}
+            "EnteredBy@odata.bind": "Users('%s')" % email, "Vehicle@odata.bind": "Assets(%s)" % vehicle}
     body.update(fields)
     request("POST", "Records", body)
     return body["Id"]
@@ -57,10 +57,13 @@ def event(vehicle, kind, days_ago, km, **fields):
 
 
 def vehicle(name, make, model, year, fuel, plate):
-    body = {"Id": str(uuid.uuid4()), "VehicleName": name, "Make": make, "CarModel": model, "ManufactureYear": year,
-            "Fuel": fuel, "RegistrationNumber": plate, "Owner@odata.bind": "Users('%s')" % email}
-    request("POST", "Vehicles", body)
-    return body["Id"]
+    """Made as Stock makes an asset (the user's MakeAsset: its product, a
+    unit of it, bought, put in service), then what only a vehicle has."""
+    made = request("POST", "Users('%s')/Default.MakeAsset" % email,
+                   {"Name": name, "Make": make, "Model": model, "Kind": "Car", "Year": year, "Fuel": fuel,
+                    "Day": moment(4000)})["Id"].lower()
+    request("PATCH", "Assets(%s)" % made, {"@odata.type": "#Default.Vehicle", "RegistrationNumber": plate})
+    return made
 
 
 request("POST", "Users", {"Email": email, "PersonName": "Alex Morgan", "Currency": "EUR"})
@@ -70,7 +73,7 @@ for name in ("Parking", "Car wash"):
 golf = vehicle("Family Golf", "Volkswagen", "Golf VII", 2016, "Petrol", "B-AM 2016")
 # Driven by Sam too, whom the owner shares it with.
 request("POST", "Users", {"Email": "sam@example.org", "PersonName": "Sam Morgan"})
-request("POST", "VehicleDrivers", {"Vehicle@odata.bind": "Vehicles(%s)" % golf, "User@odata.bind": "Users('sam@example.org')"})
+request("POST", "VehicleDrivers", {"Vehicle@odata.bind": "Assets(%s)" % golf, "User@odata.bind": "Users('sam@example.org')"})
 octavia = vehicle("Work Octavia", "Skoda", "Octavia Combi", 2019, "Diesel", "B-AM 4719")
 
 # The Golf's fill-ups: 41 to 47 litres, every twelve days, about 560 km apart.
@@ -91,7 +94,7 @@ service = {"@odata.type": "#Default.Service", "Id": str(uuid.uuid4()), "Timestam
            "MileageQuantity": service_km, "MileageDistanceUnit@odata.bind": "DistanceUnits('km')",
            "Garage": "Garage Müller", "Title": "Yearly service", "ServiceKind@odata.bind": "CostKinds('Maintenance')",
            "Currency": "EUR", "Driver@odata.bind": "Users('%s')" % email, "EnteredBy@odata.bind": "Users('%s')" % email,
-           "Vehicle@odata.bind": "Vehicles(%s)" % golf}
+           "Vehicle@odata.bind": "Assets(%s)" % golf}
 items = [("Oil change", 89), ("Oil filter", 18.5), ("Air filter", 32), ("Wiper blades", 27)]
 batch = {"requests": [dict(id="0", atomicityGroup="service", method="POST", url="Records", body=service)] + [
     dict(id=str(i + 1), atomicityGroup="service", method="POST", url="ServiceItems",

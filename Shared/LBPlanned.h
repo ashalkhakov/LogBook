@@ -8,7 +8,7 @@
 
 #pragma once
 #import <Foundation/Foundation.h>
-#import "Vehicle+CoreDataClass.h"
+#import "Asset+CoreDataClass.h"
 #import "Schedule+CoreDataClass.h"
 #import "Reminder+CoreDataClass.h"
 #import "DistanceUnit+CoreDataClass.h"
@@ -29,7 +29,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL estimated;
 @end
 
-@interface Vehicle (LBPlanned)
+@interface Asset (LBPlanned)
 // Kilometres a day over its odometer readings of the 90 days to now; nil
 // with fewer than two a day or more apart, or none going up.
 - (nullable NSNumber *)lbKilometresADayAsOf:(NSDate *)now;

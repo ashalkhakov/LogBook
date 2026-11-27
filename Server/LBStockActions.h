@@ -23,6 +23,10 @@
 //   POST Warehouses(<id>)/Default.Count
 //        {Location?, Found: [{Item, Location, Quantity}], Day}  the count
 //   POST Warehouses(<id>)/Default.Reorder {Day}            the drafts made
+//   POST Users('<email>')/Default.MakeAsset
+//        {Name, Make, Model, Kind?, Year?, Fuel?, Serial?, Day?, Price?, Currency?, Seller?}
+//                                                          the asset (LBMakeAsset:
+//                                                          a vehicle of a vehicle kind)
 //
 // A location is a reference ({"@odata.id": "Locations(<id>)"}); in Lines
 // and Found, ids are as the entity's key, quantities numbers (or decimal
@@ -31,7 +35,8 @@
 // its catalog's owner or managers; Ship, Receive, Return, Transfer, Adjust,
 // Assemble and Count the staff of the warehouses they are at (keepers or
 // managers, each place the parameters name asked here) or the owner;
-// Reorder a manager of the warehouse or the owner (403 for anyone else).
+// Reorder a manager of the warehouse or the owner; MakeAsset the user
+// themselves (403 for anyone else).
 // With no sign-in, an anonymous request acts as the catalog's owner.
 
 #pragma once
@@ -89,6 +94,24 @@ NS_ASSUME_NONNULL_BEGIN
                                        day:(nullable NSDate *)day
                                      reply:(ODataReply *)reply;
 - (nullable NSArray<PurchaseOrder *> *)reorderWithDay:(nullable NSDate *)day reply:(ODataReply *)reply;
+@end
+
+@protocol LBUserActions <ODataActions>
+- (nullable Asset *)makeAssetWithName:(NSString *)name
+                                 make:(NSString *)make
+                                model:(NSString *)model
+                                 kind:(nullable NSString *)kind
+                                 year:(nullable NSNumber *)year
+                                 fuel:(nullable NSString *)fuel
+                               serial:(nullable NSString *)serial
+                                  day:(nullable NSDate *)day
+                                price:(nullable NSDecimalNumber *)price
+                             currency:(nullable NSString *)currency
+                               seller:(nullable NSString *)seller
+                                reply:(ODataReply *)reply;
+@end
+
+@interface User (LBStockActions) <LBUserActions>
 @end
 
 @interface SaleOrder (LBStockActions) <LBSaleOrderActions>
