@@ -44,6 +44,9 @@
 #import "Trip+CoreDataClass.h"
 #import "ComponentChange+CoreDataClass.h"
 #import "LBStockProcedures.h"
+#import "LBAssets.h"
+#import "LBVehicleSummary.h"
+#import "Asset+CoreDataClass.h"
 
 static NSUInteger LBFailures;
 static NSManagedObjectModel *LBModel;
@@ -986,6 +989,114 @@ static void LBKindsAndComponents(void) {
     LBCheck(@"a change fitting and removing one unit: refused", LBRefused(world.context), nil);
 }
 
+/* Fuel per meter, and units that are assets fitted in others (docs/CSDP.md,
+   A fill-up; A unit that is an asset). */
+/* Refused, and why. */
+static NSString *LBRefusal(NSManagedObjectContext *context) {
+    NSError *error = nil;
+    BOOL saved = [context lb_completeRemindersOfChangedEvents:&error] && [context orm_prepareForSave:&error] && [context save:&error];
+    if (!saved) [context rollback];
+    return saved ? nil : LBSaid(error);
+}
+
+static FillUp *LBFull(LBWorld *world, Asset *asset, unsigned n, NSString *moment, NSString *reading, DistanceUnit *unit, NSString *litres) {
+    FillUp *fill = LBInsert([FillUp class], world.context);
+    LBEvent(world, fill, (Vehicle *)asset, n, moment);
+    fill.mileageQuantity = LBNumber(reading);
+    fill.mileageDistanceUnit = unit;
+    fill.volumeQuantity = LBNumber(litres);
+    fill.volumeVolumeUnit = LBFetchKey([VolumeUnit class], NSStringFromSelector(@selector(code)), @"L", world.context);
+    fill.fuel = @"Petrol";
+    fill.station = @"Shell";
+    fill.totalAmount = LBNumber(@"10");
+    fill.totalCurrency = @"EUR";
+    fill.filledTheTank = YES;
+    return fill;
+}
+
+static void LBFuelAndHierarchy(void) {
+    LBWorld *world = LBNewWorld();
+    DistanceUnit *hours = LBUnit(@"h", world.context);
+    NSDate *day = [NSDate dateWithTimeIntervalSince1970:946684800];
+    Asset *generator = LBMakeAsset([Asset class], world.anna, @"Honda", @"EU22i", nil, day, nil, nil, nil, NULL);
+    generator.id = LBID(2);
+    generator.vehicleName = @"Generator";
+    generator.meterUnit = hours;
+    generator.fuel = @"Petrol";
+    LBFull(world, generator, 10, @"2026-06-01 10:00", @"200", hours, @"3");
+    FillUp *second = LBFull(world, generator, 11, @"2026-06-08 10:00", @"210", hours, @"5");
+    LBFull(world, world.golf, 12, @"2026-06-01 10:00", @"1000", world.km, @"40");
+    FillUp *golfs = LBFull(world, world.golf, 13, @"2026-06-08 10:00", @"1600", world.km, @"36");
+    LBCheck(@"a generator, no vehicle, filled up", LBSave(world.context, @"fill-ups"), nil);
+    NSError *error = nil;
+    ORMQueryResult *result = [LogbookQueries fullTankConsumptionInContext:world.context error:&error];
+    NSMutableDictionary *of = [NSMutableDictionary dictionary];
+    for (NSArray *row in result.rows) if (row.count > 3) of[row[0]] = row[3];
+    LBCheck(@"consumption per its meter: the generator's 5 L over 10 h, 0.5 L/h; the Golf's 36 L over 600 km, 6 L/100 km",
+            [of[second.id] isEqual:LBNumber(@"0.5")] && [of[golfs.id] isEqual:LBNumber(@"6")], of);
+    NSString *perHour = [[[LBVehicleSummary alloc] initWithVehicle:(Vehicle *)generator] consumption];
+    NSString *perKm = [[[LBVehicleSummary alloc] initWithVehicle:world.golf] consumption];
+    LBCheck(@"and said so: 0.50 L/h, 6.00 L/100 km", [perHour isEqualToString:@"0.50 L/h"] && [perKm isEqualToString:@"6.00 L/100 km"],
+            [NSString stringWithFormat:@"%@, %@", perHour, perKm]);
+    Trip *trip = LBInsert([Trip class], world.context);
+    LBEvent(world, trip, (Vehicle *)generator, 14, @"2026-06-09 10:00");
+    trip.mileageQuantity = LBNumber(@"210");
+    trip.mileageDistanceUnit = hours;
+    NSString *why = LBRefusal(world.context);
+    LBCheck(@"a trip of what is no vehicle: refused, as no vehicle's", [why containsString:@"that Asset is a Vehicle"], why);
+
+    /* A power station, its battery an asset fitted in it; a tray the
+       battery goes into later. */
+    Asset *station = LBMakeAsset([Asset class], world.anna, @"EcoFlow", @"River 2 Pro", @"R2P-0042", day, nil, nil, nil, NULL);
+    station.id = LBID(20);
+    station.vehicleName = @"River power";
+    station.meterUnit = LBUnit(@"cycles", world.context);
+    Asset *battery = LBMakeAsset([Asset class], world.anna, @"EcoFlow", @"River 2 Pro Extra Battery", @"EB-0107", day, nil, nil, nil, NULL);
+    battery.id = LBID(21);
+    battery.vehicleName = @"River battery";
+    battery.meterUnit = station.meterUnit;
+    LBSave(world.context, @"the station and its battery");
+    ComponentChange * (^change)(unsigned, Asset *, NSString *, StockUnit *) = ^ComponentChange *(unsigned n, Asset *on, NSString *moment, StockUnit *unit) {
+        ComponentChange *made = LBInsert([ComponentChange class], world.context);
+        LBEvent(world, made, (Vehicle *)on, n, moment);
+        made.mileageQuantity = LBNumber(@"0");
+        made.mileageDistanceUnit = on.meterUnit;
+        made.stockUnit = unit;
+        return made;
+    };
+    change(30, station, @"2026-07-01 10:00", battery.stockUnit);
+    LBCheck(@"the battery fitted: in the station, one of its components",
+            LBSave(world.context, @"fitted") && battery.parent == station && [station.components isEqualToSet:[NSSet setWithObject:battery]],
+            battery.parent.vehicleName);
+    change(31, battery, @"2026-07-02 10:00", station.stockUnit);
+    why = LBRefusal(world.context);
+    LBCheck(@"the station fitted in its own battery: refused, a cycle", [why containsString:@"is fitted in some Asset2 that is fitted in Asset1"], why);
+    change(32, station, @"2026-07-02 10:00", station.stockUnit);
+    why = LBRefusal(world.context);
+    LBCheck(@"the station fitted in itself: refused", [why containsString:@"is fitted in that Asset"], why);
+    Asset *spare = LBMakeNewAsset([Asset class], world.anna, @"Spare battery", day, NULL);
+    spare.meterUnit = station.meterUnit;
+    spare.vehicleName = @"Spare battery";
+    ComponentChange *off = change(33, station, @"2026-07-03 10:00", spare.stockUnit);
+    off.removedStockUnit = battery.stockUnit;
+    LBCheck(@"replaced, the battery is in nothing; the spare in the station",
+            LBSave(world.context, @"replaced") && !battery.parent && spare.parent == station, battery.parent.vehicleName);
+    Asset *tray = LBMakeNewAsset([Asset class], world.anna, @"Tray", day, NULL);
+    tray.meterUnit = station.meterUnit;
+    tray.vehicleName = @"Tray";
+    change(34, station, @"2026-07-04 10:00", tray.stockUnit);
+    ComponentChange *into = change(35, station, @"2026-07-04 10:05", battery.stockUnit);
+    into.host = tray.stockUnit;
+    LBCheck(@"fitted into the tray on the station: in the station", LBSave(world.context, @"into the tray") && battery.parent == station,
+            battery.parent.vehicleName);
+    Asset *fan = LBMakeNewAsset([Asset class], world.anna, @"Fan", day, NULL);
+    fan.meterUnit = station.meterUnit;
+    fan.vehicleName = @"Fan";
+    change(36, station, @"2026-07-05 10:00", fan.stockUnit).removedStockUnit = tray.stockUnit;
+    LBCheck(@"the tray removed, the battery goes with it", LBSave(world.context, @"the tray off") && !battery.parent && !tray.parent,
+            battery.parent.vehicleName);
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -1015,6 +1126,7 @@ int main(int argc, const char *argv[]) {
         LBPlanning();
         LBTimeZones();
         LBKindsAndComponents();
+        LBFuelAndHierarchy();
         printf("procedures: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

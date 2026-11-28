@@ -13,6 +13,8 @@
 #import "User+CoreDataClass.h"
 #import "FillUp+CoreDataClass.h"
 #import "LBStockProcedures.h"
+#import "LBAssets.h"
+#import "Asset+CoreDataClass.h"
 #import "Move+CoreDataClass.h"
 #import "Location+CoreDataClass.h"
 #import "StockUnit+CoreDataClass.h"
@@ -3106,6 +3108,31 @@ static void LBBicycleSteps(LBMainWindowController *controller) {
     LBChooseRecord(controller, fit);
     LBCheck(@"its wear said: 12 km so far, fitted", [controller.componentWear hasPrefix:@"12 "] && [controller.componentWear hasSuffix:@"so far, fitted"],
             controller.componentWear);
+
+    /* A lamp, an asset of its own (no vehicle, no meter), fitted from the
+       same tab: one of the bicycle's components, on its page. */
+    NSError *made = nil;
+    Asset *lamp = LBMakeNewAsset([Asset class], controller.store.user, @"Self-test lamp", [NSDate dateWithTimeIntervalSinceNow:-86400], &made);
+    lamp.vehicleName = @"Self-test lamp";
+    lamp.lb_hasNoMeter = YES;
+    LBCheck(@"a lamp, an asset with no meter: saved", lamp && [controller saveChanges], made ?: controller.lastError);
+    ComponentChange *lampOn = (ComponentChange *)LBAddRecord(controller, [ComponentChange class]);
+    lampOn.timestamp = [NSDate dateWithTimeIntervalSinceNow:-7000];
+    LBChoose(window, @"ComponentChangeUnit", @"Self-test lamp");
+    LBSaved(controller, lampOn, @"the lamp's change saved");
+    LBCheck(@"the lamp fitted in the bicycle, here and on the server", lamp.parent == bike
+                && [LBVehicleNamed(@"Self-test Bicycle").lb_components isEqualToString:@"Self-test lamp"],
+            [NSString stringWithFormat:@"%@; there %@", lamp.parent.vehicleName, LBVehicleNamed(@"Self-test Bicycle").lb_components]);
+    [tabs selectTabViewItemWithIdentifier:@"vehicle"];
+    LBSpin();
+    NSTextField *components = (NSTextField *)LBControl(window.contentView, @"components");
+    NSTextField *fittedIn = (NSTextField *)LBControl(window.contentView, @"fittedIn");
+    LBCheck(@"its page: Components the lamp, Fitted in none (—)", [components.stringValue isEqualToString:@"Self-test lamp"]
+                && !fittedIn.stringValue.length && [fittedIn.placeholderString isEqualToString:@"—"] && !components.isEditable
+                && !fittedIn.isEditable,
+            [NSString stringWithFormat:@"%@ / %@ (%@)", components.stringValue, fittedIn.stringValue, fittedIn.placeholderString]);
+    [tabs selectTabViewItemWithIdentifier:@"records"];
+    LBSpin();
     LBAddRecord(controller, [FillUp class]);
     LBType(window, @"FillUpMileageValue", @"1500");
     LBType(window, @"FillUpVolumeValue", @"1");

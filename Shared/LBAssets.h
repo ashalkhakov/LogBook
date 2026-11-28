@@ -21,6 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 // Whether it has no meter (a bicycle): set, its meter unit cleared;
 // cleared, its meter counts in its owner's unit of distance (km, else).
 @property (nonatomic) BOOL lb_hasNoMeter;
+// The assets fitted in it now (docs/CSDP.md, A unit that is an asset), by
+// name, as a list says them: "River battery, Tray"; nil: none.
+@property (nonatomic, readonly, nullable) NSString *lb_components;
 @end
 
 // A new asset, as Stock makes one (docs/CSDP.md, A unit that is an

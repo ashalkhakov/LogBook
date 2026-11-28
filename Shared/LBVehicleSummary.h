@@ -34,7 +34,7 @@ NS_ASSUME_NONNULL_BEGIN
 // Of those, the overdue (asked when -reminders was).
 - (BOOL)isOverdue:(Reminder *)reminder;
 
-// "6.42 L/100 km": at the latest full tank after another
+// "6.42 L/100 km", "0.71 L/h": at the latest full tank after another
 // (FullTankConsumption); nil: none yet.
 - (nullable NSString *)consumption;
 // "123.40 EUR": what its records of this month cost, by currency; nil:

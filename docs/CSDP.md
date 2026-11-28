@@ -1120,6 +1120,8 @@ UsageUnit is of Dimension                       'km' | 'distance'
                                                 'kWh' | 'energy'
 UsageUnit is worth Factor of its base           'mi' | 1.609344
                                                 'km' | 1
+UsageUnit counts consumption per Factor         'km' | 100
+                                                'h' | 1
 Volume has Quantity                             (42.5 L) | 42.5
 Volume is in VolumeUnit                         (42.5 L) | 'L'
                                                 (11.2 gal (US)) | 'gal (US)'
@@ -1642,10 +1644,14 @@ Each in the user's preferred units and currency, unless it says otherwise.
 
 **Components and assets**
 
-10. *What an asset is fitted in* (`Asset is fitted in Asset`): for a unit
-    that is an asset, the asset its latest component change fitted it on,
-    or the asset of the unit it was fitted into, while no later change
-    removed it; and what that is fitted in, in turn.
+10. *What an asset is fitted in* (`Asset is fitted in Asset`, stored):
+    for a unit that is an asset, the asset of the component change that
+    fitted it, while that fit is not over. A fit is over once a later
+    change removed the unit or fitted it again (`ComponentChange was
+    superseded`), or removed the unit it was fitted into (`ComponentChange
+    lost its host`): a tyre goes with its wheel. What that asset is fitted
+    in, in turn, is read a step at a time: ORMKit derives no recursion
+    (step 7, For ORMKit).
 11. *What a record concerns* (`Record concerns Asset`): the asset it is
     of, and every asset that one was fitted in at the record's moment.
 12. *An asset's make, model, serial and acquisition:* its unit's item's
@@ -2105,8 +2111,9 @@ its id. **VehicleKind** is a subtype of **EquipmentClass**: 'Car',
 'Motorcycle', 'Bicycle', in the category 'Vehicles'. An asset that is no
 vehicle has a class that is no vehicle kind (below).
 
-**FuelledAsset** is an asset that uses a fuel: *each FuelledAsset is by
-definition an Asset that uses some Fuel*. Only those are filled up.
+Only an asset that uses a fuel is filled up. That is a rule
+(`NoFillUpOfWhatUsesNoFuel`), not a subtype: nothing else is said only of
+such assets.
 
 **Every asset is a unit** (*Asset is StockUnit*, mandatory and one to one),
 not a subtype of StockUnit: a unit that is no asset (a chain, a spare on
@@ -2231,8 +2238,9 @@ derivation 7) is read from it.
   chose Option* only for one answered 'Any of', *Answer measured Quantity*
   only for a 'Measurement'; *Option is in Question* only for 'Any of'
   questions, a question's limits only for a 'Measurement';
-- *FillUp is of Asset* only for a FuelledAsset; *Trip*, *TyreSet*,
-  *TyreChange* only of a Vehicle;
+- *FillUp is of Asset* only for an asset that uses a fuel; *Trip*,
+  *TyreSet*, *TyreChange* only of a Vehicle (`TripOfAVehicle`,
+  `TyreSetOfAVehicle`, `TyreChangeOfAVehicle`);
 - *Failure was of StockUnit* only for a unit fitted in the failure's
   asset then, or the asset's own unit;
 - *Schedule follows PlanTask* only where the plan task is of the item of
@@ -2261,8 +2269,8 @@ derivation 7) is read from it.
 
 ### For ORMKit
 
-- **Subtypes defined by a rule** (Cost, AssetSale, FuelledAsset,
-  DoneService, the kinds): each is run by a derivation
+- **Subtypes defined by a rule** (Cost, AssetSale, DoneService,
+  the kinds): each is run by a derivation
   query of the subtype, as a fact type's is
   ([DERIVATION.md](https://github.com/ashalkhakov/ORMKit/blob/master/docs/DERIVATION.md#subtypes)).
 - **An asserted subtype with a supertype that is not a record** (Vehicle
@@ -2285,7 +2293,10 @@ few such fact types; these need one:
 - **Reminder replaces Reminder:** acyclic, so irreflexive too. A reminder
   replaces at most one, and is replaced by at most one.
 - **Asset is fitted in Asset:** acyclic, so irreflexive too. No asset is
-  fitted in itself, nor in what is fitted in it. A component change that
+  fitted in itself, nor in what is fitted in it. Until ORMKit has the
+  closure, that is three rules, down to an equipment unit's maintainable
+  items as ISO 14224 counts its levels (`NotFittedInItself`,
+  `NotFittedInWhatIsInIt`, `NotFittedInWhatIsInItsPart`). A component change that
   would make it so is refused.
 - **ComponentChange fitted StockUnit into StockUnit:** irreflexive: a
   unit doesn't go into itself.
@@ -2446,7 +2457,7 @@ examples are one. The exclusive-ors (what a reminder is for; yes or no,
 chosen options or a quantity; labour by a user or a garage; a class or a
 vehicle kind) each leave every role a case of its own, and every subtype
 a member (Vehicle: v1; MeteredEvent: a fill-up; DoneService: s61, while
-planned it is none; Cost: a fill-up; AssetSale: n41; FuelledAsset: a1;
+planned it is none; Cost: a fill-up; AssetSale: n41;
 OpenReminder: m6). A schedule follows a plan task
 (sc20) or has work of its own (sc23): both cases are there.
 
@@ -2612,8 +2623,7 @@ without its unit, nor the unit without it.
 The subtypes defined by a rule keep it as NORMA keeps a subtype's
 derivation rule, and run it as a query: a Cost is a record that cost
 some money (`CostRule`), a MeteredEvent an event at some usage
-(`MeteredEventRule`), a DoneService a service done or closed, a
-FuelledAsset an asset that uses a fuel, an AssetSale an income of kind 'Sale' (`CarSaleRule`), a
+(`MeteredEventRule`), a DoneService a service done or closed, an AssetSale an income of kind 'Sale' (`CarSaleRule`), a
 ServiceKind a cost kind that is 'Maintenance' or 'Repair'
 (`ServiceKindRule`, one of a list). A derived subtype is no entity of its
 own in Core Data: its fact types are its supertype's, so every record has

@@ -1257,6 +1257,19 @@ static DistanceUnit *LBDistanceUnitOf(User *owner) {
     self.stockUnit.serialNumber = serial.length ? serial : nil;
 }
 
++ (NSSet *)keyPathsForValuesAffectingLb_components {
+    return [NSSet setWithObject:@"components"];
+}
+
+- (NSString *)lb_components {
+    NSMutableArray *names = [NSMutableArray array];
+    for (Asset *component in self.components) {
+        if (!component.isDeleted && component.vehicleName.length) [names addObject:component.vehicleName];
+    }
+    if (!names.count) return nil;
+    return [[names sortedArrayUsingSelector:@selector(localizedStandardCompare:)] componentsJoinedByString:@", "];
+}
+
 @end
 
 /* The catalog an owner's assets are products of: their first, by name;

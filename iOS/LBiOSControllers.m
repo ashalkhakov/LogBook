@@ -760,6 +760,10 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
                 [rows addObject:@[ @"Fuel", vehicle.fuel ?: @"" ]];
                 if (vehicle.registrationNumber.length) [rows addObject:@[ @"Registration", vehicle.registrationNumber ]];
                 [rows addObject:@[ @"Owner", vehicle.owner.lbTitle ?: @"" ]];
+                /* Where it is in the equipment hierarchy (docs/CSDP.md, A unit
+                   that is an asset). */
+                if (vehicle.parent) [rows addObject:@[ @"Fitted in", vehicle.parent.vehicleName ?: @"" ]];
+                if (vehicle.lb_components) [rows addObject:@[ @"Components", vehicle.lb_components ]];
             }
             [rows addObject:@[ @"Add a Vehicle…", @"" ]];
             return rows;

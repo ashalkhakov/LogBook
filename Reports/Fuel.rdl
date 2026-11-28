@@ -174,11 +174,11 @@
                         </ChartLegends>
                         <ChartTitles>
                             <ChartTitle>
-                                <Caption>Consumption at each full tank, per 100</Caption>
+                                <Caption>Consumption at each full tank, per 100 km or mi, or per hour</Caption>
                             </ChartTitle>
                         </ChartTitles>
                         <ChartNoDataMessage Name="NoDataMessage">
-                            <Caption>Consumption shows from the second full tank: the fuel put in since the full tank before, over the distance since.</Caption>
+                            <Caption>Consumption shows from the second full tank: the fuel put in since the full tank before, over the usage since.</Caption>
                         </ChartNoDataMessage>
                     </Chart>
                     <Tablix Name="FillUpsTable">

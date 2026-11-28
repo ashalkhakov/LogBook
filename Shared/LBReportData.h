@@ -23,7 +23,8 @@ NS_ASSUME_NONNULL_BEGIN
 // A vehicle's fill-ups, oldest first: When, Odometer, DistanceUnit,
 // Volume, VolumeUnit, Cost, Currency, Station, Full (YES or NO), Price
 // (PricePerVolume: a unit's, in its currency) and Consumption (at a full
-// tank after another, per 100 of its distance unit: FullTankConsumption).
+// tank after another, per 100 km or mi, or per hour: what its meter's unit
+// counts consumption per, FullTankConsumption).
 - (nullable NSArray<NSDictionary<NSString *, id> *> *)fillUpsOfVehicle:(Vehicle *)vehicle error:(NSError **)error;
 
 // A vehicle's records on the days from..to (either nil: open), oldest

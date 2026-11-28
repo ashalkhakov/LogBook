@@ -145,9 +145,9 @@ $(BUILD)/Logbook.wfdeployment: Model/Logbook.orm $(wildcard Model/*.flow) $(wild
 # The procedures checked over a store of the model's own.
 PROCEDURES = Shared/LBProcedures.m Shared/LBPlanned.m Shared/LBStockProcedures.m $(MODEL)/Constraints/LogbookValidation.m
 
-$(BUILD)/lb-procedures-check: $(MODEL)/.made Tests/LBProceduresCheck.m $(PROCEDURES) Shared/LBProcedures.h $(GENERATED)/.made \
+$(BUILD)/lb-procedures-check: $(MODEL)/.made Tests/LBProceduresCheck.m $(PROCEDURES) Shared/LBVehicleSummary.m Shared/LBDisplay.m Shared/LBProcedures.h $(GENERATED)/.made \
 		$(ORMKIT_PRODUCTS)/ORMRuntime.framework
-	$(CC) $(FLAGS) $(INC) Tests/LBProceduresCheck.m $(PROCEDURES) $(GENERATED)/*.m $(LIBS) -o $@
+	$(CC) $(FLAGS) $(INC) Tests/LBProceduresCheck.m $(PROCEDURES) Shared/LBVehicleSummary.m Shared/LBDisplay.m $(GENERATED)/*.m $(LIBS) -o $@
 
 # The stock model's derivations and rules checked over a store of its own.
 STOCK = Shared/LBStockProcedures.m Shared/LBStockDisplay.m Shared/LBDisplay.m Shared/LBProcedures.m \

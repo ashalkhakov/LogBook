@@ -148,7 +148,11 @@ static NSComparisonResult LBReminderOrder(Reminder *a, Reminder *b, void *contex
         if (latest && [fillUp.timestamp compare:latest.timestamp] != NSOrderedDescending) continue;
         latest = fillUp;
         value = row[3];
-        units = [NSString stringWithFormat:@"%@/100 %@", fillUp.volumeVolumeUnit.code ?: @"", fillUp.mileageDistanceUnit.code ?: @""];
+        /* Per what its meter's unit counts consumption per: L/100 km, L/h. */
+        NSDecimalNumber *per = fillUp.mileageDistanceUnit.countsConsumptionPerFactor;
+        NSString *meter = fillUp.mileageDistanceUnit.code ?: @"";
+        NSString *of = (!per || [per isEqualToNumber:@1]) ? meter : [NSString stringWithFormat:@"%@ %@", per, meter];
+        units = [NSString stringWithFormat:@"%@/%@", fillUp.volumeVolumeUnit.code ?: @"", of];
     }
     if (!value || ![value isKindOfClass:[NSNumber class]]) return nil;
     NSNumberFormatter *number = [[NSNumberFormatter alloc] init];
