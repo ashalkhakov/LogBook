@@ -5,7 +5,7 @@
 
 #import "LBStockEditor.h"
 
-@class StockItem, Holding, Move, KitLine, SupplierItem, ItemCode, StockUnit, ReorderRule, Category, Supplier, Location, Warehouse,
+@class StockItem, Holding, Move, KitLine, SupplierItem, ItemCode, StockUnit, ReorderRule, PlanTask, Checklist, DistanceUnit, Category, Supplier, Location, Warehouse,
     WeightUnit, SizeUnit, StockTransfer, ORMFlowSession;
 
 NS_ASSUME_NONNULL_BEGIN
@@ -46,6 +46,15 @@ NS_ASSUME_NONNULL_BEGIN
 // barcode or the maker's serial), where it is and a note.
 @property (nonatomic, readonly, copy) NSArray<StockUnit *> *stockUnits;
 @property (nonatomic, readonly, copy) NSArray<ReorderRule *> *reorderRules;
+// Its maintenance plan, the maker's (docs/CSDP.md, A maintenance plan):
+// each plan task a task or a checklist, every so much usage or so many
+// months; every asset of it follows it. What a plan task chooses from: the
+// catalog owner's checklists, the units usage is counted in.
+@property (nonatomic, readonly, copy) NSArray<PlanTask *> *planTasks;
+@property (nonatomic, readonly, copy) NSArray<Checklist *> *checklists;
+@property (nonatomic, readonly, copy) NSArray<DistanceUnit *> *usageUnits;
+@property (nonatomic, strong) IBOutlet NSArrayController *planTaskList;
+@property (nonatomic, strong) IBOutlet NSTableView *planTasksTable;
 @property (nonatomic, strong) IBOutlet NSArrayController *kitLineList;
 @property (nonatomic, strong) IBOutlet NSArrayController *supplierItemList;
 @property (nonatomic, strong) IBOutlet NSArrayController *itemCodeList;
@@ -105,6 +114,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (IBAction)removeItemCode:(nullable id)sender;
 - (IBAction)addReorderRule:(nullable id)sender;
 - (IBAction)removeReorderRule:(nullable id)sender;
+// A plan task, a task to be named, every 12 months; the chosen ones
+// removed (their assets' schedules ended).
+- (IBAction)addPlanTask:(nullable id)sender;
+- (IBAction)removePlanTask:(nullable id)sender;
 
 @end
 

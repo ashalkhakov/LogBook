@@ -34,6 +34,8 @@
 #import "LBProcedures.h"
 #import "Catalog+CoreDataClass.h"
 #import "StockItem+CoreDataClass.h"
+#import "PlanTask+CoreDataClass.h"
+#import "Checklist+CoreDataClass.h"
 #import "Warehouse+CoreDataClass.h"
 #import "Location+CoreDataClass.h"
 #import "Holding+CoreDataClass.h"
@@ -379,6 +381,16 @@ FOUNDATION_EXPORT NSString * const LBOrderCancelled;
 - (NSArray<PurchaseOrder *> *)lb_reorderOn:(NSDate *)day
                                    skipped:(NSArray<StockItem *> *_Nullable *_Nullable)skipped
                                      error:(NSError **)error;
+@end
+
+@interface PlanTask (LBStock)
+// Its work as a table says it: its task, or its checklist's name. Set, it
+// is the task, the checklist cleared (a plan task is for one of them).
+@property (nonatomic, copy, nullable) NSString *lb_work;
+// Its checklist; set, its task cleared.
+@property (nonatomic, strong, nullable) Checklist *lb_checklist;
+// Its months, nil for none (0 is no interval, not a value).
+@property (nonatomic, copy, nullable) NSNumber *lb_months;
 @end
 
 NS_ASSUME_NONNULL_END

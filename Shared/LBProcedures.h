@@ -116,7 +116,8 @@ FOUNDATION_EXPORT NSDate *LBAddMonths(NSDate *day, NSInteger months);
 // from; with none open, the new one is started (as -lb_startFrom: with
 // nothing given). *cancelled is the reminder cancelled so, else nil.
 // Refused for a schedule changed already (change the one it goes on in),
-// for no work or more than one, and for no interval.
+// for no work or more than one, and for no interval; and for one that
+// follows a plan task (the maker's plan: changed in Stock).
 - (nullable Schedule *)lb_continueWithTask:(nullable NSString *)task
                                expenseKind:(nullable ExpenseKind *)expenseKind
                                  checklist:(nullable Checklist *)checklist

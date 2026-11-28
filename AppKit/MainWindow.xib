@@ -1031,6 +1031,20 @@
                                                 <binding destination="schedules" name="value" keyPath="arrangedObjects.lbNextDue" id="schedulesTableLbNextDueValue"/>
                                             </connections>
                                         </tableColumn>
+                                        <tableColumn identifier="lbPlan" width="160" minWidth="40" maxWidth="1000" id="schedulesTableLbPlanColumn">
+                                            <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Plan">
+                                                <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                            </tableHeaderCell>
+                                            <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="NO" alignment="left" title="Text Cell" id="schedulesTableLbPlanCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="schedules" name="value" keyPath="arrangedObjects.lbPlan" id="schedulesTableLbPlanValue"/>
+                                            </connections>
+                                        </tableColumn>
                                                         </tableColumns>
                                                     </tableView>
                                                 </subviews>

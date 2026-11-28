@@ -1,4 +1,7 @@
 #import "LBStockItemWindowController.h"
+#import "PlanTask+CoreDataClass.h"
+#import "Checklist+CoreDataClass.h"
+#import "DistanceUnit+CoreDataClass.h"
 #import "LBStore.h"
 #import "LBStockDisplay.h"
 #import "LBStockProcedures.h"
@@ -15,6 +18,9 @@
 @property (nonatomic, readwrite, copy) NSArray<KitLine *> *kitLines;
 @property (nonatomic, readwrite, copy) NSArray<SupplierItem *> *supplierItems;
 @property (nonatomic, readwrite, copy) NSArray<ItemCode *> *itemCodes;
+@property (nonatomic, readwrite, copy) NSArray<PlanTask *> *planTasks;
+@property (nonatomic, readwrite, copy) NSArray<Checklist *> *checklists;
+@property (nonatomic, readwrite, copy) NSArray<DistanceUnit *> *usageUnits;
 @property (nonatomic, readwrite, copy) NSArray<StockUnit *> *stockUnits;
 @property (nonatomic, readwrite, copy) NSArray<ReorderRule *> *reorderRules;
 @property (nonatomic, readwrite, copy) NSArray<Category *> *categories;
@@ -51,6 +57,9 @@
         _kitLines = @[];
         _supplierItems = @[];
         _itemCodes = @[];
+        _planTasks = @[];
+        _checklists = @[];
+        _usageUnits = @[];
         _reorderRules = @[];
         _categories = @[];
         _suppliers = @[];
@@ -122,6 +131,7 @@ static NSPredicate *LBOf(NSString *key, id object) {
         self.supplierItems = _item.supplierItems.allObjects;
         self.kitLines = _item.kitLinesAsKit.allObjects;
         self.itemCodes = _item.itemCodes.allObjects;
+        self.planTasks = _item.planTasks.allObjects;
         self.reorderRules = _item.reorderRules.allObjects;
     } else {
         [self readOwn];
@@ -144,6 +154,8 @@ static NSPredicate *LBOf(NSString *key, id object) {
     [self listSupplierItems];
     self.itemCodes = [self fetch:[ItemCode class] where:LBOf(@"stockItem", _item)
                         sortedBy:@[ [NSSortDescriptor sortDescriptorWithKey:@"codeText" ascending:YES] ]];
+    self.planTasks = [self fetch:[PlanTask class] where:LBOf(@"stockItem", _item)
+                       sortedBy:@[ [NSSortDescriptor sortDescriptorWithKey:@"task" ascending:YES] ]];
     self.stockUnits = [self fetch:[StockUnit class] where:LBOf(@"stockItem", _item)
                          sortedBy:@[ [NSSortDescriptor sortDescriptorWithKey:@"serialNumber" ascending:YES] ]];
     self.reorderRules = [self fetch:[ReorderRule class] where:LBOf(@"stockItem", _item)
@@ -163,6 +175,11 @@ static NSPredicate *LBOf(NSString *key, id object) {
     self.components = others;
     if (!_weightUnits.count) self.weightUnits = [self units:[WeightUnit class]];
     if (!_sizeUnits.count) self.sizeUnits = [self units:[SizeUnit class]];
+    if (!_usageUnits.count) {
+        self.usageUnits = [self fetch:[DistanceUnit class] where:nil sortedBy:@[ [NSSortDescriptor sortDescriptorWithKey:@"code" ascending:YES] ]];
+    }
+    self.checklists = [self fetch:[Checklist class] where:LBOf(@"user", catalog.catalogOwner) sortedBy:@[ [NSSortDescriptor
+                                                                                                    sortDescriptorWithKey:@"checklistName" ascending:YES] ]];
     if (![_locations containsObject:_stockAt]) self.stockAt = _locations.firstObject;
     if (![_locations containsObject:_stockTo]) self.stockTo = _locations.count > 1 ? _locations[1] : _locations.firstObject;
     [self willChangeValueForKey:@"preferredSupplier"];
@@ -193,7 +210,7 @@ static NSPredicate *LBOf(NSString *key, id object) {
 }
 
 - (NSArray<NSArrayController *> *)editedControllers {
-    return @[ _kitLineList, _supplierItemList, _itemCodeList, _reorderRuleList ];
+    return @[ _kitLineList, _supplierItemList, _itemCodeList, _planTaskList, _reorderRuleList ];
 }
 
 #pragma mark Stock
@@ -358,6 +375,19 @@ static NSPredicate *LBOf(NSString *key, id object) {
 
 - (IBAction)removeItemCode:(id)sender {
     [self remove:_itemCodeList list:@"itemCodes"];
+}
+
+- (IBAction)addPlanTask:(id)sender {
+    if (![self commitEdits]) return;
+    PlanTask *task = [self newOf:[PlanTask class]];
+    task.stockItem = _item;
+    task.task = @"New Task";
+    task.duration = 12;
+    [self add:task list:@"planTasks" to:_planTaskList editing:0 of:_planTasksTable];
+}
+
+- (IBAction)removePlanTask:(id)sender {
+    [self remove:_planTaskList list:@"planTasks"];
 }
 
 /* A unit of it, by the code on it: its serial number typed (or scanned

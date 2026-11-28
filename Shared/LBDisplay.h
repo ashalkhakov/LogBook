@@ -102,6 +102,9 @@ FOUNDATION_EXPORT NSString *_Nullable LBDistanceText(NSDecimalNumber *_Nullable 
 @property (nonatomic, readonly) NSString *lbEvery;
 // When its open reminder is due; nil when it has none open.
 @property (nonatomic, readonly, nullable) NSString *lbNextDue;
+// Whose plan it follows: "River 2 Pro's plan" (the maker's: changed in
+// Stock), "Ended" once no longer followed; nil for the owner's own.
+@property (nonatomic, readonly, nullable) NSString *lbPlan;
 @end
 
 @interface Reminder (LBDisplay)

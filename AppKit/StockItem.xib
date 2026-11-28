@@ -16,6 +16,7 @@
         <outlet property="kitLineList" destination="kitLineList" id="kitLineListOutlet"/>
         <outlet property="supplierItemList" destination="supplierItemList" id="supplierItemListOutlet"/>
         <outlet property="itemCodeList" destination="itemCodeList" id="itemCodeListOutlet"/>
+        <outlet property="planTaskList" destination="planTaskList" id="planTaskListOutlet"/>
         <outlet property="stockUnitList" destination="stockUnitList" id="stockUnitListOutlet"/>
         <outlet property="stockUnitsTable" destination="stockUnitsTable" id="stockUnitsTableOutlet"/>
         <outlet property="reorderRuleList" destination="reorderRuleList" id="reorderRuleListOutlet"/>
@@ -23,6 +24,7 @@
         <outlet property="moveList" destination="moveList" id="moveListOutlet"/>
         <outlet property="movesTable" destination="movesTable" id="movesTableOutlet"/>
         <outlet property="itemCodesTable" destination="itemCodesTable" id="itemCodesTableOutlet"/>
+        <outlet property="planTasksTable" destination="planTasksTable" id="planTasksTableOutlet"/>
         <outlet property="reorderRulesTable" destination="reorderRulesTable" id="reorderRulesTableOutlet"/>
       </connections>
     </customObject>
@@ -376,6 +378,11 @@ Gw
     <arrayController editable="YES" userLabel="Codes" id="itemCodeList">
       <connections>
         <binding destination="-2" name="contentArray" keyPath="itemCodes" id="itemCodeListContent"/>
+      </connections>
+    </arrayController>
+    <arrayController editable="YES" userLabel="Plan" id="planTaskList">
+      <connections>
+        <binding destination="-2" name="contentArray" keyPath="planTasks" id="planTaskListContent"/>
       </connections>
     </arrayController>
     <arrayController editable="YES" userLabel="Reorder Rules" id="reorderRuleList">
@@ -1311,6 +1318,140 @@ Gw
                   </subviews>
                 </view>
               </tabViewItem>
+              <tabViewItem label="Plan" identifier="plan" id="planTab">
+                <view key="view" id="planView">
+                  <rect key="frame" x="10" y="33" width="614" height="284"/>
+                  <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                  <subviews>
+                    <scrollView autohidesScrollers="YES" hasHorizontalScroller="NO" horizontalLineScroll="19" horizontalPageScroll="10" verticalLineScroll="19" verticalPageScroll="10" usesPredominantAxisScrolling="NO" id="planTasksTableScroll">
+                      <rect key="frame" x="10" y="48" width="594" height="226"/>
+                      <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                      <clipView key="contentView" id="planTasksTableClip">
+                        <rect key="frame" x="1" y="1" width="592" height="224"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                          <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" multipleSelection="NO" autosaveColumns="NO" headerView="planTasksTableHeader" identifier="planTasksTable" id="planTasksTable">
+                            <rect key="frame" x="0" y="0" width="592" height="177"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <size key="intercellSpacing" width="3" height="2"/>
+                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                            <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
+                            <tableColumns>
+                              <tableColumn identifier="work" width="200" minWidth="30" maxWidth="1000" id="planTasksTableWorkColumn">
+                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Work">
+                                  <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                </tableHeaderCell>
+                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="planTasksTableWorkCell">
+                                  <font key="font" metaFont="system"/>
+                                  <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                  <binding destination="planTaskList" name="value" keyPath="arrangedObjects.lb_work" id="planTasksTableWorkValue"/>
+                                </connections>
+                              </tableColumn>
+                              <tableColumn identifier="interval" width="80" minWidth="30" maxWidth="1000" id="planTasksTableIntervalColumn">
+                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Every">
+                                  <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                </tableHeaderCell>
+                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="planTasksTableIntervalCell">
+                                  <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="3" id="planTasksTableIntervalFormatter"/>
+                                  <font key="font" metaFont="system"/>
+                                  <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                  <binding destination="planTaskList" name="value" keyPath="arrangedObjects.intervalQuantity" id="planTasksTableIntervalValue"/>
+                                </connections>
+                              </tableColumn>
+                              <tableColumn identifier="unit" width="60" minWidth="30" maxWidth="1000" id="planTasksTableUnitColumn">
+                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Unit">
+                                  <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                </tableHeaderCell>
+                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" alignment="left" title="Text Cell" id="planTasksTableUnitCell">
+                                  <font key="font" metaFont="system"/>
+                                  <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                  <binding destination="planTaskList" name="value" keyPath="arrangedObjects.intervalDistanceUnit.code" id="planTasksTableUnitValue"/>
+                                </connections>
+                              </tableColumn>
+                              <tableColumn identifier="duration" width="70" minWidth="30" maxWidth="1000" id="planTasksTableDurationColumn">
+                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Months">
+                                  <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                </tableHeaderCell>
+                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="planTasksTableDurationCell">
+                                  <numberFormatter key="formatter" formatterBehavior="custom10_4" generatesDecimalNumbers="YES" usesGroupingSeparator="NO" groupingSize="0" minimumIntegerDigits="1" maximumIntegerDigits="42" maximumFractionDigits="0" id="planTasksTableDurationFormatter"/>
+                                  <font key="font" metaFont="system"/>
+                                  <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                  <binding destination="planTaskList" name="value" keyPath="arrangedObjects.lb_months" id="planTasksTableDurationValue"/>
+                                </connections>
+                              </tableColumn>
+                              <tableColumn identifier="note" width="170" minWidth="30" maxWidth="1000" id="planTasksTableNoteColumn">
+                                <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left" title="Note">
+                                  <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="headerColor" catalog="System" colorSpace="catalog"/>
+                                </tableHeaderCell>
+                                <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="planTasksTableNoteCell">
+                                  <font key="font" metaFont="system"/>
+                                  <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
+                                  <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                </textFieldCell>
+                                <connections>
+                                  <binding destination="planTaskList" name="value" keyPath="arrangedObjects.note" id="planTasksTableNoteValue"/>
+                                </connections>
+                              </tableColumn>
+                            </tableColumns>
+                          </tableView>
+                        </subviews>
+                      </clipView>
+                      <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="YES" id="planTasksTableHScroller">
+                        <rect key="frame" x="1" y="210" width="592" height="15"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                      </scroller>
+                      <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" horizontal="NO" id="planTasksTableVScroller">
+                        <rect key="frame" x="578" y="1" width="15" height="224"/>
+                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" heightSizable="YES"/>
+                      </scroller>
+                      <tableHeaderView key="headerView" id="planTasksTableHeader">
+                        <rect key="frame" x="0" y="0" width="592" height="23"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES"/>
+                      </tableHeaderView>
+                    </scrollView>
+                    <button toolTip="Add" verticalHuggingPriority="750" identifier="addPlanTask" id="addPlanTask">
+                      <rect key="frame" x="10" y="25" width="24" height="23"/>
+                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="addPlanTaskCell">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                      </buttonCell>
+                      <connections>
+                        <action selector="addPlanTask:" target="-2" id="addPlanTaskAction"/>
+                      </connections>
+                    </button>
+                    <button toolTip="Remove" verticalHuggingPriority="750" identifier="removePlanTask" id="removePlanTask">
+                      <rect key="frame" x="33" y="25" width="24" height="23"/>
+                      <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                      <buttonCell key="cell" type="smallSquare" title="" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="removePlanTaskCell">
+                        <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
+                        <font key="font" metaFont="system"/>
+                      </buttonCell>
+                      <connections>
+                        <action selector="removePlanTask:" target="-2" id="removePlanTaskAction"/>
+                        <binding destination="planTaskList" name="enabled" keyPath="canRemove" id="removePlanTaskEnabled"/>
+                      </connections>
+                    </button>
+                  </subviews>
+                </view>
+              </tabViewItem>
               <tabViewItem label="Units" identifier="units" id="unitsTab">
                 <view key="view" id="unitsView">
                   <rect key="frame" x="10" y="33" width="614" height="284"/>
@@ -1976,6 +2117,80 @@ Gw
                                     <binding destination="-2" name="content" keyPath="codeKinds" id="itemCodeKindContent"/>
                                     <binding destination="-2" name="contentValues" keyPath="codeKinds" previousBinding="itemCodeKindContent" id="itemCodeKindValues"/>
                                     <binding destination="itemCodeList" name="selectedObject" keyPath="selection.codeKind" previousBinding="itemCodeKindValues" id="itemCodeKindChosen"/>
+                                  </connections>
+                                </popUpButton>
+                            </subviews>
+                        </view>
+                    </tabViewItem>
+                    <tabViewItem label="plan" identifier="plan" id="screenInspector-plan">
+                        <view key="view" id="screenInspector-planView">
+                            <rect key="frame" x="0" y="0" width="300" height="308"/>
+                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                            <subviews>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="planTaskChecklistLabel">
+                                  <rect key="frame" x="4" y="274.5" width="96" height="17"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Checklist:" id="planTaskChecklistLabelCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" identifier="planTaskChecklist" id="planTaskChecklist">
+                                  <rect key="frame" x="104" y="270" width="176" height="26"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="planTaskChecklistCell">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <menu key="menu" id="planTaskChecklistMenu"/>
+                                  </popUpButtonCell>
+                                  <connections>
+                                    <binding destination="-2" name="content" keyPath="checklists" id="planTaskChecklistContent">
+                                      <dictionary key="options">
+                                        <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                        <string key="NSNullPlaceholder">None</string>
+                                      </dictionary>
+                                    </binding>
+                                    <binding destination="-2" name="contentValues" keyPath="checklists.checklistName" previousBinding="planTaskChecklistContent" id="planTaskChecklistValues">
+                                      <dictionary key="options">
+                                        <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                        <string key="NSNullPlaceholder">None</string>
+                                      </dictionary>
+                                    </binding>
+                                    <binding destination="planTaskList" name="selectedObject" keyPath="selection.lb_checklist" previousBinding="planTaskChecklistValues" id="planTaskChecklistChosen"/>
+                                  </connections>
+                                </popUpButton>
+                                <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="planTaskUnitLabel">
+                                  <rect key="frame" x="4" y="242.5" width="96" height="17"/>
+                                  <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                  <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Usage in:" id="planTaskUnitLabelCell">
+                                    <font key="font" metaFont="system"/>
+                                    <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                    <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                  </textFieldCell>
+                                </textField>
+                                <popUpButton verticalHuggingPriority="750" identifier="planTaskUnit" id="planTaskUnit">
+                                  <rect key="frame" x="104" y="238" width="176" height="26"/>
+                                  <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMinY="YES"/>
+                                  <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="planTaskUnitCell">
+                                    <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                    <font key="font" metaFont="system"/>
+                                    <menu key="menu" id="planTaskUnitMenu"/>
+                                  </popUpButtonCell>
+                                  <connections>
+                                    <binding destination="-2" name="content" keyPath="usageUnits" id="planTaskUnitContent">
+                                      <dictionary key="options">
+                                        <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                        <string key="NSNullPlaceholder">None</string>
+                                      </dictionary>
+                                    </binding>
+                                    <binding destination="-2" name="contentValues" keyPath="usageUnits.code" previousBinding="planTaskUnitContent" id="planTaskUnitValues">
+                                      <dictionary key="options">
+                                        <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                        <string key="NSNullPlaceholder">None</string>
+                                      </dictionary>
+                                    </binding>
+                                    <binding destination="planTaskList" name="selectedObject" keyPath="selection.intervalDistanceUnit" previousBinding="planTaskUnitValues" id="planTaskUnitChosen"/>
                                   </connections>
                                 </popUpButton>
                             </subviews>

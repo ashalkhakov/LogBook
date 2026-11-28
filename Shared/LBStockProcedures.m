@@ -1,4 +1,5 @@
 #import "LBStockProcedures.h"
+#import "PlanTask+CoreDataClass.h"
 #import "LogbookValidation.h"
 #import "Income+CoreDataClass.h"
 #import "Record+CoreDataClass.h"
@@ -1408,6 +1409,71 @@ BOOL LBIsStoreBeforeAssets(NSString *type, NSURL *url, NSDictionary *options) {
    unit of its product, bought as it was (or come in by an opening move),
    put in service; metered in its readings' unit; the units' dimensions
    (the reference data); the sale's kind 'Sale'. */
+/* Each migrated asset's schedules made its product's plan (docs/CSDP.md, A
+   unit that is an asset): a plan task for each work and intervals of the
+   product's assets' schedules (a task or a checklist; one gone on in
+   another is history, and an expense's stays the owner's own), once for
+   the same; each schedule then follows its plan task. The same work at
+   other intervals is a conflict: a plan task each, each asset following
+   its own, the plan task's note saying so, for the owner's review. */
+static NSString *LBIntervalsText(Schedule *schedule) {
+    NSMutableArray *parts = [NSMutableArray array];
+    if (schedule.intervalQuantity && schedule.intervalDistanceUnit) {
+        [parts addObject:[NSString stringWithFormat:@"%@ %@", schedule.intervalQuantity, schedule.intervalDistanceUnit.code ?: @""]];
+    }
+    if (schedule.duration > 0) [parts addObject:[NSString stringWithFormat:@"%d months", schedule.duration]];
+    return [parts componentsJoinedByString:@" or "];
+}
+
+static BOOL LBPlansOfMigrated(NSManagedObjectContext *context, NSError **error) {
+    NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Schedule class])];
+    NSArray *schedules = [[context executeFetchRequest:fetch error:error] ?: @[]
+        sortedArrayUsingDescriptors:@[ [NSSortDescriptor sortDescriptorWithKey:@"id.UUIDString" ascending:YES] ]];
+    NSMutableDictionary<NSString *, PlanTask *> *plans = [NSMutableDictionary dictionary];   /* item, work, intervals */
+    NSMutableDictionary<NSString *, NSMutableArray<PlanTask *> *> *works = [NSMutableDictionary dictionary];   /* item, work */
+    for (Schedule *schedule in schedules) {
+        if (schedule.planTask || (schedule.continuation && !schedule.continuation.isDeleted)) continue;
+        if (!schedule.task.length && !schedule.checklist) continue;
+        StockItem *item = schedule.vehicle.stockUnit.stockItem;
+        if (!item) continue;
+        NSString *work = [NSString stringWithFormat:@"%@|%@|%@", item.id.UUIDString, schedule.task ?: @"",
+                                                    schedule.checklist.id.UUIDString ?: @""];
+        NSString *key = [work stringByAppendingFormat:@"|%@", LBIntervalsText(schedule)];
+        PlanTask *plan = plans[key];
+        if (!plan) {
+            plan = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([PlanTask class]) inManagedObjectContext:context];
+            plan.id = LBNamedUUID([@"plan of " stringByAppendingString:schedule.id.UUIDString.lowercaseString]);
+            plan.stockItem = item;
+            plan.task = schedule.task.length ? schedule.task : nil;
+            plan.checklist = plan.task ? nil : schedule.checklist;
+            plan.intervalQuantity = schedule.intervalDistanceUnit ? schedule.intervalQuantity : nil;
+            plan.intervalDistanceUnit = schedule.intervalQuantity ? schedule.intervalDistanceUnit : nil;
+            if (schedule.duration > 0) plan.duration = schedule.duration;
+            plans[key] = plan;
+            if (!works[work]) works[work] = [NSMutableArray array];
+            [works[work] addObject:plan];
+        }
+        schedule.planTask = plan;
+    }
+    /* Conflicts said: the same work of a product at other intervals. */
+    for (NSString *work in [works.allKeys sortedArrayUsingSelector:@selector(compare:)]) {
+        NSArray<PlanTask *> *same = works[work];
+        if (same.count < 2) continue;
+        for (PlanTask *plan in same) {
+            NSMutableArray *others = [NSMutableArray array];
+            for (PlanTask *other in same) {
+                if (other == plan) continue;
+                for (Schedule *schedule in other.schedules) {
+                    [others addObject:[NSString stringWithFormat:@"%@ every %@", schedule.vehicle.vehicleName ?: @"another", LBIntervalsText(schedule)]];
+                }
+            }
+            plan.note = [NSString stringWithFormat:@"From the logbook before plans: at other intervals for %@. Review the plan.",
+                                                   [[others sortedArrayUsingSelector:@selector(compare:)] componentsJoinedByString:@", "]];
+        }
+    }
+    return YES;
+}
+
 static BOOL LBFillMigrated(NSManagedObjectContext *context, NSError **error) {
     NSError * __autoreleasing ignored = nil;
     if (!error) error = &ignored;
@@ -1455,6 +1521,7 @@ static BOOL LBFillMigrated(NSManagedObjectContext *context, NSError **error) {
         [vehicle setValue:nil forKey:@"carModel"];
         [vehicle setValue:nil forKey:@"vin"];
     }
+    if (!LBPlansOfMigrated(context, error)) return NO;
     /* An asset's sale: of kind 'Sale', not 'Car sale'. */
     NSFetchRequest *sales = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([Income class])];
     sales.predicate = [NSPredicate predicateWithFormat:@"incomeKind == %@", @"Car sale"];
@@ -1493,3 +1560,53 @@ BOOL LBMigrateStoreBeforeAssets(NSString *type, NSURL *url, NSManagedObjectModel
     return done;
 }
 
+@implementation PlanTask (LBStock)
+
++ (NSSet *)keyPathsForValuesAffectingLb_work {
+    return [NSSet setWithObjects:@"task", @"checklist", @"checklist.checklistName", nil];
+}
+
+- (NSString *)lb_work {
+    return self.task ?: self.checklist.checklistName;
+}
+
+- (void)setLb_work:(NSString *)work {
+    NSString *named = [work stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    if (!named.length) return;
+    if (self.checklist && [named isEqualToString:self.checklist.checklistName]) return;
+    self.task = named;
+    self.checklist = nil;
+}
+
++ (NSSet *)keyPathsForValuesAffectingLb_checklist {
+    return [NSSet setWithObject:@"checklist"];
+}
+
+- (Checklist *)lb_checklist {
+    return self.checklist;
+}
+
+- (void)setLb_checklist:(Checklist *)checklist {
+    if (!checklist) {
+        if (!self.task.length) self.task = self.checklist.checklistName ?: @"New Task";
+        self.checklist = nil;
+        return;
+    }
+    self.checklist = checklist;
+    self.task = nil;
+}
+
++ (NSSet *)keyPathsForValuesAffectingLb_months {
+    return [NSSet setWithObject:@"duration"];
+}
+
+- (NSNumber *)lb_months {
+    return self.duration > 0 ? @(self.duration) : nil;
+}
+
+- (void)setLb_months:(NSNumber *)months {
+    if (months.intValue > 0) self.duration = months.intValue;
+    else [self setValue:nil forKey:NSStringFromSelector(@selector(duration))];
+}
+
+@end

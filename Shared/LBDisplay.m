@@ -1,4 +1,5 @@
 #import "LBDisplay.h"
+#import "PlanTask+CoreDataClass.h"
 #import "StockItem+CoreDataClass.h"
 #import "Event+CoreDataClass.h"
 #import "Document+CoreDataClass.h"
@@ -250,6 +251,16 @@ static NSString *LBWorkText(NSString *task, ExpenseKind *kind, Checklist *checkl
 
 + (NSSet<NSString *> *)keyPathsForValuesAffectingLbNextDue {
     return [NSSet setWithObject:NSStringFromSelector(@selector(reminders))];
+}
+
+- (NSString *)lbPlan {
+    if (self.endedOn) return @"Ended";
+    if (!self.planTask) return nil;
+    return [NSString stringWithFormat:@"%@'s plan", self.planTask.stockItem.itemName ?: @"The maker"];
+}
+
++ (NSSet<NSString *> *)keyPathsForValuesAffectingLbPlan {
+    return [NSSet setWithObjects:@"endedOn", @"planTask", nil];
 }
 
 @end

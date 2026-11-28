@@ -15,6 +15,7 @@
 #import "LBStockProcedures.h"
 #import "LBAssets.h"
 #import "Asset+CoreDataClass.h"
+#import "PlanTask+CoreDataClass.h"
 #import "Move+CoreDataClass.h"
 #import "Location+CoreDataClass.h"
 #import "StockUnit+CoreDataClass.h"
@@ -1189,6 +1190,20 @@ static void LBStockCardSteps(LBStockItemWindowController *card) {
     ItemCode *keptCode = [LBServerObjects([ItemCode class], ofBolt) firstObject];
     LBCheck(@"its code, a GTIN, the server's", [keptCode.codeText isEqualToString:@"4006381333931"] && [keptCode.codeKind isEqualToString:@"GTIN"],
             keptCode);
+
+    /* Its maintenance plan: a task every 6 months, typed in its row; its
+       inspector's checklist and unit choices there. */
+    [card.cardTabs selectTabViewItemWithIdentifier:@"plan"];
+    LBSpin();
+    LBClick(window, @"addPlanTask");
+    LBTypeInRow(window, @"the plan's task", @"Grease");
+    LBTypeInCell(window, @"planTasksTable", 3, @"6");
+    LBSavedIn(card, @"its plan task saved");
+    PlanTask *keptPlan = [LBServerObjects([PlanTask class], ofBolt) firstObject];
+    LBCheck(@"its plan: Grease every 6 months, the server's; the plan page's inspector, a checklist and a unit to choose",
+            [keptPlan.task isEqualToString:@"Grease"] && keptPlan.duration == 6 && !keptPlan.checklist
+                && LBControl(card.inspectorPages, @"planTaskChecklist") && LBControl(card.inspectorPages, @"planTaskUnit"),
+            [NSString stringWithFormat:@"%@ %d", keptPlan.task, keptPlan.duration]);
 
     [card.cardTabs selectTabViewItemWithIdentifier:@"size"];
     LBSpin();

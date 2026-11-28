@@ -11,6 +11,9 @@
 #import "Move+CoreDataClass.h"
 #import "Location+CoreDataClass.h"
 #import "Trip+CoreDataClass.h"
+#import "PlanTask+CoreDataClass.h"
+#import "Asset+CoreDataClass.h"
+#import "DistanceUnit+CoreDataClass.h"
 #import "Attachment+CoreDataClass.h"
 #include <stdlib.h>
 #include <string.h>
@@ -191,12 +194,16 @@ static NSInteger LBIDOrder(id a, id b, void *context) {
 /* Whether the event does the work: a service with an item of the task, a
    component change fitting a unit of an item of the category the task is
    named as, an expense of the kind, an inspection through the checklist. */
-static BOOL LBDoesWork(Event *event, NSString *task, ExpenseKind *kind, Checklist *checklist) {
+static BOOL LBDoesWork(Event *event, NSString *task, ExpenseKind *kind, Checklist *checklist, StockItem *planItem) {
     if (task) {
         /* A component fitted does the work of the task named as its item's
-           category: "Chain" every 3000 km, done when a chain is fitted. */
-        if ([event isKindOfClass:[ComponentChange class]])
-            return [((ComponentChange *)event).stockUnit.stockItem.category.categoryName isEqualToString:task];
+           category: "Chain" every 3000 km, done when a chain is fitted; and
+           of a plan's task of its own item (planItem, the product whose
+           plan the schedule follows): a KMC X9 for the KMC X9's. */
+        if ([event isKindOfClass:[ComponentChange class]]) {
+            StockItem *item = ((ComponentChange *)event).stockUnit.stockItem;
+            return [item.category.categoryName isEqualToString:task] || (planItem && item == planItem);
+        }
         if (![event isKindOfClass:[Service class]]) return NO;
         for (ServiceItem *item in ((Service *)event).serviceItems) {
             if (!item.isDeleted && [item.task isEqualToString:task]) return YES;
@@ -281,7 +288,7 @@ static User *LBActorOf(Event *event) {
 @implementation Event (LBProcedures)
 
 - (BOOL)lb_doesWorkOfReminder:(Reminder *)reminder {
-    return LBDoesWork(self, reminder.lb_task, reminder.lb_expenseKind, reminder.lb_checklist);
+    return LBDoesWork(self, reminder.lb_task, reminder.lb_expenseKind, reminder.lb_checklist, reminder.schedule.planTask.stockItem);
 }
 
 - (BOOL)lb_mayCloseReminder:(Reminder *)reminder {
@@ -314,7 +321,7 @@ static User *LBActorOf(Event *event) {
 - (Event *)lb_lastDoneBy {
     Event *last = nil;
     for (Event *event in LBEventsOf(self.vehicle)) {
-        if (!LBDoesWork(event, self.task, self.expenseKind, self.checklist)) continue;
+        if (!LBDoesWork(event, self.task, self.expenseKind, self.checklist, self.planTask.stockItem)) continue;
         if (!last || LBCompareEvents(last, event) == NSOrderedAscending) last = event;
     }
     return last;
@@ -395,6 +402,16 @@ static User *LBActorOf(Event *event) {
     }
     if (self.continuation && !self.continuation.isDeleted) {
         LBFail(error, @"The schedule was changed already: change the one it goes on in");
+        return nil;
+    }
+    if (self.endedOn) {
+        LBFail(error, @"The schedule has ended: its plan is no longer followed");
+        return nil;
+    }
+    if (self.planTask && !self.planTask.isDeleted) {
+        LBFail(error, [NSString stringWithFormat:@"The schedule follows the maker's plan of %@: change the plan in Stock, or add a schedule "
+                                                 @"of your own",
+                                                 self.planTask.stockItem.itemName ?: @"its product"]);
         return nil;
     }
     NSString *named = [task stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
@@ -778,7 +795,7 @@ static void LBDeleteReminder(Reminder *reminder) {
         slot = [self openFrom:slot];
         if (!slot) break;
         if ([theirs containsObject:event]) continue;
-        if (!LBDoesWork(event, schedule.task, schedule.expenseKind, schedule.checklist)) continue;
+        if (!LBDoesWork(event, schedule.task, schedule.expenseKind, schedule.checklist, schedule.planTask.stockItem)) continue;
         NSDate *setOn = slot.reminder ? (slot.reminder.setAt ? LBOwnerDay(schedule.vehicle, slot.reminder.setAt) : nil)
                                       : (slot.source.event ? LBEventDay(slot.source.event) : nil);
         if (!setOn || [setOn compare:LBEventDay(event)] == NSOrderedDescending) continue;
@@ -787,10 +804,10 @@ static void LBDeleteReminder(Reminder *reminder) {
         NSDecimalNumber *dueMileage;
         DistanceUnit *dueUnit;
         if (LBNextDue(schedule, event, &dueDate, &dueMileage, &dueUnit)) {
-            /* A schedule gone on in another makes no next of its own: past
+            /* A schedule gone on in another, or ended, makes no next of its own: past
                its reminders, the run is the other's. */
             NSUUID *next = LBNextIDOf(slot.uuid);
-            BOOL continued = schedule.continuation && !schedule.continuation.isDeleted;
+            BOOL continued = (schedule.continuation && !schedule.continuation.isDeleted) || schedule.endedOn;
             LBSlot *made = _byID[next] || !continued ? [self slotOf:_byID[next] uuid:next source:slot] : nil;
             slot = made ?: [self takeRoot];
         } else {
@@ -886,7 +903,7 @@ static void LBDeleteReminder(Reminder *reminder) {
 static Event *LBFirstCloser(Reminder *reminder, NSArray<Event *> *events) {
     for (Event *event in events) {
         if (!reminder.setAt || [LBOwnerDay(reminder.vehicle, reminder.setAt) compare:LBEventDay(event)] == NSOrderedDescending) continue;
-        if (LBDoesWork(event, reminder.task, reminder.expenseKind, reminder.checklist)) return event;
+        if (LBDoesWork(event, reminder.task, reminder.expenseKind, reminder.checklist, nil)) return event;
     }
     return nil;
 }
@@ -1162,13 +1179,168 @@ static BOOL LBChangesWork(Event *event) {
     return [keys intersectsSet:[NSSet setWithArray:event.changedValues.allKeys]];
 }
 
+#pragma mark The maker's plans
+
+/* Objects in the order of their ids, the same on every device. */
+static NSArray *LBInIDOrder(id<NSFastEnumeration> objects) {
+    NSMutableArray *list = [NSMutableArray array];
+    for (id object in objects) [list addObject:object];
+    NSString * (^key)(NSManagedObject *) = ^NSString *(NSManagedObject *object) {
+        if (object.entity.attributesByName[@"id"]) return [[object valueForKey:@"id"] UUIDString] ?: @"";
+        return object.objectID.URIRepresentation.absoluteString;
+    };
+    return [list sortedArrayUsingComparator:^NSComparisonResult(NSManagedObject *a, NSManagedObject *b) { return [key(a) compare:key(b)]; }];
+}
+
+/* The schedule of the asset that follows the plan task now (not ended);
+   nil when none. */
+static Schedule *LBPlanScheduleOf(Asset *asset, PlanTask *task) {
+    for (Schedule *schedule in task.schedules) {
+        if (!schedule.isDeleted && schedule.vehicle == asset && !schedule.endedOn) return schedule;
+    }
+    return nil;
+}
+
+/* Whether a usage interval can be counted on the asset's meter: of its
+   dimension, or by trips' lengths (no meter) for a distance. */
+static BOOL LBCountsOn(Asset *asset, DistanceUnit *unit) {
+    if (!unit) return YES;
+    if (!asset.meterUnit) return [unit.dimension isEqualToString:@"distance"];
+    return [unit.dimension isEqualToString:asset.meterUnit.dimension];
+}
+
+/* The asset follows the plan task (docs/CSDP.md, derivation 17): its
+   schedule of it, made where it has none, its work and intervals the plan
+   task's (as PlanTaskOfSchedule and the others derive them at the save),
+   started from where it is counted from (nil: as -lb_startFrom: has it)
+   unless a reminder of it is open. A usage the asset's meter does not
+   count is left out where the plan recurs by time too; refused where it
+   recurs by that usage alone. */
+static BOOL LBFollow(Asset *asset, PlanTask *task, NSDate *from, NSDecimalNumber *mileage, DistanceUnit *unit, NSError **error) {
+    if (!asset || asset.isDeleted || !task || task.isDeleted) return YES;
+    NSManagedObjectContext *context = asset.managedObjectContext;
+    BOOL byUsage = task.intervalQuantity && task.intervalDistanceUnit && LBCountsOn(asset, task.intervalDistanceUnit);
+    if (!byUsage && task.duration <= 0) {
+        return LBFail(error, [NSString stringWithFormat:@"%@ cannot follow the plan of %@: it is counted in %@, and the asset's meter counts in %@",
+                                                        asset.vehicleName ?: @"The asset", task.stockItem.itemName ?: @"its product",
+                                                        task.intervalDistanceUnit.code ?: @"?", asset.meterUnit.code ?: @"its trips"]);
+    }
+    Schedule *schedule = LBPlanScheduleOf(asset, task);
+    if (!schedule) {
+        schedule = [NSEntityDescription insertNewObjectForEntityForName:NSStringFromClass([Schedule class]) inManagedObjectContext:context];
+        /* Its id named: the same on every device; after one ended, the
+           next. */
+        NSUInteger before = 0;
+        for (Schedule *each in task.schedules) {
+            if (each.vehicle == asset && !each.isDeleted) before++;
+        }
+        NSString *name = [NSString stringWithFormat:@"plan %@ of %@", LBIDText(task.id), LBIDText(asset.id)];
+        if (before) name = [name stringByAppendingFormat:@" after %lu", (unsigned long)before];
+        schedule.id = LBNamedUUID(name);
+        schedule.vehicle = asset;
+        schedule.enteredBy = asset.owner;
+        schedule.planTask = task;
+    }
+    schedule.task = task.task;
+    schedule.checklist = task.checklist;
+    schedule.intervalQuantity = byUsage ? task.intervalQuantity : nil;
+    schedule.intervalDistanceUnit = byUsage ? task.intervalDistanceUnit : nil;
+    /* No time interval is none, not 0 (its least is 1). */
+    if (task.duration > 0) schedule.duration = task.duration;
+    else [schedule setValue:nil forKey:NSStringFromSelector(@selector(duration))];
+    if (schedule.lb_openReminder) return YES;
+    /* Set when it starts counting (the change, the day its unit came in),
+       so that what is entered of the time since may do it. */
+    NSDate *now = [NSDate date];
+    NSDate *setAt = from && [from compare:now] == NSOrderedAscending ? from : now;
+    return [schedule lb_startFrom:from mileage:mileage unit:unit by:asset.owner at:setAt error:error] != nil;
+}
+
+/* The schedule no longer followed (its unit taken off the asset, its plan
+   task gone): ended today, its open reminder cancelled; it makes no more
+   (docs/CSDP.md, derivation 17). */
+static BOOL LBEndPlanSchedule(Schedule *schedule, NSError **error) {
+    if (schedule.endedOn) return YES;
+    NSDate *now = [NSDate date];
+    schedule.endedOn = LBOwnerDay(schedule.vehicle, now);
+    Reminder *open = schedule.lb_openReminder;
+    if (!open) return YES;
+    return [open lb_cancelOn:nil replacementDueDate:nil mileage:nil unit:nil by:schedule.vehicle.owner at:now replacement:NULL error:error];
+}
+
+/* When a unit came in: its first move's moment. */
+static NSDate *LBCameIn(StockUnit *unit) {
+    NSDate *first = nil;
+    for (Move *move in unit.moves) {
+        if (!move.isDeleted && move.moment && (!first || [move.moment compare:first] == NSOrderedAscending)) first = move.moment;
+    }
+    return first;
+}
+
+/* The plans the changes reach (docs/CSDP.md, derivation 17): a new asset
+   follows its product's plan, counted from when its unit came in and what
+   it was acquired at; a plan task new (no schedule follows it yet, as the
+   migration's do) gives each asset of its product its schedule, counted
+   from then, and each asset a unit of it is fitted to, counted from the
+   change; a unit fitted (no asset itself) brings its item's plan to the asset, counted from
+   the change, and one removed (not for another of its item: the change
+   does the work then) takes it away; a plan task deleted ends its
+   schedules. */
+static BOOL LBFollowChangedPlans(NSManagedObjectContext *context, NSError **error) {
+    for (NSManagedObject *object in LBInIDOrder(context.insertedObjects)) {
+        if ([object isKindOfClass:[Asset class]]) {
+            Asset *asset = (Asset *)object;
+            for (PlanTask *task in LBInIDOrder(asset.stockUnit.stockItem.planTasks)) {
+                if (!LBFollow(asset, task, LBCameIn(asset.stockUnit), asset.purchaseMileageQuantity, asset.purchaseMileageDistanceUnit, error)) {
+                    return NO;
+                }
+            }
+        } else if ([object isKindOfClass:[PlanTask class]]) {
+            PlanTask *task = (PlanTask *)object;
+            if (task.schedules.count) continue;
+            for (StockUnit *unit in LBInIDOrder(task.stockItem.stockUnits)) {
+                if (unit.isDeleted) continue;
+                if (unit.asset && !LBFollow(unit.asset, task, nil, nil, nil, error)) return NO;
+                ComponentChange *on = unit.asset ? nil : LBFittings(unit).lastObject;
+                if (on && !LBFittingEnd(unit, on) && !LBFollow(on.vehicle, task, on.timestamp, on.mileageQuantity, on.mileageDistanceUnit, error)) {
+                    return NO;
+                }
+            }
+        } else if ([object isKindOfClass:[ComponentChange class]]) {
+            ComponentChange *change = (ComponentChange *)object;
+            /* A unit that is an asset follows its own plan: it brings none
+               to what it is fitted in. */
+            StockItem *fitted = change.stockUnit.asset ? nil : change.stockUnit.stockItem;
+            StockItem *removed = change.removedStockUnit.asset ? nil : change.removedStockUnit.stockItem;
+            if (removed && removed != fitted) {
+                for (PlanTask *task in LBInIDOrder(removed.planTasks)) {
+                    Schedule *schedule = LBPlanScheduleOf(change.vehicle, task);
+                    if (schedule && !LBEndPlanSchedule(schedule, error)) return NO;
+                }
+            }
+            for (PlanTask *task in LBInIDOrder(fitted.planTasks)) {
+                if (!LBFollow(change.vehicle, task, change.timestamp, change.mileageQuantity, change.mileageDistanceUnit, error)) return NO;
+            }
+        }
+    }
+    for (NSManagedObject *object in LBInIDOrder(context.deletedObjects)) {
+        if (![object isKindOfClass:[PlanTask class]]) continue;
+        for (Schedule *schedule in LBInIDOrder(((PlanTask *)object).schedules)) {
+            if (!schedule.isDeleted && !LBEndPlanSchedule(schedule, error)) return NO;
+        }
+    }
+    return YES;
+}
+
 @implementation NSManagedObjectContext (LBProcedures)
 
 - (BOOL)lb_completeRemindersOfChangedEvents:(NSError **)error {
     /* What closing a reminder reads first: the readings of a vehicle with
-       no meter; and what a component change moves in stock. */
+       no meter; and what a component change moves in stock. Then the
+       plans the changes reach. */
     LBSettleTripReadings(self);
     LBMoveFittedUnits(self);
+    if (!LBFollowChangedPlans(self, error)) return NO;
     NSMutableSet<Vehicle *> *vehicles = [NSMutableSet set];
     NSString *vehicleKey = NSStringFromSelector(@selector(vehicle));
     NSMutableSet *objects = [NSMutableSet setWithSet:self.insertedObjects];

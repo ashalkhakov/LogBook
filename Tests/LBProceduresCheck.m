@@ -47,6 +47,10 @@
 #import "LBAssets.h"
 #import "LBVehicleSummary.h"
 #import "Asset+CoreDataClass.h"
+#import "PlanTask+CoreDataClass.h"
+#import "Checklist+CoreDataClass.h"
+#import "Rescheduling+CoreDataClass.h"
+#import "Reminder+CoreDataClass.h"
 
 static NSUInteger LBFailures;
 static NSManagedObjectModel *LBModel;
@@ -1097,6 +1101,176 @@ static void LBFuelAndHierarchy(void) {
             battery.parent.vehicleName);
 }
 
+/* Maintenance plans (docs/CSDP.md, A maintenance plan). */
+static PlanTask *LBPlanTask(LBWorld *world, StockItem *item, unsigned n, NSString *task, Checklist *checklist, NSString *km, int32_t months) {
+    PlanTask *plan = LBInsert([PlanTask class], world.context);
+    plan.id = LBID(n);
+    plan.stockItem = item;
+    plan.task = task;
+    plan.checklist = checklist;
+    if (km) {
+        plan.intervalQuantity = LBNumber(km);
+        plan.intervalDistanceUnit = world.km;
+    }
+    if (months > 0) plan.duration = months;
+    return plan;
+}
+
+/* The asset's schedule of the plan task: the one not ended, else the
+   latest ended. */
+static Schedule *LBFollowing(Asset *asset, PlanTask *plan) {
+    Schedule *found = nil;
+    for (Schedule *schedule in plan.schedules) {
+        if (schedule.vehicle != asset || schedule.isDeleted) continue;
+        if (!schedule.endedOn) return schedule;
+        found = schedule;
+    }
+    return found;
+}
+
+static NSString *LBWarned(NSManagedObject *object) {
+    NSMutableArray *said = [NSMutableArray array];
+    if ([object respondsToSelector:@selector(orm_deonticViolations)]) {
+        for (NSError *each in [(id)object orm_deonticViolations]) [said addObject:each.localizedDescription ?: @""];
+    }
+    return [said componentsJoinedByString:@"; "];
+}
+
+static void LBPlans(void) {
+    LBWorld *world = LBNewWorld();
+    NSDate *day = LBMoment(@"2000-01-01");
+    Asset *first = LBMakeAsset([Asset class], world.anna, @"EcoFlow", @"River 2 Pro", @"R2P-0042", day, nil, nil, nil, NULL);
+    first.id = LBID(20);
+    first.vehicleName = @"River power";
+    first.meterUnit = LBUnit(@"cycles", world.context);
+    LBSave(world.context, @"a power station");
+    StockItem *river = first.stockUnit.stockItem;
+    Checklist *battery = LBInsert([Checklist class], world.context);
+    battery.id = LBID(21);
+    battery.checklistName = @"Battery check";
+    battery.user = world.anna;
+    PlanTask *check = LBPlanTask(world, river, 22, nil, battery, nil, 6);
+    PlanTask *firmware = LBPlanTask(world, river, 23, @"Firmware update", nil, nil, 12);
+    LBCheck(@"the maker's plan for the River 2 Pro: a battery check every 6 months, a firmware update every 12", LBSave(world.context, @"the plan"),
+            nil);
+    Schedule *checked = LBFollowing(first, check), *updated = LBFollowing(first, firmware);
+    LBCheck(@"the station there before follows it: its schedules the plan's, each started", checked.checklist == battery && checked.duration == 6
+                && [updated.task isEqualToString:@"Firmware update"] && updated.duration == 12 && checked.lb_openReminder && updated.lb_openReminder,
+            [NSString stringWithFormat:@"%@ %d, %@ %d", checked.checklist.checklistName, checked.duration, updated.task, updated.duration]);
+    Asset *second = LBMakeAsset([Asset class], world.anna, @"EcoFlow", @"River 2 Pro", @"R2P-0043", day, nil, nil, nil, NULL);
+    second.id = LBID(24);
+    second.vehicleName = @"River two";
+    second.meterUnit = first.meterUnit;
+    LBSave(world.context, @"a second station");
+    Reminder *due = LBFollowing(second, firmware).lb_openReminder;
+    LBCheck(@"one added after follows it from when it came in: its update due 12 months on, 2001-01-01",
+            second.stockUnit.stockItem == river && [LBText(due.dueDate) hasPrefix:@"2001-01-01"], LBDue(due));
+    firmware.duration = 24;
+    LBSave(world.context, @"the plan revised");
+    LBCheck(@"the plan revised (every 24 months): both stations' schedules follow it",
+            LBFollowing(first, firmware).duration == 24 && LBFollowing(second, firmware).duration == 24,
+            [NSString stringWithFormat:@"%d %d", LBFollowing(first, firmware).duration, LBFollowing(second, firmware).duration]);
+    NSError *error = nil;
+    Schedule *changed = [updated lb_continueWithTask:@"Firmware update" expenseKind:nil checklist:nil interval:nil unit:nil months:36 note:nil
+                                                  by:world.anna at:[NSDate date] cancelled:NULL error:&error];
+    LBCheck(@"a plan's schedule changed by its owner: refused, the plan is changed in Stock", !changed && [error.localizedDescription containsString:@"maker's plan"],
+            error.localizedDescription);
+
+    /* Moved and cancelled: recorded, and warned of. */
+    Rescheduling *moved = [due lb_rescheduleToDate:LBMoment(@"2001-03-01") mileage:nil unit:nil note:nil by:world.anna at:[NSDate date] error:&error];
+    BOOL saved = moved && LBSave(world.context, @"moved");
+    LBCheck(@"a plan's reminder moved: saved, and warned of", saved && [LBWarned(moved) containsString:@"forbidden"], LBWarned(moved) ?: error);
+    Reminder *open = LBFollowing(first, check).lb_openReminder;
+    saved = [open lb_cancelOn:nil replacementDueDate:nil mileage:nil unit:nil by:world.anna at:[NSDate date] replacement:NULL error:&error]
+            && LBSave(world.context, @"cancelled");
+    LBCheck(@"a plan's reminder cancelled: saved, and warned of", saved && [LBWarned(open) containsString:@"forbidden"], LBWarned(open) ?: error);
+
+    /* A second schedule of the same plan task: refused. */
+    Schedule *twice = LBInsert([Schedule class], world.context);
+    twice.id = LBID(25);
+    twice.vehicle = first;
+    twice.enteredBy = world.anna;
+    twice.planTask = check;
+    twice.checklist = battery;
+    twice.duration = 6;
+    NSString *why = LBRefusal(world.context);
+    LBCheck(@"an asset following a plan task twice: refused", [why containsString:@"follows that PlanTask"], why);
+
+    /* A plan by kilometres for what counts cycles, and by no time: refused. */
+    LBPlanTask(world, river, 26, @"Fan clean", nil, @"1000", 0);
+    why = LBRefusal(world.context);
+    LBCheck(@"a plan by km for a station metered in cycles: refused, said so", [why containsString:@"counted in km"], why);
+
+    /* A chain's plan, brought to the bicycle it is fitted to. */
+    Vehicle *bike = LBMakeAsset([Vehicle class], world.anna, @"Surly", @"Long Haul Trucker", nil, day, nil, nil, nil, NULL);
+    bike.id = LBID(30);
+    bike.vehicleName = @"Commuter";
+    bike.vehicleKind = @"Bicycle";
+    bike.meterUnit = world.km;
+    LBSave(world.context, @"a bicycle");
+    Catalog *catalog = river.catalog;
+    StockItem * (^itemOf)(unsigned, NSString *) = ^StockItem *(unsigned n, NSString *name) {
+        StockItem *item = LBInsert([StockItem class], world.context);
+        item.id = LBID(n);
+        item.itemName = name;
+        item.catalog = catalog;
+        item.created = [NSDate date];
+        item.sku = [NSString stringWithFormat:@"PL-%u", n];
+        return item;
+    };
+    StockUnit * (^unitOf)(unsigned, StockItem *) = ^StockUnit *(unsigned n, StockItem *item) {
+        StockUnit *unit = LBInsert([StockUnit class], world.context);
+        unit.id = LBID(n);
+        unit.stockItem = item;
+        return unit;
+    };
+    StockItem *chains = itemOf(36, @"KMC X9");
+    StockUnit *kmc = unitOf(37, chains);
+    PlanTask *chainPlan = LBPlanTask(world, chains, 31, @"Chain", nil, @"3000", 0);
+    LBSave(world.context, @"a chain and its plan");
+    ComponentChange * (^change)(unsigned, NSString *, NSString *, StockUnit *) = ^ComponentChange *(unsigned n, NSString *moment, NSString *km, StockUnit *unit) {
+        ComponentChange *made = LBInsert([ComponentChange class], world.context);
+        LBEvent(world, made, bike, n, moment);
+        made.mileageQuantity = LBNumber(km);
+        made.mileageDistanceUnit = world.km;
+        made.stockUnit = unit;
+        return made;
+    };
+    change(32, @"2026-08-01 10:00", @"3900", kmc);
+    LBSave(world.context, @"the chain fitted");
+    Schedule *chainSchedule = LBFollowing(bike, chainPlan);
+    LBCheck(@"the chain fitted brings its plan: the bicycle's chain due 3000 km on, at 6900", LBIs(chainSchedule.lb_openReminder.dueMileageQuantity, @"6900"),
+            LBDue(chainSchedule.lb_openReminder));
+    StockUnit *another = unitOf(33, chains);
+    change(34, @"2026-10-01 10:00", @"6800", another).removedStockUnit = kmc;
+    LBSave(world.context, @"a new chain of the same");
+    Reminder *next = LBFollowing(bike, chainPlan).lb_openReminder;
+    LBCheck(@"replaced by another of its item: the change did the work, the next due at 9800", LBIs(next.dueMileageQuantity, @"9800"), LBDue(next));
+    StockUnit *belt = unitOf(39, itemOf(38, @"Gates CDX belt"));
+    change(35, @"2026-11-01 10:00", @"7000", belt).removedStockUnit = another;
+    Reminder *wasOpen = next;
+    saved = LBSave(world.context, @"a belt");
+    Schedule *ended = LBFollowing(bike, chainPlan);
+    LBCheck(@"the chain taken off for a belt: its schedule ended, its reminder cancelled, none made; no warning",
+            saved && ended.endedOn && wasOpen.cancelDate && !ended.lb_openReminder && !LBWarned(wasOpen).length,
+            [NSString stringWithFormat:@"ended %@, cancelled %@, open %@, warned %@", ended.endedOn, wasOpen.cancelDate,
+                                       LBDue(ended.lb_openReminder), LBWarned(wasOpen)]);
+    change(40, @"2026-11-20 10:00", @"7400", unitOf(41, chains)).removedStockUnit = belt;
+    saved = LBSave(world.context, @"a chain again");
+    Schedule *again = LBFollowing(bike, chainPlan);
+    LBCheck(@"a chain fitted again: a new schedule follows the plan, the chain due at 10400; the ended one as it was",
+            saved && again != ended && !again.endedOn && LBIs(again.lb_openReminder.dueMileageQuantity, @"10400") && !ended.lb_openReminder,
+            LBDue(again.lb_openReminder));
+
+    /* A plan task deleted: its schedules' reminders gone. */
+    Schedule *secondCheck = LBFollowing(second, check);
+    Reminder *checkDue = secondCheck.lb_openReminder;
+    [world.context deleteObject:check];
+    LBCheck(@"a plan task deleted: the stations' schedules of it ended, their reminders cancelled",
+            LBSave(world.context, @"the check gone") && secondCheck.endedOn && checkDue.cancelDate && !secondCheck.lb_openReminder,
+            [NSString stringWithFormat:@"%@ %@", secondCheck.endedOn, checkDue.cancelDate]);
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -1127,6 +1301,7 @@ int main(int argc, const char *argv[]) {
         LBTimeZones();
         LBKindsAndComponents();
         LBFuelAndHierarchy();
+        LBPlans();
         printf("procedures: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

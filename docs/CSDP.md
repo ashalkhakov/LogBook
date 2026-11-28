@@ -1329,13 +1329,17 @@ PlanTask recurs every Duration                  pt1 | 6
 PlanTask has Note                               pt2 | 'From the app'
 Schedule follows PlanTask                       sc20 | pt1
                                                 sc22 | pt3
+Schedule was ended on Date                      sc24 | 2026-11-01
 Asset is fitted in Asset *                      a4 | a3
 Record concerns Asset *                         d83 | a4
                                                 d83 | a3
 ```
 
 \* Derived (step 5). A schedule that follows a plan task has its work and
-intervals from it (derived), none of its own. A unit that is an asset is
+intervals from it (derived), none of its own. One ends when the unit that
+brought the plan is taken off its asset, or its plan task is deleted
+(sc24, the chain's on the bicycle, once a belt replaced it): its open
+reminder is cancelled then, and it makes no more. A unit that is an asset is
 put in service with a move
 of reason 'Put in service' made for it, and taken out with 'Taken out of
 service', beside 'Fitted' and 'Removed'.
@@ -1832,7 +1836,10 @@ one order but a reminder's order is one of many over the years.
   order. And from a reminder: one order per reminder.
 - **WorkRequest was raised from Answer:** an answer raises at most one.
 - **A schedule's asset and the plan task it follows:** an asset follows
-  each plan task once, an external uniqueness over the two.
+  each plan task once at a time: ended schedules aside, at most one of the
+  asset's follows a plan task. Its roles join through Record (a schedule's
+  asset is a record's), so it is a rule (`OnePlanScheduleEach`), not a
+  uniqueness ORMKit can check.
 - **Income was for Trip:** a trip is paid by at most one income.
 - **An answer's inspection and question:** an inspection answers each
   question at most once. An external uniqueness over the two, so the
@@ -2043,9 +2050,14 @@ Facts worked out from others by rules, not arithmetic:
     derivation* of the schedules themselves: the service layer, putting a
     unit in service or fitting one, makes a schedule that follows each
     such plan task, counted from then, and, taking it out or removing it,
-    cancels that schedule's open reminder; a plan task added later gives
-    each such asset its schedule the same way ([PROCESSES.md](PROCESSES.md)).
-    What the schedule's work and intervals are is derived (14).
+    ends that schedule and cancels its open reminder; fitted again, a new
+    schedule follows the plan. A plan task added later gives each such
+    asset its schedule the same way, and one deleted ends its schedules
+    ([PROCESSES.md](PROCESSES.md)). A unit fitted in place of another of its
+    item does the plan task's work, as one of the category the task names
+    does. What the schedule's work and intervals are is derived (14):
+    partly derived and stored, the plan task's for one that follows it,
+    the owner's for their own.
 
 ## Step 6: value, set-comparison and subtype constraints
 
@@ -2244,8 +2256,10 @@ derivation 7) is read from it.
 - *Failure was of StockUnit* only for a unit fitted in the failure's
   asset then, or the asset's own unit;
 - *Schedule follows PlanTask* only where the plan task is of the item of
-  the schedule's asset's unit, or of a unit fitted in that asset (a join
-  subset).
+  the schedule's asset's unit, or of a unit fitted in that asset. The
+  service layer makes such schedules only (derivation 17), and ends them
+  when the unit is taken off; an ended one keeps its plan task, so this is
+  no join subset of the model, which history would break.
 
 **Exclusion** (not both):
 - a tyre change doesn't fit and remove the same set (a set already on
@@ -2265,7 +2279,10 @@ derivation 7) is read from it.
   WorkRequest*: a request is turned down or ordered, not both;
 - *Schedule follows PlanTask* and the schedule's own work and intervals:
   a schedule that follows a plan has none of its own, so there is nothing
-  of it for the owner to change.
+  of it for the owner to change. Its work and intervals are derived from
+  the plan task and stored (partly derived: `PlanTaskOfSchedule` and its
+  like), and changing such a schedule is refused (the plan is changed in
+  Stock); a plan's work is never a kind of expense.
 
 ### For ORMKit
 
@@ -2359,7 +2376,9 @@ afterwards, so the rules about the meter and time are deontic:
 - **The maker's plan ought to be kept:** a reminder of a schedule that
   follows a plan task ought not to be moved (rescheduled) or cancelled.
   Doing so is recorded, as any reminder's is, and the app warns that it
-  departs from the plan.
+  departs from the plan (`PlanReminderMoved`, `PlanReminderCancelled`). A
+  reminder cancelled as its schedule ends (the unit taken off) departs
+  from nothing: the plan is no longer the asset's to follow.
 
 Trips may overlap and leave gaps (step 1): no constraint at all.
 
@@ -2412,7 +2431,8 @@ Each derivable fact is derived, unless kept for a reason:
   are its unit's and its purchase's now, never entered twice (derivation
   14), and the migration moves what was stored there.
 - **A plan's schedules' work and intervals** are the plan task's, never
-  copied: the plan revised, every asset follows the revision.
+  entered: derived and stored, so the plan revised, every asset follows
+  the revision at its save.
 - **What is fitted in what, what a record concerns, an asset's state:**
   derived from component changes, downtime, sales and disposals.
 - **A reminder's asset,** for one from a schedule, is the schedule's.
