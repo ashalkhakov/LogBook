@@ -1,5 +1,6 @@
 #import "LBStockProcedures.h"
 #import "PlanTask+CoreDataClass.h"
+#import "VehicleKind+CoreDataClass.h"
 #import "LogbookValidation.h"
 #import "Income+CoreDataClass.h"
 #import "Record+CoreDataClass.h"
@@ -1258,6 +1259,19 @@ static DistanceUnit *LBDistanceUnitOf(User *owner) {
     self.stockUnit.serialNumber = serial.length ? serial : nil;
 }
 
++ (NSSet *)keyPathsForValuesAffectingLb_state {
+    return [NSSet setWithObjects:@"disposalDate", @"records", @"stockUnit.location", nil];
+}
+
+- (NSString *)lb_state {
+    if (self.disposalDate) return @"Disposed";
+    for (Record *record in self.records) {
+        if ([record isKindOfClass:[Income class]] && !record.isDeleted && [((Income *)record).incomeKind isEqualToString:@"Sale"]) return @"Disposed";
+    }
+    if (self.stockUnit.location) return @"In stock";
+    return @"In service";
+}
+
 + (NSSet *)keyPathsForValuesAffectingLb_components {
     return [NSSet setWithObject:@"components"];
 }
@@ -1379,8 +1393,9 @@ static Asset *LBMakeAssetOf(Class cls, Asset *existing, User *owner, Catalog *ca
 #pragma mark A store from before assets
 
 /* The model a store from before assets is first migrated to: this one,
-   nothing in it a must, and a vehicle's make, model and VIN kept where
-   they were, for the migration to read. */
+   nothing in it a must, and a vehicle's make, model, VIN and kind (a name,
+   before kinds were classes) kept where they were, for the migration to
+   read. */
 static NSManagedObjectModel *LBMigratingModel(NSManagedObjectModel *model) {
     NSManagedObjectModel *migrating = [model copy];
     for (NSEntityDescription *entity in migrating.entities) {
@@ -1388,7 +1403,7 @@ static NSManagedObjectModel *LBMigratingModel(NSManagedObjectModel *model) {
     }
     NSEntityDescription *vehicle = migrating.entitiesByName[@"Vehicle"];
     NSMutableArray *properties = [vehicle.properties mutableCopy];
-    for (NSString *name in @[ @"make", @"carModel", @"vin" ]) {
+    for (NSString *name in @[ @"make", @"carModel", @"vin", @"vehicleKind" ]) {
         NSAttributeDescription *attribute = [[NSAttributeDescription alloc] init];
         attribute.name = name;
         attribute.attributeType = NSStringAttributeType;
@@ -1405,10 +1420,6 @@ BOOL LBIsStoreBeforeAssets(NSString *type, NSURL *url, NSDictionary *options) {
     return hashes[@"Vehicle"] != nil && hashes[@"Asset"] == nil;
 }
 
-/* What the migrating model holds made what this one asks: each vehicle a
-   unit of its product, bought as it was (or come in by an opening move),
-   put in service; metered in its readings' unit; the units' dimensions
-   (the reference data); the sale's kind 'Sale'. */
 /* Each migrated asset's schedules made its product's plan (docs/CSDP.md, A
    unit that is an asset): a plan task for each work and intervals of the
    product's assets' schedules (a task or a checklist; one gone on in
@@ -1474,6 +1485,11 @@ static BOOL LBPlansOfMigrated(NSManagedObjectContext *context, NSError **error) 
     return YES;
 }
 
+/* What the migrating model holds made what this one asks: each vehicle a
+   unit of its product, bought as it was (or come in by an opening move),
+   put in service; metered in its readings' unit; of its kind, the class
+   of its name; the units' dimensions and the vehicle kinds (the reference
+   data); its schedules its product's plan; the sale's kind 'Sale'. */
 static BOOL LBFillMigrated(NSManagedObjectContext *context, NSError **error) {
     NSError * __autoreleasing ignored = nil;
     if (!error) error = &ignored;
@@ -1517,9 +1533,17 @@ static BOOL LBFillMigrated(NSManagedObjectContext *context, NSError **error) {
             }
             vehicle.meterUnit = unit ?: LBDistanceUnitOf(vehicle.owner);
         }
+        /* Its kind, the class of the name it had (seeded above). */
+        NSString *kind = [vehicle valueForKey:@"vehicleKind"];
+        if (kind.length) {
+            vehicle.lb_kind = kind;
+            if (!vehicle.kind) return LBRefuse(error, [NSString stringWithFormat:@"%@ is of a kind there is no class of: %@",
+                                                                               vehicle.vehicleName ?: @"A vehicle", kind]);
+        }
         [vehicle setValue:nil forKey:@"make"];
         [vehicle setValue:nil forKey:@"carModel"];
         [vehicle setValue:nil forKey:@"vin"];
+        [vehicle setValue:nil forKey:@"vehicleKind"];
     }
     if (!LBPlansOfMigrated(context, error)) return NO;
     /* An asset's sale: of kind 'Sale', not 'Car sale'. */
@@ -1607,6 +1631,29 @@ BOOL LBMigrateStoreBeforeAssets(NSString *type, NSURL *url, NSManagedObjectModel
 - (void)setLb_months:(NSNumber *)months {
     if (months.intValue > 0) self.duration = months.intValue;
     else [self setValue:nil forKey:NSStringFromSelector(@selector(duration))];
+}
+
+@end
+
+@implementation Vehicle (LBStock)
+
++ (NSSet *)keyPathsForValuesAffectingLb_kind {
+    return [NSSet setWithObject:@"kind"];
+}
+
+- (NSString *)lb_kind {
+    return self.kind.name;
+}
+
+- (void)setLb_kind:(NSString *)name {
+    if ([self.kind.name isEqualToString:name]) return;
+    VehicleKind *kind = nil;
+    if (name.length && self.managedObjectContext) {
+        NSFetchRequest *fetch = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([VehicleKind class])];
+        fetch.predicate = [NSPredicate predicateWithFormat:@"name == %@", name];
+        kind = [[self.managedObjectContext executeFetchRequest:fetch error:NULL] firstObject];
+    }
+    self.kind = kind;
 }
 
 @end

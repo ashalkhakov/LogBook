@@ -3046,17 +3046,17 @@ static void LBBicycleSteps(LBMainWindowController *controller) {
     LBSpin();
     LBAddVehicle(window);
     Vehicle *bike = controller.vehicles.selectedObjects.firstObject;
-    LBCheck(@"a new vehicle, a car until said otherwise", [bike.vehicleKind isEqualToString:@"Car"], bike.vehicleKind);
+    LBCheck(@"a new vehicle, a car until said otherwise", [bike.lb_kind isEqualToString:@"Car"], bike.lb_kind);
     LBType(window, @"vehicleName", @"Self-test Bicycle");
     LBType(window, @"make", @"Surly");
     LBType(window, @"carModel", @"Long Haul Trucker");
     LBChoose(window, @"vehicleKind", @"Bicycle");
-    LBCheck(@"its Kind chosen: a bicycle", [bike.vehicleKind isEqualToString:@"Bicycle"], bike.vehicleKind);
+    LBCheck(@"its Kind chosen: a bicycle", [bike.lb_kind isEqualToString:@"Bicycle"], bike.lb_kind);
     LBMenuCommand(window, @selector(save:));
     LBCheck(@"a bicycle saved with no fuel and no year", !controller.store.context.hasChanges && !controller.lastError,
             controller.lastError.localizedRecoverySuggestion ?: controller.lastError);
     Vehicle *kept = LBVehicleNamed(@"Self-test Bicycle");
-    LBCheck(@"the server has it, a bicycle", [kept.vehicleKind isEqualToString:@"Bicycle"] && !kept.fuel, kept.vehicleKind);
+    LBCheck(@"the server has it, a bicycle", [kept.lb_kind isEqualToString:@"Bicycle"] && !kept.fuel, kept.lb_kind);
 
     /* No meter: its readings its trips' lengths, added up. */
     [tabs selectTabViewItemWithIdentifier:@"vehicle"];
@@ -3146,6 +3146,14 @@ static void LBBicycleSteps(LBMainWindowController *controller) {
                 && !fittedIn.stringValue.length && [fittedIn.placeholderString isEqualToString:@"—"] && !components.isEditable
                 && !fittedIn.isEditable,
             [NSString stringWithFormat:@"%@ / %@ (%@)", components.stringValue, fittedIn.stringValue, fittedIn.placeholderString]);
+    NSTextField *state = (NSTextField *)LBControl(window.contentView, @"assetState");
+    LBChoose(window, @"criticality", @"High");
+    LBMenuCommand(window, @selector(save:));
+    if (LBAppStore.local) [LBAppStore syncAndWait:NULL];
+    Vehicle *rated = [LBServerObjects([Vehicle class], [NSPredicate predicateWithFormat:@"vehicleName == %@", @"Self-test Bicycle"]) firstObject];
+    LBCheck(@"its State, In service; its Criticality chosen, High, the server's",
+            [state.stringValue isEqualToString:@"In service"] && [rated.criticality isEqualToString:@"High"],
+            [NSString stringWithFormat:@"%@, %@ (here %@); %@", state.stringValue, rated.criticality, bike.criticality, controller.lastError ?: @""]);
     [tabs selectTabViewItemWithIdentifier:@"records"];
     LBSpin();
     LBAddRecord(controller, [FillUp class]);
@@ -3199,9 +3207,9 @@ static void LBMainTrackSteps(LBMainWindowController *controller) {
         if ([record isKindOfClass:[Trip class]]) trips++;
         if ([record isKindOfClass:[ComponentChange class]]) changes++;
     }
-    LBCheck(@"the server has Commuter, a bicycle, its 3 trips and 6 component changes", [there.vehicleKind isEqualToString:@"Bicycle"]
+    LBCheck(@"the server has Commuter, a bicycle, its 3 trips and 6 component changes", [there.lb_kind isEqualToString:@"Bicycle"]
                 && trips == 3 && changes == 6,
-            [NSString stringWithFormat:@"%@: %lu trips, %lu changes; issues %@", there.vehicleKind, (unsigned long)trips, (unsigned long)changes,
+            [NSString stringWithFormat:@"%@: %lu trips, %lu changes; issues %@", there.lb_kind, (unsigned long)trips, (unsigned long)changes,
                                        [LBAppStore.local.issues valueForKey:@"message"]]);
     done = [controller importFile:[NSURL fileURLWithPath:path] intoVehicle:nil made:&count skipped:&skipped error:&error];
     LBCheck(@"imported again: nothing made, 27 there", done && count == 0 && skipped == 27,

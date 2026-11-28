@@ -764,6 +764,8 @@ typedef NS_ENUM(NSInteger, LBVehicleSection) {
                    that is an asset). */
                 if (vehicle.parent) [rows addObject:@[ @"Fitted in", vehicle.parent.vehicleName ?: @"" ]];
                 if (vehicle.lb_components) [rows addObject:@[ @"Components", vehicle.lb_components ]];
+                [rows addObject:@[ @"State", vehicle.lb_state ]];
+                if (vehicle.criticality) [rows addObject:@[ @"Criticality", vehicle.criticality ]];
             }
             [rows addObject:@[ @"Add a Vehicle…", @"" ]];
             return rows;

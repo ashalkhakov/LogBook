@@ -610,6 +610,54 @@
                                                 </binding>
                                             </connections>
                                         </textField>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="criticalityLabel">
+                                            <rect key="frame" x="404" y="377" width="100" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="Criticality:" id="criticalityLabelCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <popUpButton verticalHuggingPriority="750" identifier="criticality" id="criticality">
+                                            <rect key="frame" x="509" y="370" width="206" height="26"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <popUpButtonCell key="cell" type="push" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" borderStyle="border" imageScaling="proportionallyDown" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" id="criticalityCell">
+                                                <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                                <menu key="menu" id="criticalityMenu"/>
+                                            </popUpButtonCell>
+                                            <connections>
+                                                <binding destination="-2" name="content" keyPath="criticalities" id="criticalityContent">
+                                                    <dictionary key="options">
+                                                        <bool key="NSInsertsNullPlaceholder" value="YES"/>
+                                                        <string key="NSNullPlaceholder">Not assessed</string>
+                                                    </dictionary>
+                                                </binding>
+                                                <binding destination="vehicles" name="selectedValue" keyPath="selection.criticality" previousBinding="criticalityContent" id="criticalityValue"/>
+                                            </connections>
+                                        </popUpButton>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="assetStateLabel">
+                                            <rect key="frame" x="404" y="345" width="100" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="clipping" alignment="right" title="State:" id="assetStateLabelCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                        </textField>
+                                        <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" identifier="assetState" id="assetState">
+                                            <rect key="frame" x="510" y="345" width="204" height="17"/>
+                                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
+                                            <textFieldCell key="cell" lineBreakMode="truncatingTail" selectable="YES" title="—" id="assetStateCell">
+                                                <font key="font" metaFont="system"/>
+                                                <color key="textColor" name="labelColor" catalog="System" colorSpace="catalog"/>
+                                                <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
+                                            </textFieldCell>
+                                            <connections>
+                                                <binding destination="vehicles" name="value" keyPath="selection.lb_state" id="assetStateValue"/>
+                                            </connections>
+                                        </textField>
                                         <textField horizontalHuggingPriority="251" verticalHuggingPriority="750" id="vehicleKindLabel">
                                             <rect key="frame" x="12" y="409" width="112" height="17"/>
                                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
@@ -629,7 +677,7 @@
                                             </popUpButtonCell>
                                             <connections>
                                                 <binding destination="-2" name="content" keyPath="vehicleKinds" id="vehicleKindContent"/>
-                                                <binding destination="vehicles" name="selectedValue" keyPath="selection.vehicleKind" previousBinding="vehicleKindContent" id="vehicleKindChosen"/>
+                                                <binding destination="vehicles" name="selectedValue" keyPath="selection.lb_kind" previousBinding="vehicleKindContent" id="vehicleKindChosen"/>
                                             </connections>
                                         </popUpButton>
                                                             <button identifier="vehicleHasNoMeter" id="vehicleHasNoMeter">

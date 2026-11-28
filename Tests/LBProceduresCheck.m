@@ -48,6 +48,10 @@
 #import "LBVehicleSummary.h"
 #import "Asset+CoreDataClass.h"
 #import "PlanTask+CoreDataClass.h"
+#import "VehicleKind+CoreDataClass.h"
+#import "EquipmentClass+CoreDataClass.h"
+#import "ClassAttributeUnit+CoreDataClass.h"
+#import "AssetRating+CoreDataClass.h"
 #import "Checklist+CoreDataClass.h"
 #import "Rescheduling+CoreDataClass.h"
 #import "Reminder+CoreDataClass.h"
@@ -866,12 +870,12 @@ static void LBKindsAndComponents(void) {
     Vehicle *bike = LBMakeAsset([Vehicle class], world.anna, @"Surly", @"Long Haul Trucker", nil, [NSDate dateWithTimeIntervalSince1970:946684800], nil, nil, nil, NULL);
     bike.id = LBID(2);
     bike.vehicleName = @"Commuter";
-    bike.vehicleKind = @"Bicycle";
+    bike.lb_kind = @"Bicycle";
     LBCheck(@"a bicycle: no fuel, no year", LBSave(world.context, @"a bicycle"), nil);
     bike.fuel = @"Petrol";
     LBCheck(@"a bicycle that uses a fuel: refused", LBRefused(world.context), nil);
     Vehicle *car = LBVehicle(world, 3, @"Polo");
-    car.vehicleKind = @"Car";
+    car.lb_kind = @"Car";
     car.fuel = nil;
     LBCheck(@"a car that uses no fuel: refused", LBRefused(world.context), nil);
     world.golf.fuel = nil;
@@ -1205,7 +1209,7 @@ static void LBPlans(void) {
     Vehicle *bike = LBMakeAsset([Vehicle class], world.anna, @"Surly", @"Long Haul Trucker", nil, day, nil, nil, nil, NULL);
     bike.id = LBID(30);
     bike.vehicleName = @"Commuter";
-    bike.vehicleKind = @"Bicycle";
+    bike.lb_kind = @"Bicycle";
     bike.meterUnit = world.km;
     LBSave(world.context, @"a bicycle");
     Catalog *catalog = river.catalog;
@@ -1271,6 +1275,65 @@ static void LBPlans(void) {
             [NSString stringWithFormat:@"%@ %@", secondCheck.endedOn, checkDue.cancelDate]);
 }
 
+/* Equipment classes, criticality, disposal and state (docs/CSDP.md, An
+   asset). */
+static void LBClasses(void) {
+    LBWorld *world = LBNewWorld();
+    NSFetchRequest *kinds = [NSFetchRequest fetchRequestWithEntityName:NSStringFromClass([VehicleKind class])];
+    NSArray *names = [[[world.context executeFetchRequest:kinds error:NULL] valueForKey:@"name"] sortedArrayUsingSelector:@selector(compare:)];
+    LBCheck(@"every store starts with the vehicle kinds, classes: Bicycle, Car, Motorcycle", [names isEqual:(@[ @"Bicycle", @"Car", @"Motorcycle" ])],
+            names);
+    world.golf.lb_kind = @"Car";
+    LBCheck(@"a vehicle's kind, by name: its class, a VehicleKind", LBSave(world.context, @"the Golf a car")
+                && [world.golf.kind isKindOfClass:[VehicleKind class]] && [world.golf.kind.name isEqualToString:@"Car"]
+                && [world.golf.kind.power isEqualToString:@"Engine"],
+            world.golf.kind.name);
+    EquipmentClass *generators = LBInsert([EquipmentClass class], world.context);
+    generators.name = @"Generator";
+    generators.equipmentCategory = @"Electrical";
+    ClassAttributeUnit *power = LBInsert([ClassAttributeUnit class], world.context);
+    power.id = LBID(40);
+    power.equipmentClass = generators;
+    power.classAttribute = @"Rated power";
+    power.attributeUnit = @"kW";
+    NSDate *day = LBMoment(@"2024-04-10");
+    Asset *generator = LBMakeAsset([Asset class], world.anna, @"Honda", @"EU22i", nil, day, nil, nil, nil, NULL);
+    generator.id = LBID(41);
+    generator.vehicleName = @"Generator";
+    generator.meterUnit = LBUnit(@"h", world.context);
+    generator.equipmentClass = generators;
+    AssetRating *rated = LBInsert([AssetRating class], world.context);
+    rated.id = LBID(42);
+    rated.asset = generator;
+    rated.classAttribute = @"Rated power";
+    rated.rating = LBNumber(@"2.2");
+    generator.criticality = @"High";
+    BOOL saved = LBSave(world.context, @"a generator");
+    LBCheck(@"a generator of the class Generator (Electrical), rated 2.2 kW; in service", saved && generator.equipmentClass == generators
+                && LBIs(generator.assetRatings.anyObject.rating, @"2.2") && [generator.lb_state isEqualToString:@"In service"],
+            generator.lb_state);
+    LBCheck(@"critical, with no schedule: saved, and warned of", [LBWarned(generator) containsString:@"forbidden"], LBWarned(generator));
+    Schedule *oil = LBInsert([Schedule class], world.context);
+    oil.id = LBID(43);
+    oil.vehicle = generator;
+    oil.enteredBy = world.anna;
+    oil.task = @"Oil change";
+    oil.duration = 12;
+    [oil lb_startFrom:nil mileage:nil unit:nil by:world.anna at:[NSDate date] error:NULL];
+    LBCheck(@"given a schedule: no warning", LBSave(world.context, @"its oil") && !LBWarned(generator).length, LBWarned(generator));
+    world.golf.equipmentClass = generators;
+    NSString *why = LBRefusal(world.context);
+    LBCheck(@"a vehicle of a class: refused, its kind is its class", [why containsString:@"is of some EquipmentClass"], why);
+    generator.equipmentClass = world.golf.kind;
+    why = LBRefusal(world.context);
+    LBCheck(@"an asset that is no vehicle of a vehicle kind: refused", [why containsString:@"VehicleKind"], why);
+    generator.disposalDate = LBMoment(@"2024-01-01");
+    why = LBRefusal(world.context);
+    LBCheck(@"disposed of before it was acquired: refused, by the dates", [why containsString:@"disposed of on"] && [why containsString:@"acquired on"], why);
+    generator.disposalDate = LBMoment(@"2026-05-02");
+    LBCheck(@"disposed of: Disposed", LBSave(world.context, @"scrapped") && [generator.lb_state isEqualToString:@"Disposed"], generator.lb_state);
+}
+
 int main(int argc, const char *argv[]) {
     @autoreleasepool {
         if (argc < 3) {
@@ -1302,6 +1365,7 @@ int main(int argc, const char *argv[]) {
         LBKindsAndComponents();
         LBFuelAndHierarchy();
         LBPlans();
+        LBClasses();
         printf("procedures: %lu failed\n", (unsigned long)LBFailures);
     }
     return LBFailures ? 1 : 0;

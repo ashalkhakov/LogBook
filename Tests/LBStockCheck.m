@@ -1229,7 +1229,7 @@ static void LBUnits(void) {
     Vehicle *bike = LBMakeAsset([Vehicle class], anna, @"Surly", @"Long Haul Trucker", nil, [NSDate dateWithTimeIntervalSince1970:946684800], nil, nil, nil, NULL);
     bike.id = [NSUUID UUID];
     bike.vehicleName = @"Commuter";
-    bike.vehicleKind = @"Bicycle";
+    bike.lb_kind = @"Bicycle";
     bike.hasNoMeter = YES;
     bike.meterUnit = nil;
     LBCheck(@"a chain on the shelf, and a bicycle: saved", settled() && chain.location == basement, chain.location.locationName);

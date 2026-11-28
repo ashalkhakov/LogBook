@@ -787,7 +787,7 @@ static NSString *LBPlate(NSString *plate) {
         if (error) *error = LBImportError(@"The vehicle %@ refused: %@", _madeVehicleName, failure ? LBRefusal(failure) : @"not made");
         return nil;
     }
-    vehicle.vehicleKind = @"Car";
+    vehicle.lb_kind = @"Car";
     vehicle.vehicleName = _madeVehicleName;
     vehicle.manufactureYear = (int32_t)year;
     if (row[@"License plate"].length) vehicle.registrationNumber = row[@"License plate"];
@@ -1295,7 +1295,7 @@ static NSString *LBDecimal(double value) {
         return nil;
     }
     vehicle.vehicleName = bike.name;
-    vehicle.vehicleKind = @"Bicycle";
+    vehicle.lb_kind = @"Bicycle";
     /* No meter: its readings, its rides added up (LBProcedures). */
     vehicle.hasNoMeter = YES;
     vehicle.meterUnit = nil;

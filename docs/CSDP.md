@@ -89,7 +89,7 @@ elementary facts it holds. Still a draft.
 - Asset 'Generator' uses Fuel 'Petrol 95'.
 - Asset 'Generator' is metered in UsageUnit 'h'.
 - Asset 'Generator' was acquired at Usage 0 h.
-- Asset 'Generator' has Value 2.2 for ClassAttribute 'Rated power'.
+- Asset 'Generator' has Rating 2.2 for ClassAttribute 'Rated power'.
 
 An **asset** is anything a user keeps and maintains. A vehicle is one,
 with what only vehicles have: a kind (car, motorcycle, bicycle), the year
@@ -992,7 +992,10 @@ The rest are identified by what they are:
 | User | email |
 | Fuel, Garage, Station, Place, TyreModel, ClassAttribute | name |
 | ExpenseKind, IncomeKind, DocumentKind, Purpose, Season, Task, PaymentMethod | name, from a list |
-| EquipmentClass, EquipmentCategory, FailureMode, FailureMechanism, DetectionMethod | name, from a list the users extend, seeded from ISO 14224 |
+| EquipmentClass, FailureMode, FailureMechanism, DetectionMethod | name, from a list the users extend, seeded from ISO 14224 |
+| EquipmentCategory, AttributeUnit | name (a value: a category is said of a class, and has no facts of its own) |
+| Rating | a number: an asset's value of its class's attribute |
+| Power | 'Engine', 'Human': what powers a vehicle of a kind |
 | Title, Note, ChecklistName, QuestionText, OptionText | text |
 | AnswerKind | name, from a fixed list: 'Yes or no', 'Any of', 'Measurement' |
 | YesNo | from a fixed list: 'Yes', 'No' |
@@ -1072,10 +1075,10 @@ and name, a vehicle's VIN its unit's serial number (step 5).
 
 ```
 EquipmentClass is in EquipmentCategory          'Generator' | 'Electrical'
-                                                'Car' | 'Vehicles'
-                                                'Bicycle' | 'Vehicles'
-EquipmentClass has ClassAttribute in Unit       'Generator' | 'Rated power' | 'kW'
-Asset has Value for ClassAttribute              a1 | 2.2 | 'Rated power'
+VehicleKind is powered by Power                 'Car' | 'Engine'
+                                                'Bicycle' | 'Human'
+EquipmentClass has ClassAttribute in AttributeUnit   'Generator' | 'Rated power' | 'kW'
+Asset has Rating for ClassAttribute             a1 | 2.2 | 'Rated power'
 Category is a maintainable item of EquipmentClass   'Chain' | 'Bicycle'
                                                 'Battery' | 'Power station'
 FailureMode applies to EquipmentClass           'Fails to start on demand' | 'Generator'
@@ -1664,7 +1667,9 @@ Each in the user's preferred units and currency, unless it says otherwise.
     line's unit cost, or the date of the opening-stock move that did.
 13. *An asset's state:* 'Disposed' if it was sold or disposed of; else
     'Out of service' if a downtime of it has started and not ended; else
-    'In stock' if it is a unit at a location; else 'In service'.
+    'In stock' if it is a unit at a location; else 'In service'. Worked
+    out where it is shown (the service layer's `lb_state`): a choice among
+    alternatives in order is no query ORMKit derives.
 
 **Reminders and work orders**
 
@@ -1884,8 +1889,8 @@ one order but a reminder's order is one of many over the years.
 
 - **Service reserves Quantity of StockItem:** one quantity per order per
   item; the uniqueness spans the service and the item, elementary.
-- **EquipmentClass has ClassAttribute in Unit:** one unit per class's
-  attribute; **Asset has Value for ClassAttribute:** one value per
+- **EquipmentClass has ClassAttribute in AttributeUnit:** one unit per class's
+  attribute; **Asset has Rating for ClassAttribute:** one rating per
   asset's attribute. Each spans two of three roles, elementary.
 - **On Date one Currency was worth Factor Currency:** one factor per date
   per pair of currencies. The uniqueness spans the date and both
@@ -2119,9 +2124,18 @@ entered as one. What only vehicles have is Vehicle's: its kind, the year
 built, its VIN and registration; trips, tyre sets and tyre changes are of
 a Vehicle. Everything else is said once, of Asset. In Core Data Vehicle is
 Asset's subentity, as Event is Record's, and a vehicle stored before keeps
-its id. **VehicleKind** is a subtype of **EquipmentClass**: 'Car',
-'Motorcycle', 'Bicycle', in the category 'Vehicles'. An asset that is no
-vehicle has a class that is no vehicle kind (below).
+its id. **VehicleKind** is a subtype of **EquipmentClass**, asserted:
+'Car', 'Motorcycle', 'Bicycle', the category 'Vehicles' by being kinds. In
+Core Data VehicleKind is EquipmentClass's subentity, and a vehicle's kind
+a relationship to it (`kind`; the name it was stored as before is
+migrated to it). The kinds are reference data, seeded through a fact of
+their own, *VehicleKind is powered by Power* ('Engine' for a car and a
+motorcycle, 'Human' for a bicycle): reference data is seeded as its
+fact's players, so the kinds are VehicleKinds, not plain classes. Classes
+are the users' to add, so no class's fact is reference data, and a
+class's category is a name, not one of a list. An asset that is no
+vehicle has a class that is no vehicle kind (`KindsAreVehicles`), and a
+vehicle says its kind, not a class (`VehicleClassIsItsKind`).
 
 Only an asset that uses a fuel is filled up. That is a rule
 (`NoFillUpOfWhatUsesNoFuel`), not a subtype: nothing else is said only of

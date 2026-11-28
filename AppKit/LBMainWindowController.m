@@ -777,6 +777,10 @@ static CGFloat LBUsedHeight(NSView *view) {
     return @[ @"Car", @"Motorcycle", @"Bicycle" ];
 }
 
+- (NSArray<NSString *> *)criticalities {
+    return @[ @"High", @"Medium", @"Low" ];
+}
+
 - (NSString *)componentWear {
     id chosen = [_recordForm object];
     StockUnit *component = [chosen isKindOfClass:[ComponentChange class]] ? ((ComponentChange *)chosen).stockUnit : nil;
@@ -1271,7 +1275,7 @@ static CGFloat LBUsedHeight(NSView *view) {
     Vehicle *vehicle = LBMakeNewAsset([Vehicle class], user, @"New vehicle", [NSDate date], NULL);
     if (!vehicle) return [super newObject];
     /* A car, most likely: the user says otherwise. */
-    vehicle.vehicleKind = @"Car";
+    vehicle.lb_kind = @"Car";
     return vehicle;
 }
 

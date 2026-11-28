@@ -7,6 +7,7 @@
 #import <CoreData/CoreData.h>
 #import "Asset+CoreDataClass.h"
 #import "StockUnit+CoreDataClass.h"
+#import "Vehicle+CoreDataClass.h"
 #import "User+CoreDataClass.h"
 
 NS_ASSUME_NONNULL_BEGIN
@@ -24,6 +25,11 @@ NS_ASSUME_NONNULL_BEGIN
 // The assets fitted in it now (docs/CSDP.md, A unit that is an asset), by
 // name, as a list says them: "River battery, Tray"; nil: none.
 @property (nonatomic, readonly, nullable) NSString *lb_components;
+// Its state, worked out, never set (docs/CSDP.md, step 3, 13): 'Disposed'
+// once sold (an income of kind 'Sale') or disposed of; else 'In stock'
+// while its unit is at a location (on a shelf); else 'In service'.
+// ('Out of service', while a downtime lasts, comes with downtime.)
+@property (nonatomic, readonly) NSString *lb_state;
 @end
 
 // A new asset, as Stock makes one (docs/CSDP.md, A unit that is an
@@ -65,5 +71,12 @@ FOUNDATION_EXPORT BOOL LBIsStoreBeforeAssets(NSString *type, NSURL *url, NSDicti
 // Any other store: nothing done, YES.
 FOUNDATION_EXPORT BOOL LBMigrateStoreBeforeAssets(NSString *type, NSURL *url, NSManagedObjectModel *model,
                                                   NSDictionary *_Nullable options, NSError **error);
+
+@interface Vehicle (LBStock)
+// Its kind by name ('Car', 'Motorcycle', 'Bicycle'): its VehicleKind, an
+// equipment class (docs/CSDP.md, Subtypes). Set, the kind of the name is
+// found (the reference data); none for a name that is no kind's.
+@property (nonatomic, copy, nullable) NSString *lb_kind;
+@end
 
 NS_ASSUME_NONNULL_END

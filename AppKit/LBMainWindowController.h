@@ -118,6 +118,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable Vehicle *)chosenVehicle;
 // What a vehicle may be (the model's VehicleKind): its Kind pop-up's.
 @property (nonatomic, readonly, copy) NSArray<NSString *> *vehicleKinds;
+// How much depends on an asset (the model's Criticality): its pop-up's.
+@property (nonatomic, readonly, copy) NSArray<NSString *> *criticalities;
 // The chosen component's wear, said: "1200 km since it was fitted".
 @property (nonatomic, readonly, copy) NSString *componentWear;
 

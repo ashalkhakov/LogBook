@@ -105,7 +105,7 @@ static NSDate *LBToday(NSDate *day) {
         return nil;
     }
     asset.vehicleName = name;
-    if (vehicle && kind) ((Vehicle *)asset).vehicleKind = kind;
+    if (vehicle && kind) ((Vehicle *)asset).lb_kind = kind;
     if (vehicle && year) ((Vehicle *)asset).manufactureYear = year.intValue;
     if (fuel.length) asset.fuel = fuel;
     return asset;
